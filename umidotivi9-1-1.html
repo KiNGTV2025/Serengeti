@@ -11295,10 +11295,10 @@ const HLS_CONFIG = {
 
     // ── BUFFER: TVBox için dengeli tampon — çok büyük buffer = RAM basıncı = donma ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 20,                 // 30→20sn: TVBox'ta 30sn buffer RAM baskısı yapıyor
-    maxMaxBufferLength: 40,              // 60→40sn: üst sınır da indirildi
-    maxBufferSize: 25 * 1024 * 1024,    // 40→25MB: TVBox sınırlı RAM, GC baskısı azaltıldı
-    maxBufferHole: 1.0,                  // 0.5→1.0: segment boşluğu daha geniş tolere et
+    maxBufferLength: 30,                 // 20→30sn: VOD'da daha fazla buffer = daha az kesilme/atlama
+    maxMaxBufferLength: 60,              // 40→60sn: VOD için üst limit artırıldı
+    maxBufferSize: 30 * 1024 * 1024,    // 25→30MB: VOD için biraz daha fazla RAM ayrıldı
+    maxBufferHole: 0.3,                  // 1.0→0.3: küçük buffer boşluklarında atlatma azalır — VOD daha akıcı
     maxLoadingDelay: 8,                  // 2→8sn: yavaş internette segment yüklenmesini bekle, atlatma
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
@@ -11311,7 +11311,7 @@ const HLS_CONFIG = {
     levelLoadingMaxRetry: 6,             // 4→6
     levelLoadingTimeOut: 15000,          // 6→15sn
     nudgeMaxRetry: 10,                   // 8→10: buffer boşluğu atlatma denemesi
-    nudgeOffset: 0.5,                    // 0.3→0.5: daha büyük sıçrama — boşluğu kesin geç
+    nudgeOffset: 0.1,                    // 0.5→0.1: çok küçük sıçrama — VOD'da atlama neredeyse yok
     maxFragLookUpTolerance: 0.5,         // 0.25→0.5: segment arama toleransı artırıldı
 
     // ── ABR: Zayıf internette düşük kaliteden başla, yavaş çık ──
@@ -19450,6 +19450,19 @@ function openSidebar() {
         el.classList.remove('remote-focused', 'focused');
     });
 
+    // TVBox: Sidebar açılırken player kontrollerini ANINDA gizle — kasma önleme
+    const _pc = document.getElementById('playerContainer');
+    const _pv = document.getElementById('playerView');
+    const _playerOpen = _pv && _pv.style.display === 'flex';
+    if (_playerOpen && _pc) {
+        _pc.classList.remove('show-controls');
+        clearTimeout(window.autoHideControlsTimer);
+        clearTimeout(window.controlsTimer);
+        window._sidebarOpenedWithPlayer = true;
+    } else {
+        window._sidebarOpenedWithPlayer = false;
+    }
+
     overlay.style.display = 'block';
     showSidebarLoading(true);
 
@@ -19480,23 +19493,24 @@ function openSidebar() {
     }
 
     setTimeout(() => {
-        // Sidebar açıkken HLS buffer yükünü hafiflet (video donma önleme)
+        // Sidebar açıkken HLS buffer yükünü hafiflet — SADECE CANLI YAYINDA
+        // VOD'da buffer düşürmek = atlama sebebi
         try {
-            if (state.player.hls && !state.player.hls._destroyed) {
+            if (state.player.hls && !state.player.hls._destroyed && state.player.isLiveStream) {
                 state.player.hls.config.maxBufferLength = 8;
                 state.player.hls.config.maxMaxBufferLength = 15;
             }
         } catch(e) {}
 
         sidebar.classList.add('open');
-        // Render'ı 120ms geciktir — CSS animasyonu önce tamamlansın, layout thrash azalır
+        // TVBox: CSS animasyonu kısa bekle, sonra hızlıca render et
         setTimeout(() => {
             populateSidebar();
             showSidebarLoading(false);
             _updateEpgBadge();
-        }, 120);
+        }, 60);
 
-        setTimeout(() => { updateSidebarFocus(); }, 180);
+        setTimeout(() => { updateSidebarFocus(); }, 100);
 
         // EPG yüklüyse hemen göster
         const epgReady = state.epgData && Object.keys(state.epgData).length > 0;
@@ -19551,18 +19565,31 @@ function closeSidebar() {
         } catch(e) {}
     }, 400);
     
-    // Kısa gecikme sonrası overlay'ı gizle
+    // TVBox: Sidebar kapanınca — sadece canlı yayında kontrolleri kısa göster
     setTimeout(() => {
         overlay.style.display = 'none';
-        
-        // Remote state'i güncelle
         state.remote.zone = 'channels';
         state.remote.index = 0;
-        
-        // Kumanda odak noktasını güncelle
-        setTimeout(() => {
-            updateRemoteFocus();
-        }, 50);
+        setTimeout(() => { updateRemoteFocus(); }, 50);
+
+        const _pvClose = document.getElementById('playerView');
+        const _pcClose = document.getElementById('playerContainer');
+        if (_pvClose && _pvClose.style.display === 'flex' && _pcClose) {
+            // VOD/Film/Dizi oynuyorsa kontrolleri GÖSTERme — kullanıcı tam ekran izlesin
+            if (state.player.isLiveStream) {
+                // Canlı yayın: 2sn göster sonra oto-gizle
+                _pcClose.classList.add('show-controls');
+                state.remote.playerControlsVisible = true;
+                clearTimeout(window.autoHideControlsTimer);
+                window.autoHideControlsTimer = setTimeout(() => {
+                    if (!window._controlsHidden) {
+                        _pcClose.classList.remove('show-controls');
+                        state.remote.playerControlsVisible = false;
+                    }
+                }, 2000);
+            }
+            // VOD: kontroller kapalı kalır — kullanıcı OK/tıkla ile açar
+        }
     }, 300);
     
     // Keyboard sesi
@@ -19869,20 +19896,23 @@ function renderSidebarChannels() {
     if (channels.length === 0) return;
 
     const currentUrl = state.player.url;
-    const PAGE_SIZE = 20; // 40→20: her batch daha az DOM node, video oynarken smoother
-
     // EPG fonksiyonlarını bir kez al
     const _getEPG = window.getEPGInfo || (typeof getEPGInfo === 'function' ? getEPGInfo : null);
     const _parseT = window.parseEPGTime || (typeof parseEPGTime === 'function' ? parseEPGTime : null);
     const epgReady = !!(state.epgData && Object.keys(state.epgData).length > 0);
     const FALLBACK_LOGO = 'https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg';
 
+    // EPG önbelleği — aynı kanali her batch'te yeniden hesaplamamak için
+    const epgCache = Object.create(null);
+
     function buildEpgHtml(channel, isVod) {
-        if (isVod) return { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false };
-        if (!epgReady || !_getEPG) return { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false };
+        const cacheKey = channel.name;
+        if (epgCache[cacheKey] !== undefined) return epgCache[cacheKey];
+        if (isVod) { const r = { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false }; epgCache[cacheKey] = r; return r; }
+        if (!epgReady || !_getEPG) { const r = { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false }; epgCache[cacheKey] = r; return r; }
         try {
             const epg = _getEPG(channel.name, channel.tvgId || '');
-            if (!epg || !epg.current) return { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false };
+            if (!epg || !epg.current) { const r = { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false }; epgCache[cacheKey] = r; return r; }
             const sTime = _parseT ? _parseT(epg.current.start) : null;
             const eTime = _parseT ? _parseT(epg.current.stop) : null;
             const fmtT = d => d ? new Date(d).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '';
@@ -19893,10 +19923,12 @@ function renderSidebarChannels() {
             const _nextTitle = (epg.next && epg.next.title) ? epg.next.title : '';
             const _nextTs = (epg.next && epg.next.start && _parseT) ? _parseT(epg.next.start) : null;
             const _nextTime = _nextTs ? new Date(_nextTs).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '';
-            return {
+            const _epgResult = {
                 hasEpg: true,
                 html: `<div class="sidebar-epg-row"><span class="sidebar-epg-live-dot">ŞİMDİ</span><span class="sidebar-epg-now">${epg.current.title}</span></div>${timeStr ? `<div class="sidebar-epg-time">${timeStr}</div>` : ''}<div class="sidebar-epg-bar-wrap"><div class="sidebar-epg-bar"><div class="sidebar-epg-bar-fill" style="width:${progress}%"></div></div><span class="sidebar-epg-bar-pct">${pct}%</span></div>${_nextTitle ? `<div class="sidebar-epg-next-row"><span class="sidebar-epg-next-dot">▶</span><span class="sidebar-epg-next-title">${_nextTitle}${_nextTime ? ' · ' + _nextTime : ''}</span></div>` : ''}`
             };
+            epgCache[cacheKey] = _epgResult;
+            return _epgResult;
         } catch(e) { return { html: `<div class="channel-group">${channel.group || 'Genel'}</div>`, hasEpg: false }; }
     }
 
@@ -19920,70 +19952,45 @@ function renderSidebarChannels() {
         return img;
     }
 
+    // TVBox Optimizasyonu: innerHTML ile toplu render — DOM node oluşturma yerine string birleştirme
+    // Bu yöntem TVBox'larda 3-5x daha hızlı çalışır
+    const BATCH_SIZE = state.player.streamStarted ? 30 : 60;
+
+    function buildItemHTML(channel, i) {
+        const isActive = channel.url === currentUrl;
+        const isFav = state.favs.has(channel.name);
+        const isVod = !channel.isLive;
+        const { html: epgHtml, hasEpg } = buildEpgHtml(channel, isVod);
+        const logo = channel.logo && channel.logo.trim() ? channel.logo.trim() : FALLBACK_LOGO;
+        const activeClass = isActive ? ' active' : '';
+        const epgClass = hasEpg ? ' has-epg' : '';
+        const favClass = isFav ? ' active' : '';
+        const vodBadge = isVod ? '<div class="channel-vod-badge">VOD</div>' : '';
+        return `<li class="channel-list-item${activeClass}${epgClass}" data-index="${i}" data-channel-name="${channel.name.replace(/"/g,'&quot;')}" onclick="playChannelFromSidebar(${i})">
+<div class="channel-number">${i+1}</div>
+<div class="channel-logo-small"><img src="${logo}" alt="${channel.name.replace(/"/g,'&quot;')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:contain;padding:3px;display:block;" onerror="this.onerror=null;this.src='${FALLBACK_LOGO}';this.style.padding='4px';this.style.opacity='0.7';"></div>
+<div class="channel-info"><div class="channel-name">${channel.name}</div><div>${epgHtml}</div></div>
+<button class="channel-fav-btn${favClass}" onclick="event.stopPropagation();toggleFav('${channel.name.replace(/'/g,"\\'")}')"><span class="material-symbols-outlined">star</span></button>
+${vodBadge}</li>`;
+    }
+
     function renderPage(startIdx, total) {
-        const frag = document.createDocumentFragment();
-        const endIdx = Math.min(startIdx + PAGE_SIZE, total);
-
+        const endIdx = Math.min(startIdx + BATCH_SIZE, total);
+        let html = '';
         for (let i = startIdx; i < endIdx; i++) {
-            const channel = channels[i];
-            const isActive = channel.url === currentUrl;
-            const isFav = state.favs.has(channel.name);
-            const isVod = !channel.isLive;
-
-            const li = document.createElement('li');
-            li.className = 'channel-list-item' + (isActive ? ' active' : '');
-            li.setAttribute('data-index', i);
-            li.setAttribute('data-channel-name', channel.name);
-            li.onclick = () => playChannelFromSidebar(i);
-
-            const { html: epgHtml, hasEpg } = buildEpgHtml(channel, isVod);
-            if (hasEpg) li.classList.add('has-epg');
-
-            // DOM elemanları ile oluştur — innerHTML yerine
-            const numDiv = document.createElement('div');
-            numDiv.className = 'channel-number';
-            numDiv.textContent = i + 1;
-
-            const logoDiv = document.createElement('div');
-            logoDiv.className = 'channel-logo-small';
-            logoDiv.appendChild(buildLogoEl(channel));
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'channel-info';
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'channel-name';
-            nameDiv.textContent = channel.name;
-            infoDiv.appendChild(nameDiv);
-            const epgDiv = document.createElement('div');
-            epgDiv.innerHTML = epgHtml;
-            infoDiv.appendChild(epgDiv);
-
-            const favBtn = document.createElement('button');
-            favBtn.className = 'channel-fav-btn' + (isFav ? ' active' : '');
-            favBtn.innerHTML = '<span class="material-symbols-outlined">star</span>';
-            favBtn.onclick = (e) => { e.stopPropagation(); toggleFav(channel.name); };
-
-            li.appendChild(numDiv);
-            li.appendChild(logoDiv);
-            li.appendChild(infoDiv);
-            li.appendChild(favBtn);
-
-            if (isVod) {
-                const badge = document.createElement('div');
-                badge.className = 'channel-vod-badge';
-                badge.textContent = 'VOD';
-                li.appendChild(badge);
-            }
-
-            frag.appendChild(li);
+            html += buildItemHTML(channels[i], i);
         }
-
-        container.appendChild(frag);
+        container.insertAdjacentHTML('beforeend', html);
 
         if (endIdx < total) {
-            // Video oynarken render'ı daha yavaş yap — main thread baskısı azalır
-            const _delay = state.player.streamStarted ? 80 : 25;
-            setTimeout(() => renderPage(endIdx, total), _delay);
+            // TVBox: stream varken biraz bekle, yoksa hızlı devam et
+            const _delay = state.player.streamStarted ? 50 : 10;
+            // requestIdleCallback varsa kullan (TVBox Android destekler)
+            if (window.requestIdleCallback) {
+                requestIdleCallback(() => renderPage(endIdx, total), { timeout: _delay + 100 });
+            } else {
+                setTimeout(() => renderPage(endIdx, total), _delay);
+            }
         } else {
             loadingEl.style.display = 'none';
             scrollToSelectedChannel();
@@ -28532,6 +28539,28 @@ function resumeChannel(startTime) {
     }
     document.getElementById('playerContainer').classList.add('playing');
     document.getElementById('ppIcon').innerText = 'pause';
+
+    // TVBox: VOD/Film/Dizi açılınca kontroller ANINDA kapansın
+    // Canlı yayında: 3sn göster sonra kapat | VOD: hiç gösterme
+    const _pcPlay = document.getElementById('playerContainer');
+    if (ch.isLive && !ch.isVod) {
+        // Canlı yayın: kontrolleri 3sn göster sonra oto-gizle
+        _pcPlay.classList.add('show-controls');
+        state.remote.playerControlsVisible = true;
+        clearTimeout(window.autoHideControlsTimer);
+        window.autoHideControlsTimer = setTimeout(() => {
+            if (!window._controlsHidden) {
+                _pcPlay.classList.remove('show-controls');
+                state.remote.playerControlsVisible = false;
+            }
+        }, 3000);
+    } else {
+        // VOD/Film/Dizi: kontroller kapalı başlasın
+        _pcPlay.classList.remove('show-controls');
+        state.remote.playerControlsVisible = false;
+        clearTimeout(window.autoHideControlsTimer);
+        clearTimeout(window.controlsTimer);
+    }
     
     updatePlayerFavIcon(ch.name);
     checkOrientation();
@@ -28721,9 +28750,23 @@ function resumeChannel(startTime) {
         const minGap = is4K ? 3000 : isHighRes ? 2000 : 1200; // artırıldı: erken recovery = daha fazla donma
         if (now - lastStallRecoveryTime < minGap) return;
 
+        // VOD: çok daha uzun bekle — erken müdahale = atlama sebebi
+        // Canlı: 1sn | 1080p: 1.5sn | 4K: 2sn | VOD: 3sn (buffer kendiliğinden dolacak)
+        const _isVodStall = !state.player.isLiveStream;
         stallTimer = setTimeout(() => {
             const hls = state.player.hls;
             if (!hls || video.paused || window._userPaused || window._recoveryLock) return;
+
+            // VOD'da buffer kontrolü tekrar yap — buffer dolmuş olabilir
+            try {
+                const _buf2 = video.buffered;
+                const _ahead2 = _buf2 && _buf2.length > 0 ? _buf2.end(_buf2.length - 1) - video.currentTime : 0;
+                if (_ahead2 > 2) {
+                    // Buffer zaten var — sadece play() yeter, startLoad/seek YOK
+                    if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                    return;
+                }
+            } catch(e) {}
 
             window._recoveryLock = true;
             lastStallRecoveryTime = Date.now();
@@ -28770,7 +28813,7 @@ function resumeChannel(startTime) {
                 const curCh = state.filtered[state.player.index];
                 if (curCh) setTimeout(() => playChannel(curCh), 500);
             }
-        }, is4K ? 2000 : isHighRes ? 1500 : 1000); // 400→1000ms: erken müdahale = buffer kesilmesi
+        }, _isVodStall ? 3000 : (is4K ? 2000 : isHighRes ? 1500 : 1000));
     };
     video.onstalled = onStall;
     video.onwaiting = onStall;
@@ -42553,6 +42596,12 @@ setInterval(function() {
         if (!st.player.streamStarted) {
             _wdLastTime = -1; _wdTicks = 0; _wdRecoverAttempts = 0;
             _wdStartTime = Date.now();
+            return;
+        }
+        // VOD/Film/Dizi izlenirken watchdog KAPALI — stall recovery zaten onStall/onWaiting'de var
+        // Watchdog'un VOD'da startLoad çağırması = atlama/titreme sebebi
+        if (st.player.isLiveStream === false) {
+            _wdLastTime = v.currentTime; _wdTicks = 0; _wdRecoverAttempts = 0;
             return;
         }
         // İlk 12sn watchdog bekleme

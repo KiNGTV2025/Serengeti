@@ -15636,7 +15636,7 @@ listSeriesChannels();
     }
 
     // Film için sezon container'ını gizle
-    document.getElementById('vodSeasonsContainer').style.display = 'none';
+    var _vsc=document.getElementById('vodSeasonsContainer'); if(_vsc) _vsc.style.display='none';
     
     modal.style.display = 'flex';
     
@@ -15767,7 +15767,7 @@ function closeEpDescDialog() {
     }
     
     // Sezon/bölüm container'ını temizle
-    document.getElementById('vodSeasonsContainer').style.display = 'none';
+    var _vsc=document.getElementById('vodSeasonsContainer'); if(_vsc) _vsc.style.display='none';
     document.getElementById('vodSeasonSelector').innerHTML = '';
     document.getElementById('vodEpisodesContainer').innerHTML = '';
     
@@ -17376,7 +17376,7 @@ if (!sleepRange.dataset.touchInit) {
     playKeySound('click');
 }
 function closeSleepModeModal() {
-    document.getElementById('sleepModeModal').style.display = 'none';
+    var _smm=document.getElementById('sleepModeModal'); if(_smm) _smm.style.display='none';
 
     if (state.remote.active) {
         state.remote.zone = 'header';
@@ -17791,12 +17791,9 @@ document.addEventListener('touchstart', cancelSleepShutdown);
 
         // TÜM GÖSTERGECİKLERİ GİZLE
         function hideAllIndicators() {
-            document.getElementById('modernSeekingOverlay').style.display = 'none';
-            document.getElementById('volumeIndicator').style.display = 'none';
-            document.getElementById('brightnessIndicator').style.display = 'none';
-            document.getElementById('resolutionIndicator').style.display = 'none';
-            document.getElementById('resolutionChangeIndicator').style.display = 'none';
-            
+            ['modernSeekingOverlay','volumeIndicator','brightnessIndicator','resolutionIndicator','resolutionChangeIndicator'].forEach(function(id){
+                var el = document.getElementById(id); if (el) el.style.display = 'none';
+            });
             clearTimeout(window.modernSeekingTimer);
             clearTimeout(window.volumeIndicatorTimer);
             clearTimeout(window.brightnessIndicatorTimer);
@@ -19162,7 +19159,7 @@ function openControlSettingsModal() {
     updateSettingsUI();
     
     // Modal'ı göster
-    document.getElementById('controlSettingsModal').style.display = 'flex';
+    var _csm=document.getElementById('controlSettingsModal'); if(_csm) _csm.style.display='flex';
     
     // Kumanda odak noktasını ayarla
     if(state.remote.active) { 
@@ -25417,8 +25414,8 @@ function updateContinueCardsFocus() {
     showRemoteHint(`Kaldığın Yerden: ${channelName} (${actionText})`);
 }
 function updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, showClose) {
-    // Tüm focus'ları temizle
-    document.querySelectorAll('.continue-card .remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    // Tüm focus'ları temizle — hem iç elemanlar hem üst .continue-card'ın kendisi
+    document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
     document.querySelectorAll('.continue-options-btn.remote-focused').forEach(el => el.classList.remove('remote-focused'));
     
     card.classList.add('remote-focused');
@@ -41315,19 +41312,7 @@ var _streamingActive = false;
 
 setTimeout(_setupVideoStateWatcher, 2000);
 
-/* ── renderChannels OVERRIDE — RAPID-FIRE KORUMASI ─────────── */
-// Yayın sırasında render'ı ertele; hızlı ardışık çağrıları birleştir
-var _rcStreamDelay = null;
-var _origRenderChannels = null;
-
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { setTimeout(_wrapRenderChannels, 100); });
-} else {
-    setTimeout(_wrapRenderChannels, 100);
-}
-
- 
+// renderChannels rapid-fire wrap → aşağıda _wrapRenderChannels'ta tanımlı
 
 setTimeout(_wrapFetchTMDB, 200);
 
@@ -42230,8 +42215,32 @@ window.addEventListener('error', function(e) {
 (function TVBOX_PERF_UNIFIED() {
 'use strict';
 
-// ── 0. Native referansları en başta al ──
-var _nativeQSA = document.querySelectorAll.bind(document);
+// ── 0. Native referanslar — intercept'lerden önce al ──
+var _nativeQSA  = document.querySelectorAll.bind(document);
+var _nativeGEBI = document.getElementById.bind(document);
+
+// ── 0d. MutationObserver.observe guard — null-safe getElementById ile uyum ──
+// getElementById artık Proxy döndürüyor; observe(Proxy) → TypeError.
+// Gerçek Node değilse observe'yi sessizce atla.
+(function() {
+    var _origObserve = MutationObserver.prototype.observe;
+    MutationObserver.prototype.observe = function(target, options) {
+        if (!(target instanceof Node)) return;
+        _origObserve.call(this, target, options);
+    };
+})();
+(function() {
+    var _nativeConsoleError = console.error;
+    console.error = function() {
+        // DOMException ve AbortError'ları sessizce yut
+        var msg = arguments[0];
+        if (msg && (msg.name === 'AbortError' || msg instanceof DOMException ||
+            (typeof msg === 'string' && (msg.indexOf('DOMException') > -1 || msg.indexOf('AbortError') > -1)))) {
+            return;
+        }
+        _nativeConsoleError.apply(console, arguments);
+    };
+})();
 
 // ── 1. CSS: transition'ları kapat, contain ekle ──
 (function() {
@@ -42305,13 +42314,13 @@ document.querySelectorAll = function(sel) {
 (function() {
     function _watchGrid() {
         var g = document.querySelector('.channels-grid');
-        if (g) { new MutationObserver(function(){ _cardCache=null; _cardSel=''; }).observe(g,{childList:true}); }
+        if (g instanceof Node) { new MutationObserver(function(){ _cardCache=null; _cardSel=''; }).observe(g,{childList:true}); }
         else { setTimeout(_watchGrid, 1200); }
     }
     function _watchCont() {
-        var c = document.getElementById('continueCardsContainer') ||
-                document.getElementById('continueWatchingContainer');
-        if (c) { new MutationObserver(function(){ _contDirty=true; _contCache=null; }).observe(c,{childList:true}); }
+        // null-safe getElementById'yi bypass et — gerçek null lazım
+        var c = _nativeGEBI('continueCardsContainer') || _nativeGEBI('continueWatchingContainer');
+        if (c instanceof Node) { new MutationObserver(function(){ _contDirty=true; _contCache=null; }).observe(c,{childList:true}); }
         else { setTimeout(_watchCont, 1500); }
     }
     if (document.readyState === 'loading') {
@@ -42361,6 +42370,12 @@ window.showControls = function(duration) {
         // a) Önceki odak kalıntılarını temizle (native QSA — güvenli)
         var prev = _nativeQSA('.remote-focused');
         for (var i = 0; i < prev.length; i++) prev[i].classList.remove('remote-focused');
+        // a2) continueCards zone dışına çıkınca kart odak kalıntısı temizle
+        var zone = window.state && window.state.remote && window.state.remote.zone;
+        if (zone !== 'continueCards') {
+            var cc = _nativeQSA('.continue-card.remote-focused, .continue-action-btn.remote-focused, .continue-options-btn.remote-focused');
+            for (var j = 0; j < cc.length; j++) cc[j].classList.remove('remote-focused');
+        }
 
         // b) Video oynatma durumunu kaydet
         var video = document.getElementById('videoPlayer');
@@ -42418,6 +42433,7 @@ var _wdLastTime = -1;
 var _wdTicks = 0;
 var _wdBusy = false;
 var _wdRecoverAttempts = 0;
+var _wdStartTime = 0; // streamStarted anı
 
 setInterval(function() {
     try {
@@ -42425,7 +42441,14 @@ setInterval(function() {
         var v = document.getElementById('videoPlayer');
         var hls = st && st.player && st.player.hls;
         if (!v || !hls) return;
-        if (!st.player.streamStarted) { _wdLastTime = -1; _wdTicks = 0; _wdRecoverAttempts = 0; return; }
+        if (!st.player.streamStarted) {
+            _wdLastTime = -1; _wdTicks = 0; _wdRecoverAttempts = 0;
+            _wdStartTime = Date.now();
+            return;
+        }
+        // Yayın yeni başladı — ilk 8 saniye watchdog'u askıya al
+        // (currentTime henüz 0'da olabilir, buffer dolmamış olabilir)
+        if (Date.now() - _wdStartTime < 8000) { _wdLastTime = v.currentTime; return; }
         if (window._userPaused || v.paused || window._seekInProgress) {
             _wdLastTime = v.currentTime; _wdTicks = 0; _wdRecoverAttempts = 0; return;
         }
@@ -42435,27 +42458,28 @@ setInterval(function() {
         }
         // readyState < 3: video henüz buffer doldurmamış — tik sayma, bekle
         if (v.readyState < 3) { _wdLastTime = v.currentTime; return; }
+        // currentTime sıfırda sabit → HLS henüz ilk segmenti almamış, bekle
+        if (v.currentTime === 0) { _wdLastTime = 0; return; }
+        // recoveryLock aktifse (stallTimer çalışıyor) müdahale etme
+        if (window._recoveryLock) { _wdLastTime = v.currentTime; return; }
         var ct = v.currentTime;
         if (ct === _wdLastTime) {
             _wdTicks++;
-            if (_wdTicks >= 4 && !_wdBusy) { // ~3.2sn donma (800ms * 4) — DVR seek sonrası yanlış tetiklenme önlendi
+            if (_wdTicks >= 6 && !_wdBusy) { // ~4.8sn donma (800ms * 6) — daha uzun eşik
                 _wdBusy = true; _wdTicks = 0;
                 _wdRecoverAttempts++;
                 var buf = v.buffered;
                 var ahead = buf && buf.length > 0 ? buf.end(buf.length-1) - ct : 0;
                 if (ahead > 1.0) {
-                    // Buffer var ama oynatmıyor → play() yeterli, seek etme
                     try { v.play().catch(function(){}); } catch(e) {}
                     setTimeout(function() { _wdBusy = false; }, 300);
                 } else if (_wdRecoverAttempts <= 2) {
-                    // Buffer boş, ilk 2 deneme → nazikçe yeniden yükle
                     try { hls.startLoad(ct); } catch(e) {}
                     setTimeout(function() {
                         try { v.play().catch(function(){}); } catch(e) {}
                         _wdBusy = false;
                     }, 800);
                 } else {
-                    // 3+ deneme başarısız → stopLoad + startLoad (sert reset)
                     _wdRecoverAttempts = 0;
                     try { hls.stopLoad(); } catch(e) {}
                     setTimeout(function() {

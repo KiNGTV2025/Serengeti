@@ -494,6 +494,11 @@
     transition: none !important;
     animation: none !important;
 }
+/* ODAK-FIX: remote-focused KALDIRILINCA outline anında silinsin — TVBox gecikmeli render önle */
+:not(.remote-focused):not(.focused) {
+    outline-color: transparent !important;
+    transition: outline-color 0ms !important;
+}
 /* Player controls overlay geçişi kaldır */
 .player-controls, .player-top-bar {
     transition: none !important;
@@ -3764,6 +3769,12 @@ body {
             border-color: var(--btn-on-border, rgba(255,215,0,0.65));
             color: var(--accent-primary, #FFD700);
         }
+        /* ODAK-FIX: btn-active + remote-focused birlikte varsa outline değil sadece arka plan göster */
+        .player-action-btn.btn-active.remote-focused {
+            outline: 3px solid var(--accent-primary) !important;
+            background: rgba(255,215,0,0.22) !important;
+            border-color: transparent !important;
+        }
          
         .player-action-btn.remote-focused {
             outline: 3px solid var(--accent-primary) !important;
@@ -4870,7 +4881,9 @@ select.sort-dpad-focused {
 
 .live-btn.remote-focused { 
     transform: none !important; 
-    border-color: #fff !important; 
+    outline: 3px solid #fff !important;
+    outline-offset: 2px;
+    border-color: transparent !important; 
 }
 
 .settings-btn.remote-focused, .continue-modal-btn.remote-focused {
@@ -19410,6 +19423,13 @@ function openSidebar() {
     const overlay = document.getElementById('sidebarOverlay');
     const epgStatusEl = document.getElementById('sidebarEpgStatus');
 
+    // ODAK-FIX: Sidebar açılırken skip overlay gizle + tüm odak kalıntılarını temizle
+    var _skipOvSb = document.getElementById('skipCountdownOverlay');
+    if (_skipOvSb) _skipOvSb.style.display = 'none';
+    document.querySelectorAll('.remote-focused, .focused').forEach(function(el) {
+        el.classList.remove('remote-focused', 'focused');
+    });
+
     overlay.style.display = 'block';
     showSidebarLoading(true);
 
@@ -28226,6 +28246,12 @@ function playChannelByName(name) {
 function resumeChannel(startTime) {
     const video = document.getElementById('videoPlayer');
     window._userPaused = false;  // Yeni kanal — pause flag sıfırla
+    window._recoveryLock = false; // DONMA-FIX: Önceki kanaldan kalan recovery lock'u temizle
+    // ODAK-FIX: Kanal değişince tüm buton active state'lerini sıfırla — çift/üçlü odak önle
+    ['btnQuality','btnSubtitle','btnPlayerList','btnLiveSync','btnHideLiveProgress','btnPlayerFav'].forEach(function(id) {
+        var b = document.getElementById(id);
+        if (b) { b.classList.remove('btn-active','remote-focused','focused'); }
+    });
 
     // 0. Önceki Timeout'u Temizle (Çok Önemli!)
     // Eğer önceki kanal yüklenirken hızlıca değiştirdiyseniz, eski sayacı iptal etmeliyiz.
@@ -28564,6 +28590,9 @@ function resumeChannel(startTime) {
     const onStall = () => {
         if (window._userPaused || window._seekInProgress) return;
         if (window._recoveryLock) return; // başka bir recovery aktif
+        // streamStarted olmadan (açılış sırasında) stall recovery çalıştırma
+        // DVR seek / buffer dolumu sırasında normal waiting/stalled eventi gelir — müdahale etme
+        if (!state.player.streamStarted) return;
         clearTimeout(stallTimer);
 
         const resolution = state.player.resolutionInfo;
@@ -28615,7 +28644,7 @@ function resumeChannel(startTime) {
                             if (video.paused && !window._userPaused) video.play().catch(()=>{});
                         } catch(e) {}
                         window._recoveryLock = false;
-                    }, is4K ? 500 : 300);
+                    }, is4K ? 300 : 150);
                 } catch(e) { window._recoveryLock = false; }
             } else if (stallCount <= 8) {
                 // Kalite düşür + reload
@@ -28629,7 +28658,7 @@ function resumeChannel(startTime) {
                             if (video.paused && !window._userPaused) video.play().catch(()=>{});
                         } catch(e) {}
                         window._recoveryLock = false;
-                    }, 600);
+                    }, 300);
                 } catch(e) { window._recoveryLock = false; }
             } else {
                 // Kanalı yeniden başlat
@@ -28637,9 +28666,9 @@ function resumeChannel(startTime) {
                 window._recoveryLock = false;
                 showToast('Bağlantı yenileniyor...');
                 const curCh = state.filtered[state.player.index];
-                if (curCh) setTimeout(() => playChannel(curCh), 500);
+                if (curCh) setTimeout(() => playChannel(curCh), 300);
             }
-        }, is4K ? 800 : isHighRes ? 500 : 200); // MOBILE-FIX: hızlı recovery — ekran daha az donuk kalır
+        }, is4K ? 400 : isHighRes ? 250 : 100); // DONMA-FIX: daha hızlı stall tepkisi
     };
     video.onstalled = onStall;
     video.onwaiting = onStall;
@@ -28926,9 +28955,13 @@ function resumeChannel(startTime) {
                         };
                     }
 
-                    if (!state.player.streamStarted) {
+                    // DONMA-FIX: FRAG_BUFFERED'da play() sadece video gerçekten hazırsa çağır.
+                    // readyState < 3 ise video buffer'ı henüz dolmamış — play() çağrısı beklemede kalır,
+                    // onplaying zaten onPlayStart'ı çalıştıracak. Erken play() + onPlayStart() = donma.
+                    if (!state.player.streamStarted && video.readyState >= 3) {
                         video.play().catch(()=>{});
-                        onPlayStart();
+                        // onPlayStart buradan ÇAĞIRILMIYOR — onplaying event'i zaten tetikleyecek.
+                        // Böylece çift onPlayStart + zapping-ekranı flicker engellenir.
                     }
                 }
             } catch(e) {}
@@ -28945,6 +28978,9 @@ function resumeChannel(startTime) {
                     };
                 }
                 // DVR: canlı ve uzun seekable pencere → canlı uca atla
+                // NOT: MANIFEST_PARSED'daki 2sn gecikmeli DVR seek zaten hallediyor.
+                // Burası sadece MANIFEST_PARSED öncesinde LEVEL_LOADED gelirse yedek olarak çalışır.
+                // _dvrJumped = true ise hiç dokunma — çift seek = donma döngüsü.
                 const details = data.details;
                 if (details && details.live && !state.player._dvrJumped && state.player.isLiveStream !== false) {
                     const _sk2 = video.seekable;
@@ -28954,8 +28990,10 @@ function resumeChannel(startTime) {
                         if (_win > 30 && _edge - video.currentTime > 15) {
                             state.player._isDvr = true;
                             state.player._dvrJumped = true;
+                            window._seekInProgress = true; // seek sırasında stall recovery engelle
                             video.currentTime = Math.max(_edge - 5, _sk2.start(0));
                             try { hlsInst.startLoad(video.currentTime); } catch(e) {}
+                            setTimeout(() => { window._seekInProgress = false; }, 2000);
                         }
                     }
                 }
@@ -29829,6 +29867,11 @@ function closePlayer() {
     stopContinuousWatchingUpdate(); 
     stopResolutionMonitoring();
     if (typeof hideAllIndicators === 'function') hideAllIndicators();
+    // ODAK-FIX: player kapanınca tüm buton active/focus state'lerini temizle
+    ['btnQuality','btnSubtitle','btnPlayerList','btnLiveSync','btnHideLiveProgress','btnPlayerFav'].forEach(function(id) {
+        var b = document.getElementById(id);
+        if (b) { b.classList.remove('btn-active','remote-focused','focused'); }
+    });
     
     document.getElementById('playerView').style.display = 'none';
     // Canlı progress bar gizleme sınıfını temizle (sonraki açılışta state'e göre uygulansın)
@@ -33981,6 +34024,14 @@ function handleFavoriteChannelSelect(key) {
     }
 }
         function updateRemoteFocus() {
+    // ODAK-FIX: Zone sidebar/epgModal/searchModal iken skipCountdownOverlay gizle
+    var _skipZone = window.state && window.state.remote && window.state.remote.zone;
+    if (_skipZone && _skipZone !== 'player' && _skipZone !== 'playerTopBar' && _skipZone !== 'progressBar') {
+        var _skipOvUrf = document.getElementById('skipCountdownOverlay');
+        if (_skipOvUrf && _skipOvUrf.style.display !== 'none') {
+            _skipOvUrf.style.display = 'none';
+        }
+    }
     document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
     // Hero slider dpad-active temizle (heroSlider zone değilse)
     if (state.remote.zone !== 'heroSlider') {
@@ -38701,22 +38752,7 @@ document.addEventListener('umittv_channels_ready', function() {
         }
     });
 
-    // State remote zone vodModal olduğunda bu handler'ı kullan
-    const _origUpdateRemoteFocus = window.updateRemoteFocus;
-    if (_origUpdateRemoteFocus) {
-        window.updateRemoteFocus = function() {
-            _origUpdateRemoteFocus.apply(this, arguments);
-            
-
-            if (window.state && window.state.remote && window.state.remote.zone === 'vodModal') {
-                const modal = document.getElementById('vodModal');
-                if (modal && modal.style.display === 'flex') {
-                    
-
-                }
-            }
-        };
-    }
+    // vodModal updateRemoteFocus wrap → boştu, TVBOX_PERF_UNIFIED'a gerek yok
 
 })(); // end patchVodModalDpad
 
@@ -41860,19 +41896,7 @@ if (playerContainer) {
 
 }
 
-const _origUpdateRemoteFocus = window.updateRemoteFocus;
-if (_origUpdateRemoteFocus) {
-    window.updateRemoteFocus = function() {
-        const video = document.getElementById('videoPlayer');
-        const wasPlaying = video && !video.paused;
-        
-        _origUpdateRemoteFocus.apply(this, arguments);
-        
-        if (wasPlaying && video && video.paused) {
-            setTimeout(() => video.play().catch(() => {}), 100);
-        }
-    };
-}
+// video-paused guard → TVBOX_PERF_UNIFIED bloğuna taşındı
 
 })();
 </script>
@@ -42199,100 +42223,170 @@ window.addEventListener('error', function(e) {
 </script>
 
 <script>
-(function TVBOX_PERF_V5() {
+// ═══ TVBox Performans Bloğu — TEK BLOK (TVBOX_PERF_V5 + Kumanda v3 birleşik) ═══
+// Önceki 3 ayrı updateRemoteFocus wrap zinciri TEMİZLENDİ.
+// DOMTokenList hook KALDIRILDI (her classList işleminde çalışıyordu, çok ağır).
+// updateRemoteFocus: video-paused guard + odak kalıntı temizliği tek yerden.
+(function TVBOX_PERF_UNIFIED() {
 'use strict';
 
- 
-var _lastKeyTime  = 0;
-var _enterLock    = false;
-var _ARROW_GAP    = 80;   // ms — ok tuşu tekrar engeli
-var _ENTER_GAP    = 250;  // ms — enter/ok çift tetik engeli
+// ── 0. Native referansları en başta al ──
+var _nativeQSA = document.querySelectorAll.bind(document);
 
+// ── 1. CSS: transition'ları kapat, contain ekle ──
+(function() {
+    var s = document.createElement('style');
+    s.id = 'tvbox-perf-unified';
+    s.textContent =
+        ':root{--transition-fast:0s !important}' +
+        '.channel-card{contain:layout style paint !important}' +
+        '.channel-card.remote-focused{box-shadow:inset 0 0 0 3px var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important}' +
+        'body.streaming-mode #channelsGrid{pointer-events:none !important;content-visibility:hidden !important}' +
+        'body.streaming-mode #__UMD_TVX_DOCK{display:none !important}' +
+        '#mainHeader{contain:layout style paint !important}' +
+        '#sidebarChannelsList li{contain:layout style !important}' +
+        '#channelsViewport{scroll-behavior:auto !important;-webkit-overflow-scrolling:touch !important}' +
+        '.m3u-pill,.cat-pill{transition:background 0.1s,color 0.1s !important}' +
+        '.low-performance-mode .channel-card:hover,.fast-mode .channel-card:hover{box-shadow:none !important;transform:translateZ(0) !important}' +
+        '#playerView{contain:strict !important;transform:translateZ(0) !important}' +
+        '#videoPlayer{contain:strict !important;transform:translateZ(0) !important;backface-visibility:hidden !important}';
+    document.head.appendChild(s);
+})();
+
+// ── 2. Fast mode otomatik aç ──
+(function _autoFastMode() {
+    var st = window.state;
+    if (!st || !st.controlSettings) { setTimeout(_autoFastMode, 300); return; }
+    st.controlSettings.fastMode = true;
+    st.controlSettings.lowPerformanceMode = true;
+    document.body.classList.add('fast-mode', 'low-performance-mode');
+    try { localStorage.setItem('fastMode','true'); localStorage.setItem('lowPerformanceMode','true'); } catch(e) {}
+})();
+
+// ── 3. Ok/Enter tuşu debounce — TVBox hızlı tetik engeli ──
+var _lastKeyTime = 0;
+var _enterLock   = false;
 document.addEventListener('keydown', function(e) {
-    var key = e.key;
-    var now = Date.now();
-
-    
-
-    if (key === 'ArrowUp' || key === 'ArrowDown' ||
-        key === 'ArrowLeft' || key === 'ArrowRight') {
-        if (now - _lastKeyTime < _ARROW_GAP) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            return;
-        }
+    var k = e.key, now = Date.now();
+    if (k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight') {
+        if (now - _lastKeyTime < 80) { e.stopImmediatePropagation(); e.preventDefault(); return; }
         _lastKeyTime = now;
-        return; // orijinal handler'a devam et
-    }
-
-    // Enter/OK → debounce
-    if (key === 'Enter' || key === 'OK') {
-        if (_enterLock) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            return;
-        }
-        _enterLock = true;
-        setTimeout(function() { _enterLock = false; }, _ENTER_GAP);
-        return; // orijinal handler'a devam et
-    }
-}, true); // capture: diğer handler'lardan ÖNCE çalış
-
-/* ─────────────────────────────────────────────
-   2. updateRemoteFocus DOM CACHE
-   Orijinal fonksiyon her çağrıda tüm '.remote-focused'
-   elemanlarını querySelectorAll ile bulur.
-   Büyük kanallarda (500+ kart) bu 5-15ms alır.
-   Çözüm: son focused element'i cache'le, sadece
-   eski/yeni eleman değişince DOM'a dokun.
-   ───────────────────────────────────────────── */
-var _rfCache = null; // son remote-focused element referansı
-
-function _wrapUpdateRemoteFocus() {
-    if (typeof window.updateRemoteFocus !== 'function') {
-        setTimeout(_wrapUpdateRemoteFocus, 400);
         return;
     }
-    if (window._rfWrapped) return;
-    window._rfWrapped = true;
+    if (k==='Enter'||k==='OK') {
+        if (_enterLock) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+        _enterLock = true;
+        setTimeout(function(){ _enterLock = false; }, 250);
+    }
+}, true);
 
-    var _origRF = window.updateRemoteFocus;
+// ── 4. querySelectorAll intercept — channel-card cache + continue-card cache ──
+// NOT: remote-focused intercept KALMADI — DOMTokenList hook kaldırıldığında
+// Set güvenilmez hale gelir. Native QSA çok daha temiz.
+var _cardCache = null, _cardSel = '';
+var _contCache = null, _contDirty = true;
+
+document.querySelectorAll = function(sel) {
+    if (sel === '.channel-card:not(.continue-card-in-grid)' ||
+        sel === '.continue-card-in-grid, .channel-card.clear-card') {
+        if (_cardSel === sel && _cardCache !== null) return _cardCache;
+        _cardCache = _nativeQSA(sel); _cardSel = sel;
+        return _cardCache;
+    }
+    if (sel === '.continue-card') {
+        if (!_contDirty && _contCache !== null) return _contCache;
+        _contCache = _nativeQSA(sel); _contDirty = false;
+        return _contCache;
+    }
+    return _nativeQSA(sel);
+};
+
+// Cache invalidation — MutationObserver
+(function() {
+    function _watchGrid() {
+        var g = document.querySelector('.channels-grid');
+        if (g) { new MutationObserver(function(){ _cardCache=null; _cardSel=''; }).observe(g,{childList:true}); }
+        else { setTimeout(_watchGrid, 1200); }
+    }
+    function _watchCont() {
+        var c = document.getElementById('continueCardsContainer') ||
+                document.getElementById('continueWatchingContainer');
+        if (c) { new MutationObserver(function(){ _contDirty=true; _contCache=null; }).observe(c,{childList:true}); }
+        else { setTimeout(_watchCont, 1500); }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function(){ _watchGrid(); _watchCont(); });
+    } else {
+        setTimeout(function(){ _watchGrid(); _watchCont(); }, 0);
+    }
+})();
+
+// ── 5. scrollIntoView RAF dedup — frame başına tek reflow ──
+var _sivFrame = null;
+var _sivOrig  = Element.prototype.scrollIntoView;
+Element.prototype.scrollIntoView = function(opts) {
+    var zone = window.state && window.state.remote && window.state.remote.zone;
+    if (zone === 'channels' || zone === 'player' || zone === 'playerTopBar') {
+        if (_sivFrame) { _sivFrame.el = this; _sivFrame.opts = opts; return; }
+        var f = { el: this, opts: opts }; _sivFrame = f;
+        requestAnimationFrame(function(){ _sivFrame = null; try { _sivOrig.call(f.el, f.opts); } catch(e) {} });
+        return;
+    }
+    _sivOrig.call(this, opts);
+};
+
+// ── 6. showControls — zaten açıksa DOM'a dokunma ──
+var _origShowControls = window.showControls;
+window.showControls = function(duration) {
+    if (window._controlsHidden) return;
+    var pc = document.getElementById('playerContainer');
+    if (pc && pc.classList.contains('show-controls')) {
+        clearTimeout(window.controlsTimer);
+        clearTimeout(window.autoHideControlsTimer);
+        return;
+    }
+    if (_origShowControls) _origShowControls.apply(this, arguments);
+};
+
+// ── 7. updateRemoteFocus — TEK wrap, tüm guard'lar burada ──
+// Eski zincir: [orijinal] → [vodModal patch] → [video-paused guard] → [PERF_V5 cache] → [v3 temizlik]
+// Yeni: [orijinal] → bu tek wrap
+(function _wrapURF() {
+    if (typeof window.updateRemoteFocus !== 'function') { setTimeout(_wrapURF, 400); return; }
+    if (window._urfUnified) return;
+    window._urfUnified = true;
+
+    var _origURF = window.updateRemoteFocus;
     window.updateRemoteFocus = function() {
-        _origRF.apply(this, arguments);
-        
+        // a) Önceki odak kalıntılarını temizle (native QSA — güvenli)
+        var prev = _nativeQSA('.remote-focused');
+        for (var i = 0; i < prev.length; i++) prev[i].classList.remove('remote-focused');
 
-        var newEl = document.querySelector('.remote-focused');
-        if (newEl && newEl !== _rfCache) {
-            _rfCache = newEl;
+        // b) Video oynatma durumunu kaydet
+        var video = document.getElementById('videoPlayer');
+        var wasPlaying = video && !video.paused;
+
+        // c) Orijinali çağır
+        _origURF.apply(this, arguments);
+
+        // d) Orijinal yanlışlıkla videoyu durdurduysa kurtar
+        if (wasPlaying && video && video.paused) {
+            setTimeout(function(){ video.play().catch(function(){}); }, 100);
         }
     };
-}
-setTimeout(_wrapUpdateRemoteFocus, 600);
+})();
 
-
-/* ─────────────────────────────────────────────
-   4. KANAL GEÇİŞ HIZ PAKETİ
-   playChannel çağrıldığında:
-   - Önceki HLS instance'ı hızla durdur
-   - streaming-mode CSS'i anında kaldır (grid render hazır olsun)
-   - rAF ile kanal yüklemeyi bir frame geciktir (UI thread nefes alsın)
-   ───────────────────────────────────────────── */
-function _wrapPlayChannelFast() {
-    if (typeof window.playChannel !== 'function') {
-        setTimeout(_wrapPlayChannelFast, 700);
-        return;
-    }
-    if (window._pcFastWrapped) return;
-    window._pcFastWrapped = true;
-
+// ── 8. playChannel — HLS reset + rAF gecikmesi ──
+(function _wrapPC() {
+    if (typeof window.playChannel !== 'function') { setTimeout(_wrapPC, 700); return; }
+    if (window._pcUnified) return;
+    window._pcUnified = true;
     var _origPC = window.playChannel;
     window.playChannel = function(idx) {
-        // 1. Önceki stream hemen durdur ve HLS'i yok et
         try {
             var st = window.state;
             if (st && st.player && st.player.hls) {
                 st.player.hls.stopLoad();
-                // HLS config'i açılış değerlerine sıfırla — yeni kanal küçük buffer ile başlasın
                 try {
                     st.player.hls.config.maxBufferLength    = 20;
                     st.player.hls.config.maxMaxBufferLength = 40;
@@ -42300,305 +42394,20 @@ function _wrapPlayChannelFast() {
                 } catch(e2) {}
             }
         } catch(e) {}
-
-        // 2. streaming-mode geçici kaldır → grid responsive kalır
         document.body.classList.remove('streaming-mode');
-
-        // 3. Bir rAF bekle → layout baskısı azalsın → sonra çağır
-        requestAnimationFrame(function() {
-            _origPC.call(window, idx);
-        });
+        requestAnimationFrame(function(){ _origPC.call(window, idx); });
     };
-}
-setTimeout(_wrapPlayChannelFast, 800);
-
-/* ─────────────────────────────────────────────
-   5. SCROLL PERFORMANS — PASSIVE + THROTTLE
-   Bazı scroll listener'lar passive değil.
-   TVBox'ta scroll sırasında tuşlara tepki yok.
-   ───────────────────────────────────────────── */
-(function _fixScrollPerf() {
-    // channelsViewport scroll → throttle 50ms (zaten mevcut) kontrol et
-    var vp = document.getElementById('channelsViewport');
-    if (vp) {
-        vp.style.scrollBehavior = 'auto'; // smooth scroll TVBox'ta ağır
-        vp.style.webkitOverflowScrolling = 'touch';
-    }
 })();
 
- 
-(function _injectPerfCss() {
-    var s = document.createElement('style');
-    s.id = 'tvbox-perf-v5';
-    s.textContent = [
-         
-        ':root {',
-        '  --transition-fast: 0s !important;',   
-        '}',
-
-         
-        '.channel-card {',
-        '  contain: layout style paint !important;',
-        '}',
-
-         
-        '.channel-card.remote-focused {',
-        '  box-shadow: inset 0 0 0 3px var(--accent-primary, #FFD700) !important;',
-        '  transition: none !important;',
-        '  will-change: auto !important;',
-        '}',
-
-         
-        '.channel-card:not(.remote-focused):not(:focus-visible) {',
-        '  contain: layout style paint !important;',
-        '}',
-
-         
-        'body.streaming-mode #channelsGrid {',
-        '  pointer-events: none !important;',
-        '  content-visibility: hidden !important;',
-        '}',
-        'body.streaming-mode #__UMD_TVX_DOCK {',
-        '  display: none !important;',
-        '}',
-
-         
-        '#mainHeader {',
-        '  contain: layout style paint !important;',
-        '}',
-
-         
-        '#sidebarChannelsList li {',
-        '  contain: layout style !important;',
-        '}',
-
-         
-        '#channelsViewport {',
-        '  scroll-behavior: auto !important;',
-        '  -webkit-overflow-scrolling: touch !important;',
-        '}',
-
-         
-        '.m3u-pill, .cat-pill {',
-        '  transition: background 0.1s, color 0.1s !important;',
-        '}',
-
-         
-        '.low-performance-mode .channel-card:hover,',
-        '.fast-mode .channel-card:hover {',
-        '  box-shadow: none !important;',
-        '  transform: translateZ(0) !important;',
-        '}',
-
-         
-        '#playerView {',
-        '  contain: strict !important;',
-        '  transform: translateZ(0) !important;',
-        '}',
-        '#videoPlayer {',
-        '  contain: strict !important;',
-        '  transform: translateZ(0) !important;',
-        '  backface-visibility: hidden !important;',
-        '}'
-    ].join('\n');
-    document.head.appendChild(s);
-})();
-
- 
-function _autoFastMode() {
-    var st = window.state;
-    if (!st || !st.controlSettings) {
-        setTimeout(_autoFastMode, 300);
-        return;
-    }
-    
-
-    var isTV = true; // ULTRA-FAST: herkes fast-mode (TV veya tarayıcı fark etmez)
-    if (isTV) {
-        st.controlSettings.fastMode = true;
-        st.controlSettings.lowPerformanceMode = true;
-        document.body.classList.add('fast-mode', 'low-performance-mode');
-        
-
-        try {
-            localStorage.setItem('fastMode', 'true');
-            localStorage.setItem('lowPerformanceMode', 'true');
-        } catch(e) {}
-    }
-}
-setTimeout(_autoFastMode, 0);
-
- 
+// ── 9. TMDB cache temizle (5dk'da bir, max 200 entry) ──
 setInterval(function() {
     try {
-        if (window._tmdbCache) {
-            var keys = Object.keys(window._tmdbCache);
-            if (keys.length > 200) {
-                
-
-                keys.slice(0, 100).forEach(function(k) {
-                    delete window._tmdbCache[k];
-                });
-            }
-        }
+        var c = window._tmdbCache;
+        if (c) { var k = Object.keys(c); if (k.length > 200) k.slice(0, 100).forEach(function(x){ delete c[x]; }); }
     } catch(e) {}
 }, 300000);
 
-})();
-</script>
-
-
-
-<script>
-// ═══ TVBox Kumanda Hızlanma Patchi v3 ═══
-(function() {
-'use strict';
-
-// Native querySelectorAll referansını HER ŞEYDEN ÖNCE al
-// Böylece aşağıdaki tüm cache'ler gerçek DOM'u sorgular, wrap'lı versiyonu değil
-var _nativeQSA = document.querySelectorAll.bind(document);
-
-// ── 1. showControls: zaten açıksa DOM'a dokunma ──
-var _origShowControls = window.showControls;
-window.showControls = function(duration) {
-    var pc = document.getElementById('playerContainer');
-    if (window._controlsHidden) return;
-    if (pc && pc.classList.contains('show-controls')) {
-        if (typeof _scheduleHide === 'function') _scheduleHide();
-        else { clearTimeout(window.controlsTimer); clearTimeout(window.autoHideControlsTimer); }
-        return;
-    }
-    if (_origShowControls) _origShowControls.apply(this, arguments);
-};
-
-// ── 2. classList.add/remove hook — remote-focused elemanları Set'te tut ──
-// Amaç: updateRemoteFocus her çağrısında querySelectorAll('.remote-focused')
-// ile tüm DOM'u taramak yerine O(1) Set lookup yapabilmek.
-var _focusedSet = new Set();
-var _clAdd = DOMTokenList.prototype.add;
-var _clRem = DOMTokenList.prototype.remove;
-
-DOMTokenList.prototype.add = function() {
-    _clAdd.apply(this, arguments);
-    for (var i = 0; i < arguments.length; i++) {
-        if (arguments[i] === 'remote-focused') {
-            var el = this.ownerElement; // standart W3C API, Chrome 50+
-            if (el) _focusedSet.add(el);
-        }
-    }
-};
-DOMTokenList.prototype.remove = function() {
-    _clRem.apply(this, arguments);
-    for (var i = 0; i < arguments.length; i++) {
-        if (arguments[i] === 'remote-focused') {
-            var el2 = this.ownerElement;
-            if (el2) _focusedSet.delete(el2);
-        }
-    }
-};
-
-// ── 3. document.querySelectorAll intercept — tek noktadan yönet ──
-// Tüm intercept tek bir wrap içinde: sıra önemli değil, native her zaman _nativeQSA
-var _cardCache  = null; // channel-card sonuç cache
-var _cardSel    = '';   // hangi selektör için cache
-var _contCache  = null; // continue-card cache
-var _contDirty  = true;
-
-document.querySelectorAll = function(sel) {
-    // a) remote-focused: Set'ten dön, DOM tarama yok
-    if (sel === '.remote-focused') {
-        _focusedSet.forEach(function(el) {
-            if (!el.isConnected) _focusedSet.delete(el);
-        });
-        var arr = Array.from(_focusedSet);
-        arr.forEach = Array.prototype.forEach.bind(arr);
-        return arr;
-    }
-    // b) channel-card seçicileri: cache
-    if (sel === '.channel-card:not(.continue-card-in-grid)' ||
-        sel === '.continue-card-in-grid, .channel-card.clear-card') {
-        if (_cardSel === sel && _cardCache !== null) return _cardCache;
-        _cardCache = _nativeQSA(sel);
-        _cardSel   = sel;
-        return _cardCache;
-    }
-    // c) continue-card: cache
-    if (sel === '.continue-card') {
-        if (!_contDirty && _contCache !== null) return _contCache;
-        _contCache = _nativeQSA(sel);
-        _contDirty = false;
-        return _contCache;
-    }
-    // diğer tüm seçiciler: native
-    return _nativeQSA(sel);
-};
-
-// ── 4. Cache invalidation — MutationObserver ──
-(function() {
-    // channels-grid: card cache sıfırla
-    function _watchGrid() {
-        var grid = document.querySelector('.channels-grid');
-        if (grid) {
-            new MutationObserver(function() { _cardCache = null; _cardSel = ''; })
-                .observe(grid, { childList: true });
-        } else { setTimeout(_watchGrid, 1200); }
-    }
-    // continue container: cont cache sıfırla
-    function _watchCont() {
-        var c = document.getElementById('continueCardsContainer') ||
-                document.getElementById('continueWatchingContainer');
-        if (c) {
-            new MutationObserver(function() { _contDirty = true; _contCache = null; })
-                .observe(c, { childList: true });
-        } else { setTimeout(_watchCont, 1500); }
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            _watchGrid(); _watchCont();
-        });
-    } else {
-        setTimeout(function() { _watchGrid(); _watchCont(); }, 0);
-    }
-})();
-
-// ── 5. scrollIntoView RAF dedup — frame başına tek layout flush ──
-// Channels/player zone'da her ok tuşu → scrollIntoView → forced reflow.
-// Çözüm: RAF bekleniyorsa hedefi güncelle, yeni RAF açma.
-var _sivFrame = null;
-var _sivOrig  = Element.prototype.scrollIntoView;
-Element.prototype.scrollIntoView = function(opts) {
-    var zone = window.state && window.state.remote && window.state.remote.zone;
-    if (zone === 'channels' || zone === 'player' || zone === 'playerTopBar') {
-        if (_sivFrame) {
-            _sivFrame.el = this; _sivFrame.opts = opts;
-            return;
-        }
-        var f = { el: this, opts: opts };
-        _sivFrame = f;
-        requestAnimationFrame(function() {
-            _sivFrame = null;
-            try { _sivOrig.call(f.el, f.opts); } catch(e) {}
-        });
-        return;
-    }
-    _sivOrig.call(this, opts);
-};
-
-// ── 6. updateRemoteFocus throttle — player/channels 80ms ──
-var _rfThrottle = null;
-var _urfOrig = window.updateRemoteFocus;
-if (typeof _urfOrig === 'function') {
-    window.updateRemoteFocus = function() {
-        var zone = window.state && window.state.remote && window.state.remote.zone;
-        if (zone === 'player' || zone === 'playerTopBar' || zone === 'channels') {
-            if (_rfThrottle) return;
-            _rfThrottle = setTimeout(function() { _rfThrottle = null; }, 80);
-        }
-        _urfOrig.apply(this, arguments);
-    };
-}
-
-})();
+})(); // TVBOX_PERF_UNIFIED
 </script>
 
 <script>
@@ -42616,7 +42425,7 @@ setInterval(function() {
         var v = document.getElementById('videoPlayer');
         var hls = st && st.player && st.player.hls;
         if (!v || !hls) return;
-        if (!st.player.streamStarted) { _wdLastTime = -1; _wdTicks = 0; return; }
+        if (!st.player.streamStarted) { _wdLastTime = -1; _wdTicks = 0; _wdRecoverAttempts = 0; return; }
         if (window._userPaused || v.paused || window._seekInProgress) {
             _wdLastTime = v.currentTime; _wdTicks = 0; _wdRecoverAttempts = 0; return;
         }
@@ -42624,11 +42433,12 @@ setInterval(function() {
         if (hls.currentLevel !== hls.nextLevel && hls.nextLevel !== -1) {
             _wdLastTime = v.currentTime; _wdTicks = 0; return;
         }
-        if (v.readyState < 3) return;
+        // readyState < 3: video henüz buffer doldurmamış — tik sayma, bekle
+        if (v.readyState < 3) { _wdLastTime = v.currentTime; return; }
         var ct = v.currentTime;
         if (ct === _wdLastTime) {
             _wdTicks++;
-            if (_wdTicks >= 5 && !_wdBusy) { // ~4 saniye donma (800ms * 5)
+            if (_wdTicks >= 4 && !_wdBusy) { // ~3.2sn donma (800ms * 4) — DVR seek sonrası yanlış tetiklenme önlendi
                 _wdBusy = true; _wdTicks = 0;
                 _wdRecoverAttempts++;
                 var buf = v.buffered;

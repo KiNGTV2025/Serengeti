@@ -19480,12 +19480,23 @@ function openSidebar() {
     }
 
     setTimeout(() => {
-        sidebar.classList.add('open');
-        populateSidebar();
-        showSidebarLoading(false);
-        _updateEpgBadge();
+        // Sidebar açıkken HLS buffer yükünü hafiflet (video donma önleme)
+        try {
+            if (state.player.hls && !state.player.hls._destroyed) {
+                state.player.hls.config.maxBufferLength = 8;
+                state.player.hls.config.maxMaxBufferLength = 15;
+            }
+        } catch(e) {}
 
-        setTimeout(() => { updateSidebarFocus(); }, 50);
+        sidebar.classList.add('open');
+        // Render'ı 120ms geciktir — CSS animasyonu önce tamamlansın, layout thrash azalır
+        setTimeout(() => {
+            populateSidebar();
+            showSidebarLoading(false);
+            _updateEpgBadge();
+        }, 120);
+
+        setTimeout(() => { updateSidebarFocus(); }, 180);
 
         // EPG yüklüyse hemen göster
         const epgReady = state.epgData && Object.keys(state.epgData).length > 0;
@@ -19529,6 +19540,16 @@ function closeSidebar() {
     
     // Sidebar'ı kapat
     sidebar.classList.remove('open');
+
+    // HLS buffer'ı geri yükle (sidebar açıkken düşürülmüştü)
+    setTimeout(() => {
+        try {
+            if (state.player.hls && !state.player.hls._destroyed) {
+                state.player.hls.config.maxBufferLength = 20;
+                state.player.hls.config.maxMaxBufferLength = 40;
+            }
+        } catch(e) {}
+    }, 400);
     
     // Kısa gecikme sonrası overlay'ı gizle
     setTimeout(() => {
@@ -19848,7 +19869,7 @@ function renderSidebarChannels() {
     if (channels.length === 0) return;
 
     const currentUrl = state.player.url;
-    const PAGE_SIZE = 40; // Daha küçük batch → daha az jank
+    const PAGE_SIZE = 20; // 40→20: her batch daha az DOM node, video oynarken smoother
 
     // EPG fonksiyonlarını bir kez al
     const _getEPG = window.getEPGInfo || (typeof getEPGInfo === 'function' ? getEPGInfo : null);
@@ -19960,8 +19981,9 @@ function renderSidebarChannels() {
         container.appendChild(frag);
 
         if (endIdx < total) {
-            // setTimeout ile render — rAF yerine daha az agresif, UI nefes alabilsin
-            setTimeout(() => renderPage(endIdx, total), 20);
+            // Video oynarken render'ı daha yavaş yap — main thread baskısı azalır
+            const _delay = state.player.streamStarted ? 80 : 25;
+            setTimeout(() => renderPage(endIdx, total), _delay);
         } else {
             loadingEl.style.display = 'none';
             scrollToSelectedChannel();
@@ -28188,6 +28210,8 @@ function playChannelByName(name) {
     state.player.vodPlaying = !ch.isLive || ch.isVod;
     state.player.audioReady = false;
     state._nativeProxyTried = false; // Her yeni kanalda sıfırla
+    window._proxyFallbackTriggered = false; // Proxy fallback flag sıfırla
+    window._proxy2FallbackTriggered = false;
     state.currentChannel = ch; // hızlı sıralama için
 
     pushHistoryState('player', { 
@@ -28380,6 +28404,45 @@ function resumeChannel(startTime) {
                 }
                 remaining--;
                 if (skipNum) skipNum.textContent = Math.max(0, remaining);
+
+                // 30sn kaldığında ve hâlâ açılmadıysa proxy ile yeniden dene
+                if (remaining === 30 && !state.player.streamStarted && !window._proxyFallbackTriggered) {
+                    window._proxyFallbackTriggered = true;
+                    showToast('😄 Proxy ile yeniden deneniyor...');
+                    const _fb = ch.url;
+                    const _fbLower = (_fb || '').toLowerCase();
+                    const _isKool = _fb && (_fb.includes('kool.to') || _fb.includes('vavoo.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
+                    if (!_isKool && _fb) {
+                        // Mevcut HLS'i durdur, proxy ile yeniden başlat
+                        try {
+                            if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
+                            video.pause();
+                            video.removeAttribute('src');
+                        } catch(e) {}
+                        const _PROXY_FB = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+                        const _STREAM_PROXY_FB = 'https://umittv.sadecenjoy.workers.dev/?url=';
+                        // Önce STREAM_PROXY dene (referer sorununu çözer), sonra PROXY
+                        const _proxyUrl = _STREAM_PROXY_FB + encodeURIComponent(_fb);
+                        const _hlsFb = new Hls(HLS_CONFIG);
+                        state.player.hls = _hlsFb;
+                        _hlsFb.on(Hls.Events.ERROR, (ev, data) => {
+                            if (data.fatal && !window._proxy2FallbackTriggered) {
+                                window._proxy2FallbackTriggered = true;
+                                _hlsFb.destroy();
+                                state.player.hls = null;
+                                const _hlsFb2 = new Hls(HLS_CONFIG);
+                                state.player.hls = _hlsFb2;
+                                _hlsFb2.loadSource(_PROXY_FB + encodeURIComponent(_fb));
+                                _hlsFb2.attachMedia(video);
+                                video.play().catch(()=>{});
+                            }
+                        });
+                        _hlsFb.loadSource(_proxyUrl);
+                        _hlsFb.attachMedia(video);
+                        video.play().catch(()=>{});
+                    }
+                }
+
                 if (remaining <= 0) {
                     clearInterval(window._skipCountdownInterval);
                     window._skipCountdownInterval = null;
@@ -28507,7 +28570,18 @@ function resumeChannel(startTime) {
             const _poPS = document.getElementById('pauseCenterLogo');
             if (_poPS) _poPS.style.display = 'none';
         }
-        showControls(4000);
+        // VOD/dizi açılırken _controlsHidden'ı sıfırla — her yeni film taze başlasın
+        // Canlı yayın kanal değişiminde: kullanıcı gizlemişse gizli kalsın
+        if (!state.player.isLiveStream && window._controlsHidden) {
+            window._controlsHidden = false;
+            const _hcI = document.getElementById('hideControlsIcon');
+            const _hcL = document.getElementById('hideControlsLabel');
+            if (_hcI) _hcI.textContent = 'visibility_off';
+            if (_hcL) _hcL.textContent = 'Gizle';
+        }
+        if (!window._controlsHidden) {
+            showControls(4000);
+        }
         startResolutionMonitoring();
 
         // EPG butonu: yayın başladığında state'e göre göster/gizle
@@ -28516,16 +28590,16 @@ function resumeChannel(startTime) {
             _epgBtnOS.style.display = state.player.isLiveStream ? 'flex' : 'none';
         }
 
-        // CANLI YAYINDA PROGRESS BAR GİZLE BUTONU: sadece canlı yayında göster
+        // PROGRESS BAR GİZLE BUTONU: sadece canlı yayında göster
         const _progBtn = document.getElementById('btnHideLiveProgress');
         if (_progBtn) {
             _progBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
         }
 
-        // KONTROL GİZLE BUTONU: sadece canlı yayında göster
+        // KONTROL GİZLE BUTONU: canlı yayın VE VOD'da göster
         const _hideCtrlBtn = document.getElementById('btnHideControls');
         if (_hideCtrlBtn) {
-            _hideCtrlBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
+            _hideCtrlBtn.style.display = 'flex'; // her zaman göster
         }
         // Canlı yayında progress bar gizleme durumunu uygula
         if (state.player.isLiveStream) {
@@ -29063,14 +29137,14 @@ function resumeChannel(startTime) {
                 showToast('⚠️ Native bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsStreamProxy && streamUrl === rawUrl) {
-                showToast('😄 Stream proxy deneniyor...');
+                showToast('🔄 Proxy ile yeniden deneniyor...');
                 startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else if (needsStreamProxy && streamUrl === STREAM_PROXY + encodeURIComponent(rawUrl)) {
                 startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
             } else if (needsStreamProxy && streamUrl === STREAM_PROXY2 + encodeURIComponent(rawUrl)) {
                 startHls(STREAM_PROXY3 + encodeURIComponent(rawUrl));
             } else if (!needsDirect && !needsStreamProxy && !isHighResDirect && streamUrl === rawUrl) {
-                showToast('😄 Proxy 1 deneniyor...');
+                showToast('🔄 Proxy ile yeniden deneniyor...');
                 startHls(PROXY + encodeURIComponent(rawUrl));
             } else if (!needsDirect && streamUrl === PROXY + encodeURIComponent(rawUrl)) {
                 showToast('😄 Proxy 2 deneniyor...');
@@ -29173,9 +29247,8 @@ function resumeChannel(startTime) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);
         } else if (needsStreamProxy) {
-            // ── Referer/Origin korumalı veya redirect URL → STREAM_PROXY ile direkt başlat ──
-            showToast('🔒 Korumalı yayın, proxy ile açılıyor...');
-            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+            // Referer korumalı → önce direkt dene, açılmazsa 30sn'de proxy devreye girer
+            startHls(rawUrl);
         } else if (isHighResDirect) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);

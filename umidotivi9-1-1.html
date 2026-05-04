@@ -11290,41 +11290,42 @@ const HLS_CONFIG = {
     enableSRT: true,
 
     lowLatencyMode: false,
-    liveSyncDurationCount: 3,             // 4→3: live edge'e daha yakın — anlık yayın
-    liveMaxLatencyDurationCount: Infinity, // otomatik sync — kesinti önle
+    liveSyncDurationCount: 3,             // live edge'e yakın — buffer için yeterli mesafe
+    liveMaxLatencyDurationCount: Infinity, // HLS.js otomatik seekToLiveEdge KAPALI — ~60sn donma önlendi
 
-    // Buffer: TVBox açılış-önce — küçük buffer = hemen başlar, donmaz
+    // ── BUFFER: TVBox için dengeli tampon — çok büyük buffer = RAM basıncı = donma ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 20,                 // 6→20sn: yeterli buffer — 10sn donma önlenir
-    maxMaxBufferLength: 40,              // 12→40sn: üst limit artırıldı
-    maxBufferSize: 30 * 1024 * 1024,    // 12→30MB
-    maxBufferHole: 0.5,                  // boşlukları atla
-    maxLoadingDelay: 2,                  // 2sn — segmenti bekleme, geç
+    maxBufferLength: 20,                 // 30→20sn: TVBox'ta 30sn buffer RAM baskısı yapıyor
+    maxMaxBufferLength: 40,              // 60→40sn: üst sınır da indirildi
+    maxBufferSize: 25 * 1024 * 1024,    // 40→25MB: TVBox sınırlı RAM, GC baskısı azaltıldı
+    maxBufferHole: 1.0,                  // 0.5→1.0: segment boşluğu daha geniş tolere et
+    maxLoadingDelay: 8,                  // 2→8sn: yavaş internette segment yüklenmesini bekle, atlatma
 
-    // Timeout & retry — hızlı ve akıllı
-    fragLoadingMaxRetry: 8,              // MOBILE-FIX: 6→8
-    fragLoadingRetryDelay: 50,           // ULTRA-FAST: hızlı retry
-    fragLoadingMaxRetryTimeout: 3000,
-    fragLoadingTimeOut: 10000,           // MOBILE-FIX: 8→10sn ağ yavaşlığına tolerans
-    manifestLoadingMaxRetry: 4,
-    manifestLoadingTimeOut: 6000,
-    levelLoadingMaxRetry: 4,
-    levelLoadingTimeOut: 6000,
-    nudgeMaxRetry: 8,                    // MOBILE-FIX: 5→8 daha ısrarcı kurtarma
-    nudgeOffset: 0.3,
-    maxFragLookUpTolerance: 0.25,
+    // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
+    fragLoadingMaxRetry: 12,             // 8→12: segment yükleme denemesi artırıldı
+    fragLoadingRetryDelay: 200,          // 50→200ms: hızlı retry zayıf internette faydasız
+    fragLoadingMaxRetryTimeout: 8000,    // 3→8sn: her retry arasında maksimum bekleme
+    fragLoadingTimeOut: 20000,           // 10→20sn: zayıf internette segment geç gelebilir
+    manifestLoadingMaxRetry: 6,          // 4→6: manifest yeniden deneme
+    manifestLoadingTimeOut: 15000,       // 6→15sn: manifest yükleme timeout
+    levelLoadingMaxRetry: 6,             // 4→6
+    levelLoadingTimeOut: 15000,          // 6→15sn
+    nudgeMaxRetry: 10,                   // 8→10: buffer boşluğu atlatma denemesi
+    nudgeOffset: 0.5,                    // 0.3→0.5: daha büyük sıçrama — boşluğu kesin geç
+    maxFragLookUpTolerance: 0.5,         // 0.25→0.5: segment arama toleransı artırıldı
 
-    abrEwmaDefaultEstimate: 1500000,     // 1.5Mbps başlangıç — düşük tahmin, hızlı açılır, sonra yükselir
-    abrEwmaFastLive: 3,                  // ani düşüşlere makul tepki
-    abrEwmaSlowLive: 9,                  // kalite değişimi yavaş, stabil
-    abrBandWidthFactor: 0.75,            // bant genişliğinin %75'ini kullan — güvenli marj
-    abrBandWidthUpFactor: 0.55,          // kalite artışı temkinli — açılışta kalite atlama yok
+    // ── ABR: Zayıf internette düşük kaliteden başla, yavaş çık ──
+    abrEwmaDefaultEstimate: 400000,      // 800Kbps→400Kbps: çok düşük tahminle başla = en düşük kalite seçilir
+    abrEwmaFastLive: 2,                  // 3→2: ani bant düşüşüne HIZLI tepki ver → hemen kalite düşür
+    abrEwmaSlowLive: 15,                 // 9→15: kalite artışı çok yavaş — gereksiz kalite atlaması yok
+    abrBandWidthFactor: 0.60,            // 0.70→0.60: bant genişliğinin sadece %60'ını kullan — güvenli marj
+    abrBandWidthUpFactor: 0.35,          // 0.50→0.35: kalite artışı çok temkinli — düşme riski azalır
 
-    startLevel: -1,                      // SEAMLESS-FIX: 0→-1 ABR baştan devralır — düşük→yüksek geçiş yok
+    startLevel: 0,                       // -1→0: her zaman EN DÜŞÜK kaliteden başla — buffer hızlı dolar
     autoStartLoad: true,
-    startFragPrefetch: true,             // ilk segment önceden yükle → hızlı başlangıç
+    startFragPrefetch: true,             // ilk segment önceden yükle
     capLevelToPlayerSize: false,
-    appendErrorMaxRetry: 12,             // 10→12: media append hatalarında daha çok dene
+    appendErrorMaxRetry: 15,             // 12→15: media append hatalarında daha çok dene
     enableSoftwareAES: true,
 
     xhrSetup: function(xhr, url) {
@@ -12295,12 +12296,16 @@ function startPeriodicBackup() {
 function backupToLocalStorage() {
     try {
         
+        // Canlı yayında ağır JSON serialize işlemlerini atla — donma önlemi
+        const _isLive = window.state && window.state.player && window.state.player.isLiveStream;
 
         localStorage.setItem('favs', JSON.stringify(Array.from(state.favs)));
         
         
 
-        localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+        if (!_isLive) {
+            localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+        }
         
         
 
@@ -12312,16 +12317,18 @@ function backupToLocalStorage() {
         localStorage.setItem('gridScale', state.currentGridScale.toString());
         
         
+        // Ağır cache'ler: sadece canlı yayın yokken serialize et
+        if (!_isLive) {
+            localStorage.setItem('series_cache', JSON.stringify(state.series.seriesCache));
+            
+            
 
-        localStorage.setItem('series_cache', JSON.stringify(state.series.seriesCache));
-        
-        
-
-        const limitedVodCache = {};
-        Object.keys(state.vodCache).slice(0, 50).forEach(key => {
-            limitedVodCache[key] = state.vodCache[key];
-        });
-        localStorage.setItem('vod_cache', JSON.stringify(limitedVodCache));
+            const limitedVodCache = {};
+            Object.keys(state.vodCache).slice(0, 50).forEach(key => {
+                limitedVodCache[key] = state.vodCache[key];
+            });
+            localStorage.setItem('vod_cache', JSON.stringify(limitedVodCache));
+        }
         
         
 
@@ -14312,23 +14319,30 @@ function applyTVBoxOptimizations() {
         return _origSetInterval.apply(window, [fn, ms].concat(args));
     };
 
-    // F) localStorage yazma debounce — TVBox'ta eMMC yavaş
+    // F) localStorage yazma debounce — TVBox'ta eMMC yavaş, canlı yayında bloke önleme
     var _origLsSet = Storage.prototype.setItem;
     var _lsQueue = {};
     var _lsTimer = null;
+    // Canlı yayında yazımı engellenen ağır key'ler (main thread'i bloke eder)
+    var _lsLiveBlockList = ['continueWatching','series_cache','vod_cache','favs'];
     Storage.prototype.setItem = function(key, value) {
         // Kritik key'ler anında yaz
         var critical = ['king_tv_settings','loginToken','loginUser','playlist_url'];
         if (critical.indexOf(key) > -1) { return _origLsSet.call(this, key, value); }
+        // Canlı yayında ağır JSON key'lerini tamamen atla
+        var isLive = window.state && window.state.player && window.state.player.isLiveStream;
+        if (isLive && _lsLiveBlockList.indexOf(key) > -1) { return; }
         _lsQueue[key] = value;
         if (!_lsTimer) {
             _lsTimer = setTimeout(function() {
                 _lsTimer = null;
+                var _isLiveNow = window.state && window.state.player && window.state.player.isLiveStream;
                 for (var k in _lsQueue) {
+                    if (_isLiveNow && _lsLiveBlockList.indexOf(k) > -1) continue;
                     try { _origLsSet.call(localStorage, k, _lsQueue[k]); } catch(e) {}
                 }
                 _lsQueue = {};
-            }, 1000); // 1sn debounce
+            }, 2000); // 1sn→2sn debounce
         }
     };
 
@@ -19371,6 +19385,13 @@ window.testSettings = {
                 if (window._controlsHidden) return;
                 playerContainer.classList.add('show-controls');
                 state.remote.playerControlsVisible = true;
+                // Player view açıkken zone'u player'a sabitle (seek çakışmasını önle)
+                const _pv = document.getElementById('playerView');
+                if (_pv && _pv.style.display === 'flex') {
+                    if (state.remote.zone !== 'player' && state.remote.zone !== 'progressBar' && state.remote.zone !== 'playerTopBar') {
+                        state.remote.zone = 'player';
+                    }
+                }
                 // Canlı yayında: her showControls çağrısı timer'ı 3sn'ye sıfırlar
                 _scheduleHide();
             });
@@ -19403,6 +19424,8 @@ window.testSettings = {
                 if (label) label.textContent = 'Gizle';
                 playerContainer.classList.add('show-controls');
                 state.remote.playerControlsVisible = true;
+                // Zone'u player'a sabitle — seek çakışmasını önle
+                state.remote.zone = 'player';
                 updateRemoteFocus();
                 showToast('👁 Kontroller görünür');
                 playKeySound('confirm');
@@ -28477,6 +28500,7 @@ function resumeChannel(startTime) {
 
         hideZappingScreen(); 
         state.player.streamStarted = true; 
+        state.player._streamStartTime = Date.now(); // stall grace period için
         state.player.audioReady = true;
         // Pause overlay: sadece kullanıcı pause yapmadıysa gizle
         if (!window._userPaused) {
@@ -28586,10 +28610,12 @@ function resumeChannel(startTime) {
     let lastStallRecoveryTime = 0;
     const onStall = () => {
         if (window._userPaused || window._seekInProgress) return;
-        if (window._recoveryLock) return; // başka bir recovery aktif
-        // streamStarted olmadan (açılış sırasında) stall recovery çalıştırma
-        // DVR seek / buffer dolumu sırasında normal waiting/stalled eventi gelir — müdahale etme
+        if (window._recoveryLock) return;
         if (!state.player.streamStarted) return;
+        // Yeni başlayan yayında (ilk 8sn) recovery yapma — buffer henüz dolmuyor
+        // Bu 4sn'deki "waiting" donmasının asıl nedeni: buffer dolarken müdahale ediliyor
+        const _streamAge = state.player._streamStartTime ? (Date.now() - state.player._streamStartTime) : 99999;
+        if (_streamAge < 8000) return; // ilk 8sn tamamen bekle
         clearTimeout(stallTimer);
 
         const resolution = state.player.resolutionInfo;
@@ -28610,7 +28636,7 @@ function resumeChannel(startTime) {
         try {
             const buf = video.buffered;
             const bufAhead = buf && buf.length > 0 ? buf.end(buf.length - 1) - video.currentTime : 0;
-            if (bufAhead > 15) {
+            if (bufAhead > 3) { // buffer 3sn+ varsa play() yeterli, müdahale etme
                 if (video.paused && !window._userPaused) video.play().catch(()=>{});
                 return;
             }
@@ -28618,7 +28644,7 @@ function resumeChannel(startTime) {
 
         // Çok sık recovery önle
         const now = Date.now();
-        const minGap = is4K ? 1200 : isHighRes ? 800 : 400; // MOBILE-FIX: daha hızlı re-recovery
+        const minGap = is4K ? 3000 : isHighRes ? 2000 : 1200; // artırıldı: erken recovery = daha fazla donma
         if (now - lastStallRecoveryTime < minGap) return;
 
         stallTimer = setTimeout(() => {
@@ -28631,23 +28657,15 @@ function resumeChannel(startTime) {
 
             const ct = video.currentTime;
 
-            if (stallCount <= 4) {
-                // stopLoad/startLoad
+            if (stallCount <= 2) {
+                // Sadece play() dene — ağ geçici olarak titredi
                 try {
-                    hls.stopLoad();
-                    setTimeout(() => {
-                        try {
-                            hls.startLoad(ct);
-                            if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                        } catch(e) {}
-                        window._recoveryLock = false;
-                    }, is4K ? 300 : 150);
+                    if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                    setTimeout(() => { window._recoveryLock = false; }, 500);
                 } catch(e) { window._recoveryLock = false; }
-            } else if (stallCount <= 8) {
-                // Kalite düşür + reload
+            } else if (stallCount <= 5) {
+                // stopLoad/startLoad — segment yeniden yükle
                 try {
-                    const cur = hls.currentLevel;
-                    if (cur > 0) hls.nextLevel = Math.max(0, cur - 1);
                     hls.stopLoad();
                     setTimeout(() => {
                         try {
@@ -28655,7 +28673,20 @@ function resumeChannel(startTime) {
                             if (video.paused && !window._userPaused) video.play().catch(()=>{});
                         } catch(e) {}
                         window._recoveryLock = false;
-                    }, 300);
+                    }, 500);
+                } catch(e) { window._recoveryLock = false; }
+            } else if (stallCount <= 9) {
+                // Kaliteyi EN DÜŞÜĞE düşür — zayıf internet için kritik adım
+                try {
+                    hls.nextLevel = 0; // direkt en düşük seviye
+                    hls.stopLoad();
+                    setTimeout(() => {
+                        try {
+                            hls.startLoad(ct);
+                            if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                        } catch(e) {}
+                        window._recoveryLock = false;
+                    }, 800);
                 } catch(e) { window._recoveryLock = false; }
             } else {
                 // Kanalı yeniden başlat
@@ -28663,9 +28694,9 @@ function resumeChannel(startTime) {
                 window._recoveryLock = false;
                 showToast('Bağlantı yenileniyor...');
                 const curCh = state.filtered[state.player.index];
-                if (curCh) setTimeout(() => playChannel(curCh), 300);
+                if (curCh) setTimeout(() => playChannel(curCh), 500);
             }
-        }, is4K ? 400 : isHighRes ? 250 : 100); // DONMA-FIX: daha hızlı stall tepkisi
+        }, is4K ? 2000 : isHighRes ? 1500 : 1000); // 400→1000ms: erken müdahale = buffer kesilmesi
     };
     video.onstalled = onStall;
     video.onwaiting = onStall;
@@ -28864,37 +28895,35 @@ function resumeChannel(startTime) {
                 hlsInst.audioTrack = 0;
             }
 
-            // DİNAMİK BUFFER: açılışta küçük (hızlı başlangıç), 5sn sonra büyüt (stabil akış)
-            setTimeout(() => {
-                try {
-                    if (hlsInst && !hlsInst._destroyed) {
-                        hlsInst.config.maxBufferLength    = 16;
-                        hlsInst.config.maxMaxBufferLength = 30;
-                        hlsInst.config.backBufferLength   = 5;
-                    }
-                } catch(e) {}
-            }, 5000);
+            // backBufferLength dinamik set KALDIRILDI — config değişikliği buffer reorganize eder = donma
+            // Başlangıçta 0, kanalı kapatana kadar değiştirilmez
 
-            // DVR TESPİTİ: seekable penceresi 30sn+ ise DVR yayın
+            // DVR TESPİTİ: seekable penceresi 300sn+ (5dk) ise gerçek DVR yayın
+            // NOT: 30-60sn normal canlı yayın buffer'ıdır, DVR DEĞİLDİR — seek tetiklenmez
             setTimeout(() => {
                 try {
                     if (state.player.isLiveStream === false) return;
+                    if (state.player._dvrJumped) return; // LEVEL_LOADED zaten seek yaptıysa atla
+                    if (!state.player.streamStarted) return;
                     const _sk = video.seekable;
                     const _skLen = _sk && _sk.length > 0;
                     const _dvrWindow = _skLen ? (_sk.end(_sk.length-1) - _sk.start(0)) : 0;
-                    if (_dvrWindow > 30) {
+                    if (_dvrWindow > 300) { // 30→300sn: sadece gerçek DVR (5dk+ geçmiş)
                         state.player._isDvr = true;
                         const _liveEdge = _sk.end(_sk.length - 1);
                         if (_liveEdge - video.currentTime > 15) {
+                            state.player._dvrJumped = true;
+                            window._seekInProgress = true;
                             video.currentTime = Math.max(_liveEdge - 5, _sk.start(0));
                             hlsInst.startLoad(video.currentTime);
+                            setTimeout(() => { window._seekInProgress = false; }, 2000);
                         }
                     } else {
                         state.player._isDvr = false;
                         state.player._dvrJumped = false;
                     }
                 } catch(e) {}
-            }, 1000);
+            }, 5000); // 3→5sn: daha kesin DVR tespiti için bekle
 
             video.play().catch(e => {
                 if (e.name !== 'AbortError') console.warn('Play hatası:', e);
@@ -28984,7 +29013,7 @@ function resumeChannel(startTime) {
                     if (_sk2 && _sk2.length > 0) {
                         const _win = _sk2.end(_sk2.length-1) - _sk2.start(0);
                         const _edge = _sk2.end(_sk2.length-1);
-                        if (_win > 30 && _edge - video.currentTime > 15) {
+                        if (_win > 300 && _edge - video.currentTime > 15) { // 30→300sn: gerçek DVR eşiği
                             state.player._isDvr = true;
                             state.player._dvrJumped = true;
                             window._seekInProgress = true; // seek sırasında stall recovery engelle
@@ -29136,7 +29165,7 @@ function resumeChannel(startTime) {
                     _koolStallCount = 0;
                 }
                 _koolLastTime = video.currentTime;
-            }, 5000); // 10sn→5sn: daha hızlı stall tespiti
+            }, 8000); // 5sn→8sn: çok sık stall tespiti yeniden bağlanmaya neden oluyor
         } else if (isVavooWorker) {
             // Vavoo Worker → her zaman direkt, hiç proxy'e gönderme
             startHls(rawUrl);
@@ -30295,21 +30324,22 @@ let virtualScrollSystem = null;
         }
         
         function startContinuousWatchingUpdate() { 
+            // Önce her zaman temizle (önceki kanaldan kalma handler'ları sil)
+            stopContinuousWatchingUpdate();
+            
+            // Canlı yayında HİÇ kayıt yok — localStorage yazımı donmaya neden olur
             if (state.player.isLiveStream) return;
             
-            stopContinuousWatchingUpdate();
             window.cwInterval = setInterval(updateContinuousWatching, CONTINUOUS_WATCHING_UPDATE_INTERVAL);
             
-            // Anlık sarma kaydı: timeupdate'e de bağla (her saniye tetiklenir)
+            // VOD'da timeupdate'e bağla — ama agresif debounce ile (min 5sn arayla)
             const _vEl = document.getElementById('videoPlayer');
             if (_vEl) {
-                if (_vEl._cwTimeupdateHandler) {
-                    _vEl.removeEventListener('timeupdate', _vEl._cwTimeupdateHandler);
-                }
                 let _cwLastSave = 0;
                 _vEl._cwTimeupdateHandler = function() {
+                    if (state.player.isLiveStream) return; // race condition guard
                     const now = Date.now();
-                    if (now - _cwLastSave >= 1000) { // max her 1sn'de bir kaydet
+                    if (now - _cwLastSave >= 5000) { // 1sn→5sn: daha az yazım
                         _cwLastSave = now;
                         updateContinuousWatching();
                     }
@@ -31451,12 +31481,14 @@ function deleteContinueWatchingRecord(name) {
                 }
                 if (e.key === 'ArrowRight' || e.key === 'Right') {
                     e.preventDefault();
+                    e.stopPropagation();
                     if (_isLive) { if (typeof openEpgModal==='function') openEpgModal(); }
                     else         { if (typeof seekForward==='function') seekForward(); }
                     return;
                 }
                 if (e.key === 'ArrowLeft' || e.key === 'Left') {
                     e.preventDefault();
+                    e.stopPropagation();
                     if (_isLive) { if (typeof openSidebar==='function') openSidebar(); }
                     else         { if (typeof seekBackward==='function') seekBackward(); }
                     return;
@@ -31484,12 +31516,14 @@ function deleteContinueWatchingRecord(name) {
             
             switch(e.key) {
                 case 'ArrowLeft': 
-                    e.preventDefault(); 
+                    e.preventDefault();
+                    e.stopPropagation(); // Seek handler'ının tetiklenmesini engelle
                     state.remote.playerBoxIndex = Math.max(0, state.remote.playerBoxIndex - 1);
                     break;
                     
                 case 'ArrowRight': 
-                    e.preventDefault(); 
+                    e.preventDefault();
+                    e.stopPropagation(); // Seek handler'ının tetiklenmesini engelle
                     state.remote.playerBoxIndex = Math.min(visibleButtons.length - 1, state.remote.playerBoxIndex + 1);
                     break;
                     
@@ -32486,6 +32520,8 @@ function handlePlayerRemote(e) {
     // Sadece kanal değiştirme tuşlarında showControls çağırma
     const isChannelSwitch = (e.key === 'ArrowUp' || e.key === 'ArrowDown');
     if (!isChannelSwitch) showControls(5000);
+    
+    const video = document.getElementById('videoPlayer');
     
     // TV BOX KUMANDA TUŞLARI
     switch(e.key) {
@@ -42403,8 +42439,8 @@ window.showControls = function(duration) {
             if (st && st.player && st.player.hls) {
                 st.player.hls.stopLoad();
                 try {
-                    st.player.hls.config.maxBufferLength    = 20;
-                    st.player.hls.config.maxMaxBufferLength = 40;
+                    st.player.hls.config.maxBufferLength    = 30;
+                    st.player.hls.config.maxMaxBufferLength = 60;
                     st.player.hls.config.backBufferLength   = 0;
                 } catch(e2) {}
             }
@@ -42426,14 +42462,14 @@ setInterval(function() {
 </script>
 
 <script>
-// SEAMLESS donma kurtarma — kalite geçişi sırasında müdahale etme, sadece gerçek stall'da
+// SEAMLESS donma kurtarma — zayıf internet optimizasyonlu
 (function() {
 'use strict';
 var _wdLastTime = -1;
 var _wdTicks = 0;
 var _wdBusy = false;
 var _wdRecoverAttempts = 0;
-var _wdStartTime = 0; // streamStarted anı
+var _wdStartTime = 0;
 
 setInterval(function() {
     try {
@@ -42446,46 +42482,61 @@ setInterval(function() {
             _wdStartTime = Date.now();
             return;
         }
-        // Yayın yeni başladı — ilk 8 saniye watchdog'u askıya al
-        // (currentTime henüz 0'da olabilir, buffer dolmamış olabilir)
-        if (Date.now() - _wdStartTime < 8000) { _wdLastTime = v.currentTime; return; }
+        // İlk 12sn watchdog bekleme
+        if (Date.now() - _wdStartTime < 12000) { _wdLastTime = v.currentTime; return; }
         if (window._userPaused || v.paused || window._seekInProgress) {
             _wdLastTime = v.currentTime; _wdTicks = 0; _wdRecoverAttempts = 0; return;
         }
-        // Kalite geçişi devam ediyorsa bekle — müdahale etme
+        // Kalite geçişi devam ediyorsa bekle
         if (hls.currentLevel !== hls.nextLevel && hls.nextLevel !== -1) {
             _wdLastTime = v.currentTime; _wdTicks = 0; return;
         }
-        // readyState < 3: video henüz buffer doldurmamış — tik sayma, bekle
+        // readyState < 3: buffer dolmamış
         if (v.readyState < 3) { _wdLastTime = v.currentTime; return; }
-        // currentTime sıfırda sabit → HLS henüz ilk segmenti almamış, bekle
         if (v.currentTime === 0) { _wdLastTime = 0; return; }
-        // recoveryLock aktifse (stallTimer çalışıyor) müdahale etme
         if (window._recoveryLock) { _wdLastTime = v.currentTime; return; }
+
         var ct = v.currentTime;
         if (ct === _wdLastTime) {
             _wdTicks++;
-            if (_wdTicks >= 6 && !_wdBusy) { // ~4.8sn donma (800ms * 6) — daha uzun eşik
+            // 3 tik = ~2.4sn donma — zayıf internette HIZLI tespit et
+            if (_wdTicks >= 3 && !_wdBusy) {
                 _wdBusy = true; _wdTicks = 0;
                 _wdRecoverAttempts++;
                 var buf = v.buffered;
                 var ahead = buf && buf.length > 0 ? buf.end(buf.length-1) - ct : 0;
-                if (ahead > 1.0) {
+
+                if (ahead > 2.0) {
+                    // Buffer var ama oynamıyor — play() yeterli
                     try { v.play().catch(function(){}); } catch(e) {}
-                    setTimeout(function() { _wdBusy = false; }, 300);
-                } else if (_wdRecoverAttempts <= 2) {
+                    setTimeout(function() { _wdBusy = false; }, 500);
+                } else if (_wdRecoverAttempts <= 3) {
+                    // Segment yükle
                     try { hls.startLoad(ct); } catch(e) {}
                     setTimeout(function() {
                         try { v.play().catch(function(){}); } catch(e) {}
                         _wdBusy = false;
-                    }, 800);
-                } else {
-                    _wdRecoverAttempts = 0;
-                    try { hls.stopLoad(); } catch(e) {}
+                    }, 1000);
+                } else if (_wdRecoverAttempts <= 6) {
+                    // Kaliteyi EN DÜŞÜĞE al — zayıf internet kurtarma
+                    try {
+                        hls.nextLevel = 0;
+                        hls.stopLoad();
+                    } catch(e) {}
                     setTimeout(function() {
                         try { hls.startLoad(ct); v.play().catch(function(){}); } catch(e) {}
                         _wdBusy = false;
-                    }, 600);
+                    }, 1000);
+                } else {
+                    // Kanalı yeniden başlat
+                    _wdRecoverAttempts = 0;
+                    _wdBusy = false;
+                    try {
+                        var curCh = st.filtered && st.filtered[st.player.index];
+                        if (curCh && typeof window.playChannel === 'function') {
+                            setTimeout(function() { window.playChannel(curCh); }, 500);
+                        }
+                    } catch(e) {}
                 }
             }
         } else {

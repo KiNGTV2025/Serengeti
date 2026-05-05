@@ -13117,7 +13117,7 @@ async function loadContinueWatching() {
                 
 
                 playKeySound('back');
-                goNavigate('ac24://open3405294-i1x9jp/');
+                goNavigate('http://action_exit');
             }
         }
 
@@ -20002,9 +20002,15 @@ window.testSettings = {
                 state.remote.playerControlsVisible = true;
                 // Player view açıkken zone'u player'a sabitle (seek çakışmasını önle)
                 // playerTopBar ve progressBar zone'larına dokunma — çift odak önleme
+                // NOT: Sadece kontroller gerçekten gösteriliyorsa zone'u sıfırla.
+                //      Kanal değişiminde showControls çağrılır ama kontroller gizli olabilir —
+                //      bu durumda zone'a dokunmayarak "progress bar üstünde" hatasını önlüyoruz.
                 const _pv = document.getElementById('playerView');
                 if (_pv && _pv.style.display === 'flex') {
-                    if (state.remote.zone !== 'player' && state.remote.zone !== 'progressBar' && state.remote.zone !== 'playerTopBar') {
+                    const _pc2 = document.getElementById('playerContainer');
+                    const _controlsActuallyVisible = _pc2 && _pc2.classList.contains('show-controls');
+                    if (_controlsActuallyVisible &&
+                        state.remote.zone !== 'player' && state.remote.zone !== 'progressBar' && state.remote.zone !== 'playerTopBar') {
                         // Canlı: Kanal Listesi butonu | VOD/Film: Play/Pause butonu
                         if (state.player && state.player.isLiveStream) {
                             state.remote.playerBoxIndex = 9; // btnPlayerList
@@ -20161,6 +20167,18 @@ window.testSettings = {
                 }
             });
         }
+
+        // Sarma paneli içindeki butonlara doğrudan touch handler ekle
+        // Böylece playerContainer touch listener'ları araya girmeden çalışır
+        _SA.forEach(function(sec) {
+            var amtBtn = document.getElementById('seekAmt' + sec);
+            if (!amtBtn) return;
+            amtBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.setSeekAmount(sec);
+            }, { passive: false, capture: true });
+        });
     });
 
     // D-pad navigasyon
@@ -34589,7 +34607,7 @@ case 'OK':
             if (popHistoryState()) { playKeySound('back'); break; }
             // Hiçbir şey açık değil - ac24 ile ana sayfaya
             playKeySound('back');
-            goNavigate('ac24://open3405294-i1x9jp/');
+            goNavigate('http://action_exit');
             break;
             
         // NUMARALI TUŞLAR İLE DOĞRUDAN KANAL SEÇME
@@ -36214,7 +36232,7 @@ function optimizeVideoPlayer() {
         
         
 
-        goNavigate('ac24://open3405294-i1x9jp/');
+        goNavigate('http://action_exit');
         return true;
     }
     
@@ -43569,7 +43587,7 @@ window.addEventListener('popstate', function() {
         _pushBack();
         return;
     }
-    try { if (typeof goNavigate==='function') goNavigate('ac24://open3405294-i1x9jp/'); } catch(ex){}
+    try { if (typeof goNavigate==='function') goNavigate('http://action_exit'); } catch(ex){}
 });
 
 // Başlangıçta wrap et + buffer state'ler
@@ -43667,7 +43685,16 @@ function _patchShowToast() {
 }
 
 /* 5. Ses ve titreşim kapat — WebAudio overhead */
-window.playKeySound = function() {};
+(function() {
+    var _origPlayKeySound = window.playKeySound;
+    window.playKeySound = function(type) {
+        var cs = window.state && window.state.controlSettings;
+        if (cs && cs.keySoundEnabled === false) return;
+        if (typeof _origPlayKeySound === 'function') {
+            try { _origPlayKeySound.apply(this, arguments); } catch(e) {}
+        }
+    };
+})();
 window.triggerVibration = function() {};
 window.showNavigationHint = function() {};
 window.hideNavigationHint = function() {};

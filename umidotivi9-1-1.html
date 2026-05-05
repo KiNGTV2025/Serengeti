@@ -31990,6 +31990,7 @@ function deleteContinueWatchingRecord(name) {
                 if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
                     e.preventDefault(); togglePlayPause(); return;
                 }
+                // Sadece OK ile kontroller acilir - zamanlayici veya yon tusu ACMAZ
                 if (e.key === 'Enter' || e.key === 'OK') {
                     e.preventDefault();
                     window._controlsHidden = false;
@@ -31997,22 +31998,26 @@ function deleteContinueWatchingRecord(name) {
                     const _label2 = document.getElementById('hideControlsLabel');
                     if (_icon2)  _icon2.textContent  = 'visibility_off';
                     if (_label2) _label2.textContent = 'Gizle';
-                    state.remote.playerBoxIndex = _isLive ? 9 : 1; // Canlı: Liste | VOD/Dizi: Play
+                    state.remote.playerBoxIndex = _isLive ? 9 : 1;
                     state.remote.zone = 'player';
                     showControls(5000);
                     return;
                 }
-                // Yön tuşları — _controlsHidden modunda (kalıcı gizle basıldıktan sonra)
-                if (e.key === 'ArrowUp' || e.key === 'Up')    { e.preventDefault(); return; }
-                if (e.key === 'ArrowDown' || e.key === 'Down') { e.preventDefault(); return; }
-                if (e.key === 'ArrowRight' || e.key === 'Right') {
+                // Yon tuslari - icerik turune gore
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+                    e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
-                    if (!_isLive) { if (typeof seekForward  === 'function') seekForward(); }
-                    return;
-                }
-                if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                    e.preventDefault(); e.stopPropagation();
-                    if (!_isLive) { if (typeof seekBackward === 'function') seekBackward(); }
+                    if (_isLive) {
+                        // Canli: Sag → Kanal Listesi, Sol → EPG, Yukari → onceki kanal, Asagi → sonraki kanal
+                        if (e.key === 'ArrowRight') { if (typeof openSidebar    === 'function') openSidebar(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof showChannelEpg === 'function') showChannelEpg(); }
+                        if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
+                        if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
+                    } else {
+                        // Dizi ve Film: Sol/Sag sarma, Yukari/Asagi tepkisiz
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                    }
                     return;
                 }
                 return;
@@ -32230,8 +32235,10 @@ function deleteContinueWatchingRecord(name) {
             if (isEpisodeCard) {
                 const episodeCards = Array.from(document.querySelectorAll('.vod-episode-card'));
                 const epIdx = episodeCards.indexOf(currentEl);
-                const cols = 2;
-                // 2 sütunlu grid: 1 satır yukarı = cols kadar geri
+                const _epContainer = document.getElementById('vodEpisodesContainer');
+                const _epGridCols = _epContainer ? getComputedStyle(_epContainer).gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length : 1;
+                const cols = Math.max(1, _epGridCols);
+                // Gerçek sütun sayısı: 1 satır yukarı = cols kadar geri
                 const targetIdx = epIdx - cols;
                 if (targetIdx >= 0) {
                     _focusEpCard(episodeCards[targetIdx]);
@@ -32259,8 +32266,10 @@ function deleteContinueWatchingRecord(name) {
             if (isEpisodeCard) {
                 const episodeCards = Array.from(document.querySelectorAll('.vod-episode-card'));
                 const epIdx = episodeCards.indexOf(currentEl);
-                const cols = 2;
-                // 2 sütunlu grid: 1 satır aşağı = cols kadar ileri
+                const _epContainer2 = document.getElementById('vodEpisodesContainer');
+                const _epGridCols2 = _epContainer2 ? getComputedStyle(_epContainer2).gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length : 1;
+                const cols = Math.max(1, _epGridCols2);
+                // Gerçek sütun sayısı: 1 satır aşağı = cols kadar ileri
                 const targetIdx = epIdx + cols;
                 if (targetIdx < episodeCards.length) {
                     _focusEpCard(episodeCards[targetIdx]);
@@ -32286,7 +32295,9 @@ function deleteContinueWatchingRecord(name) {
             } else if (isEpisodeCard) {
                 const episodeCards = Array.from(document.querySelectorAll('.vod-episode-card'));
                 const epIdx = episodeCards.indexOf(currentEl);
-                const cols = 2;
+                const _epContainerL = document.getElementById('vodEpisodesContainer');
+                const _epGridColsL = _epContainerL ? getComputedStyle(_epContainerL).gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length : 1;
+                const cols = Math.max(1, _epGridColsL);
                 // Sol sütundaysa → sezon seçiciye çık, sağ sütundaysa → aynı satır sol
                 if (epIdx % cols === 1) {
                     _focusEpCard(episodeCards[epIdx - 1]);
@@ -32311,7 +32322,9 @@ function deleteContinueWatchingRecord(name) {
             } else if (isEpisodeCard) {
                 const episodeCards = Array.from(document.querySelectorAll('.vod-episode-card'));
                 const epIdx = episodeCards.indexOf(currentEl);
-                const cols = 2;
+                const _epContainerR = document.getElementById('vodEpisodesContainer');
+                const _epGridColsR = _epContainerR ? getComputedStyle(_epContainerR).gridTemplateColumns.split(' ').filter(s => s.trim() !== '').length : 1;
+                const cols = Math.max(1, _epGridColsR);
                 // Sol sütundaysa → sağ sütuna geç
                 if (epIdx % cols === 0 && epIdx + 1 < episodeCards.length) {
                     _focusEpCard(episodeCards[epIdx + 1]);
@@ -33019,7 +33032,7 @@ function handlePlayerRemote(e) {
         e.preventDefault(); closePlayer(); return;
     }
 
-    // _controlsHidden modunda (kalıcı gizle) — çok sınırlı tuş seti
+    // _controlsHidden modunda (kalici gizle) — sadece OK acar
     if (window._controlsHidden) {
         if (e.key === 'Enter' || e.key === 'OK') {
             e.preventDefault();
@@ -33031,10 +33044,22 @@ function handlePlayerRemote(e) {
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
             showControls(5000);
+            return;
         }
-        // _controlsHidden modunda yön tuşu → hiçbir şey yapma
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            e.preventDefault();
+        // Yon tuslari — icerik turune gore
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+            e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault(); e.stopPropagation();
+            if (_isLive) {
+                if (e.key === 'ArrowRight') { if (typeof openSidebar    === 'function') openSidebar(); }
+                if (e.key === 'ArrowLeft')  { if (typeof showChannelEpg === 'function') showChannelEpg(); }
+                if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
+                if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
+            } else {
+                // Dizi ve Film: Sol/Sag sarma
+                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+            }
         }
         return;
     }

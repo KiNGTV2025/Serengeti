@@ -3409,6 +3409,82 @@ body {
     opacity: 1 !important;
     pointer-events: auto !important;
 }
+/* ── SARMA SÜRESİ PANELİ ── */
+#seekAmountPanel {
+    position: fixed;
+    bottom: auto;
+    right: auto;
+    top: auto;
+    background: rgba(14,11,0,0.97);
+    border: 1.5px solid rgba(255,215,0,0.45);
+    border-radius: 16px;
+    padding: 14px 10px 10px;
+    display: none;
+    flex-direction: row;
+    gap: 6px;
+    z-index: 999999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,215,0,0.12), 0 0 20px rgba(255,215,0,0.1);
+    pointer-events: auto;
+    min-width: 230px;
+}
+#seekAmountPanel.visible { display: flex; }
+.seek-amt-btn {
+    flex: 1;
+    padding: 14px 6px;
+    min-height: 52px;
+    min-width: 52px;
+    background: rgba(255,215,0,0.08);
+    border: 1.5px solid rgba(255,215,0,0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    white-space: nowrap;
+    line-height: 1.3;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255,215,0,0.2);
+    user-select: none;
+    -webkit-user-select: none;
+}
+.seek-amt-btn:hover, .seek-amt-btn.dpad-focused {
+    background: rgba(255,215,0,0.22);
+    border-color: rgba(255,215,0,0.7);
+    transform: translateY(-2px);
+}
+.seek-amt-btn.active {
+    background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,160,0,0.2));
+    border-color: #FFD700;
+    color: #FFD700;
+    box-shadow: 0 0 12px rgba(255,215,0,0.25);
+}
+.seek-amt-btn .seek-sec {
+    display: block;
+    font-size: 16px;
+    font-weight: 900;
+    color: #FFD700;
+}
+.seek-amt-btn.active .seek-sec { color: #fff; }
+.seek-amt-label-top {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,215,0,0.7);
+    white-space: nowrap;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
 .qm-panel {
     background: rgba(14,11,0,0.98);
     border: 1px solid rgba(255,215,0,0.28);
@@ -4026,6 +4102,21 @@ body {
         .player-container.show-controls .player-top-bar { 
             opacity: 1;
         }
+        /* ── controls-hidden modu: player-controls (progress + butonlar) tamamen gizli ── */
+        /* player-top-bar da gizli kalır — channelInfoBanner zaten bağımsız görünür */
+        .player-container.controls-hidden .player-controls {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .player-container.controls-hidden .player-top-bar {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        /* controls-hidden modunda channelInfoBanner her zaman görünür */
+        #channelInfoBanner {
+            z-index: 99999 !important;
+        }
+
 
          
         .player-controls-box {
@@ -4041,7 +4132,7 @@ body {
              
             pointer-events: auto;
             max-width: 100%;
-            overflow: hidden;
+            overflow: visible; /* seek paneli dışarı taşabilsin */
              
         }
         
@@ -4055,7 +4146,7 @@ body {
             flex-wrap: nowrap;
             gap: 8px;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: visible; /* seek paneli yukarı taşabilsin */
             scrollbar-width: none;
             -ms-overflow-style: none;
              
@@ -10938,6 +11029,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="material-symbols-outlined" id="hideControlsIcon">visibility_off</span>
                             <span class="btn-label" id="hideControlsLabel">Gizle</span>
                         </button>
+                        <div style="position:relative;">
+                        <button class="player-action-btn" id="btnSeekAmount" title="Sarma Süresi Seç">
+                            <span class="material-symbols-outlined">fast_forward</span>
+                            <span class="btn-label" id="seekAmountBtnLabel">+10s</span>
+                        </button>
+                        <div id="seekAmountPanel">
+                            <span class="seek-amt-label-top">Sarma Süresi</span>
+                            <button class="seek-amt-btn active" id="seekAmt10" onclick="setSeekAmount(10)" data-sec="10">
+                                <span class="seek-sec">10s</span>
+                            </button>
+                            <button class="seek-amt-btn" id="seekAmt30" onclick="setSeekAmount(30)" data-sec="30">
+                                <span class="seek-sec">30s</span>
+                            </button>
+                            <button class="seek-amt-btn" id="seekAmt45" onclick="setSeekAmount(45)" data-sec="45">
+                                <span class="seek-sec">45s</span>
+                            </button>
+                            <button class="seek-amt-btn" id="seekAmt60" onclick="setSeekAmount(60)" data-sec="60">
+                                <span class="seek-sec">60s</span>
+                            </button>
+                        </div>
+                        </div>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
                             <span class="btn-label">Kapat</span>
@@ -12162,7 +12274,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -12277,7 +12389,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnClosePlayer'];
         
         
 
@@ -18375,6 +18487,19 @@ document.addEventListener('touchstart', cancelSleepShutdown);
     
     playerContainer.addEventListener('touchstart', function(e) {
         if (e.touches.length !== 1) return;
+
+        // Sarma paneli açıkken panel içine dokunan touch'u yut
+        if (window._seekAmountPanelOpen) {
+            const _sap = document.getElementById('seekAmountPanel');
+            if (_sap) {
+                const _t = e.touches[0];
+                const _r = _sap.getBoundingClientRect();
+                if (_t.clientX >= _r.left && _t.clientX <= _r.right &&
+                    _t.clientY >= _r.top  && _t.clientY <= _r.bottom) {
+                    return; // panel içi — onclick halleder
+                }
+            }
+        }
         
         touchStartTime = Date.now();
         touchStartX = e.touches[0].clientX;
@@ -18519,6 +18644,20 @@ document.addEventListener('touchstart', cancelSleepShutdown);
     }, { passive: false });
     
     playerContainer.addEventListener('touchend', function(e) {
+        // Sarma paneli açıkken panel içine dokunan touch'u yut
+        if (window._seekAmountPanelOpen) {
+            const _sap = document.getElementById('seekAmountPanel');
+            if (_sap) {
+                const _t = e.changedTouches[0];
+                if (_t) {
+                    const _r = _sap.getBoundingClientRect();
+                    if (_t.clientX >= _r.left && _t.clientX <= _r.right &&
+                        _t.clientY >= _r.top  && _t.clientY <= _r.bottom) {
+                        return;
+                    }
+                }
+            }
+        }
         isVolumeAdjusting = false;
         isBrightnessAdjusting = false;
         isProgressBarTouch = false;
@@ -18564,13 +18703,39 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     else        { if (typeof seekBackward === 'function') seekBackward(); }
                 }
             } else {
-                // Tap → kontrolleri geri getir
-                window._controlsHidden = false;
-                const icon  = document.getElementById('hideControlsIcon');
-                const label = document.getElementById('hideControlsLabel');
-                if (icon)  icon.textContent  = 'visibility_off';
-                if (label) label.textContent = 'Gizle';
-                showControls(5000);
+                // Çift Dokunma tespiti → kontrolleri geri getir
+                const _nowHid = Date.now();
+                const _DTAP_HID = 350;
+                if (_nowHid - (window._hiddenLastTapTime || 0) < _DTAP_HID) {
+                    // Çift dokunma → kontrolleri aç
+                    window._hiddenLastTapTime = 0;
+                    clearTimeout(window._hiddenTapTimer);
+                    window._controlsHidden = false;
+                    const pc2 = document.getElementById('playerContainer');
+                    if (pc2) pc2.classList.remove('controls-hidden');
+                    const icon  = document.getElementById('hideControlsIcon');
+                    const label = document.getElementById('hideControlsLabel');
+                    if (icon)  icon.textContent  = 'visibility_off';
+                    if (label) label.textContent = 'Gizle';
+                    showControls(5000);
+                    showToast('👁 Kontroller Açıldı');
+                } else {
+                    // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
+                    window._hiddenLastTapTime = _nowHid;
+                    clearTimeout(window._hiddenTapTimer);
+                    window._hiddenTapTimer = setTimeout(() => {
+                        window._hiddenLastTapTime = 0;
+                        if (!window._controlsHidden) return;
+                        window._controlsHidden = false;
+                        const pc2 = document.getElementById('playerContainer');
+                        if (pc2) pc2.classList.remove('controls-hidden');
+                        const icon  = document.getElementById('hideControlsIcon');
+                        const label = document.getElementById('hideControlsLabel');
+                        if (icon)  icon.textContent  = 'visibility_off';
+                        if (label) label.textContent = 'Gizle';
+                        showControls(5000);
+                    }, _DTAP_HID);
+                }
             }
             isSwiping = false;
             swipeDirection = null;
@@ -18584,7 +18749,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const _isVod = !state.player.isLiveStream;
             const _now   = Date.now();
             const DOUBLE_TAP_MS = 350;
-            const SEEK_SEC = 30;
+            const SEEK_SEC = window._seekSkipSeconds || 30;
             
             if (_isVod && (_zone === TOUCH_ZONES.LEFT || _zone === TOUCH_ZONES.RIGHT)) {
                 if (_now - _dtLastTapTime < DOUBLE_TAP_MS && _dtLastTapZone === _zone) {
@@ -18617,7 +18782,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                         const pc = document.getElementById('playerContainer');
                         if (pc.classList.contains('show-controls')) {
                             pc.classList.remove('show-controls');
-                        } else {
+                        } else if (!window._controlsHidden) {
                             pc.classList.add('show-controls');
                             showControls(5000);
                         }
@@ -18629,7 +18794,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 const isVisible = playerContainer.classList.contains('show-controls');
                 if (isVisible) {
                     playerContainer.classList.remove('show-controls');
-                } else {
+                } else if (!window._controlsHidden) {
                     playerContainer.classList.add('show-controls');
                     showControls(5000);
                 }
@@ -18649,6 +18814,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 // _controlsHidden modunda tıklama → gizlemeyi kaldır ve göster
                 if (window._controlsHidden) {
                     window._controlsHidden = false;
+                    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
                     const icon  = document.getElementById('hideControlsIcon');
                     const label = document.getElementById('hideControlsLabel');
                     if (icon)  icon.textContent  = 'visibility_off';
@@ -18660,7 +18826,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 const isVisible = playerContainer.classList.contains('show-controls');
                 if (isVisible) {
                     playerContainer.classList.remove('show-controls');
-                } else {
+                } else if (!window._controlsHidden) {
                     playerContainer.classList.add('show-controls');
                     showControls(5000);
                 }
@@ -19677,6 +19843,31 @@ window.testSettings = {
                 
                 if (isControlModeActive) {
                     showToast("Kumanda Modu Devam Ediyor");
+                    return;
+                }
+
+                // _controlsHidden modunda: gizlemeyi kaldır ve göster
+                if (window._controlsHidden) {
+                    window._controlsHidden = false;
+                    const pc2 = document.getElementById('playerContainer');
+                    if (pc2) pc2.classList.remove('controls-hidden');
+                    const icon  = document.getElementById('hideControlsIcon');
+                    const label = document.getElementById('hideControlsLabel');
+                    if (icon)  icon.textContent  = 'visibility_off';
+                    if (label) label.textContent = 'Gizle';
+                    showControls(5000);
+                    showToast('👁 Kontroller Açıldı');
+                    return;
+                }
+
+                // Normal mod: show-controls toggle
+                const pc = document.getElementById('playerContainer');
+                if (pc) {
+                    if (pc.classList.contains('show-controls')) {
+                        pc.classList.remove('show-controls');
+                    } else {
+                        showControls(5000);
+                    }
                 }
             });
             
@@ -19743,6 +19934,7 @@ window.testSettings = {
                             // Gerçek tap — doğru butona onclick'i çalıştır
                             e.preventDefault();
                             e.stopPropagation();
+                            window._lastBtnTouchEnd = Date.now();
                             btn.click();
                         }
                         bMoved = false;
@@ -19844,15 +20036,17 @@ window.testSettings = {
                 clearTimeout(window.controlsTimer);
                 clearTimeout(window.autoHideControlsTimer);
                 playerContainer.classList.remove('show-controls');
+                playerContainer.classList.add('controls-hidden');
                 state.remote.playerControlsVisible = false;
                 if (icon)  icon.textContent  = 'visibility';
                 if (label) label.textContent = 'Göster';
-                showToast('🙈 Kontroller gizlendi — Dokunmatik: Ekrana dokun | Kumanda: OK tuşu');
+                showToast('🙈 Kontroller gizlendi — Dokunmatik: 2x Dokun | Kumanda: OK tuşu');
                 playKeySound('click');
             } else {
                 // Göster
                 if (icon)  icon.textContent  = 'visibility_off';
                 if (label) label.textContent = 'Gizle';
+                playerContainer.classList.remove('controls-hidden');
                 playerContainer.classList.add('show-controls');
                 state.remote.playerControlsVisible = true;
                 // Zone'u player'a sabitle + doğru butona odaklan
@@ -19870,7 +20064,137 @@ window.testSettings = {
             }
         }
 
-        // PERFORMANS İYİLEŞTİRMELİ SIDEBAR FONKSİYONLARI
+// ── SARMA SÜRESİ PANELİ (global) ────────────────────────────────
+(function() {
+    var _SA = [10, 30, 45, 60];
+    window._seekSkipSeconds    = parseInt(localStorage.getItem('seekSkipSeconds') || '10', 10) || 10;
+    window._seekAmountPanelOpen = false;
+    window._seekAmountDpadIdx   = 0;
+
+    function _updateActiveBtn() {
+        _SA.forEach(function(s) {
+            var b = document.getElementById('seekAmt' + s);
+            if (b) b.classList.toggle('active', s === window._seekSkipSeconds);
+        });
+    }
+    function _updateDpadFocus() {
+        _SA.forEach(function(s, i) {
+            var b = document.getElementById('seekAmt' + s);
+            if (b) b.classList.toggle('dpad-focused', i === window._seekAmountDpadIdx);
+        });
+    }
+    function _clearDpadFocus() {
+        _SA.forEach(function(s) {
+            var b = document.getElementById('seekAmt' + s);
+            if (b) b.classList.remove('dpad-focused');
+        });
+    }
+
+    window.setSeekAmount = function(sec) {
+        window._seekSkipSeconds = sec;
+        localStorage.setItem('seekSkipSeconds', sec);
+        var lbl = document.getElementById('seekAmountBtnLabel');
+        if (lbl) lbl.textContent = '+' + sec + 's';
+        _updateActiveBtn();
+        window.closeSeekAmountPanel();
+        if (typeof showToast === 'function') showToast('\u23e9 Sarma s\xfcresi: ' + sec + ' saniye');
+        if (typeof playKeySound === 'function') playKeySound('confirm');
+    };
+
+    window.toggleSeekAmountPanel = function() {
+        var panel = document.getElementById('seekAmountPanel');
+        var btn   = document.getElementById('btnSeekAmount');
+        if (!panel) return;
+        window._seekAmountPanelOpen = !window._seekAmountPanelOpen;
+        if (window._seekAmountPanelOpen) {
+            if (btn) {
+                var rect   = btn.getBoundingClientRect();
+                var panelW = 238;
+                var left   = rect.left + rect.width / 2 - panelW / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+                // Buton görünürse üstüne, yoksa ekranın altından 80px yukarıya sabitle
+                var bottomPx = (rect.top > 10)
+                    ? (window.innerHeight - rect.top + 8)
+                    : 80;
+                panel.style.left      = left + 'px';
+                panel.style.bottom    = bottomPx + 'px';
+                panel.style.top       = 'auto';
+                panel.style.transform = 'none';
+            }
+            panel.classList.add('visible');
+            window._seekAmountDpadIdx = _SA.indexOf(window._seekSkipSeconds);
+            if (window._seekAmountDpadIdx < 0) window._seekAmountDpadIdx = 0;
+            _updateDpadFocus();
+            if (typeof showControls === 'function') showControls(99999);
+        } else {
+            panel.classList.remove('visible');
+            _clearDpadFocus();
+        }
+    };
+
+    window.closeSeekAmountPanel = function() {
+        window._seekAmountPanelOpen = false;
+        var panel = document.getElementById('seekAmountPanel');
+        if (panel) panel.classList.remove('visible');
+        _clearDpadFocus();
+        if (typeof showControls === 'function') showControls(4000);
+    };
+
+    // İlk yüklemede label güncelle + butona direkt listener
+    document.addEventListener('DOMContentLoaded', function() {
+        var lbl = document.getElementById('seekAmountBtnLabel');
+        if (lbl) lbl.textContent = '+' + window._seekSkipSeconds + 's';
+        _updateActiveBtn();
+
+        var seekBtn = document.getElementById('btnSeekAmount');
+        if (seekBtn) {
+            // Touch: doğrudan touchend'de tetikle, başka hiçbir handler karışmasın
+            seekBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.toggleSeekAmountPanel();
+            }, { passive: false, capture: true });
+            // Mouse fallback
+            seekBtn.addEventListener('click', function(e) {
+                if (e.detail > 0) { // gerçek mouse click
+                    window.toggleSeekAmountPanel();
+                }
+            });
+        }
+    });
+
+    // D-pad navigasyon
+    document.addEventListener('keydown', function(ev) {
+        if (!window._seekAmountPanelOpen) return;
+        if (ev.key === 'ArrowLeft') {
+            ev.preventDefault(); ev.stopPropagation();
+            window._seekAmountDpadIdx = Math.max(0, window._seekAmountDpadIdx - 1);
+            _updateDpadFocus();
+        } else if (ev.key === 'ArrowRight') {
+            ev.preventDefault(); ev.stopPropagation();
+            window._seekAmountDpadIdx = Math.min(_SA.length - 1, window._seekAmountDpadIdx + 1);
+            _updateDpadFocus();
+        } else if (ev.key === 'Enter' || ev.key === ' ' || ev.keyCode === 13 || ev.keyCode === 32) {
+            ev.preventDefault(); ev.stopPropagation();
+            window.setSeekAmount(_SA[window._seekAmountDpadIdx]);
+        } else if (ev.key === 'Escape' || ev.key === 'Backspace' || ev.keyCode === 27 || ev.keyCode === 461) {
+            ev.preventDefault(); ev.stopPropagation();
+            window.closeSeekAmountPanel();
+        }
+    }, true);
+
+    // Panel dışına tıklayınca kapat
+    document.addEventListener('click', function(ev) {
+        if (!window._seekAmountPanelOpen) return;
+        var panel = document.getElementById('seekAmountPanel');
+        var btn   = document.getElementById('btnSeekAmount');
+        if (panel && panel.contains(ev.target)) return;
+        if (btn   && btn.contains(ev.target))   return;
+        window.closeSeekAmountPanel();
+    }, true);
+})();
+// ────────────────────────────────────────────────────────────────
+
 // Global değişken
 let sidebarRenderTimeout = null;
 
@@ -20023,16 +20347,18 @@ function closeSidebar() {
         if (_pvClose && _pvClose.style.display === 'flex' && _pcClose) {
             // VOD/Film/Dizi oynuyorsa kontrolleri GÖSTERme — kullanıcı tam ekran izlesin
             if (state.player.isLiveStream) {
-                // Canlı yayın: 2sn göster sonra oto-gizle
-                _pcClose.classList.add('show-controls');
-                state.remote.playerControlsVisible = true;
-                clearTimeout(window.autoHideControlsTimer);
-                window.autoHideControlsTimer = setTimeout(() => {
-                    if (!window._controlsHidden) {
-                        _pcClose.classList.remove('show-controls');
-                        state.remote.playerControlsVisible = false;
-                    }
-                }, 2000);
+                // Canlı yayın: 2sn göster sonra oto-gizle (_controlsHidden ise gösterme)
+                if (!window._controlsHidden) {
+                    _pcClose.classList.add('show-controls');
+                    state.remote.playerControlsVisible = true;
+                    clearTimeout(window.autoHideControlsTimer);
+                    window.autoHideControlsTimer = setTimeout(() => {
+                        if (!window._controlsHidden) {
+                            _pcClose.classList.remove('show-controls');
+                            state.remote.playerControlsVisible = false;
+                        }
+                    }, 2000);
+                }
             }
             // VOD: kontroller kapalı kalır — kullanıcı OK/tıkla ile açar
         }
@@ -29050,6 +29376,7 @@ function resumeChannel(startTime) {
         // Canlı yayın kanal değişiminde: kullanıcı gizlemişse gizli kalsın
         if (!state.player.isLiveStream && window._controlsHidden) {
             window._controlsHidden = false;
+            document.getElementById('playerContainer')?.classList.remove('controls-hidden');
             const _hcI = document.getElementById('hideControlsIcon');
             const _hcL = document.getElementById('hideControlsLabel');
             if (_hcI) _hcI.textContent = 'visibility_off';
@@ -29852,6 +30179,14 @@ function showChannelInfoBanner(channelName, logoUrl, tvgIdHint) {
             if (epgInfo.next && epgInfo.next.title) {
                 epgNextRow = `<span class="cib-next-label">Sonra:</span><span class="cib-next-title">${epgInfo.next.title}</span>`;
             }
+        } else {
+            // EPG verisi henüz yok
+            const _hasEpgData = window.state && window.state.epgData && Object.keys(window.state.epgData).length > 0;
+            epgNowRow = `
+                <div class="cib-now" style="opacity:0.55;">
+                    <span class="cib-now-label" style="background:rgba(255,215,0,0.06);">${_hasEpgData ? 'EPG Eşleşme Yok' : 'EPG Yükleniyor...'}</span>
+                    <span class="cib-now-title" style="font-size:12px; color:rgba(255,255,255,0.4);">${_hasEpgData ? 'Bu kanal için program bilgisi bulunamadı' : 'Program rehberi yükleniyor...'}</span>
+                </div>`;
         }
 
         return `
@@ -29880,14 +30215,35 @@ function showChannelInfoBanner(channelName, logoUrl, tvgIdHint) {
     banner.style.transition = 'opacity 0.35s ease';
     requestAnimationFrame(() => requestAnimationFrame(() => { banner.style.opacity = '1'; }));
 
+    // EPG bilgisi ilk renderda yoksa 500ms/1s/2s sonra tekrar dene
+    if (!epgInfo || !epgInfo.current || !epgInfo.current.title) {
+        let _epgRetries = 0;
+        const _epgRetryDelays = [500, 1000, 2000, 3500];
+        function _retryEpgBanner() {
+            if (_epgRetries >= _epgRetryDelays.length) return;
+            setTimeout(() => {
+                const _b = document.getElementById('channelInfoBanner');
+                if (!_b || _b.style.display === 'none') return;
+                const _ei = queryEPG();
+                if (_ei && _ei.current && _ei.current.title) {
+                    _b.innerHTML = buildHTML(_ei);
+                } else {
+                    _epgRetries++;
+                    _retryEpgBanner();
+                }
+            }, _epgRetryDelays[_epgRetries++]);
+        }
+        _retryEpgBanner();
+    }
+
     // Timer temizle
     clearTimeout(window._cibTimer);
     
-    // 5 saniye sonra banner'ı kapat
+    // 7 saniye sonra banner'ı kapat (EPG retry için süre uzatıldı)
     window._cibTimer = setTimeout(() => {
         banner.style.opacity = '0';
         setTimeout(() => { if (banner) banner.style.display = 'none'; }, 400);
-    }, 5000);
+    }, 7000);
 }
 
 
@@ -30361,6 +30717,7 @@ function updatePlayerEpgBar(channelName, tvgId) {
 function closePlayer() {
     // Kontrol gizleme modunu sıfırla
     window._controlsHidden = false;
+    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
     clearTimeout(window.controlsTimer);
     clearTimeout(window.autoHideControlsTimer);
     // Skip sayacını tamamen temizle — player kapatılınca overlay kalmasın
@@ -31004,7 +31361,7 @@ let virtualScrollSystem = null;
             const v = document.getElementById('videoPlayer');
             if (!v) return;
             const _hls = state.player && state.player.hls;
-            const step = 10;
+            const step = window._seekSkipSeconds || 10;
             let newTime;
             // DVR canlı yayın: seekable range kullan
             if (!isFinite(v.duration) || v.duration <= 0) {
@@ -31025,7 +31382,7 @@ let virtualScrollSystem = null;
             const v = document.getElementById('videoPlayer');
             if (!v) return;
             const _hls = state.player && state.player.hls;
-            const step = 10;
+            const step = window._seekSkipSeconds || 10;
             let newTime;
             // DVR canlı yayın: seekable range kullan
             if (!isFinite(v.duration) || v.duration <= 0) {
@@ -31994,6 +32351,7 @@ function deleteContinueWatchingRecord(name) {
                 if (e.key === 'Enter' || e.key === 'OK') {
                     e.preventDefault();
                     window._controlsHidden = false;
+                    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
                     const _icon2  = document.getElementById('hideControlsIcon');
                     const _label2 = document.getElementById('hideControlsLabel');
                     if (_icon2)  _icon2.textContent  = 'visibility_off';
@@ -32008,13 +32366,19 @@ function deleteContinueWatchingRecord(name) {
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
                     if (_isLive) {
-                        // Canli: Sag → Kanal Listesi, Sol → EPG, Yukari → onceki kanal, Asagi → sonraki kanal
-                        if (e.key === 'ArrowRight') { if (typeof openSidebar    === 'function') openSidebar(); }
-                        if (e.key === 'ArrowLeft')  { if (typeof showChannelEpg === 'function') showChannelEpg(); }
+                        // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
                         if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                    } else if (_isSeries) {
+                        // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
+                        if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                        if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Dizi ve Film: Sol/Sag sarma, Yukari/Asagi tepkisiz
+                        // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     }
@@ -33037,6 +33401,7 @@ function handlePlayerRemote(e) {
         if (e.key === 'Enter' || e.key === 'OK') {
             e.preventDefault();
             window._controlsHidden = false;
+            document.getElementById('playerContainer')?.classList.remove('controls-hidden');
             const _icon2  = document.getElementById('hideControlsIcon');
             const _label2 = document.getElementById('hideControlsLabel');
             if (_icon2)  _icon2.textContent  = 'visibility_off';
@@ -33051,12 +33416,19 @@ function handlePlayerRemote(e) {
             e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             e.preventDefault(); e.stopPropagation();
             if (_isLive) {
-                if (e.key === 'ArrowRight') { if (typeof openSidebar    === 'function') openSidebar(); }
-                if (e.key === 'ArrowLeft')  { if (typeof showChannelEpg === 'function') showChannelEpg(); }
+                // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
                 if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
                 if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
+                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+            } else if (_isSeries) {
+                // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
+                if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
             } else {
-                // Dizi ve Film: Sol/Sag sarma
+                // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
             }
@@ -34911,6 +35283,7 @@ function handleFavoriteChannelSelect(key) {
                 if (e.key === 'Enter' || e.key === 'OK') {
                     e.preventDefault(); e.stopPropagation();
                     window._controlsHidden = false;
+                    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
                     const _ic = document.getElementById('hideControlsIcon');
                     const _lb = document.getElementById('hideControlsLabel');
                     if (_ic) _ic.textContent = 'visibility_off';
@@ -34924,14 +35297,21 @@ function handleFavoriteChannelSelect(key) {
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
                     if (_isLiveH) {
-                        if (e.key === 'ArrowLeft')  { openSidebar(); }
-                        if (e.key === 'ArrowRight') { if (typeof showChannelEpg === 'function') showChannelEpg(); }
+                        // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
                         if (e.key === 'ArrowUp')    { nextCh(); }
                         if (e.key === 'ArrowDown')  { prevCh(); }
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                    } else if (_isSeriesH) {
+                        // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
+                        if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                        if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Dizi ve Film: Sol/Sag sarma, Yukari/Asagi tepkisiz
-                        if (e.key === 'ArrowRight') { seekForward(); }
-                        if (e.key === 'ArrowLeft')  { seekBackward(); }
+                        // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     }
                     return;
                 }
@@ -37342,7 +37722,10 @@ window.openQualityModal = function() {
     clearTimeout(window.autoHideControlsTimer);
     const pc = document.getElementById('playerContainer');
     // _controlsHidden iken bile modal açılınca kontrolleri geçici göster
-    if (pc) pc.classList.add('show-controls');
+    if (pc) {
+        pc.classList.remove('controls-hidden');
+        pc.classList.add('show-controls');
+    }
     window._controlsHiddenBeforeModal = !!window._controlsHidden;
     window._controlsHidden = false; // modal açıkken gizleme engeli kalk
     modal.classList.add('qm-open');
@@ -37368,7 +37751,10 @@ window.closeQualityModal = function() {
         const pc = document.getElementById('playerContainer');
         if (_wasHidden) {
             // Kullanıcı önceden gizlemişti — hemen tekrar gizle
-            if (pc) pc.classList.remove('show-controls');
+            if (pc) {
+                pc.classList.remove('show-controls');
+                pc.classList.add('controls-hidden');
+            }
         } else {
             // Kontroller görünür kalsın, canlı yayında 3sn sonra gizle
             if (pc) pc.classList.add('show-controls');
@@ -37492,7 +37878,10 @@ window.openSubtitleModal = function() {
     clearTimeout(window.autoHideControlsTimer);
     const pc = document.getElementById('playerContainer');
     // _controlsHidden iken bile modal açılınca kontrolleri geçici göster
-    if (pc) pc.classList.add('show-controls');
+    if (pc) {
+        pc.classList.remove('controls-hidden');
+        pc.classList.add('show-controls');
+    }
     window._controlsHiddenBeforeModal = window._controlsHiddenBeforeModal || !!window._controlsHidden;
     window._controlsHidden = false; // modal açıkken gizleme engeli kalk
     modal.classList.add('qm-open');
@@ -37519,7 +37908,10 @@ window.closeSubtitleModal = function() {
         const pc = document.getElementById('playerContainer');
         if (_wasHidden) {
             // Kullanıcı önceden gizlemişti — hemen tekrar gizle
-            if (pc) pc.classList.remove('show-controls');
+            if (pc) {
+                pc.classList.remove('show-controls');
+                pc.classList.add('controls-hidden');
+            }
         } else {
             // Kontroller görünür kalsın, canlı yayında 3sn sonra gizle
             if (pc) pc.classList.add('show-controls');
@@ -39712,8 +40104,8 @@ function _doSeek(step) {
     }
     if (typeof window.showControls === 'function') window.showControls(4000);
 }
-window.seekForward  = function() { _doSeek(10); };
-window.seekBackward = function() { _doSeek(-10); };
+window.seekForward  = function() { _doSeek(window._seekSkipSeconds || 10); };
+window.seekBackward = function() { _doSeek(-(window._seekSkipSeconds || 10)); };
 
 function _updatePB(time) {
     var video = document.getElementById('videoPlayer');

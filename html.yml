@@ -1,0 +1,23 @@
+name: HTML Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu klonla
+        uses: actions/checkout@v4
+
+      - name: Serengeti reposuna HTML gonder
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.SERENGETI_TOKEN }}
+          external_repository: KiNGTV2025/Serengeti
+          publish_dir: .
+          publish_branch: gh-pages
+          keep_files: true
+          exclude_assets: '.github'
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'

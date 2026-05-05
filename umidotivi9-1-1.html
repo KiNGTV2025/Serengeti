@@ -534,6 +534,406 @@
     background: rgba(255,215,0,0.18) !important;
 }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TVBox ULTRA PERFORMANCE PATCH v2 — Kasma/Donma/Geçiş Optimizasyonu
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="tvbox-perf-patch-v2">
+
+/* ── 1. GPU KATMANLARINİ HAZIRLA ── */
+/* Kritik elementleri kendi kompozit katmanına al — layout thrashing önle */
+.channels-grid,
+.channels-viewport,
+.sidebar,
+.sidebar-list,
+.category-bar,
+.m3u-selector-bar,
+.player-controls,
+.player-top-bar,
+.app-header {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* ── 2. KANAL KARTLARI — Geçiş/Hover SIFIRLA ── */
+/* TVBox'ta hover transform = repaint = kasma */
+.channel-card {
+    transition: none !important;
+    transform: none !important;
+    will-change: auto !important;
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation !important;
+}
+.channel-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--accent-primary) !important;
+}
+/* Odak efekti: outline kullan, shadow/transform YASAK */
+.channel-card.remote-focused,
+.channel-card.focused {
+    transform: none !important;
+    box-shadow: none !important;
+    outline: 3px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: -2px !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    transition: none !important;
+    will-change: auto !important;
+}
+
+/* ── 3. BUTON GEÇİŞLERİ — Anında Tepki ── */
+/* Tüm butonlarda transition süresi 0'a indir */
+button,
+.header-btn,
+.player-action-btn,
+.settings-btn,
+.m3u-pill,
+.cat-pill,
+.sidebar-category-pill,
+.category-list-item,
+.vod-season-btn,
+.vod-episode-card,
+.modal-back-btn,
+.cat-hide-footer-btn,
+.season-control-btn,
+.login-btn,
+.login-btn-secondary,
+.fav-toggle,
+[role="button"] {
+    transition: background-color 80ms linear,
+                border-color 80ms linear,
+                color 80ms linear,
+                outline 0ms !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    will-change: auto !important;
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation !important;
+}
+/* :active anında geri bildirim — 0ms gecikme */
+button:active,
+.header-btn:active,
+.m3u-pill:active,
+.cat-pill:active,
+.channel-card:active {
+    transform: none !important;
+    opacity: 0.85;
+    transition: opacity 0ms !important;
+}
+
+/* ── 4. SCROLL PERFORMANSI ── */
+.channels-viewport,
+.sidebar-list,
+.category-bar,
+.m3u-selector-bar,
+.vod-episodes-container,
+.vod-season-selector,
+.header-controls,
+.modal-content,
+.settings-content {
+    scroll-behavior: auto !important; /* smooth scroll = jank */
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    will-change: scroll-position !important;
+}
+
+/* ── 5. ANİMASYON HIZI — TVBox CPU Koruma ── */
+/* Gereksiz animasyonları kaldır, sadece önemli olanları koru */
+.channel-card *,
+.sidebar-list *,
+.category-bar *,
+.m3u-selector-bar * {
+    animation: none !important;
+    transition: none !important;
+}
+/* Loading overlay animasyonlarını koru */
+.loading-overlay,
+.loading-overlay *,
+.login-spinner {
+    animation: revert !important;
+    transition: revert !important;
+}
+
+/* ── 6. MODAL AÇILMA/KAPANMA — Instant ── */
+/* Modallarda slide/fade animasyonu TVBox'ı kasıyor */
+.modal-content,
+.settings-content,
+.vod-modal-content {
+    animation: none !important;
+    transition: none !important;
+}
+/* Sidebar açılma anında olsun */
+.sidebar {
+    transition: none !important;
+}
+.ep-desc-sheet {
+    animation: none !important;
+}
+
+/* ── 7. GÖRSEL EFEKT AZALTMA — Sadece Odak ── */
+/* backdrop-filter WebView'da çok ağır */
+.modal-overlay,
+.modal-bg,
+[class*="modal"] > div:not(.modal-content) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+/* box-shadow sayısını azalt */
+.channel-card,
+.cat-pill,
+.m3u-pill,
+.vod-episode-card {
+    box-shadow: none !important;
+}
+
+/* ── 8. YÜKLEME GÖSTERGESİ — Daha Hızlı Kaybol ── */
+.loading-overlay {
+    transition: opacity 150ms ease !important;
+}
+
+/* ── 9. FONT RENDER — TVBox için Optimize ── */
+body, button, .channel-title, .cat-pill, .m3u-pill {
+    -webkit-font-smoothing: subpixel-antialiased !important;
+    text-rendering: optimizeSpeed !important;
+}
+
+/* ── 10. IMAGE DECODE — Bloklamayı Önle ── */
+img {
+    decoding: async !important;
+    content-visibility: auto !important;
+}
+
+/* ── 11. CAT-PILL / M3U-PILL — Aktif Geçiş Hızı ── */
+.m3u-pill, .cat-pill {
+    cursor: pointer !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+.m3u-pill.active,
+.cat-pill.active {
+    transition: none !important;
+    transform: none !important;
+}
+/* Odaklı pill — anında highlight */
+.m3u-pill.remote-focused,
+.cat-pill.remote-focused,
+.m3u-pill.focused,
+.cat-pill.focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 1px !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* ── 12. PLAYER KONTROLLERI — Gecikme Sıfır ── */
+#playerView,
+.player-controls,
+.player-top-bar,
+.player-bottom-bar,
+.player-actions-row {
+    transition: none !important;
+    animation: none !important;
+}
+/* Oynatma/durdurma butonu anında tepki */
+#btnPlayPause,
+.player-action-btn[data-action="play"],
+.player-action-btn[data-action="pause"] {
+    transition: none !important;
+    transform: none !important;
+}
+
+/* ── 13. SIDEBAR KATEGORİ — Gezinme Hızı ── */
+.sidebar-category-pill,
+.category-list-item {
+    transition: background-color 60ms linear,
+                color 60ms linear !important;
+    transform: none !important;
+    will-change: auto !important;
+}
+.sidebar-category-pill.active,
+.sidebar-category-pill.remote-focused,
+.category-list-item.active,
+.category-list-item.remote-focused {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* ── 14. ODAK RENK GÖSTERGESİ — Hızlı Geri Bildirim ── */
+/* remote-focused sınıfı eklenir eklenmez anında görünsün */
+.remote-focused {
+    outline-color: var(--accent-primary, #FFD700) !important;
+    transition: outline-color 0ms, background-color 60ms linear !important;
+}
+
+/* ── 15. TEXT-SHADOW / FILTER — TVBox Yükü Azalt ── */
+/* Kanal isimlerinde text-shadow GPU katmanı oluşturur */
+.channel-title,
+.channel-name {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.9) !important;
+}
+/* Channel card içi filter yok */
+.channel-card img {
+    filter: none !important;
+    transition: none !important;
+}
+
+/* ── 16. CONTAIN — Layout Paint Azalt ── */
+.channel-card {
+    contain: layout style !important;
+}
+.channels-grid {
+    contain: layout !important;
+}
+
+/* ── 17. VOD KART GEÇİŞ ── */
+.vod-episode-card {
+    transition: none !important;
+    transform: none !important;
+}
+.vod-episode-card:hover {
+    transition: none !important;
+}
+.vod-episode-card.remote-focused,
+.vod-episode-card.focused {
+    transition: none !important;
+    box-shadow: none !important;
+}
+
+</style>
+
+<script>
+/* TVBox Performans Başlangıç Scripti — DOM hazır olur olmaz low-perf modu aç */
+(function() {
+    'use strict';
+
+    // TVBox tespiti: Android TV / FireTV / genel WebView
+    var isTvBox = /Android/.test(navigator.userAgent) &&
+                  (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(navigator.userAgent) ||
+                   window.screen.width >= 1280 && !('ontouchstart' in window) ||
+                   /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(navigator.userAgent));
+
+    function applyTvPatch() {
+        var b = document.body;
+        if (!b) return;
+
+        // Her zaman low-performance-mode uygula — TVBox'lar her zaman yavaş
+        b.classList.add('low-performance-mode');
+
+        // TVBox ise ek fast-mode de ekle
+        if (isTvBox) {
+            b.classList.add('fast-mode');
+            b.classList.add('tvbox-mode');
+        }
+
+        // requestAnimationFrame throttle — TVBox'ta 30fps yeterli
+        if (isTvBox && window.requestAnimationFrame) {
+            var _origRAF = window.requestAnimationFrame;
+            var _lastRAF = 0;
+            var _RAF_MIN = 32; // ~30fps
+            window.requestAnimationFrame = function(cb) {
+                var now = Date.now();
+                var delay = Math.max(0, _RAF_MIN - (now - _lastRAF));
+                if (delay === 0) {
+                    _lastRAF = now;
+                    return _origRAF.call(window, cb);
+                } else {
+                    return setTimeout(function() {
+                        _lastRAF = Date.now();
+                        cb(_lastRAF);
+                    }, delay);
+                }
+            };
+        }
+    }
+
+    // DOM hazır mı?
+    if (document.body) {
+        applyTvPatch();
+    } else {
+        document.addEventListener('DOMContentLoaded', applyTvPatch);
+    }
+
+    // Tema değişiminde patch'i yeniden uygula
+    var _origBody = document.body;
+    var _patchObs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            if (m.type === 'attributes' && m.attributeName === 'class') {
+                var b = document.body;
+                if (b && !b.classList.contains('low-performance-mode')) {
+                    b.classList.add('low-performance-mode');
+                    if (isTvBox) {
+                        b.classList.add('fast-mode');
+                        b.classList.add('tvbox-mode');
+                    }
+                }
+            }
+        });
+    });
+    if (document.body) {
+        _patchObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            _patchObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        });
+    }
+
+    // Kanal kartı tıklama — dokunuş gecikmesini kaldır (300ms iOS gecikme yok)
+    document.addEventListener('touchstart', function(){}, { passive: true });
+
+    // Scroll optimizasyonu — pasif listener zorunlu
+    ['scroll', 'wheel', 'touchmove'].forEach(function(ev) {
+        document.addEventListener(ev, function(){}, { passive: true });
+    });
+
+    // Image lazy load — IntersectionObserver ile
+    if ('IntersectionObserver' in window) {
+        var _imgObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    var img = e.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        delete img.dataset.src;
+                        _imgObs.unobserve(img);
+                    }
+                }
+            });
+        }, { rootMargin: '200px' });
+        // Yeni eklenen resimler için gözlemci
+        var _domObs = new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+                m.addedNodes.forEach(function(n) {
+                    if (n.querySelectorAll) {
+                        n.querySelectorAll('img[data-src]').forEach(function(img) {
+                            _imgObs.observe(img);
+                        });
+                    }
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            _domObs.observe(document.body, { childList: true, subtree: true });
+        });
+    }
+
+    // Remote focused geçişini hızlandır — debounce kaldır
+    // Kumanda ok tuşu basımında 0ms ile fokus uygula
+    var _focusThrottle = false;
+    document.addEventListener('keydown', function(e) {
+        var navKeys = [37,38,39,40,13]; // Sol,Yukarı,Sağ,Aşağı,Enter
+        if (navKeys.indexOf(e.keyCode) !== -1 && !_focusThrottle) {
+            _focusThrottle = true;
+            requestAnimationFrame(function() { _focusThrottle = false; });
+        }
+    }, { passive: true });
+
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════ -->
     <script>
     (function() {
         function showIcons() {
@@ -1386,7 +1786,7 @@ body {
     color: #fff;
     padding: 0;
     flex-shrink: 0;
-    transition: background 0.15s, transform 0.15s;
+    transition: none !important;
     -webkit-tap-highlight-color: transparent;
 }
 .m3u-refresh-btn:hover,
@@ -1555,7 +1955,7 @@ body {
     background: var(--accent-primary);
     color: #000;
     border-color: var(--accent-primary);
-    box-shadow: 0 2px 12px rgba(255,215,0,0.35);
+    box-shadow: none !important;
 }
 
  
@@ -1732,7 +2132,7 @@ body {
     cursor: pointer;
     width: 100%;
     font-size: 14px;
-    transition: all 0.2s;
+    transition: none !important;
 }
 
 .season-control-btn:hover {
@@ -1914,7 +2314,7 @@ body {
             object-fit: cover !important;
             object-position: center top !important;
             border-radius: var(--card-radius) !important;
-            transition: transform 0.4s ease;
+            transition: none !important;
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
@@ -2438,8 +2838,8 @@ body {
     font-weight: 800;
     letter-spacing: 0.3px;
     cursor: pointer;
-    transition: all 0.18s ease;
-    box-shadow: 0 2px 12px rgba(220,50,50,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: background-color 80ms linear, border-color 80ms linear !important;
+    box-shadow: none !important;
 }
 .clear-all-btn:hover,
 .clear-all-btn.remote-focused,
@@ -2506,7 +2906,7 @@ body {
     border-radius:14px;
     overflow:hidden;
     background:#0a0a10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,215,0,0.06);
+    box-shadow: none !important;
 }
 #vodHeroTrack {
     position:relative; width:100%; height:200px; overflow:hidden; border-radius:14px;
@@ -2517,8 +2917,9 @@ body {
 .vhs-slide {
     position:absolute; inset:0;
     opacity:0;
-    transition:opacity 0.3s ease;
+    transition: none !important;
     cursor:pointer;
+    will-change: opacity;
 }
 .vhs-slide.active { opacity:1; z-index:2; }
 .vhs-slide.prev   { opacity:0; z-index:1; }
@@ -2527,7 +2928,7 @@ body {
     object-fit:cover;
     display:block;
     border-radius:18px;
-    filter:brightness(0.82);
+    filter: brightness(0.82) !important;
 }
 
 /* ── Gradient layers ── */
@@ -2559,9 +2960,9 @@ body {
     padding:3px 9px; border-radius:5px;
     background:linear-gradient(135deg,#FFD700,#F1A800);
     color:#000;
-    box-shadow:0 2px 8px rgba(255,215,0,0.3);
+    box-shadow: none !important;
 }
-.vhs-badge.series { background:linear-gradient(135deg,#7c5fe6,#a78bfa); color:#fff; box-shadow:0 2px 8px rgba(124,95,230,0.4); }
+.vhs-badge.series { background:linear-gradient(135deg,#7c5fe6,#a78bfa); color:#fff; box-shadow: none !important; }
 .vhs-rating-badge {
     font-size:9px; font-weight:700;
     padding:3px 8px; border-radius:5px;
@@ -15202,12 +15603,26 @@ function createOptimizedChannelCard(index) {
         
         
         // TMDB arama — dizi ise önce TV endpoint'ini dene
+        // Sessiz fetch yardımcısı — ağ hatalarını konsola yazmaz
+        const _tmdbFetch = async (url) => {
+            const ctrl = new AbortController();
+            const tid = setTimeout(() => ctrl.abort(), 8000);
+            try {
+                const r = await fetch(url, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (!r.ok) return null;
+                return await r.json();
+            } catch(e) {
+                clearTimeout(tid);
+                return null; // Sessizce null döndür
+            }
+        };
+
         let searchData = { results: [] };
         if (preferTV) {
             const tvUrl = `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(searchName)}&language=tr-TR&include_adult=false`;
-            const tvRes = await fetch(tvUrl);
-            const tvData = await tvRes.json();
-            if (tvData.results && tvData.results.length > 0) {
+            const tvData = await _tmdbFetch(tvUrl);
+            if (tvData && tvData.results && tvData.results.length > 0) {
                 // media_type ekle (multi'de geliyor ama tv endpoint'inde gelmiyor)
                 searchData = { results: tvData.results.map(r => ({ ...r, media_type: 'tv' })) };
             }
@@ -15215,8 +15630,8 @@ function createOptimizedChannelCard(index) {
         // TV'de bulunamadıysa veya preferTV değilse multi'ye düş
         if (!searchData.results.length) {
             const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(searchName)}&language=tr-TR&include_adult=false`;
-            const searchRes = await fetch(searchUrl);
-            searchData = await searchRes.json();
+            const data = await _tmdbFetch(searchUrl);
+            if (data) searchData = data;
         }
         
         if (searchData.results && searchData.results.length > 0) {
@@ -15260,8 +15675,8 @@ function createOptimizedChannelCard(index) {
                 detailUrl = `https://api.themoviedb.org/3/tv/${result.id}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=credits,videos,images,content_ratings`;
             }
             
-            const detailRes = await fetch(detailUrl);
-            const detailData = await detailRes.json();
+            const detailData = await _tmdbFetch(detailUrl);
+            if (!detailData) { state.vodCache[movieName] = null; return null; }
             
             // Fragman
             let trailerKey = null;
@@ -15544,20 +15959,26 @@ listSeriesChannels();
     document.getElementById('vodModalMeta').innerHTML = metaHtml;
     
     const overviewElement = document.getElementById('vodModalOverview');
-    overviewElement.textContent = vodInfo.overview || 'Açıklama bulunamadı.';
+    if (overviewElement) overviewElement.textContent = vodInfo.overview || 'Açıklama bulunamadı.';
     
+    const _gc = document.getElementById('vodModalGenresContainer');
+    const _cc = document.getElementById('vodModalCastContainer');
+    const _dc = document.getElementById('vodModalDirectorContainer');
+
     if (vodInfo.genres && vodInfo.genres.length > 0) {
-        document.getElementById('vodModalGenresContainer').style.display = 'block';
-        document.getElementById('vodModalGenres').innerHTML = vodInfo.genres.map(genre => 
+        if (_gc) _gc.style.display = 'block';
+        const _gg = document.getElementById('vodModalGenres');
+        if (_gg) _gg.innerHTML = vodInfo.genres.map(genre => 
             `<div class="vod-genre-item">${genre}</div>`
         ).join('');
     } else {
-        document.getElementById('vodModalGenresContainer').style.display = 'none';
+        if (_gc) _gc.style.display = 'none';
     }
     
     if (vodInfo.cast && vodInfo.cast.length > 0) {
-        document.getElementById('vodModalCastContainer').style.display = 'block';
-        document.getElementById('vodModalCast').innerHTML = vodInfo.cast.map(actor => 
+        if (_cc) _cc.style.display = 'block';
+        const _cg = document.getElementById('vodModalCast');
+        if (_cg) _cg.innerHTML = vodInfo.cast.map(actor => 
             actor.image ? `
                 <div class="vod-cast-item" style="display:flex; flex-direction:column; align-items:center; text-align:center; min-width:70px;">
                     <img loading="lazy" src="${actor.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; margin-bottom:4px; border:1px solid var(--accent-primary);">
@@ -15569,16 +15990,15 @@ listSeriesChannels();
             `
         ).join('');
     } else {
-        document.getElementById('vodModalCastContainer').style.display = 'none';
+        if (_cc) _cc.style.display = 'none';
     }
     
     if (vodInfo.director) {
-        document.getElementById('vodModalDirectorContainer').style.display = 'block';
-        document.getElementById('vodModalDirector').innerHTML = `
-            <div class="vod-cast-item">${vodInfo.director}</div>
-        `;
+        if (_dc) _dc.style.display = 'block';
+        const _dg = document.getElementById('vodModalDirector');
+        if (_dg) _dg.innerHTML = `<div class="vod-cast-item">${vodInfo.director}</div>`;
     } else {
-        document.getElementById('vodModalDirectorContainer').style.display = 'none';
+        if (_dc) _dc.style.display = 'none';
     }
     
     const continueData = state.continueWatching[channelName];
@@ -15803,25 +16223,30 @@ async function fetchSeriesInfo(seriesName) {
         }
         
         
+        // Sessiz TMDB fetch yardımcısı
+        const _sf = async (url) => {
+            const c = new AbortController();
+            const t = setTimeout(() => c.abort(), 8000);
+            try { const r = await fetch(url, { signal: c.signal }); clearTimeout(t); return r.ok ? await r.json() : null; }
+            catch(e) { clearTimeout(t); return null; }
+        };
+
         // TMDB API ile dizi arama
-        const searchResponse = await fetch(
+        const searchData = await _sf(
             `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(seriesName)}&language=tr-TR`
         );
         
-        const searchData = await searchResponse.json();
-        
-        if (!searchData.results || searchData.results.length === 0) {
+        if (!searchData || !searchData.results || searchData.results.length === 0) {
             return null;
         }
         
         const seriesId = searchData.results[0].id;
         
         // Dizi detaylarını al
-        const detailResponse = await fetch(
+        const seriesData = await _sf(
             `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR`
         );
-        
-        const seriesData = await detailResponse.json();
+        if (!seriesData) return null;
         
         // Sezon sayısını belirle
         const totalSeasons = seriesData.number_of_seasons || 1;
@@ -15832,13 +16257,11 @@ async function fetchSeriesInfo(seriesName) {
         // Her sezon için bölüm bilgileri
         for (let seasonNum = 1; seasonNum <= totalSeasons; seasonNum++) {
             try {
-                const seasonResponse = await fetch(
+                const seasonData = await _sf(
                     `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=tr-TR`
                 );
                 
-                if (!seasonResponse.ok) continue;
-                
-                const seasonData = await seasonResponse.json();
+                if (!seasonData) continue;
                 
                 seasons[seasonNum] = seasonData.episodes.map(ep => ({
                     episode: ep.episode_number,
@@ -19352,8 +19775,8 @@ window.testSettings = {
         // Kontrol gizleme modu — true iken butonlar kalıcı gizli
         window._controlsHidden = false;
 
-        // Canlı yayın oto-gizleme süresi (ms)
-        var LIVE_AUTOHIDE_MS = 3000;
+        // Canlı yayın oto-gizleme süresi (ms) — yayın açılınca 2sn sonra gizle
+        var LIVE_AUTOHIDE_MS = 2000;
 
         function _scheduleHide() {
             clearTimeout(window.autoHideControlsTimer);
@@ -19386,18 +19809,26 @@ window.testSettings = {
                 playerContainer.classList.add('show-controls');
                 state.remote.playerControlsVisible = true;
                 // Player view açıkken zone'u player'a sabitle (seek çakışmasını önle)
+                // playerTopBar ve progressBar zone'larına dokunma — çift odak önleme
                 const _pv = document.getElementById('playerView');
                 if (_pv && _pv.style.display === 'flex') {
                     if (state.remote.zone !== 'player' && state.remote.zone !== 'progressBar' && state.remote.zone !== 'playerTopBar') {
+                        // Canlı: Kanal Listesi butonu | VOD/Film: Play/Pause butonu
+                        if (state.player && state.player.isLiveStream) {
+                            state.remote.playerBoxIndex = 9; // btnPlayerList
+                        } else {
+                            state.remote.playerBoxIndex = 1; // btnPlayPause
+                        }
                         state.remote.zone = 'player';
                     }
                 }
                 // Canlı yayında: her showControls çağrısı timer'ı 3sn'ye sıfırlar
                 _scheduleHide();
+                // zone sabitlendi, şimdi odağı güncelle (rAF içinde — çift odak önleme)
+                if (typeof updateRemoteFocus === 'function') {
+                    updateRemoteFocus();
+                }
             });
-            if (typeof updateRemoteFocus === 'function') {
-                updateRemoteFocus();
-            }
         }
 
         // Kontrolleri gizle/göster toggle
@@ -19424,7 +19855,12 @@ window.testSettings = {
                 if (label) label.textContent = 'Gizle';
                 playerContainer.classList.add('show-controls');
                 state.remote.playerControlsVisible = true;
-                // Zone'u player'a sabitle — seek çakışmasını önle
+                // Zone'u player'a sabitle + doğru butona odaklan
+                if (state.player && state.player.isLiveStream) {
+                    state.remote.playerBoxIndex = 9; // btnPlayerList
+                } else {
+                    state.remote.playerBoxIndex = 1; // btnPlayPause
+                }
                 state.remote.zone = 'player';
                 updateRemoteFocus();
                 showToast('👁 Kontroller görünür');
@@ -19508,6 +19944,16 @@ function openSidebar() {
             populateSidebar();
             showSidebarLoading(false);
             _updateEpgBadge();
+            // KANAL LİSTESİ BOŞ FIX: populateSidebar sonrası yine boşsa zorla render et
+            setTimeout(() => {
+                const _cList = document.getElementById('sidebarChannelsList');
+                if (_cList && _cList.children.length === 0 && window.state && window.state.channels && window.state.channels.length > 0) {
+                    if (!window.state.sidebar.currentCategory) {
+                        window.state.sidebar.currentCategory = 'all';
+                    }
+                    if (typeof renderSidebarChannels === 'function') renderSidebarChannels();
+                }
+            }, 200);
         }, 60);
 
         setTimeout(() => { updateSidebarFocus(); }, 100);
@@ -19598,17 +20044,25 @@ function closeSidebar() {
 
 function populateSidebar() {
     requestAnimationFrame(() => {
-        const currentChannel = state.filtered[state.player.index] || state.filtered[0] || null;
+        // state.channels her zaman kullan — state.filtered boş olabilir
+        const allChannels = state.channels && state.channels.length > 0 
+            ? state.channels 
+            : [];
+        
+        const currentChannel = (state.filtered && state.filtered[state.player.index]) 
+            || (state.filtered && state.filtered[0]) 
+            || allChannels[0] 
+            || null;
         const currentGroup = currentChannel ? (currentChannel.group || null) : null;
         const currentListIdx = currentChannel ? (currentChannel.listIdx != null ? currentChannel.listIdx : null) : null;
 
         // Kanalları al - önce seçili M3U'ya göre filtrele
         let listChannels = currentListIdx !== null
-            ? state.channels.filter(ch => ch.listIdx === currentListIdx)
-            : state.channels;
+            ? allChannels.filter(ch => ch.listIdx === currentListIdx)
+            : allChannels;
         
         // Hiç kanal yoksa tüm kanalları kullan
-        if (listChannels.length === 0) listChannels = state.channels;
+        if (listChannels.length === 0) listChannels = allChannels;
 
         // Kategorileri topla - listChannels VEYA tüm kanallardan
         const categories = new Set();
@@ -19629,12 +20083,10 @@ function populateSidebar() {
         state.sidebar.categories = sortedCategories;
         state.sidebar._listChannels = listChannels;
         
-        // Aktif kanalın grubunu seç, yoksa ilk alfabetik kategoriyi seç (asla null/all değil)
-        let bestCat = 'all';
+        // Aktif kanalın grubunu seç, yoksa ilk alfabetik kategoriyi seç
+        let bestCat = sortedCategories.length > 0 ? sortedCategories[0] : 'all';
         if (currentGroup && categories.has(currentGroup)) {
             bestCat = currentGroup;
-        } else if (sortedCategories.length > 0) {
-            bestCat = sortedCategories[0];
         }
         state.sidebar.currentCategory = bestCat;
 
@@ -19853,15 +20305,13 @@ function renderSidebarChannels() {
     loadingEl.style.display = 'flex';
     noResultsEl.style.display = 'none';
 
-    // Kategori seçilmemişse içerik gösterme
+    // Kategori seçilmemişse 'all' kullan — boş bırakma
     if (!state.sidebar.currentCategory) {
-        loadingEl.style.display = 'none';
-        state.sidebar.filteredChannels = [];
-        return;
+        state.sidebar.currentCategory = 'all';
     }
 
     // Anlık kategori filtrele
-    const cat = state.sidebar.currentCategory || (state.sidebar.categories && state.sidebar.categories[0]) || 'all';
+    const cat = state.sidebar.currentCategory || 'all';
     state.sidebar.currentCategory = cat;
 
     let channels = state.selectedM3U !== 'all'
@@ -21097,11 +21547,6 @@ function showNoConfigUI() {
         function processConfig(conf) {
             state.m3uList = conf.m3uList || conf.m3u_list || [];
             
-
-            const _codebergM3U = { name: 'ÜmitMod Türk', url: 'https://codeberg.org/senvarken/Mekan/raw/branch/main/Umitmodturk.m3u' };
-            if (!state.m3uList.some(m => m.url === _codebergM3U.url)) {
-                state.m3uList.unshift(_codebergM3U);
-            }
             state.themes = conf.themes || [];
             const customM3ULists = JSON.parse(localStorage.getItem('customM3ULists') || '[]');
             state.m3uList = state.m3uList.concat(customM3ULists);
@@ -22420,7 +22865,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.includes('eklen') || gl.includes('yeni') ||
                     extraVodGroups.has(gl) ||
-                    gl.includes('belgesel') || gl.includes('animasyon') || gl.includes('bollywood') ||
+                    gl.includes('animasyon') || gl.includes('bollywood') ||
                     gl.includes('imdb') || gl.includes('yerli') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
@@ -23659,7 +24104,7 @@ function parseM3U(text, listIdx) {
                     currentItem.isSeries = true;
                 } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
-                    gl.includes('eklen') || gl.includes('yeni') || gl.includes('belgesel') ||
+                    gl.includes('eklen') || gl.includes('yeni') ||
                     gl.includes('animasyon') || gl.includes('western') || gl.includes('bollywood') ||
                     gl.includes('imdb') || gl.includes('yerli') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
@@ -23773,8 +24218,8 @@ function groupChannelsBySeries(channels) {
             const _nameLow = (channel.name || '').toLowerCase();
             const _isActuallyVod = _grpLow.includes('dizi') || _grpLow.includes('film') ||
                 _grpLow.includes('series') || _grpLow.includes('vod') ||
-                _grpLow.includes('panel') || _grpLow.includes('arşiv') ||
-                _grpLow.includes('arsiv') || _grpLow.includes('kanal') ||
+                _grpLow.includes('arşiv') ||
+                _grpLow.includes('arsiv') ||
                 /bölüm|bolum|sezon|season/i.test(_nameLow) ||
                 /s\d+\s*[be]\d+/i.test(_nameLow) || /\d+x\d+/.test(_nameLow);
             if (_isActuallyVod) {
@@ -24041,13 +24486,13 @@ function openSeriesModal(seriesName, originalIndex) {
     `;
     
     // Özet (varsa)
-    document.getElementById('vodModalOverview').textContent = 
-        seriesData.overview || `${seriesName} - ${totalSeasons} sezon, ${totalEpisodes} bölüm`;
+    const _ov2 = document.getElementById('vodModalOverview');
+    if (_ov2) _ov2.textContent = seriesData.overview || `${seriesName} - ${totalSeasons} sezon, ${totalEpisodes} bölüm`;
     
     // Türler ve oyuncuları gizle
-    document.getElementById('vodModalGenresContainer').style.display = 'none';
-    document.getElementById('vodModalCastContainer').style.display = 'none';
-    document.getElementById('vodModalDirectorContainer').style.display = 'none';
+    const _gc2 = document.getElementById('vodModalGenresContainer'); if (_gc2) _gc2.style.display = 'none';
+    const _cc2 = document.getElementById('vodModalCastContainer');   if (_cc2) _cc2.style.display = 'none';
+    const _dc2 = document.getElementById('vodModalDirectorContainer'); if (_dc2) _dc2.style.display = 'none';
     
     // Sezon/bölüm container'ını göster ve doldur
     const seasonsContainer = document.getElementById('vodSeasonsContainer');
@@ -28191,16 +28636,18 @@ function playChannelByName(name) {
                 setTimeout(() => _waitEpgForBanner(chName, chLogo, chTvgId, tries + 1), 1000);
             }
         })(ch.name, logo, ch.tvgId, 0);
-        // Canlı yayın: EPG butonunu göster
+        // Canlı yayın: EPG butonunu göster, Altyazı butonunu GİZLE
         var _epgBtnPC = document.getElementById('btnEpg'); if (_epgBtnPC) _epgBtnPC.style.display = 'flex';
+        var _subBtnLive = document.getElementById('btnSubtitle'); if (_subBtnLive) _subBtnLive.style.display = 'none';
     } else {
         // VOD/Dizi: banner ve EPG bar'ı gizle
         const existing = document.getElementById('channelInfoBanner');
         if (existing) existing.style.display = 'none';
         const epgEl = document.getElementById('playerEpgNow');
         if (epgEl) { epgEl.style.display = 'none'; clearTimeout(epgEl._epgRetry); }
-        // VOD/Dizi: EPG butonunu gizle
+        // VOD/Dizi: EPG butonunu gizle, Altyazı butonunu GÖSTER
         var _epgBtnPC2 = document.getElementById('btnEpg'); if (_epgBtnPC2) _epgBtnPC2.style.display = 'none';
+        var _subBtnVod = document.getElementById('btnSubtitle'); if (_subBtnVod) _subBtnVod.style.display = 'flex';
     }
     
     // State'i güncelle
@@ -28522,44 +28969,44 @@ function resumeChannel(startTime) {
         }
     })();
 
-    document.getElementById('playerView').style.display = 'flex';
+    const _pvEl = document.getElementById('playerView');
+    if (_pvEl) _pvEl.style.display = 'flex';
     // Başa dön butonu player açıkken gizle
     setTimeout(() => { typeof window._umkGoTopUpdate === 'function' && window._umkGoTopUpdate(); }, 50);
-    document.getElementById('progressBarContainer').style.display = 'flex'; 
-    document.getElementById('btnObjectFit').style.display = 'flex';
+    const _pbcEl = document.getElementById('progressBarContainer');
+    if (_pbcEl) _pbcEl.style.display = 'flex';
+    const _bofEl = document.getElementById('btnObjectFit');
+    if (_bofEl) _bofEl.style.display = 'flex';
     
     // Canlı yayın: progress bar hemen sağa al, timeupdate'i bekleme
+    const _pbEl = document.getElementById('progressBar');
+    const _phEl = document.getElementById('progressHandle');
     if (ch.isLive) {
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('progressHandle').style.left = '100%';
-        document.getElementById('progressHandle').style.transform = 'translate(-50%, -50%)';
+        if (_pbEl) _pbEl.style.width = '100%';
+        if (_phEl) { _phEl.style.left = '100%'; _phEl.style.transform = 'translate(-50%, -50%)'; }
     } else {
-        document.getElementById('progressBar').style.width = '0%';
-        document.getElementById('progressHandle').style.left = '0%';
+        if (_pbEl) _pbEl.style.width = '0%';
+        if (_phEl) _phEl.style.left = '0%';
     }
-    document.getElementById('playerContainer').classList.add('playing');
-    document.getElementById('ppIcon').innerText = 'pause';
+    const _pcEl = document.getElementById('playerContainer');
+    if (_pcEl) _pcEl.classList.add('playing');
+    const _ppIconEl = document.getElementById('ppIcon');
+    if (_ppIconEl) _ppIconEl.innerText = 'pause';
 
     // TVBox: VOD/Film/Dizi açılınca kontroller ANINDA kapansın
     // Canlı yayında: 3sn göster sonra kapat | VOD: hiç gösterme
     const _pcPlay = document.getElementById('playerContainer');
+    // Her durumda kontroller kapalı başlasın — ok tuşuna basınca açılır
+    _pcPlay.classList.remove('show-controls');
+    state.remote.playerControlsVisible = false;
+    clearTimeout(window.autoHideControlsTimer);
+    clearTimeout(window.controlsTimer);
+    // İlk ok tuşu basımında hangi butona odaklanılacağını ayarla
+    // Canlı: Kanal Listesi (index 9 = btnPlayerList), VOD/Film: Play/Pause (index 1 = btnPlayPause)
     if (ch.isLive && !ch.isVod) {
-        // Canlı yayın: kontrolleri 3sn göster sonra oto-gizle
-        _pcPlay.classList.add('show-controls');
-        state.remote.playerControlsVisible = true;
-        clearTimeout(window.autoHideControlsTimer);
-        window.autoHideControlsTimer = setTimeout(() => {
-            if (!window._controlsHidden) {
-                _pcPlay.classList.remove('show-controls');
-                state.remote.playerControlsVisible = false;
-            }
-        }, 3000);
+        state.remote.playerBoxIndex = 9; // btnPlayerList
     } else {
-        // VOD/Film/Dizi: kontroller kapalı başlasın
-        _pcPlay.classList.remove('show-controls');
-        state.remote.playerControlsVisible = false;
-        clearTimeout(window.autoHideControlsTimer);
-        clearTimeout(window.controlsTimer);
+        state.remote.playerBoxIndex = 1; // btnPlayPause
     }
     
     updatePlayerFavIcon(ch.name);
@@ -28904,20 +29351,7 @@ function resumeChannel(startTime) {
         const hls = state.player.hls;
         if (hls) return; // HLS kendi handler'ında halleder
         if (state.player.streamStarted) return; // zaten açılmış, geçici hata
-        const errCode = video.error ? video.error.code : 0;
-        // MEDIA_ERR_NETWORK (2) veya MEDIA_ERR_DECODE (3) → proxy ile tekrar dene
-        if (errCode === 2 || errCode === 3) {
-            if (!needsDirect && !state._nativeProxyTried) {
-                state._nativeProxyTried = true;
-                showToast('😄 Alternatif bağlantı deneniyor...');
-                const fallbackUrl = needsStreamProxy
-                    ? STREAM_PROXY + encodeURIComponent(rawUrl)
-                    : PROXY + encodeURIComponent(rawUrl);
-                video.src = fallbackUrl;
-                video.load();
-                video.play().catch(()=>{});
-            }
-        }
+        // Proxy kullanma — hata olsa da direkt linkte kal
     };
 
     // 4. HLS Konfigürasyonu
@@ -29161,41 +29595,14 @@ function resumeChannel(startTime) {
             state.player.hls = null;
 
             if (isKoolTo && streamUrl === effectiveUrl) {
-                showToast('😄 Yedek proxy deneniyor...');
+                showToast('😄 Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
                 startHls(koolFallback);
             } else if (isKoolTo) {
                 showToast('⚠️ Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (isVavooWorker && streamUrl === rawUrl) {
-                showToast('😄 Yayın yeniden bağlanıyor...');
-                video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (isHighResDirect && streamUrl === rawUrl) {
-                showToast('😄 CDN proxy deneniyor...');
-                startHls(PROXY + encodeURIComponent(rawUrl));
-            } else if (isHighResDirect && streamUrl === PROXY + encodeURIComponent(rawUrl)) {
-                showToast('😄 CDN proxy 2 deneniyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-            } else if (isHighResDirect && streamUrl === STREAM_PROXY + encodeURIComponent(rawUrl)) {
-                showToast('⚠️ Native bağlantı deneniyor...');
-                video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (needsStreamProxy && streamUrl === rawUrl) {
-                showToast('🔄 Proxy ile yeniden deneniyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-            } else if (needsStreamProxy && streamUrl === STREAM_PROXY + encodeURIComponent(rawUrl)) {
-                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
-            } else if (needsStreamProxy && streamUrl === STREAM_PROXY2 + encodeURIComponent(rawUrl)) {
-                startHls(STREAM_PROXY3 + encodeURIComponent(rawUrl));
-            } else if (!needsDirect && !needsStreamProxy && !isHighResDirect && streamUrl === rawUrl) {
-                showToast('🔄 Proxy ile yeniden deneniyor...');
-                startHls(PROXY + encodeURIComponent(rawUrl));
-            } else if (!needsDirect && streamUrl === PROXY + encodeURIComponent(rawUrl)) {
-                showToast('😄 Proxy 2 deneniyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-            } else if (!needsDirect && streamUrl === STREAM_PROXY + encodeURIComponent(rawUrl)) {
-                showToast('😄 Proxy 3 deneniyor...');
-                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
             } else {
+                // Proxy kullanma — direkt native ile dene
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             }
         });
@@ -29246,7 +29653,6 @@ function resumeChannel(startTime) {
                     video.src = finalUrl;
                     video.load();
                     video.play().catch(() => {
-                        video.src = STREAM_PROXY + encodeURIComponent(finalUrl);
                         video.load();
                         video.play().catch(() => {});
                     });
@@ -29255,7 +29661,7 @@ function resumeChannel(startTime) {
                     startHls(finalUrl);
                 }
             } catch(e) {
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+                startHls(rawUrl);
             }
         })();
     } else if (isHlsUrl) {
@@ -29309,11 +29715,7 @@ function resumeChannel(startTime) {
             if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
         }).catch(e => {
             if (e.name === 'AbortError') return;
-            if (needsStreamProxy) {
-                video.src = STREAM_PROXY + encodeURIComponent(rawUrl);
-            } else if (!needsDirect) {
-                video.src = PROXY + encodeURIComponent(rawUrl);
-            }
+            // Proxy kullanma — hata olsa da direkt linkte kal
             video.load();
             video.play().catch(()=>{});
         });
@@ -30015,7 +30417,8 @@ function closePlayer() {
         if (b) { b.classList.remove('btn-active','remote-focused','focused'); }
     });
     
-    document.getElementById('playerView').style.display = 'none';
+    const _pvClose = document.getElementById('playerView');
+    if (_pvClose) _pvClose.style.display = 'none';
     // Canlı progress bar gizleme sınıfını temizle (sonraki açılışta state'e göre uygulansın)
     const _pcClose = document.getElementById('playerControls');
     if (_pcClose) _pcClose.classList.remove('hide-live-progress');
@@ -30308,7 +30711,8 @@ let virtualScrollSystem = null;
         function syncToLive() {
             const v = document.getElementById('videoPlayer');
             if (!state.player.isLiveStream) {
-                document.getElementById('btnLiveSync').style.display = 'none';
+                const _blsEl = document.getElementById('btnLiveSync');
+                if (_blsEl) _blsEl.style.display = 'none';
                 return;
             }
             // DVR: seekable.end'e git (canlı uç)
@@ -30347,7 +30751,8 @@ let virtualScrollSystem = null;
                 if (v.duration && !isNaN(v.duration) && v.duration !== Infinity) {
                     videoDuration = v.duration; 
                     document.getElementById('totalDuration').innerText = `/ ${formatTime(v.duration)}`; 
-                    document.querySelector('.progress-bar-row').style.display = 'flex';
+                    const _pbrEl1 = document.querySelector('.progress-bar-row');
+                    if (_pbrEl1) _pbrEl1.style.display = 'flex';
                 } else { 
                     // Canlı yayın: DVR kontrolü — seekable range varsa DVR sayılır
                     const _seekEnd = (v.seekable && v.seekable.length > 0) ? v.seekable.end(v.seekable.length - 1) : 0;
@@ -30359,7 +30764,8 @@ let virtualScrollSystem = null;
                         videoDuration = 0;
                     }
                     document.getElementById('totalDuration').innerText = ``; 
-                    document.querySelector('.progress-bar-row').style.display = 'flex'; 
+                    const _pbrEl2 = document.querySelector('.progress-bar-row');
+                    if (_pbrEl2) _pbrEl2.style.display = 'flex'; 
                 }
             });v.addEventListener('timeupdate', () => {
                 if (isDragging || state.player.isSeeking) return;
@@ -30379,12 +30785,12 @@ let virtualScrollSystem = null;
                         if (videoDuration < _dvrWindow) videoDuration = _dvrWindow; // güncelle
                         const _pos = Math.max(0, v.currentTime - _skStart);
                         const _pct = Math.min(100, (_pos / _dvrWindow) * 100);
-                        document.getElementById('progressBar').style.width = _pct + '%';
-                        document.getElementById('progressHandle').style.left = _pct + '%';
-                        document.getElementById('progressHandle').style.transform = 'translate(-50%, -50%)';
+                        const _pb1 = document.getElementById('progressBar'); if (_pb1) _pb1.style.width = _pct + '%';
+                        const _ph1 = document.getElementById('progressHandle'); if (_ph1) { _ph1.style.left = _pct + '%'; _ph1.style.transform = 'translate(-50%, -50%)'; }
                         document.getElementById('currentTime').innerText = formatTime(v.currentTime);
                         // btnLiveSync: canlı uçtan 10sn+ gerideyse göster
                         const btnLive = document.getElementById('btnLiveSync');
+                        if (btnLive) {
                         if (_skEnd - v.currentTime > 10) {
                             btnLive.style.display = 'flex';
                             if (!state.remote.playerBoxButtons.includes('btnLiveSync')) {
@@ -30395,14 +30801,15 @@ let virtualScrollSystem = null;
                             const idx = state.remote.playerBoxButtons.indexOf('btnLiveSync');
                             if (idx > -1) state.remote.playerBoxButtons.splice(idx, 1);
                         }
+                        }
                     } else {
                         // Gerçek canlı (DVR yok): handle sağ uçta
-                        document.getElementById('progressBar').style.width = '100%';
-                        document.getElementById('progressHandle').style.left = '100%';
-                        document.getElementById('progressHandle').style.transform = 'translate(-50%, -50%)';
+                        const _pb2 = document.getElementById('progressBar'); if (_pb2) _pb2.style.width = '100%';
+                        const _ph2 = document.getElementById('progressHandle'); if (_ph2) { _ph2.style.left = '100%'; _ph2.style.transform = 'translate(-50%, -50%)'; }
                         document.getElementById('currentTime').innerText = formatTime(v.currentTime);
                         // btnLiveSync: eski videoDuration tabanlı kontrol
                         const btnLive = document.getElementById('btnLiveSync');
+                        if (btnLive) {
                         if (videoDuration > 0 && (videoDuration - v.currentTime > 10)) {
                             btnLive.style.display = 'flex';
                             if (!state.remote.playerBoxButtons.includes('btnLiveSync')) {
@@ -30413,6 +30820,7 @@ let virtualScrollSystem = null;
                             const idx = state.remote.playerBoxButtons.indexOf('btnLiveSync');
                             if (idx > -1) state.remote.playerBoxButtons.splice(idx, 1);
                         }
+                        }
                     }
                     return;
                 }
@@ -30421,21 +30829,24 @@ let virtualScrollSystem = null;
                 if (videoDuration === 0) return;
                 
                 const p = (v.currentTime / videoDuration) * 100;
-                document.getElementById('progressBar').style.width = `${p}%`; 
-                document.getElementById('progressHandle').style.left = `${p}%`;
+                const _pbv = document.getElementById('progressBar'); if (_pbv) _pbv.style.width = `${p}%`; 
+                const _phv = document.getElementById('progressHandle'); if (_phv) _phv.style.left = `${p}%`;
                 document.getElementById('currentTime').innerText = formatTime(v.currentTime);
 
-                const handle = document.getElementById('progressHandle');
+                if (_phv) {
                 if (state.player.isSeeking) {
-                    handle.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                    _phv.style.transform = 'translate(-50%, -50%) scale(1.3)';
                 } else {
-                    handle.style.transform = 'translate(-50%, -50%) scale(1)';
+                    _phv.style.transform = 'translate(-50%, -50%) scale(1)';
+                }
                 }
 
                 const btnLive = document.getElementById('btnLiveSync');
+                if (btnLive) {
                 btnLive.style.display = 'none';
                 const idx = state.remote.playerBoxButtons.indexOf('btnLiveSync');
                 if (idx > -1) state.remote.playerBoxButtons.splice(idx, 1);
+                }
             });
         }
         
@@ -30511,8 +30922,8 @@ let virtualScrollSystem = null;
             const bar = document.getElementById('progressBarContainer'); 
             const handle = document.getElementById('progressHandle'); 
             const v = document.getElementById('videoPlayer');
+            if (!bar || !handle || !v) return;
                  const startDrag = (e) => {
-                if ((e.target.id!=='progressHandle' && e.target.id!=='progressBarContainer') || videoDuration===0) return;
                 // CANLI YAYINDA PROGRESS BAR: DVR desteği
                 if (state.player.isLiveStream) {
                     const _vEl = document.getElementById('videoPlayer');
@@ -30539,7 +30950,7 @@ let virtualScrollSystem = null;
                     const ratio = Math.max(0, Math.min(cx - r.left, r.width)) / r.width;
                     const p = ratio * 100;
                     handle.style.left = `${p}%`; 
-                    document.getElementById('progressBar').style.width = `${p}%`; 
+                    const _pbDrag = document.getElementById('progressBar'); if (_pbDrag) _pbDrag.style.width = `${p}%`; 
                     document.getElementById('currentTime').textContent = formatTime(videoDuration * ratio);
                 };
                 
@@ -30963,17 +31374,12 @@ function openSearchModal() {
     const countEl = document.getElementById('searchResultsCount');
     if (countEl) countEl.textContent = '0 kanal bulundu';
     
-    // Odağı arama input'una al (sadece dokunmatik/fare modunda)
-    setTimeout(() => {
-        const input = document.getElementById('searchInput');
-        if (input && !state.remote.active) input.focus();
-    }, 100);
-    
-    if(state.remote.active) { 
-        state.remote.zone = 'searchModal'; 
-        state.remote.searchIndex = 3; // "Ara" butonuna odaklan başlangıçta
-        setTimeout(() => _updateSearchRemoteFocus(), 150); 
-    }
+    // Her zaman remote zone'u searchModal yap — TVBox'ta touch ile açılsa bile
+    // remote.active false ise true yap ki D-pad navigasyon çalışsın
+    state.remote.active = true;
+    state.remote.zone = 'searchModal';
+    state.remote.searchIndex = 3; // "Ara" butonuna odaklan başlangıçta
+    setTimeout(() => _updateSearchRemoteFocus(), 150);
     playKeySound('click');
 }
 
@@ -31128,15 +31534,15 @@ function displaySearchResults(results) {
         });
     }, 50);
     
-    // Remote focus için
-    if (state.remote.active && state.remote.zone === 'searchModal') {
-        // Sonuçların ilk öğesine odaklan
+    // Remote focus için — her zaman ilk sonuca odaklan (remote.active olsun olmasın)
+    if (state.remote.zone === 'searchModal') {
         const visibleBase = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'].filter(id => {
             const el = document.getElementById(id);
             return el && el.style.display !== 'none';
         });
         state.remote.searchIndex = visibleBase.length; // İlk sonuç öğesi
-        setTimeout(() => _updateSearchRemoteFocus(), 100);
+        state.remote.active = true;
+        setTimeout(() => _updateSearchRemoteFocus(), 150);
     }
 }
 
@@ -31225,7 +31631,17 @@ function handleSearchModalRemote(e) {
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             inputEl.blur();
-            state.remote.searchIndex = 1; // VOD toggle'a geç
+            // Sonuç varsa ilk sonuca, yoksa VOD toggle'a geç
+            const resultItems = document.querySelectorAll('.search-result-item');
+            if (resultItems.length > 0) {
+                const visibleBase = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'].filter(id => {
+                    const el = document.getElementById(id);
+                    return el && el.style.display !== 'none';
+                });
+                state.remote.searchIndex = visibleBase.length; // ilk sonuç
+            } else {
+                state.remote.searchIndex = 1; // VOD toggle
+            }
             _updateSearchRemoteFocus();
             return;
         }
@@ -31562,13 +31978,16 @@ function deleteContinueWatchingRecord(name) {
 
         // PLAYER KONTROL KUTUSU İÇİN REMOTE HANDLER
         function handlePlayerBoxRemote(e) {
-            // Kontroller gizliyken → inline yönetim (zincir sorunlarını önle)
+            const _isLive   = !!(state.player && state.player.isLiveStream);
+            const _isSeries = !!(state.series && state.series.currentSeries);
+            const _isVod    = !!(state.player && state.player.vodPlaying) && !_isSeries;
+
+            // ── Kontroller gizliyken (_controlsHidden) ──
             if (window._controlsHidden) {
                 if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Back') {
                     e.preventDefault(); closePlayer(); return;
                 }
-                // Pause/Play tuşları kontrollerden bağımsız her zaman çalışsın
-                if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause' || e.key === ' ') {
+                if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
                     e.preventDefault(); togglePlayPause(); return;
                 }
                 if (e.key === 'Enter' || e.key === 'OK') {
@@ -31578,39 +31997,75 @@ function deleteContinueWatchingRecord(name) {
                     const _label2 = document.getElementById('hideControlsLabel');
                     if (_icon2)  _icon2.textContent  = 'visibility_off';
                     if (_label2) _label2.textContent = 'Gizle';
+                    state.remote.playerBoxIndex = _isLive ? 9 : 1; // Canlı: Liste | VOD/Dizi: Play
+                    state.remote.zone = 'player';
                     showControls(5000);
                     return;
                 }
-                const _isSeries = !!(state.series && state.series.currentSeries);
-                const _isLive   = state.player.isLiveStream;
-                if (e.key === 'ArrowUp' || e.key === 'Up') {
-                    e.preventDefault();
-                    if (_isSeries) { if (typeof nextEpisode==='function') nextEpisode(); }
-                    else { nextCh(); showToast(_isLive ? '▶ Sonraki Kanal' : '▶ Sonraki Film'); }
-                    return;
-                }
-                if (e.key === 'ArrowDown' || e.key === 'Down') {
-                    e.preventDefault();
-                    if (_isSeries) { if (typeof prevEpisode==='function') prevEpisode(); }
-                    else { prevCh(); showToast(_isLive ? '◀ Önceki Kanal' : '◀ Önceki Film'); }
-                    return;
-                }
+                // Yön tuşları — _controlsHidden modunda (kalıcı gizle basıldıktan sonra)
+                if (e.key === 'ArrowUp' || e.key === 'Up')    { e.preventDefault(); return; }
+                if (e.key === 'ArrowDown' || e.key === 'Down') { e.preventDefault(); return; }
                 if (e.key === 'ArrowRight' || e.key === 'Right') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (_isLive) { if (typeof openEpgModal==='function') openEpgModal(); }
-                    else         { if (typeof seekForward==='function') seekForward(); }
+                    e.preventDefault(); e.stopPropagation();
+                    if (!_isLive) { if (typeof seekForward  === 'function') seekForward(); }
                     return;
                 }
                 if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (_isLive) { if (typeof openSidebar==='function') openSidebar(); }
-                    else         { if (typeof seekBackward==='function') seekBackward(); }
+                    e.preventDefault(); e.stopPropagation();
+                    if (!_isLive) { if (typeof seekBackward === 'function') seekBackward(); }
                     return;
                 }
                 return;
             }
+
+            // ── Kontroller kapalı (show-controls yok) ama _controlsHidden değil ──
+            const _pcVisible = document.getElementById('playerContainer').classList.contains('show-controls');
+            if (!_pcVisible) {
+                if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Back') {
+                    e.preventDefault(); closePlayer(); return;
+                }
+                if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
+                    e.preventDefault(); togglePlayPause(); return;
+                }
+                // OK/Enter → kontrolleri doğru odakla aç
+                if (e.key === 'Enter' || e.key === 'OK' ||
+                    e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+                    e.key === 'ArrowUp'   || e.key === 'ArrowDown') {
+                    e.preventDefault(); e.stopPropagation();
+                    // Yön tuşu davranışı — kontroller kapalıyken (normal mod, _controlsHidden değil)
+                    if (e.key === 'Enter' || e.key === 'OK') {
+                        // OK → kontrolleri aç
+                        state.remote.playerBoxIndex = _isLive ? 9 : 1;
+                        state.remote.zone = 'player';
+                        showControls(5000);
+                        updateRemoteFocus();
+                        return;
+                    }
+                    // Film (VOD, dizi değil): sol/sağ sarma, yukarı/aşağı hiçbir şey
+                    if (_isVod) {
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  return; }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); return; }
+                        // ArrowUp/Down → hiçbir şey yapma (film değiştirme yok)
+                        return;
+                    }
+                    // Dizi: yukarı=sonraki bölüm, aşağı=önceki bölüm, sol/sağ sarma YOK
+                    if (_isSeries) {
+                        if (e.key === 'ArrowUp')   { if (typeof nextEpisode === 'function') nextEpisode(); return; }
+                        if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); return; }
+                        // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
+                        return;
+                    }
+                    // Canlı: ok tuşu kontrolleri açsın (yukarıda OK ile aynı)
+                    state.remote.playerBoxIndex = 9; // btnPlayerList
+                    state.remote.zone = 'player';
+                    showControls(5000);
+                    updateRemoteFocus();
+                    return;
+                }
+                return;
+            }
+
+            // ── Kontroller AÇIK — butonlar ve progressBar arası gezinme ──
             // Kalite / Altyazı modal açıksa → önce onlara yönlendir
             if (typeof window._qualityModalKeyHandler === 'function' && window._qualityModalKeyHandler(e)) return;
             if (typeof window._subtitleModalKeyHandler === 'function' && window._subtitleModalKeyHandler(e)) return;
@@ -31619,85 +32074,73 @@ function deleteContinueWatchingRecord(name) {
                 const el = document.getElementById(id);
                 return el && el.style.display !== 'none';
             });
-            
-            // Sadece gezinme tuşlarında showControls çağırma — video thread bloke oluyor
-            // showControls sadece kontrolleri ilk kez göstermek için veya Enter/OK'da çağır
+
+            // Gezinme dışı tuşlarda timer'ı uzat
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
                 showControls(5000);
             } else {
-                // Gezinmede sadece timer'ları temizle — oto-gizleme yok, manuel kalır
+                // Gezinmede timer'ı sıfırla (5sn baştan say)
                 clearTimeout(window.autoHideControlsTimer);
                 clearTimeout(window.controlsTimer);
+                _scheduleHide();
             }
-            
+
             switch(e.key) {
-                case 'ArrowLeft': 
-                    e.preventDefault();
-                    e.stopPropagation(); // Seek handler'ının tetiklenmesini engelle
+                case 'ArrowLeft':
+                    e.preventDefault(); e.stopPropagation();
                     state.remote.playerBoxIndex = Math.max(0, state.remote.playerBoxIndex - 1);
                     break;
-                    
-                case 'ArrowRight': 
-                    e.preventDefault();
-                    e.stopPropagation(); // Seek handler'ının tetiklenmesini engelle
+
+                case 'ArrowRight':
+                    e.preventDefault(); e.stopPropagation();
                     state.remote.playerBoxIndex = Math.min(visibleButtons.length - 1, state.remote.playerBoxIndex + 1);
                     break;
-                    
-                case 'ArrowUp': 
-                    e.preventDefault(); 
-                    // Kontroller görünürken ↑ → progress bar'a geç (seek için)
-                    if (state.remote.playerControlsVisible) {
-                        state.remote.zone = 'progressBar';
-                        updateRemoteFocus();
-                    } else {
-                        nextCh();
-                    }
-                    break;
-                    
-                case 'ArrowDown': 
-                    e.preventDefault(); 
-                    // Kalite veya altyazı modalı açıksa kapat, değilse önceki kanal
-                    if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
-                    if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
-                    prevCh();
-                    break;
-                    
-                case 'Enter': case 'OK': 
-                    e.preventDefault(); 
-                    const activeButton = visibleButtons[state.remote.playerBoxIndex];
-                    if (activeButton === 'btnPlayPause') {
-                        handlePlayPauseClick();
-                    } else {
-                        document.getElementById(activeButton)?.click();
-                    }
-                    break;
-                    
-                case 'Backspace': case 'Escape': 
+
+                case 'ArrowUp':
                     e.preventDefault();
-                    // Modal açıksa önce kapat
+                    // ↑ → ProgressBar'a geç
+                    state.remote.zone = 'progressBar';
+                    updateRemoteFocus();
+                    return;
+
+                case 'ArrowDown':
+                    e.preventDefault();
+                    // ↓ → Kontrolleri kapat (gizle, oto-gizle gibi)
+                    clearTimeout(window.autoHideControlsTimer);
+                    clearTimeout(window.controlsTimer);
+                    document.getElementById('playerContainer').classList.remove('show-controls');
+                    state.remote.playerControlsVisible = false;
+                    return;
+
+                case 'Enter': case 'OK':
+                    e.preventDefault();
+                    {
+                        const activeButton = visibleButtons[state.remote.playerBoxIndex];
+                        if (activeButton === 'btnPlayPause') {
+                            handlePlayPauseClick();
+                        } else {
+                            document.getElementById(activeButton)?.click();
+                        }
+                    }
+                    break;
+
+                case 'Backspace': case 'Escape':
+                    e.preventDefault();
                     if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
                     if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
                     closePlayer();
                     break;
-                    
-                case 'ChannelUp': 
-                    e.preventDefault(); 
-                    nextCh(); 
-                    break;
-                    
-                case 'ChannelDown': 
-                    e.preventDefault(); 
-                    prevCh(); 
-                    break;
 
-                case 'ColorF0Red':   // Bazı kumandalar: kırmızı = kalite
+                case 'ChannelUp':   e.preventDefault(); nextCh(); break;
+                case 'ChannelDown': e.preventDefault(); prevCh(); break;
+
+                case 'ColorF0Red':
                     e.preventDefault();
                     if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal();
                     break;
-
-                case 'ColorF2Green': // Yeşil = altyazı
+                case 'ColorF2Green':
                     e.preventDefault();
-                    if (typeof window.toggleSubtitleModal === 'function') window.toggleSubtitleModal();
+                    if (!_isLive && typeof window.toggleSubtitleModal === 'function') window.toggleSubtitleModal();
                     break;
             }
             updateRemoteFocus();
@@ -32497,8 +32940,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
              
              switch(e.key) {
-                 case 'ArrowUp': e.preventDefault(); nextCh(); break;
-                 case 'ArrowDown': e.preventDefault(); state.remote.zone = 'progressBar'; updateRemoteFocus(); break;
+                 case 'ArrowUp': e.preventDefault(); state.remote.zone = 'player'; updateRemoteFocus(); break;
+                 case 'ArrowDown': e.preventDefault(); state.remote.zone = 'player'; updateRemoteFocus(); break;
                  case 'ArrowLeft': e.preventDefault(); state.remote.playerHeaderIndex = Math.max(0, state.remote.playerHeaderIndex - 1); break;
                  case 'ArrowRight': e.preventDefault(); state.remote.playerHeaderIndex = Math.min(visibleButtons.length - 1, state.remote.playerHeaderIndex + 1); break;
                  case 'Enter': case 'OK': e.preventDefault(); document.getElementById(visibleButtons[state.remote.playerHeaderIndex]).click(); break;
@@ -32527,7 +32970,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                 case 'ArrowUp': 
                     e.preventDefault();
-                    nextCh();
+                    // ↑ → player kontrol butonlarına geç
+                    state.remote.zone = 'player';
+                    updateRemoteFocus();
                     break;
                     
                 case 'ArrowDown': 
@@ -32539,14 +32984,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                 case 'Enter': case 'OK': 
                     e.preventDefault();
-                    const progressBar = document.getElementById('progressBarContainer');
-                    const rect = progressBar.getBoundingClientRect();
-                    const clickX = rect.left + rect.width * (video.currentTime / videoDuration);
-                    const event = new MouseEvent('click', {
-                        clientX: clickX,
-                        clientY: rect.top + rect.height / 2
-                    });
-                    progressBar.dispatchEvent(event);
+                    {
+                        const progressBar = document.getElementById('progressBarContainer');
+                        const rect = progressBar.getBoundingClientRect();
+                        const clickX = rect.left + rect.width * (video.currentTime / videoDuration);
+                        const event = new MouseEvent('click', {
+                            clientX: clickX,
+                            clientY: rect.top + rect.height / 2
+                        });
+                        progressBar.dispatchEvent(event);
+                    }
                     break;
                     
                 case 'Backspace': case 'Escape': 
@@ -32558,202 +33005,97 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
 function handlePlayerRemote(e) {
-    // Kontroller gizliyken:
-    // - Geri/Escape → player'ı kapat
-    // - OK/Enter → kontrolleri geri getir
-    // - MediaPlayPause/MediaPlay/MediaPause/Space → her zaman pause/play yap
-    // - Yön tuşları (ArrowUp/Down/Left/Right) → HİÇBİR ŞEY YAPMA (gizli kal)
+    // Bu fonksiyon sadece zone player/playerTopBar/progressBar dışındayken çağrılır (fallback)
+    // Her durumda: Medya tuşları, Geri, ve OK → kontrolleri aç
+    const _isLive   = !!(state.player && state.player.isLiveStream);
+    const _isSeries = !!(state.series && state.series.currentSeries);
+    const _isVod    = !!(state.player && state.player.vodPlaying) && !_isSeries;
+
+    // Medya tuşları her zaman çalışır
+    if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
+        e.preventDefault(); togglePlayPause(); return;
+    }
+    if (e.key === 'MediaStop' || e.key === 'Back' || e.key === 'Backspace' || e.key === 'Escape') {
+        e.preventDefault(); closePlayer(); return;
+    }
+
+    // _controlsHidden modunda (kalıcı gizle) — çok sınırlı tuş seti
     if (window._controlsHidden) {
-        // Pause/Play tuşları kontrollerden bağımsız her zaman çalışsın
-        if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause' || e.key === ' ') {
-            e.preventDefault();
-            togglePlayPause();
-            return;
-        }
-        if (e.key === 'Backspace' || e.key === 'Escape') { e.preventDefault(); closePlayer(); return; }
-
-        const _isSeries = !!(state.series && state.series.currentSeries);
-        const _isVod    = state.player.vodPlaying && !_isSeries;
-        const _isLive   = state.player.isLiveStream;
-
-        if (e.key === 'ArrowUp' || e.key === 'Up') {
-            e.preventDefault();
-            if (_isSeries) {
-                // Dizi: Sonraki bölüm
-                if (typeof nextEpisode === 'function') nextEpisode();
-            } else {
-                // Canlı / Film: Sonraki kanal/film
-                nextCh();
-                if (_isLive) showToast('▶ Sonraki Kanal');
-                else showToast('▶ Sonraki Film');
-            }
-            return;
-        }
-        if (e.key === 'ArrowDown' || e.key === 'Down') {
-            e.preventDefault();
-            if (_isSeries) {
-                // Dizi: Önceki bölüm
-                if (typeof prevEpisode === 'function') prevEpisode();
-            } else {
-                // Canlı / Film: Önceki kanal/film
-                prevCh();
-                if (_isLive) showToast('◀ Önceki Kanal');
-                else showToast('◀ Önceki Film');
-            }
-            return;
-        }
-        // Sağ yön → Dizi/Film: ileri sar | Canlı: EPG aç
-        if (e.key === 'ArrowRight' || e.key === 'Right') {
-            e.preventDefault();
-            if (_isLive) {
-                if (typeof openEpgModal === 'function') openEpgModal();
-            } else {
-                if (typeof seekForward === 'function') seekForward();
-            }
-            return;
-        }
-        // Sol yön → Dizi/Film: geri sar | Canlı: Kanal Listesi aç
-        if (e.key === 'ArrowLeft' || e.key === 'Left') {
-            e.preventDefault();
-            if (_isLive) {
-                if (typeof openSidebar === 'function') openSidebar();
-            } else {
-                if (typeof seekBackward === 'function') seekBackward();
-            }
-            return;
-        }
-        if (e.key === 'Enter' || e.key === 'OK' || e.key === ' ') {
+        if (e.key === 'Enter' || e.key === 'OK') {
             e.preventDefault();
             window._controlsHidden = false;
             const _icon2  = document.getElementById('hideControlsIcon');
             const _label2 = document.getElementById('hideControlsLabel');
             if (_icon2)  _icon2.textContent  = 'visibility_off';
             if (_label2) _label2.textContent = 'Gizle';
+            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.zone = 'player';
             showControls(5000);
+        }
+        // _controlsHidden modunda yön tuşu → hiçbir şey yapma
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
         }
         return;
     }
-    // Sadece kanal değiştirme tuşlarında showControls çağırma
-    const isChannelSwitch = (e.key === 'ArrowUp' || e.key === 'ArrowDown');
-    if (!isChannelSwitch) showControls(5000);
-    
-    const video = document.getElementById('videoPlayer');
-    
-    // TV BOX KUMANDA TUŞLARI
-    switch(e.key) {
-        // KANAL DEĞİŞTİRME - TV BOX
-        case 'ChannelUp':
-        case 'PageUp':
-        case 'MediaFastForward':
-        case 'AudioVolumeUp':
-            e.preventDefault();
-            nextCh();
-            showToast("▶ Sonraki Kanal");
-            break;
-            
-        case 'ChannelDown':
-        case 'PageDown':
-        case 'MediaRewind':
-        case 'AudioVolumeDown':
-            e.preventDefault();
-            prevCh();
-            showToast("◀ Önceki Kanal");
-            break;
-            
-        // OYNAT/DURAKLAT - TV BOX (her zaman çalışır)
-        case 'MediaPlayPause':
-        case 'MediaPlay':
-        case 'MediaPause':
-            e.preventDefault();
-            togglePlayPause();
-            break;
 
-        // OK/ENTER - pause overlay varsa devam ettir, yoksa sidebar veya pause
-        case 'Select':
-        case 'Enter':
-        case 'OK':
-            e.preventDefault();
-            {
-                const _vid = document.getElementById('videoPlayer');
-                const _po = document.getElementById('pauseCenterLogo');
-                const _isPauseOverlayVisible = _po && _po.style.display !== 'none';
-                if (_isPauseOverlayVisible) {
-                    // Pause overlay açıksa: logo gizle, videoyu devam ettir
-                    togglePlayPause();
-                } else if (state.player.vodPlaying || !state.player.isLiveStream) {
-                    togglePlayPause();
-                } else {
-                    openSidebar();
-                }
+    // Kontroller kapalı (show-controls yok) — normal mod
+    const _pcEl = document.getElementById('playerContainer');
+    const _pcShown = _pcEl && _pcEl.classList.contains('show-controls');
+
+    if (!_pcShown) {
+        // Yön tuşları — kontroller kapalıyken içerik türüne göre davran
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+            e.key === 'ArrowUp'   || e.key === 'ArrowDown') {
+            e.preventDefault(); e.stopPropagation();
+            if (_isVod) {
+                // Film: sol/sağ sarma, yukarı/aşağı hiçbir şey
+                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  }
+                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+            } else if (_isSeries) {
+                // Dizi: yukarı=sonraki bölüm, aşağı=önceki bölüm, sol/sağ hiçbir şey
+                if (e.key === 'ArrowUp')   { if (typeof nextEpisode === 'function') nextEpisode(); }
+                if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); }
             }
-            break;
-            
-        // GERİ/DURDUR - TV BOX
-        case 'MediaStop':
-        case 'Back':
-        case 'Backspace':
-        case 'Escape':
+            // Canlı: yön tuşu → kontrolleri aç
+            if (_isLive) {
+                state.remote.playerBoxIndex = 9; // btnPlayerList
+                state.remote.zone = 'player';
+                showControls(5000);
+                updateRemoteFocus();
+            }
+            return;
+        }
+        // OK/Enter → kontrolleri doğru odakla aç
+        if (e.key === 'Enter' || e.key === 'OK' || e.key === 'Select') {
             e.preventDefault();
-            closePlayer();
-            break;
-            
-        // SES KONTROLÜ - TV BOX
-        case 'AudioVolumeUp':
+            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.zone = 'player';
+            showControls(5000);
+            updateRemoteFocus();
+            return;
+        }
+        // Özel tuşlar
+        if (e.key === 'ChannelUp'   || e.key === 'PageUp')   { e.preventDefault(); nextCh(); return; }
+        if (e.key === 'ChannelDown' || e.key === 'PageDown')  { e.preventDefault(); prevCh(); return; }
+        if (e.key === 'Menu' || e.key === 'ContextMenu')      { e.preventDefault(); openSidebar(); return; }
+        if (e.key === 'AudioVolumeMute') {
             e.preventDefault();
-            changeVolume(0.1);
-            break;
-            
-        case 'AudioVolumeDown':
-            e.preventDefault();
-            changeVolume(-0.1);
-            break;
-            
-        case 'AudioVolumeMute':
-            e.preventDefault();
-            const video = document.getElementById('videoPlayer');
-            video.muted = !video.muted;
-            showToast(video.muted ? "🔇 Ses Kapalı" : "🔊 Ses Açık");
-            break;
-            
-        // OK TUŞLARI İLE NAVIGASYON
-        case 'ArrowUp':
-            e.preventDefault();
-            nextCh();
-            break;
-            
-        case 'ArrowDown':
-            e.preventDefault();
-            prevCh();
-            break;
-            
-        case 'ArrowLeft':
-            e.preventDefault();
-            if (video.paused) { togglePlayPause(); } else { seekBackward(); }
-            break;
-            
-        case 'ArrowRight':
-            e.preventDefault();
-            if (video.paused) { togglePlayPause(); } else { seekForward(); }
-            break;
-            
-        // MENU TUŞU - TV BOX
-        case 'Menu':
-        case 'ContextMenu':
-        case 'MediaTrackNext':
-            e.preventDefault();
-            openSidebar();
-            break;
-            
-        // INFO TUŞU - TV BOX
-        case 'Info':
-        case 'MediaTrackPrevious':
-        case 'F1':
-            e.preventDefault();
-            showChannelInfo();
-            break;
+            const _v = document.getElementById('videoPlayer');
+            _v.muted = !_v.muted;
+            showToast(_v.muted ? '🔇 Ses Kapalı' : '🔊 Ses Açık');
+            return;
+        }
+        return;
     }
+
+    // Kontroller açık ama zone yanlış — zone'u player'a sabitle
+    state.remote.playerBoxIndex = _isLive ? 9 : 1;
+    state.remote.zone = 'player';
+    showControls(5000);
     updateRemoteFocus();
 }
+
 
 function showChannelInfo() {
     if (state.player.name) {
@@ -34296,10 +34638,14 @@ function handleFavoriteChannelSelect(key) {
             const el = document.getElementById(id);
             return el && el.style.display !== 'none';
         });
-        const safeIdx = Math.min(state.remote.playerBoxIndex, visibleButtons.length - 1);
-        state.remote.playerBoxIndex = Math.max(0, safeIdx);
-        el=document.getElementById(visibleButtons[state.remote.playerBoxIndex]);
-        hint='Kontroller';
+        if (visibleButtons.length === 0) { hint = 'Kontroller'; }
+        else {
+            const safeIdx = Math.min(Math.max(0, state.remote.playerBoxIndex), visibleButtons.length - 1);
+            state.remote.playerBoxIndex = safeIdx;
+            const btnEl = document.getElementById(visibleButtons[safeIdx]);
+            if (btnEl) el = btnEl;
+            hint = 'Kontroller';
+        }
     }
     else if(state.remote.zone==='progressBar') {
         el = document.getElementById('progressBarContainer');
@@ -34978,11 +35324,6 @@ function loadAllChannelsSimple() {
 function processSimpleConfig(conf) {
     
     state.m3uList = conf.m3uList || conf.m3u_list || [];
-            // ── CODEBERG BUILT-IN M3U (her zaman listede) ──
-            const _codebergM3U = { name: 'ÜmitMod Türk', url: 'https://codeberg.org/senvarken/Mekan/raw/branch/main/Umitmodturk.m3u' };
-            if (!state.m3uList.some(m => m.url === _codebergM3U.url)) {
-                state.m3uList.unshift(_codebergM3U);
-            }
     state.themes = conf.themes || [];
     
     // Custom M3U listelerini ekle
@@ -39505,7 +39846,7 @@ _ready(function() {
         var dur   = window.videoDuration || vid.duration || 0;
         var cur   = dur * ratio;
 
-        document.getElementById('progressBar').style.width = pct + '%';
+        var _pbm = document.getElementById('progressBar'); if (_pbm) _pbm.style.width = pct + '%';
         handle.style.left = pct + '%';
         var ct = document.getElementById('currentTime');
         if (ct && typeof window.formatTime === 'function') ct.innerText = window.formatTime(cur);
@@ -39566,7 +39907,7 @@ _ready(function() {
             var rect  = bar.getBoundingClientRect();
             var ratio = Math.max(0, Math.min(cx(e) - rect.left, rect.width)) / rect.width;
             var pct   = ratio * 100;
-            document.getElementById('progressBar').style.width = pct + '%';
+            var _pbs = document.getElementById('progressBar'); if (_pbs) _pbs.style.width = pct + '%';
             handle.style.left = pct + '%';
         }
 
@@ -40571,7 +40912,7 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
             stop() {
                 this.state.run = false;
                 this.state.currentRepeat = 0;
-                document.getElementById('__UMD_TVX_DOCK').style.display = 'none';
+                { const _d=document.getElementById('__UMD_TVX_DOCK'); if(_d) _d.style.display='none'; }
                 const vp = document.getElementById('channelsViewport');
                 if (vp) vp.style.paddingBottom = '';
                 if(this.state.animationId) {
@@ -41016,9 +41357,9 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
                 }
                 
                 localStorage.setItem('__umd_weather_city', JSON.stringify(this.state.selectedCity));
-                document.getElementById('__UMD_THANKS_MSG').style.display = 'block';
+                { const _t=document.getElementById('__UMD_THANKS_MSG'); if(_t) _t.style.display='block'; }
                 setTimeout(() => {
-                    document.getElementById('__UMD_THANKS_MSG').style.display = 'none';
+                    { const _t2=document.getElementById('__UMD_THANKS_MSG'); if(_t2) _t2.style.display='none'; }
                 }, 2000);
                 
                 this.closeWeatherModal();
@@ -42782,3 +43123,633 @@ setTimeout(function() {
 
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TVBox DERİN OPTİMİZASYON KATMANI v3 — DOM, RAF, Render, Navigasyon
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function TVBOX_DEEP_OPT_V3() {
+'use strict';
+
+/* 1. updateRemoteFocus — rAF ile sınırla, max 1 frame/ok-tuşu */
+var _rfPending = false;
+function _patchUpdateRemoteFocus() {
+    if (typeof window.updateRemoteFocus !== 'function') return;
+    if (window.updateRemoteFocus._deepV3) return;
+    var _orig = window.updateRemoteFocus;
+    var _cardCache = null, _cardCacheLen = 0, _cardCacheGrid = null;
+    window._getCardsOptimized = function() {
+        var grid = document.getElementById('channelsGrid');
+        if (!grid) { _cardCache = null; return null; }
+        if (_cardCache && _cardCacheLen === _cardCache.length && _cardCacheGrid === grid) return _cardCache;
+        _cardCache = grid.querySelectorAll('.channel-card');
+        _cardCacheLen = _cardCache.length;
+        _cardCacheGrid = grid;
+        window._tvBoxCardMap = _cardCache;
+        return _cardCache;
+    };
+    // renderChannels cache invalidate
+    var _origRender = window.renderChannels;
+    if (typeof _origRender === 'function' && !_origRender._cacheInv) {
+        window.renderChannels = function() { _cardCache = null; _cardCacheLen = 0; return _origRender.apply(this, arguments); };
+        window.renderChannels._cacheInv = true;
+    }
+    window.updateRemoteFocus = function() {
+        if (_rfPending) return;
+        _rfPending = true;
+        requestAnimationFrame(function() { _rfPending = false; try { _orig(); } catch(e){} });
+    };
+    window.updateRemoteFocus._deepV3 = true;
+}
+
+/* 2. scrollToCard — layout thrashing yok */
+function _patchScrollToCard() {
+    var _orig = window.scrollToCard;
+    if (typeof _orig !== 'function' || _orig._deepV3) return;
+    window.scrollToCard = function(index) {
+        var cards = window._tvBoxCardMap || (window._getCardsOptimized ? window._getCardsOptimized() : document.querySelectorAll('.channel-card'));
+        var card = cards && cards[index];
+        if (!card) return;
+        try { card.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' }); } catch(e) {
+            var vp = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+            if (!vp) return;
+            var ct = card.offsetTop, st2 = vp.scrollTop, vh = vp.clientHeight, ch = card.offsetHeight;
+            if (ct < st2) vp.scrollTop = ct - 8;
+            else if (ct + ch > st2 + vh) vp.scrollTop = ct + ch - vh + 8;
+        }
+    };
+    window.scrollToCard._deepV3 = true;
+}
+
+/* 3. Klavye navigasyonu — tuş tekrarı 80ms throttle */
+(function() {
+    var _last = 0, _INT = 80;
+    document.addEventListener('keydown', function(e) {
+        var nav = (e.keyCode >= 37 && e.keyCode <= 40);
+        if (!nav) return;
+        var now = Date.now();
+        if (now - _last < _INT) { e.stopImmediatePropagation(); return; }
+        _last = now;
+    }, true);
+})();
+
+/* 4. showToast debounce — üst üste toast kasma önle */
+function _patchShowToast() {
+    var _orig = window.showToast;
+    if (typeof _orig !== 'function' || _orig._deepV3) return;
+    var _lastT = 0;
+    window.showToast = function(msg, type) {
+        var now = Date.now();
+        if (now - _lastT < 700) return;
+        _lastT = now;
+        var ex = document.querySelector('.toast-message, .tvbox-toast');
+        if (ex) { try { ex.remove(); } catch(e){} }
+        try { _orig.apply(this, arguments); } catch(e){}
+    };
+    window.showToast._deepV3 = true;
+}
+
+/* 5. Ses ve titreşim kapat — WebAudio overhead */
+window.playKeySound = function() {};
+window.triggerVibration = function() {};
+window.showNavigationHint = function() {};
+window.hideNavigationHint = function() {};
+
+/* 6. CSS contain — grid render hızlandır */
+function _applyContain() {
+    var grid = document.getElementById('channelsGrid');
+    if (grid) grid.style.contain = 'layout style';
+    var vp = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+    if (vp) vp.style.contain = 'layout';
+}
+
+/* 7. Img async decode */
+function _patchImgDecode() {
+    if (!('IntersectionObserver' in window) || window._imgDecObs3) return;
+    window._imgDecObs3 = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (!e.isIntersecting) return;
+            var img = e.target;
+            if (img.complete) return;
+            if (typeof img.decode === 'function') img.decode().catch(function(){});
+            window._imgDecObs3.unobserve(img);
+        });
+    }, { rootMargin: '400px' });
+    var _mo = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+                if (n.tagName === 'IMG') { if (!n.complete) window._imgDecObs3.observe(n); }
+                else if (n.querySelectorAll) n.querySelectorAll('img').forEach(function(i) { if (!i.complete) window._imgDecObs3.observe(i); });
+            });
+        });
+    });
+    var grid = document.getElementById('channelsGrid');
+    if (grid) _mo.observe(grid, { childList: true, subtree: true });
+    var sb = document.getElementById('sidebarChannelsList');
+    if (sb) _mo.observe(sb, { childList: true, subtree: true });
+}
+
+/* 8. Visibility API — arka planda HLS buffer küçült */
+document.addEventListener('visibilitychange', function() {
+    var st = window.state;
+    try {
+        var hls = st && st.player && st.player.hls;
+        if (!hls || hls._destroyed) return;
+        if (document.hidden) {
+            if (st.player.isLiveStream) { hls.config.maxBufferLength = 4; hls.config.maxMaxBufferLength = 8; }
+        } else {
+            hls.config.maxBufferLength = 30; hls.config.maxMaxBufferLength = 60;
+        }
+    } catch(e) {}
+});
+
+/* 9. font-display swap — FOUT azalt */
+(function() {
+    if (document.getElementById('tvbox-font-swap')) return;
+    var s = document.createElement('style');
+    s.id = 'tvbox-font-swap';
+    s.textContent = 'body{font-family:"Inter",system-ui,-apple-system,sans-serif!important}';
+    document.head.appendChild(s);
+})();
+
+/* 10. updateCacheIndicator noop — her render'da DOM yazma */
+window.updateCacheIndicator = function() {};
+
+/* Uygula */
+function _apply() {
+    _patchUpdateRemoteFocus();
+    _patchScrollToCard();
+    _patchShowToast();
+    _applyContain();
+    _patchImgDecode();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { _apply(); setTimeout(_apply, 2000); setTimeout(_apply, 5000); });
+} else {
+    _apply();
+    setTimeout(_apply, 2000);
+    setTimeout(_apply, 5000);
+}
+
+/* Grid yeniden render olunca contain tekrar ekle */
+document.addEventListener('DOMContentLoaded', function() {
+    var g = document.getElementById('channelsGrid');
+    if (!g) return;
+    new MutationObserver(function() { g.style.contain = 'layout style'; }).observe(g, { childList: true });
+});
+
+})(); // TVBOX_DEEP_OPT_V3
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════
+     CANLI KANAL NUMARALAMA SİSTEMİ
+     Sadece isLive=true kanallar numaralandırılır
+     Kumanda/klavye: rakam tuşları → kanal zap
+     Ekranda kocaman rakam göstergesi (ZAP OSD)
+     ═══════════════════════════════════════════════════════ -->
+<style id="channel-number-styles">
+
+/* ── Kanal kartı numara rozeti ── */
+.ch-num-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(0,0,0,0.82);
+    border: 1.5px solid rgba(255,215,0,0.55);
+    border-radius: 6px;
+    color: #FFD700;
+    font-family: 'Orbitron', 'Rajdhani', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    line-height: 1.3;
+    z-index: 25;
+    pointer-events: none;
+    letter-spacing: 0.5px;
+    min-width: 20px;
+    text-align: center;
+    user-select: none;
+}
+/* Grid küçük olunca badge de küçülsün */
+[style*="--grid-cols: 5"] .ch-num-badge,
+[style*="--grid-cols: 6"] .ch-num-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+}
+
+/* ── ZAP OSD — ekran ortasında kocaman sayı ── */
+#zapOsd {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999998;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    user-select: none;
+}
+#zapOsd.visible { display: flex; }
+
+#zapOsdBg {
+    position: absolute;
+    inset: -30px -40px;
+    background: rgba(0,0,0,0.78);
+    border: 2px solid rgba(255,215,0,0.35);
+    border-radius: 24px;
+    backdrop-filter: none;
+}
+
+#zapOsdNumber {
+    position: relative;
+    font-family: 'Orbitron', 'Rajdhani', monospace;
+    font-size: 96px;
+    font-weight: 900;
+    color: #FFD700;
+    line-height: 1;
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(255,215,0,0.6), 0 2px 0 rgba(0,0,0,0.8);
+    min-width: 180px;
+    text-align: center;
+}
+
+#zapOsdName {
+    position: relative;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    text-align: center;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+#zapOsdSub {
+    position: relative;
+    font-size: 13px;
+    color: rgba(255,215,0,0.7);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* ── ZAP OSD progress bar — kanal açılma sayacı ── */
+#zapOsdTimer {
+    position: relative;
+    width: 200px;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin-top: 14px;
+    overflow: hidden;
+}
+#zapOsdTimerBar {
+    height: 100%;
+    background: #FFD700;
+    border-radius: 2px;
+    width: 100%;
+    transform-origin: left;
+    transition: none;
+}
+
+</style>
+
+<!-- ZAP OSD HTML -->
+<div id="zapOsd" aria-live="polite" role="status">
+    <div id="zapOsdBg"></div>
+    <div id="zapOsdNumber">1</div>
+    <div id="zapOsdName"></div>
+    <div id="zapOsdSub">Kanal açılıyor...</div>
+    <div id="zapOsdTimer"><div id="zapOsdTimerBar"></div></div>
+</div>
+
+<script>
+(function CHANNEL_NUMBERING() {
+'use strict';
+
+/* ─────────────────────────────────────────────
+   YARDIMCI: Sadece canlı (isLive=true, isVod!=true, isRadio!=true) kanalları
+   mevcut filtered listesinden sırayla numaralandır
+───────────────────────────────────────────── */
+var _liveNumberMap  = {};  // numara → filtered index
+var _filteredToNum  = {};  // filtered index → numara
+var _liveChannels   = [];  // [{num, filteredIdx, name}]
+
+function _buildLiveMap() {
+    var st = window.state;
+    if (!st || !st.filtered) return;
+
+    _liveNumberMap  = {};
+    _filteredToNum  = {};
+    _liveChannels   = [];
+
+    var num = 1;
+    for (var i = 0; i < st.filtered.length; i++) {
+        var ch = st.filtered[i];
+        if (!ch) continue;
+        // Sadece canlı, radyo olmayan, VOD olmayan
+        var isLive  = ch.isLive  === true;
+        var isVod   = ch.isVod   === true || ch.isLive === false;
+        var isRadio = ch.isRadio === true || (ch.group && ch.group === 'Radyo');
+        if (!isLive || isVod || isRadio) continue;
+
+        _liveNumberMap[num]  = i;
+        _filteredToNum[i]    = num;
+        _liveChannels.push({ num: num, filteredIdx: i, name: ch.name });
+        num++;
+    }
+}
+
+/* ─────────────────────────────────────────────
+   ROZET — Kanal kartlarına numara rozeti ekle
+───────────────────────────────────────────── */
+function _addBadges() {
+    _buildLiveMap();
+    var cards = document.querySelectorAll('.channel-card');
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var idx  = parseInt(card.dataset.index, 10);
+        if (isNaN(idx)) continue;
+
+        // Eski badge varsa kaldır
+        var old = card.querySelector('.ch-num-badge');
+        if (old) old.remove();
+
+        var num = _filteredToNum[idx];
+        if (!num) continue; // VOD/radyo → rozet yok
+
+        var badge = document.createElement('div');
+        badge.className = 'ch-num-badge';
+        badge.textContent = num;
+        badge.setAttribute('aria-hidden', 'true');
+        card.appendChild(badge);
+    }
+}
+
+/* ─────────────────────────────────────────────
+   ZAP OSD
+───────────────────────────────────────────── */
+var _zapStr     = '';
+var _zapTimer   = null;
+var _zapOpen    = false;
+var _ZAP_WAIT   = 2000;  // ms — son tuştan sonra kaç ms bekle
+var _ZAP_MAX    = 3;     // max basamak sayısı
+
+var _osd        = null;
+var _osdNum     = null;
+var _osdName    = null;
+var _osdSub     = null;
+var _osdBar     = null;
+var _barAnim    = null;
+
+function _initOsd() {
+    _osd    = document.getElementById('zapOsd');
+    _osdNum = document.getElementById('zapOsdNumber');
+    _osdName= document.getElementById('zapOsdName');
+    _osdSub = document.getElementById('zapOsdSub');
+    _osdBar = document.getElementById('zapOsdTimerBar');
+}
+
+function _showOsd(numStr, channelName) {
+    if (!_osd) _initOsd();
+    if (!_osd) return;
+
+    _osdNum.textContent  = numStr;
+    _osdName.textContent = channelName || '';
+    _osdSub.textContent  = channelName ? 'Kanal açılıyor...' : 'Kanal bekleniyor...';
+
+    // Progress bar animasyonu
+    if (_barAnim) clearTimeout(_barAnim);
+    _osdBar.style.transition = 'none';
+    _osdBar.style.width = '100%';
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            _osdBar.style.transition = 'width ' + _ZAP_WAIT + 'ms linear';
+            _osdBar.style.width = '0%';
+        });
+    });
+
+    _osd.classList.add('visible');
+    _zapOpen = true;
+}
+
+function _hideOsd() {
+    if (!_osd) return;
+    _osd.classList.remove('visible');
+    _zapOpen = false;
+    _zapStr = '';
+    if (_osdBar) { _osdBar.style.transition = 'none'; _osdBar.style.width = '100%'; }
+}
+
+/* ─────────────────────────────────────────────
+   KANAL AÇ — numaraya göre
+───────────────────────────────────────────── */
+function _openChannelByNum(num) {
+    _hideOsd();
+    _buildLiveMap();
+
+    var filteredIdx = _liveNumberMap[num];
+    if (filteredIdx === undefined) {
+        // Bulunamadı
+        if (_osd) {
+            _osdSub.textContent = num + '. kanal bulunamadı';
+            _osd.classList.add('visible');
+            setTimeout(_hideOsd, 1200);
+        }
+        return;
+    }
+
+    // playChannel global fonksiyonunu çağır
+    if (typeof window.playChannel === 'function') {
+        try { window.playChannel(filteredIdx, 0); } catch(e) {}
+    } else {
+        // Fallback: kanal kartını tıkla
+        var cards = document.querySelectorAll('.channel-card');
+        for (var i = 0; i < cards.length; i++) {
+            if (parseInt(cards[i].dataset.index, 10) === filteredIdx) {
+                cards[i].click();
+                break;
+            }
+        }
+    }
+}
+
+/* ─────────────────────────────────────────────
+   KLAVYE / KUMANDA — rakam tuşları
+   0-9 numpad + üst sıra + TV Remote numpad
+───────────────────────────────────────────── */
+var _DIGIT_KEYS = {
+    // Üst sıra rakamlar
+    48: 0, 49: 1, 50: 2, 51: 3, 52: 4,
+    53: 5, 54: 6, 55: 7, 56: 8, 57: 9,
+    // Numpad
+    96: 0, 97: 1, 98: 2, 99: 3, 100: 4,
+    101: 5, 102: 6, 103: 7, 104: 8, 105: 9
+};
+
+function _onKeyDown(e) {
+    var digit = _DIGIT_KEYS[e.keyCode];
+    if (digit === undefined) return;
+
+    // Modal açıksa zap çalışmasın (arama, şifre vb.)
+    var modals = ['searchModal','passwordModal','settingsModal','addM3UModal'];
+    for (var m = 0; m < modals.length; m++) {
+        var mel = document.getElementById(modals[m]);
+        if (mel && (mel.style.display === 'flex' || mel.style.display === 'block')) return;
+    }
+    // Input/textarea odaklanmış ise çalışmasın
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    _zapStr += String(digit);
+    if (_zapStr.length > _ZAP_MAX) _zapStr = _zapStr.slice(-_ZAP_MAX);
+
+    // Eşleşen kanal adını bul
+    _buildLiveMap();
+    var num = parseInt(_zapStr, 10);
+    var ch  = _liveNumberMap[num];
+    var chName = '';
+    if (ch !== undefined && window.state && window.state.filtered && window.state.filtered[ch]) {
+        chName = window.state.filtered[ch].name || '';
+    }
+
+    _showOsd(_zapStr, chName);
+
+    // Zamanlayıcıyı sıfırla
+    if (_zapTimer) clearTimeout(_zapTimer);
+
+    // 3 basamak doldu → anında aç
+    if (_zapStr.length === _ZAP_MAX) {
+        _zapTimer = setTimeout(function() {
+            _openChannelByNum(parseInt(_zapStr, 10));
+        }, 300);
+        return;
+    }
+
+    // Aksi halde ZAP_WAIT ms bekle
+    _zapTimer = setTimeout(function() {
+        var n = parseInt(_zapStr, 10);
+        _openChannelByNum(n);
+    }, _ZAP_WAIT);
+}
+
+document.addEventListener('keydown', _onKeyDown, true);
+
+/* ─────────────────────────────────────────────
+   KANAL değişince OSD'de numara göster
+   playChannel wrap
+───────────────────────────────────────────── */
+function _wrapPlayChannel() {
+    var _orig = window.playChannel;
+    if (typeof _orig !== 'function' || _orig._numWrapped) return;
+
+    window.playChannel = function(index) {
+        // Kanal numarasını bul
+        _buildLiveMap();
+        var num = _filteredToNum[index];
+        if (num) {
+            var chName = '';
+            if (window.state && window.state.filtered && window.state.filtered[index]) {
+                chName = window.state.filtered[index].name || '';
+            }
+            // Kısa OSD göster (1.5sn)
+            if (!_zapOpen) {
+                _showOsd(String(num), chName);
+                if (_zapTimer) clearTimeout(_zapTimer);
+                _zapTimer = setTimeout(_hideOsd, 1500);
+            }
+        }
+        return _orig.apply(this, arguments);
+    };
+    window.playChannel._numWrapped = true;
+}
+
+/* ─────────────────────────────────────────────
+   renderChannels sonrası rozet ekle
+───────────────────────────────────────────── */
+function _hookRenderChannels() {
+    var _orig = window.renderChannels;
+    if (typeof _orig !== 'function' || _orig._numHooked) return;
+    window.renderChannels = function() {
+        var ret = _orig.apply(this, arguments);
+        // DOM hazır olunca badge ekle
+        setTimeout(_addBadges, 120);
+        return ret;
+    };
+    window.renderChannels._numHooked = true;
+}
+
+/* ─────────────────────────────────────────────
+   Grid mutasyonlarını izle — dinamik kart ekleme
+───────────────────────────────────────────── */
+function _observeGrid() {
+    var grid = document.getElementById('channelsGrid');
+    if (!grid || grid._numObserved) return;
+    grid._numObserved = true;
+    var _obs = new MutationObserver(function(muts) {
+        var added = muts.some(function(m) { return m.addedNodes.length > 0; });
+        if (added) setTimeout(_addBadges, 150);
+    });
+    _obs.observe(grid, { childList: true });
+}
+
+/* ─────────────────────────────────────────────
+   BAŞLAT
+───────────────────────────────────────────── */
+function _init() {
+    _initOsd();
+    _buildLiveMap();
+    _addBadges();
+    _hookRenderChannels();
+    _wrapPlayChannel();
+    _observeGrid();
+}
+
+// filtered / channels henüz boş olabilir — birkaç kez dene
+function _initWithRetry(attempts) {
+    var st = window.state;
+    if (st && st.filtered && st.filtered.length > 0) {
+        _init();
+    } else if (attempts > 0) {
+        setTimeout(function() { _initWithRetry(attempts - 1); }, 800);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { _initWithRetry(10); });
+} else {
+    _initWithRetry(10);
+}
+
+// Kategori değişiminde haritayı yeniden kur
+document.addEventListener('click', function(e) {
+    var t = e.target;
+    var isCatPill = t && (t.classList.contains('cat-pill') || t.classList.contains('m3u-pill') ||
+                          t.closest('.cat-pill') || t.closest('.m3u-pill'));
+    if (isCatPill) {
+        setTimeout(function() { _buildLiveMap(); _addBadges(); }, 300);
+    }
+}, true);
+
+// Global API — dışarıdan erişim
+window.channelNumbering = {
+    getMap:   function() { _buildLiveMap(); return _liveNumberMap; },
+    openNum:  _openChannelByNum,
+    rebuild:  function() { _buildLiveMap(); _addBadges(); },
+    getLive:  function() { _buildLiveMap(); return _liveChannels; }
+};
+
+})(); // CHANNEL_NUMBERING
+</script>
+<!-- ═══════════════════════════════════════════════════════ -->

@@ -32850,7 +32850,9 @@ function deleteContinueWatchingRecord(name) {
                         // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
                         return;
                     }
-                    // Canlı: ok tuşu kontrolleri açsın (yukarıda OK ile aynı)
+                    // Canlı: Yukarı/Aşağı → kanal değiştir, Sol/Sağ/Enter → kontrolleri aç
+                    if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
+                    if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
                     state.remote.playerBoxIndex = 9; // btnPlayerList
                     state.remote.zone = 'player';
                     showControls(5000);

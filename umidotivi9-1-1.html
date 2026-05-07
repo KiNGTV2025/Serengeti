@@ -20106,13 +20106,18 @@ window.testSettings = {
         window._controlsHidden = false;
 
         // Canlı yayın oto-gizleme süresi (ms) — yayın açılınca 2sn sonra gizle
-        var LIVE_AUTOHIDE_MS = 2000;
+        var LIVE_AUTOHIDE_MS  = 2000;  // Canlı yayın oto-gizleme (ms)
+        var VOD_AUTOHIDE_MS   = 5000;  // VOD/Dizi player buton oto-gizleme (ms)
 
-        function _scheduleHide() {
+        function _scheduleHide(overrideMs) {
             clearTimeout(window.autoHideControlsTimer);
             clearTimeout(window.controlsTimer);
             if (window._controlsHidden) return;
             if (window._qualityOpen || window._subtitleOpen) return;
+            // VOD/Dizi → 5sn, Canlı → 2sn; override verilmişse onu kullan
+            var _isLiveNow = !!(state.player && state.player.isLiveStream);
+            var _delay = overrideMs !== undefined ? overrideMs
+                       : (_isLiveNow ? LIVE_AUTOHIDE_MS : VOD_AUTOHIDE_MS);
             var _timer = setTimeout(function() {
                 if (window._controlsHidden) return;
                 if (window._qualityOpen || window._subtitleOpen) return;
@@ -20123,7 +20128,7 @@ window.testSettings = {
                         state.remote.playerControlsVisible = false;
                     });
                 }
-            }, LIVE_AUTOHIDE_MS);
+            }, _delay);
             window.autoHideControlsTimer = _timer;
             window.controlsTimer = _timer;
         }
@@ -20158,8 +20163,8 @@ window.testSettings = {
                         state.remote.zone = 'player';
                     }
                 }
-                // Canlı yayında: her showControls çağrısı timer'ı 3sn'ye sıfırlar
-                _scheduleHide();
+                // VOD/Dizi: showControls(duration) parametresini _scheduleHide'a ilet
+                _scheduleHide(duration !== undefined ? duration : undefined);
                 // zone sabitlendi, şimdi odağı güncelle (rAF içinde — çift odak önleme)
                 if (typeof updateRemoteFocus === 'function') {
                     updateRemoteFocus();
@@ -30711,6 +30716,10 @@ function _doChSwitch() {
     }
     setTimeout(() => { updatePlayerEpgBar(ch.name, ch.tvgId); }, 500);
     playKeySound('ch_change');
+    // Kontroller gizliyse kanal değişiminde playerControlsVisible'ı false tut — görünmez buton odağını önle
+    if (window._controlsHidden) {
+        state.remote.playerControlsVisible = false;
+    }
     resumeChannel(0);
 }
 
@@ -32742,38 +32751,45 @@ function deleteContinueWatchingRecord(name) {
                 if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
                     e.preventDefault(); togglePlayPause(); return;
                 }
-                // Sadece OK ile kontroller acilir - zamanlayici veya yon tusu ACMAZ
+                // OK tuşu → kontrolleri aç ve butonlara odaklan
                 if (e.key === 'Enter' || e.key === 'OK') {
                     e.preventDefault();
                     window._controlsHidden = false;
-                    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
+                    const _pc3 = document.getElementById('playerContainer');
+                    if (_pc3) {
+                        _pc3.classList.remove('controls-hidden');
+                        _pc3.classList.add('show-controls');
+                    }
                     const _icon2  = document.getElementById('hideControlsIcon');
                     const _label2 = document.getElementById('hideControlsLabel');
                     if (_icon2)  _icon2.textContent  = 'visibility_off';
                     if (_label2) _label2.textContent = 'Gizle';
                     state.remote.playerBoxIndex = _isLive ? 9 : 1;
                     state.remote.zone = 'player';
+                    state.remote.playerControlsVisible = true;
                     showControls(5000);
+                    if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                    showToast('👁 Kontroller Açıldı');
                     return;
                 }
-                // Yon tuslari - icerik turune gore
+                // Yön tuşları — içerik türüne göre
                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
                     if (_isLive) {
-                        // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
+                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → EPG
                         if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
-                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
-                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                        if (e.key === 'ArrowRight') { if (typeof openEpgModal === 'function') openEpgModal(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof openSidebar === 'function') openSidebar(); }
                     } else if (_isSeries) {
-                        // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
+                        // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
+                        // Film: Sol/Sağ sarma, Yukarı/Aşağı işlevsiz
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     }
@@ -32843,10 +32859,8 @@ function deleteContinueWatchingRecord(name) {
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
                 showControls(5000);
             } else {
-                // Gezinmede timer'ı sıfırla (5sn baştan say)
-                clearTimeout(window.autoHideControlsTimer);
-                clearTimeout(window.controlsTimer);
-                _scheduleHide();
+                // Gezinmede timer'ı 5sn'ye sıfırla — her buton geçişinde süreyi yenile
+                _scheduleHide(5000);
             }
 
             switch(e.key) {
@@ -35428,6 +35442,10 @@ function handleFavoriteChannelSelect(key) {
         hint='Şifre';
     }
     else if(state.remote.zone==='player') {
+        // Kontroller gizliyse butonlara odaklanma — görünmez seçimi önle
+        if (window._controlsHidden) {
+            hint = 'Gizli Mod (OK: Kontrolleri Aç)';
+        } else {
         const visibleButtons = PLAYER_BOX_BUTTONS.filter(id => {
             const el = document.getElementById(id);
             return el && el.style.display !== 'none';
@@ -35439,6 +35457,7 @@ function handleFavoriteChannelSelect(key) {
             const btnEl = document.getElementById(visibleButtons[safeIdx]);
             if (btnEl) el = btnEl;
             hint = 'Kontroller';
+        }
         }
     }
     else if(state.remote.zone==='progressBar') {

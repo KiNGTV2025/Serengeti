@@ -29382,17 +29382,27 @@ function resumeChannel(startTime) {
     if (_vEl) _vEl.style.display = '';
 
     if (state.player.hls) {
-        state.player.hls.destroy();
+        try { state.player.hls.stopLoad(); } catch(e) {}
+        try { state.player.hls.detachMedia(); } catch(e) {}
+        try { state.player.hls.destroy(); } catch(e) {}
         state.player.hls = null;
     }
     // 4K watchdog temizle
     clearInterval(window._4kWatchdog);
     // kool.to stall timer temizle
     if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
+
+    // SES BOZULMASI DÜZELTMESİ: video elementini tam olarak sıfırla
+    // Önceki HLS instance'ının bıraktığı audio decoder/buffer kalıntılarını temizlemek için
+    // önce mute et, src'yi temizle, load() çağır — bu sıra Android TV/TVBox'ta ses
+    // bozulmasını (crackling/distortion/glitch) önler.
     video.pause();
-    video.removeAttribute('src'); 
-    video.load();
-    // Her kanal geçişinde ses aç (HTML'deki muted attribute kalıntısına karşı)
+    video.muted = true;           // geçici mute — eski codec flush ederken ses çıkmasın
+    video.removeAttribute('src');
+    video.load();                 // tüm buffer + decoder state'i sıfırla
+    // 80ms sonra sesi aç — decoder resetlenmesi için kısa nefes
+    setTimeout(function() { video.muted = false; video.volume = video.volume > 0 ? video.volume : 1.0; }, 80);
+    // Anlık erişimler için de ayarla
     video.muted = false;
     video.volume = video.volume > 0 ? video.volume : 1.0;
 
@@ -29909,6 +29919,11 @@ function resumeChannel(startTime) {
         window._recoveryLock = false; // recovery tamamlandı — kilidi aç
         // DONMA-FIX: onplaying'de seekToLiveEdge KALDIRILDI.
         // MANIFEST_PARSED'da zaten bir kez yapılıyor. Burada ikinci kez seek = buffer boşalması = donma.
+        // SES BOZULMASI: oynatma başladığında ses kapalıysa aç (TVBox muted attribute sorunu)
+        if (video.muted && !window._userPaused) {
+            video.muted = false;
+        }
+        if (video.volume === 0) video.volume = 1.0;
         // Pause overlay: kullanıcı pause yapmadıysa gizle
         if (!window._userPaused) {
             const _poOPL = document.getElementById('pauseCenterLogo');
@@ -30169,10 +30184,14 @@ function resumeChannel(startTime) {
         let mediaErrorCount = 0;
 
         hlsInst.on(Hls.Events.MANIFEST_PARSED, () => {
+            // SES BOZULMASI: manifest hazır olduğunda sesi kesinlikle aç
             video.muted = false;
             if (video.volume === 0) video.volume = 1.0;
+            // 200ms sonra tekrar kontrol — bazı TVBox'larda muted attribute geri dönüyor
+            setTimeout(function() { if (video.muted) { video.muted = false; } }, 200);
+            setTimeout(function() { if (video.muted) { video.muted = false; } }, 600);
 
-            // Audio track: birden fazla varsa ilkini seç
+            // Audio track: birden fazla varsa ilkini seç (negatif = seçilmedi)
             const audioTracks = hlsInst.audioTracks || [];
             if (audioTracks.length > 0 && hlsInst.audioTrack < 0) {
                 hlsInst.audioTrack = 0;
@@ -30317,13 +30336,30 @@ function resumeChannel(startTime) {
                 if (mediaErrorCount === 1) {
                     // 1. deneme: standart media error recovery
                     try { hlsInst.recoverMediaError(); } catch(e) {}
+                    // SES BOZULMASI: recovery sonrası sesi kontrol et
+                    setTimeout(function() { if (video.muted) { video.muted = false; } }, 300);
                     return;
                 } else if (mediaErrorCount === 2) {
                     // 2. deneme: audio codec swap — bazı akışlarda codec uyumsuzluğu çözülür
                     try { hlsInst.swapAudioCodec(); hlsInst.recoverMediaError(); } catch(e) {}
+                    // SES BOZULMASI: codec swap sonrası ses kesinlikle açık olsun
+                    setTimeout(function() { video.muted = false; if (video.volume === 0) video.volume = 1.0; }, 300);
+                    return;
+                } else if (mediaErrorCount === 3) {
+                    // 3. deneme: video elementini yeniden bağla — ses bozulmasının kökten çözümü
+                    try {
+                        hlsInst.detachMedia();
+                        setTimeout(function() {
+                            try {
+                                video.muted = false;
+                                hlsInst.attachMedia(video);
+                                hlsInst.recoverMediaError();
+                            } catch(e) {}
+                        }, 200);
+                    } catch(e) {}
                     return;
                 }
-                // 3+ hata: fatal olarak işle
+                // 4+ hata: fatal olarak işle
             }
 
             fallbackDone = true;
@@ -33882,8 +33918,11 @@ function handlePlayerRemote(e) {
                 if (e.key === 'ArrowUp')   { if (typeof nextEpisode === 'function') nextEpisode(); }
                 if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); }
             }
-            // Canlı: yön tuşu → kontrolleri aç
+            // Canlı: Yukarı/Aşağı → KANAL DEĞİŞTİR (kontroller kapalı olsa bile)
             if (_isLive) {
+                if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
+                if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
+                // Sol/Sağ → kontrolleri aç
                 state.remote.playerBoxIndex = 9; // btnPlayerList
                 state.remote.zone = 'player';
                 showControls(5000);

@@ -1963,10 +1963,11 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    max-height: 420px;
+    max-height: 320px;
+    min-height: 60px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 2px 2px 4px;
+    padding: 2px 2px 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,215,0,0.3) transparent;
@@ -1982,7 +1983,9 @@ body {
 @media (max-width: 480px) {
     .vod-episodes-container {
         grid-template-columns: repeat(2, 1fr);
-        max-height: 320px;
+        max-height: 280px;
+        min-height: 60px;
+        overflow-y: auto;
         gap: 6px;
     }
 }
@@ -2182,7 +2185,8 @@ body {
     .vod-episodes-container {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 10px;
-        max-height: 250px;
+        max-height: 280px;
+        overflow-y: auto;
     }
     
     .player-season-controls {
@@ -5088,6 +5092,28 @@ body {
     transition: transform 0.15s ease, background 0.15s ease;
 }
 .trailer-play-overlay:hover .trailer-play-circle,
+.trailer-play-overlay.remote-focused {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+#vodTrailerCloseBig.remote-focused {
+    background: rgba(255,50,50,1) !important;
+    border-color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.8), 0 4px 20px rgba(0,0,0,0.6) !important;
+    transform: translateX(-50%) scale(1.06) !important;
+}
+#vodTrailerStopBtn.remote-focused {
+    background: rgba(255,50,50,1) !important;
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.8), 0 4px 20px rgba(0,0,0,0.5) !important;
+    transform: scale(1.02) !important;
+}
+.vod-trailer-close.remote-focused,
+.vod-trailer-volume.remote-focused {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.8) !important;
+    background: rgba(30,30,30,0.95) !important;
+}
 .trailer-play-overlay.remote-focused .trailer-play-circle {
     background: rgba(255,215,0,0.3);
     border-color: #FFD700;
@@ -6573,8 +6599,9 @@ body.sidebar-open {
     display: none;
     justify-content: center;
     align-items: center;
-    padding: 16px;  
+    padding: 8px;  
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .vod-modal-content {
@@ -6669,24 +6696,24 @@ body.sidebar-open {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: calc(94vh - 56px);  
     -webkit-overflow-scrolling: touch;
 }
         
          
         @media (orientation: landscape) and (max-height: 500px) {
             .vod-modal {
-                padding: 4px;
+                padding: 2px;
                 align-items: center;
-                overflow-y: auto;
+                overflow: hidden;
             }
             .vod-modal-content {
                 min-height: unset;
                 max-height: 98vh;
                 border-radius: 12px;
                 border: 2px solid var(--accent-primary);
-                width: 100%;
+                width: 99vw;
                 max-width: 100%;
+                box-sizing: border-box;
             }
             .vod-modal-header {
                 padding: 6px 12px;
@@ -6698,8 +6725,8 @@ body.sidebar-open {
             }
             .vod-poster-container {
                 flex: 0 0 auto;
-                width: 40% !important;
-                max-width: 260px;
+                width: 35% !important;
+                max-width: 220px;
                 display: flex;
                 flex-direction: column;
                 align-items: stretch;
@@ -6727,8 +6754,10 @@ body.sidebar-open {
             .vod-info-container {
                 flex: 1;
                 overflow-y: auto;
+                overflow-x: hidden;
                 padding: 8px 12px;
                 -webkit-overflow-scrolling: touch;
+                min-height: 0;
             }
             .vod-title {
                 font-size: 16px !important;
@@ -6752,20 +6781,22 @@ body.sidebar-open {
          
         @media (orientation: landscape) {
             .vod-modal {
-                padding: 6px;
+                padding: 2px;
                 align-items: center;
+                overflow: hidden;
             }
             .vod-modal-content {
-                max-height: 96vh;
-                width: 98vw;
-                max-width: 960px;
+                max-height: 98vh;
+                width: 99vw;
+                max-width: 100%;
                 display: flex;
                 flex-direction: column;
+                box-sizing: border-box;
             }
             .vod-modal-body {
                 flex-direction: row !important;
                 overflow: hidden;
-                max-height: calc(96vh - 52px);
+                max-height: calc(98vh - 52px);
                 flex: 1;
             }
             .vod-poster-container {
@@ -6838,8 +6869,9 @@ body.sidebar-open {
             }
             .vod-episodes-container {
                 grid-template-columns: repeat(3, 1fr) !important;
-                max-height: none !important;
-                height: calc(100% - 60px) !important;
+                max-height: 180px !important;
+                min-height: 60px !important;
+                height: auto !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
                 gap: 6px !important;
@@ -8237,7 +8269,7 @@ body.sidebar-open {
  
  
  
-@media (min-width: 1280px) {
+@media (min-width: 1280px) and (orientation: portrait) {
     .vod-modal-content {
         max-width: 550px !important;
         max-height: 85vh !important;
@@ -8272,7 +8304,8 @@ body.sidebar-open {
     }
     
     .vod-episodes-container {
-        max-height: 200px !important;
+        max-height: 280px !important;
+        overflow-y: auto !important;
     }
     
     .vod-episode-card {
@@ -10023,7 +10056,7 @@ function doLogin() {
 }
 
 (function() {
-    const BAN_CHECK_INTERVAL = 10 * 1000; // 10 saniye
+    const BAN_CHECK_INTERVAL = 30 * 60 * 1000; // 30 dakika
     const BANLIST_CACHE_KEY  = '__umittv_banlist_url';
     let _banCheckTimer   = null;
     let _banListUrl      = null;
@@ -10655,13 +10688,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <div class="vod-modal-body">
+            <div class="vod-modal-body" id="vodModalBody">
                 
-                <div class="vod-poster-container">
+                <div class="vod-poster-container" id="vodPosterContainer">
                     <div class="vod-poster-wrapper" id="vodPosterWrapper">
                         <img loading="lazy" id="vodModalPoster" class="vod-poster" src="" alt="Poster">
                     </div>
                     
+                    <div id="vodTrailerStopWrapper" style="display:none; padding:6px 12px 0 12px; width:100%; box-sizing:border-box;">
+                        <button id="vodTrailerStopBtn" onclick="closeTrailer()"
+                                style="width:100%; background:rgba(200,30,30,0.9); color:#fff; border:2px solid rgba(255,100,100,0.5); border-radius:12px; padding:11px 0; font-size:15px; font-weight:700; font-family:Rajdhani,sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; letter-spacing:0.5px;">
+                            <span class="material-symbols-outlined" style="font-size:20px;">stop_circle</span>
+                            FRAGMANI DURDUR
+                        </button>
+                    </div>
                     <div class="vod-buttons-group" style="padding:10px 12px 0 12px; width:100%; box-sizing:border-box;">
                         <button class="vod-play-btn" id="vodModalPlayBtn" onclick="playVodFromModal()">
                             <span class="material-symbols-outlined">play_arrow</span>
@@ -10674,7 +10714,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 
-                <div class="vod-info-container">
+                <div class="vod-info-container" id="vodInfoContainer">
                     <div class="vod-info-scroll" id="vodInfoScroll" tabindex="0">
                         <h1 class="vod-title" id="vodModalTitle"></h1>
                         <div class="vod-meta" id="vodModalMeta"></div>
@@ -11694,6 +11734,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const CONFIG_URL = 'https://tinyurl.com/Umittvjson';
 const TMDB_API_KEY = '778bc93a59f5372fd28e7e9992ff6986';
 const VIDMODIFY_PROXY = 'https://vidmody.com/vs/';
+// ── VİDMODY RESOLVER WORKER ──
+const VIDMODY_RESOLVER = 'https://vid.sadecenjoy.workers.dev';
 const EPG_URL = 'https://raw.githubusercontent.com/umitm0d/Liveinlive/refs/heads/main/epg/merged.xml';
 const EPG_URL_FALLBACKS = [
     'https://raw.githubusercontent.com/umitm0d/Liveinlive/refs/heads/main/epg/merged.xml',
@@ -11803,46 +11845,54 @@ const HLS_CONFIG = {
     enableSRT: true,
 
     lowLatencyMode: false,
-    liveSyncDurationCount: 3,             // live edge'e yakın — buffer için yeterli mesafe
+    liveSyncDurationCount: 3,             // 2→3: live edge stabilizasyonu — titreme/atlama önlenir
     liveMaxLatencyDurationCount: Infinity, // HLS.js otomatik seekToLiveEdge KAPALI — ~60sn donma önlendi
 
-    // ── BUFFER: TVBox için dengeli tampon — çok büyük buffer = RAM basıncı = donma ──
+    // ── BUFFER: Canlı/VOD dinamik — startHls içinde override edilir ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 30,                 // 20→30sn: VOD'da daha fazla buffer = daha az kesilme/atlama
-    maxMaxBufferLength: 60,              // 40→60sn: VOD için üst limit artırıldı
-    maxBufferSize: 30 * 1024 * 1024,    // 25→30MB: VOD için biraz daha fazla RAM ayrıldı
-    maxBufferHole: 0.3,                  // 1.0→0.3: küçük buffer boşluklarında atlatma azalır — VOD daha akıcı
-    maxLoadingDelay: 8,                  // 2→8sn: yavaş internette segment yüklenmesini bekle, atlatma
+    maxBufferLength: 12,                 // 8→12sn: HD/1080p için yeterli ön buffer — hızlı ve stabil açılış
+    maxMaxBufferLength: 60,              // Üst limit — VOD için startHls içinde 60'a çıkar
+    maxBufferSize: 60 * 1024 * 1024,    // 30MB→60MB: HD/4K segmentleri büyük, buffer dolup taşmasın
+    maxBufferHole: 0.5,                  // 0.3→0.5: küçük delikler atlatılır, playback kesilmez
+    maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
-    fragLoadingMaxRetry: 12,             // 8→12: segment yükleme denemesi artırıldı
-    fragLoadingRetryDelay: 200,          // 50→200ms: hızlı retry zayıf internette faydasız
-    fragLoadingMaxRetryTimeout: 8000,    // 3→8sn: her retry arasında maksimum bekleme
-    fragLoadingTimeOut: 20000,           // 10→20sn: zayıf internette segment geç gelebilir
-    manifestLoadingMaxRetry: 6,          // 4→6: manifest yeniden deneme
-    manifestLoadingTimeOut: 15000,       // 6→15sn: manifest yükleme timeout
-    levelLoadingMaxRetry: 6,             // 4→6
-    levelLoadingTimeOut: 15000,          // 6→15sn
-    nudgeMaxRetry: 10,                   // 8→10: buffer boşluğu atlatma denemesi
-    nudgeOffset: 0.1,                    // 0.5→0.1: çok küçük sıçrama — VOD'da atlama neredeyse yok
-    maxFragLookUpTolerance: 0.5,         // 0.25→0.5: segment arama toleransı artırıldı
+    fragLoadingMaxRetry: 6,              // 12→6: çok fazla retry = açılmayan kanalda uzun bekleme
+    fragLoadingRetryDelay: 200,          // 150→200ms: aşırı hızlı retry sunucuyu sıkıştırır
+    fragLoadingMaxRetryTimeout: 8000,    // 6→8sn: HD segment büyük, biraz daha bekle
+    fragLoadingTimeOut: 25000,           // 20→25sn: 1080p/4K segment indirme süresi daha uzun
+    manifestLoadingMaxRetry: 4,          // 6→4: manifest zaten hızlı yüklenir
+    manifestLoadingTimeOut: 12000,       // 15→12sn
+    levelLoadingMaxRetry: 4,             // 6→4
+    levelLoadingTimeOut: 12000,          // 15→12sn
+    nudgeMaxRetry: 6,                    // 10→6: fazla nudge = yanlış konuma atlama
+    nudgeOffset: 0.2,                    // 0.1→0.2: daha belirgin ilerleme — takılı kalan buffer kırılır
+    maxFragLookUpTolerance: 0.3,         // 0.5→0.3: segment arama hassasiyeti artar = atlama azalır
 
-    // ── ABR: Zayıf internette düşük kaliteden başla, yavaş çık ──
-    abrEwmaDefaultEstimate: 400000,      // 800Kbps→400Kbps: çok düşük tahminle başla = en düşük kalite seçilir
-    abrEwmaFastLive: 2,                  // 3→2: ani bant düşüşüne HIZLI tepki ver → hemen kalite düşür
-    abrEwmaSlowLive: 15,                 // 9→15: kalite artışı çok yavaş — gereksiz kalite atlaması yok
-    abrBandWidthFactor: 0.60,            // 0.70→0.60: bant genişliğinin sadece %60'ını kullan — güvenli marj
-    abrBandWidthUpFactor: 0.35,          // 0.50→0.35: kalite artışı çok temkinli — düşme riski azalır
+    // ── ABR: Yüksek kalitede hızlı başla, kararlı kal ──
+    abrEwmaDefaultEstimate: 5000000,     // 1.5→5Mbps: 1080p için gerçekçi başlangıç tahmini = HD'den başla
+    abrEwmaFastLive: 4,                  // 3→4: ani bant düşüşüne daha sakin tepki = kalite titremesi azalır
+    abrEwmaSlowLive: 12,                 // 9→12: kalite artışı daha ölçülü = istikrar öncelikli
+    abrBandWidthFactor: 0.85,            // 0.70→0.85: mevcut bant genişliğinin %85'i = güvenli yüksek kalite
+    abrBandWidthUpFactor: 0.70,          // 0.50→0.70: kalite artışına daha güvenli yaklaş = donma olmaz
 
-    startLevel: 0,                       // -1→0: her zaman EN DÜŞÜK kaliteden başla — buffer hızlı dolar
+    startLevel: -1,                      // ABR: otomatik en uygun kalite
     autoStartLoad: true,
-    startFragPrefetch: true,             // ilk segment önceden yükle
+    startFragPrefetch: false,            // true→false: ilk segment yüklenmeden prefetch = gecikme kaynağı
     capLevelToPlayerSize: false,
-    appendErrorMaxRetry: 15,             // 12→15: media append hatalarında daha çok dene
+    appendErrorMaxRetry: 10,             // 15→10: hatalı append'de çok bekletme
     enableSoftwareAES: true,
+
+    // ── HLS.js 1.5.x ek parametreler: ses/video senkronu ve canlı stabilite ──
+    maxAudioFramesDrift: 1,              // Ses/video senkron toleransı — 1 frame = en hassas
+    stretchShortVideoTrack: true,        // Kısa video trackler ses ile hizalanır — ses kayması önlenir
+    initialLiveManifestSize: 1,          // 1 segment yüklenir yüklenmez başla — hızlı açılış
+    testBandwidth: true,                 // HLS.js kendi bant testi yapar — abrEwma daha doğru çalışır
+    progressive: false,                  // Manifest aşamalı yükleme KAPALI — tüm levels tek seferde → hızlı ABR
 
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
+        xhr.timeout = 20000;             // XHR zaman aşımı: segment ve manifest için güvenlik ağı
     }
 };
 
@@ -16306,6 +16356,18 @@ function closeEpDescDialog() {
 }
 
         function closeVodModal() {
+    // Fragman çalışıyorsa önce durdur (arka planda ses/video kalmasın)
+    if (state.player.isTrailerPlaying || document.getElementById('trailerIframe')) {
+        if (window.trailerPlayer && window.trailerPlayer.player) {
+            try { window.trailerPlayer.player.stopVideo(); window.trailerPlayer.player.destroy(); } catch(e) {}
+        }
+        const _ctIframe = document.getElementById('trailerIframe');
+        if (_ctIframe) { try { _ctIframe.src = 'about:blank'; } catch(e) {} }
+        window.trailerPlayer = null;
+        state.player.isTrailerPlaying = false;
+        const _ctsw = document.getElementById('vodTrailerStopWrapper');
+        if (_ctsw) _ctsw.style.display = 'none';
+    }
     const _cm = document.getElementById('vodModal');
     if (_cm) {
         _cm.style.display = 'none';
@@ -16356,7 +16418,7 @@ async function fetchSeriesInfo(seriesName) {
         
         // Dizi detaylarını al
         const seriesData = await _sf(
-            `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR`
+            `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos,images`
         );
         if (!seriesData) return null;
         
@@ -16442,6 +16504,16 @@ async function fetchSeriesInfo(seriesName) {
         // ────────────────────────────────────────────────────────────────
         
         // Önbelleğe kaydet
+        // Fragman key (YouTube)
+        let _trailerKey = null;
+        if (seriesData.videos && seriesData.videos.results) {
+            const _tv = seriesData.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.official === true)
+                || seriesData.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+                || seriesData.videos.results.find(v => v.site === 'YouTube');
+            if (_tv) _trailerKey = _tv.key;
+        }
+        // Toplam bölüm sayısı
+        const _totalEps = seriesData.number_of_episodes || Object.values(seasons).reduce((a, s) => a + (s ? s.length : 0), 0);
         state.series.seriesCache[seriesName] = {
             id: seriesId,
             name: seriesData.name || seriesName,
@@ -16452,6 +16524,9 @@ async function fetchSeriesInfo(seriesName) {
             year: seriesData.first_air_date ? new Date(seriesData.first_air_date).getFullYear() : null,
             rating: seriesData.vote_average,
             totalSeasons: totalSeasons,
+            totalEpisodes: _totalEps,
+            trailer: _trailerKey,
+            _tmdbFetched: true,
             seasons: seasons,
             genres: seriesData.genres ? seriesData.genres.map(g => g.name) : []
         };
@@ -16690,6 +16765,12 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
 
 // 4. Dizi bölümü oynat
 function playSeriesEpisode(seriesName, season, episode, url) {
+    // Fragman çalışıyorsa durdur
+    if (state.player.isTrailerPlaying || document.getElementById('trailerIframe')) {
+        if (window.trailerPlayer && window.trailerPlayer.player) { try { window.trailerPlayer.player.stopVideo(); window.trailerPlayer.player.destroy(); } catch(e) {} }
+        const _psei = document.getElementById('trailerIframe'); if (_psei) { try { _psei.src='about:blank'; } catch(e) {} }
+        window.trailerPlayer = null; state.player.isTrailerPlaying = false;
+    }
     // URL yoksa seriesCache'den bul
     if (!url) {
         const cached = state.series.seriesCache[seriesName];
@@ -17276,12 +17357,17 @@ function playTrailer(youtubeId, title) {
     posterWrapper.innerHTML = `
         <div style="width:100%; height:100%; position:relative;">
             <div id="trailerIframe" style="width:100%; height:100%;"></div>
-            <button class="vod-trailer-close" onclick="closeTrailer()" id="vodTrailerCloseBtn">
-                <span class="material-symbols-outlined" style="font-size:14px;">close</span>
+            <!-- Ses butonu (sol üst, küçük) -->
+            <button class="vod-trailer-volume" onclick="toggleTrailerVolume()" id="vodTrailerVolumeBtn"
+                    style="position:absolute;top:10px;left:10px;z-index:10;background:rgba(0,0,0,0.75);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <span class="material-symbols-outlined" style="font-size:18px;">volume_up</span>
             </button>
-            <button class="vod-trailer-volume" onclick="toggleTrailerVolume()" id="vodTrailerVolumeBtn">
-                <span class="material-symbols-outlined" style="font-size:14px;">volume_up</span>
+            <!-- Kapat butonu (sağ üst, küçük) -->
+            <button class="vod-trailer-close" onclick="closeTrailer()" id="vodTrailerCloseBtn"
+                    style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(0,0,0,0.75);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <span class="material-symbols-outlined" style="font-size:18px;">close</span>
             </button>
+
         </div>
     `;
 
@@ -17292,7 +17378,15 @@ function playTrailer(youtubeId, title) {
 
     state.player.isTrailerPlaying = true;
     state.player.trailerVolume = 70;
-    state.remote.vodModalButtons = ['vodTrailerCloseBtn', 'vodTrailerVolumeBtn'];
+    // FRAGMANI DURDUR butonunu göster, OYNAT'ı gizle
+    const _tsw = document.getElementById('vodTrailerStopWrapper');
+    if (_tsw) _tsw.style.display = 'block';
+    const _tsbtn = document.getElementById('vodTrailerStopBtn');
+    if (_tsbtn) {
+        // D-Pad için remote listesine ekle
+        _tsbtn.setAttribute('tabindex','0');
+    }
+    state.remote.vodModalButtons = ['vodTrailerStopBtn', 'vodTrailerCloseBtn', 'vodTrailerVolumeBtn'];
     state.remote.vodModalIndex = 0;
     if (state.remote.active) updateRemoteFocus();
 
@@ -17495,49 +17589,93 @@ function handleTrailerError(youtubeId, error) {
 }
 
 function closeTrailer() {
-    
-
+    // YT player durdur ve yok et
     if (window.trailerPlayer && window.trailerPlayer.player) {
         try {
             window.trailerPlayer.player.stopVideo();
             window.trailerPlayer.player.destroy();
-        } catch (e) {
-        }
+        } catch (e) {}
     }
-    
+    // iframe src sıfırla (arka plan sesi/video tamamen kesilsin)
     const trailerIframe = document.getElementById('trailerIframe');
     if (trailerIframe) {
-        trailerIframe.src = "about:blank";
+        try { trailerIframe.contentWindow.postMessage('{"event":"command","func":"stopVideo","args":""}','*'); } catch(e) {}
+        trailerIframe.src = 'about:blank';
+        setTimeout(() => { try { trailerIframe.remove(); } catch(e) {} }, 100);
     }
-    
     window.trailerPlayer = null;
-    
-    const channelName = state.player.currentContinueName || state.player.name;
-    const vodInfo = state.vodCache[channelName];
-    
-    const posterWrapper = document.getElementById('vodPosterWrapper');
-    const posterUrl = vodInfo.poster || vodInfo.backdrop || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+UG9zdGVyIFlvazwvdGV4dD48L3N2Zz4=';
-    posterWrapper.innerHTML = `
-        <img loading="lazy" id="vodModalPoster" class="vod-poster" src="${posterUrl}" 
-             alt="${vodInfo.title}" style="width:100%; height:100%; object-fit:cover;">
-        ${vodInfo.trailer ? `
-            <div class="trailer-play-overlay" id="vodTrailerOverlay" tabindex="0" role="button" aria-label="Fragmanı Oynat" onclick="(function(){document.getElementById('vodTrailerOverlay').classList.add('hidden');playTrailer('${vodInfo.trailer}','${(vodInfo.title||'').replace(/'/g,"\\'")}');})()">
-                <div class="trailer-play-circle"><span class="material-symbols-outlined">play_arrow</span></div>
-                <div class="trailer-play-label">Fragmanı İzle</div>
-            </div>
-        ` : ''}
-    `;
-    
     state.player.isTrailerPlaying = false;
     state.player.trailerVolume = 0;
-    state.remote.vodModalButtons = ['vodModalCloseBtn'];
-    const _trOv = document.getElementById('vodTrailerOverlay');
-    if (_trOv) state.remote.vodModalButtons.push('vodTrailerOverlay');
-    if (vodInfo.trailer) state.remote.vodModalButtons.push('vodTrailerBtn');
-    const continueBtn = document.getElementById('vodModalContinueBtn');
-    if (continueBtn.style.display === 'flex') state.remote.vodModalButtons.push('vodModalContinueBtn');
-    state.remote.vodModalButtons.push('vodModalPlayBtn', 'vodInfoScroll');
-    
+    // FRAGMANI DURDUR butonunu gizle
+    const _tsw2 = document.getElementById('vodTrailerStopWrapper');
+    if (_tsw2) _tsw2.style.display = 'none';
+
+    // Poster alanını geri yükle — dizi veya film için
+    const channelName = state.player.currentContinueName || state.player.name;
+    // Dizi mi film mi?
+    const _seriesData = state.series && state.series.seriesCache && state.series.seriesCache[channelName];
+    const vodInfo = state.vodCache && state.vodCache[channelName];
+    const BLANK = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
+    const posterWrapper = document.getElementById('vodPosterWrapper');
+    if (!posterWrapper) { playKeySound('back'); return; }
+
+    if (_seriesData) {
+        // DİZİ — openSeriesModal'daki gibi backdrop/poster geri yükle
+        const _bdSrc = _seriesData.backdrop || _seriesData.poster || BLANK;
+        const _tKey = _seriesData.trailer;
+        const _tTitle = _seriesData.title || channelName;
+        posterWrapper.style.position = 'relative';
+        posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${_bdSrc}" alt="${channelName}" onerror="this.src='${BLANK}'">`;
+        if (_tKey) {
+            const _ovEl = document.createElement('div');
+            _ovEl.className = 'trailer-play-overlay';
+            _ovEl.id = 'vodTrailerOverlay';
+            _ovEl.setAttribute('tabindex','0');
+            _ovEl.setAttribute('role','button');
+            _ovEl.setAttribute('aria-label','Fragmanı Oynat');
+            _ovEl.innerHTML = '<div class="trailer-play-circle"><span class="material-symbols-outlined">play_arrow</span></div><div class="trailer-play-label">Fragmanı İzle</div>';
+            _ovEl.onclick = () => { _ovEl.classList.add('hidden'); playTrailer(_tKey, _tTitle); };
+            _ovEl.addEventListener('keydown', function(e) {
+                if (e.key==='Enter'||e.key===' '||e.key==='OK') { e.preventDefault(); _ovEl.classList.add('hidden'); playTrailer(_tKey, _tTitle); }
+            });
+            posterWrapper.appendChild(_ovEl);
+            setTimeout(() => { if (!state.remote || !state.remote.active) _ovEl.classList.add('hidden'); }, 3500);
+        }
+        // Kumanda listesi — dizi
+        state.remote.vodModalButtons = ['vodModalCloseBtn'];
+        const _ct = document.getElementById('vodTrailerOverlay'); if (_ct) state.remote.vodModalButtons.push('vodTrailerOverlay');
+        if (_tKey) state.remote.vodModalButtons.push('vodTrailerBtn');
+        const _cb2 = document.getElementById('vodModalContinueBtn');
+        if (_cb2 && _cb2.style.display === 'flex') state.remote.vodModalButtons.push('vodModalContinueBtn');
+        state.remote.vodModalButtons.push('vodModalPlayBtn');
+    } else if (vodInfo) {
+        // FİLM — eski mantık
+        const posterUrl = vodInfo.backdrop || vodInfo.poster || BLANK;
+        posterWrapper.innerHTML = `
+            <img loading="lazy" id="vodModalPoster" class="vod-poster" src="${posterUrl}" 
+                 alt="${vodInfo.title||channelName}" style="width:100%; height:100%; object-fit:cover;"
+                 onerror="this.src='${BLANK}'">
+            ${vodInfo.trailer ? `
+                <div class="trailer-play-overlay" id="vodTrailerOverlay" tabindex="0" role="button" aria-label="Fragmanı Oynat" onclick="(function(){document.getElementById('vodTrailerOverlay').classList.add('hidden');playTrailer('${vodInfo.trailer}','${(vodInfo.title||'').replace(/'/g,"\\'")}'  );})()">
+                    <div class="trailer-play-circle"><span class="material-symbols-outlined">play_arrow</span></div>
+                    <div class="trailer-play-label">Fragmanı İzle</div>
+                </div>
+            ` : ''}
+        `;
+        // Kumanda listesi — film
+        state.remote.vodModalButtons = ['vodModalCloseBtn'];
+        const _trOv2 = document.getElementById('vodTrailerOverlay'); if (_trOv2) state.remote.vodModalButtons.push('vodTrailerOverlay');
+        if (vodInfo.trailer) state.remote.vodModalButtons.push('vodTrailerBtn');
+        const continueBtn = document.getElementById('vodModalContinueBtn');
+        if (continueBtn && continueBtn.style.display === 'flex') state.remote.vodModalButtons.push('vodModalContinueBtn');
+        state.remote.vodModalButtons.push('vodModalPlayBtn', 'vodInfoScroll');
+    } else {
+        // Hiçbir veri yok — sadece sıfırla
+        posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${BLANK}" alt="">`;
+        state.remote.vodModalButtons = ['vodModalCloseBtn', 'vodModalPlayBtn'];
+    }
+    state.remote.vodModalIndex = 0;
+    if (state.remote.active) updateRemoteFocus();
     playKeySound('back');
 }
         function playVodFromModal() {
@@ -20162,9 +20300,7 @@ window.testSettings = {
             }, { passive: false, capture: true });
             // Mouse fallback
             seekBtn.addEventListener('click', function(e) {
-                if (e.detail > 0) { // gerçek mouse click
-                    window.toggleSeekAmountPanel();
-                }
+                window.toggleSeekAmountPanel();
             });
         }
 
@@ -20271,14 +20407,8 @@ function openSidebar() {
     }
 
     setTimeout(() => {
-        // Sidebar açıkken HLS buffer yükünü hafiflet — SADECE CANLI YAYINDA
-        // VOD'da buffer düşürmek = atlama sebebi
-        try {
-            if (state.player.hls && !state.player.hls._destroyed && state.player.isLiveStream) {
-                state.player.hls.config.maxBufferLength = 8;
-                state.player.hls.config.maxMaxBufferLength = 15;
-            }
-        } catch(e) {}
+        // Sidebar açılınca buffer düşürme KALDIRILDI — HD/1080p kanallar donuyor
+        // Buffer değişikliği HLS.js'te segment reorganizasyonuna yol açar = takılma
 
         sidebar.classList.add('open');
         // TVBox: CSS animasyonu kısa bekle, sonra hızlıca render et
@@ -20343,12 +20473,17 @@ function closeSidebar() {
     // Sidebar'ı kapat
     sidebar.classList.remove('open');
 
-    // HLS buffer'ı geri yükle (sidebar açıkken düşürülmüştü)
+    // HLS buffer'ı geri yükle (artık sidebar açılırken düşürülmüyor — tutarlılık için yine de set et)
     setTimeout(() => {
         try {
             if (state.player.hls && !state.player.hls._destroyed) {
-                state.player.hls.config.maxBufferLength = 20;
-                state.player.hls.config.maxMaxBufferLength = 40;
+                if (state.player.isLiveStream) {
+                    state.player.hls.config.maxBufferLength = 12;
+                    state.player.hls.config.maxMaxBufferLength = 30;
+                } else {
+                    state.player.hls.config.maxBufferLength = 45;
+                    state.player.hls.config.maxMaxBufferLength = 90;
+                }
             }
         } catch(e) {}
     }, 400);
@@ -24739,7 +24874,7 @@ window.updateVodCardRating = updateVodCardRating;
 
 
 // 😄 Dizi modalını açan fonksiyon
-function openSeriesModal(seriesName, originalIndex) {
+async function openSeriesModal(seriesName, originalIndex) {
     // Modal'a seri adını yaz
     const _smModal = document.getElementById('vodModal');
     if (_smModal) _smModal.setAttribute('data-channel-name', seriesName);
@@ -24809,32 +24944,136 @@ function openSeriesModal(seriesName, originalIndex) {
     state.player.vodPlaying = true;
     
     const modal = document.getElementById('vodModal');
-    
+    const _posterWrapper = document.getElementById('vodPosterWrapper');
+    const BLANK_POSTER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
+
+    // ── TMDB'den güncel trailer/backdrop/rating/genres çek (cache'de yoksa) ──
+    if (!seriesData._tmdbFetched) {
+        try {
+            const _sf2 = async (url) => {
+                const c = new AbortController();
+                const t = setTimeout(() => c.abort(), 8000);
+                try { const r = await fetch(url, {signal: c.signal}); clearTimeout(t); return r.ok ? await r.json() : null; }
+                catch(e) { clearTimeout(t); return null; }
+            };
+            // id yoksa önce TMDB'den dizi ara
+            let _tmdbId = seriesData.id;
+            if (!_tmdbId) {
+                const _srch = await _sf2(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(seriesName)}&language=tr-TR`);
+                if (_srch && _srch.results && _srch.results.length > 0) _tmdbId = _srch.results[0].id;
+            }
+            seriesData._tmdbFetched = true; // Bir kez dene, başarısız olsa bile tekrar sorma
+            if (_tmdbId) {
+                const _td = await _sf2(`https://api.themoviedb.org/3/tv/${_tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos`);
+                if (_td) {
+                    seriesData.id = _tmdbId;
+                    if (_td.videos && _td.videos.results) {
+                        const _tv2 = _td.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.official === true)
+                            || _td.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+                            || _td.videos.results.find(v => v.site === 'YouTube');
+                        if (_tv2) seriesData.trailer = _tv2.key;
+                    }
+                    if (!seriesData.backdrop && _td.backdrop_path) seriesData.backdrop = `https://image.tmdb.org/t/p/w1280${_td.backdrop_path}`;
+                    if (!seriesData.rating && _td.vote_average) seriesData.rating = _td.vote_average;
+                    if (!seriesData.genres && _td.genres) seriesData.genres = _td.genres.map(g => g.name);
+                    if (!seriesData.overview && _td.overview) seriesData.overview = _td.overview;
+                    if (!seriesData.year && _td.first_air_date) seriesData.year = new Date(_td.first_air_date).getFullYear();
+                    if (!seriesData.poster && _td.poster_path) seriesData.poster = `https://image.tmdb.org/t/p/w500${_td.poster_path}`;
+                }
+            }
+        } catch(e) { seriesData._tmdbFetched = true; }
+    }
+
+    // Backdrop veya poster seç
+    const _bdSrc = seriesData.backdrop || seriesData.poster || BLANK_POSTER;
+
     // Poster
-    const posterSrc = seriesData.poster || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
-    document.getElementById('vodPosterWrapper').innerHTML = `
-        <img loading="lazy" id="vodModalPoster" class="vod-poster" src="${posterSrc}" alt="${seriesName}">
+    _posterWrapper.style.position = 'relative';
+    _posterWrapper.innerHTML = `
+        <img loading="lazy" id="vodModalPoster" class="vod-poster"
+             src="${_bdSrc}" alt="${seriesName}"
+             onerror="this.src='${BLANK_POSTER}'">
     `;
-    
+
+    // Trailer overlay (film modalındaki gibi)
+    const _exTO = document.getElementById('vodTrailerOverlay');
+    if (_exTO) _exTO.remove();
+    const _exTB = document.getElementById('vodTrailerBtn');
+    if (_exTB) _exTB.remove();
+
+    if (seriesData.trailer) {
+        const _ovEl = document.createElement('div');
+        _ovEl.className = 'trailer-play-overlay';
+        _ovEl.id = 'vodTrailerOverlay';
+        _ovEl.setAttribute('tabindex', '0');
+        _ovEl.setAttribute('role', 'button');
+        _ovEl.setAttribute('aria-label', 'Fragmanı Oynat');
+        _ovEl.innerHTML = `
+            <div class="trailer-play-circle">
+                <span class="material-symbols-outlined">play_arrow</span>
+            </div>
+            <div class="trailer-play-label">Fragmanı İzle</div>
+        `;
+        const _tKey = seriesData.trailer;
+        const _tTitle = seriesData.title || seriesName;
+        _ovEl.onclick = () => { _ovEl.classList.add('hidden'); playTrailer(_tKey, _tTitle); };
+        _ovEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
+                e.preventDefault(); _ovEl.classList.add('hidden'); playTrailer(_tKey, _tTitle);
+            }
+        });
+        // Fare hover gizle/göster
+        let _ovHT;
+        function _schedOvHide() {
+            clearTimeout(_ovHT);
+            _ovEl.classList.remove('hidden');
+            _ovHT = setTimeout(() => { if (!state.remote || !state.remote.active) _ovEl.classList.add('hidden'); }, 3500);
+        }
+        _posterWrapper.addEventListener('mouseenter', _schedOvHide);
+        _posterWrapper.addEventListener('mouseleave', () => {
+            if (!state.remote || !state.remote.active) { clearTimeout(_ovHT); _ovEl.classList.add('hidden'); }
+        });
+        _posterWrapper.appendChild(_ovEl);
+        _schedOvHide();
+
+        // D-Pad için gizli buton
+        const _tBtn = document.createElement('button');
+        _tBtn.className = 'vod-trailer-btn';
+        _tBtn.id = 'vodTrailerBtn';
+        _tBtn.setAttribute('tabindex', '0');
+        _tBtn.style.display = 'none';
+        _tBtn.onclick = () => { _ovEl.classList.add('hidden'); playTrailer(_tKey, _tTitle); };
+        _tBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">play_arrow</span> Fragman`;
+        _posterWrapper.parentNode.insertBefore(_tBtn, _posterWrapper.nextSibling);
+    }
+
     // Başlık
-    document.getElementById('vodModalTitle').textContent = seriesName;
+    document.getElementById('vodModalTitle').textContent = seriesData.title || seriesName;
     
     // Meta
     const totalSeasons = seriesData.totalSeasons || Object.keys(seriesData.seasons || {}).length;
     const totalEpisodes = seriesData.totalEpisodes || 0;
     
-    document.getElementById('vodModalMeta').innerHTML = `
+    const _metaHtml = `
+        ${seriesData.year ? `<div class="vod-meta-item">${seriesData.year}</div>` : ''}
+        ${seriesData.rating ? `<div class="vod-meta-item tmdb-rating"><span class="material-symbols-outlined">star</span>${seriesData.rating.toFixed(1)}</div>` : ''}
         <div class="vod-meta-item">📺 Dizi</div>
         <div class="vod-meta-item">${totalSeasons} Sezon</div>
         <div class="vod-meta-item">${totalEpisodes} Bölüm</div>
     `;
+    document.getElementById('vodModalMeta').innerHTML = _metaHtml;
     
-    // Özet (varsa)
+    // Özet
     const _ov2 = document.getElementById('vodModalOverview');
     if (_ov2) _ov2.textContent = seriesData.overview || `${seriesName} - ${totalSeasons} sezon, ${totalEpisodes} bölüm`;
     
-    // Türler ve oyuncuları gizle
-    const _gc2 = document.getElementById('vodModalGenresContainer'); if (_gc2) _gc2.style.display = 'none';
+    // Türler
+    const _gc2 = document.getElementById('vodModalGenresContainer');
+    const _gl2 = document.getElementById('vodModalGenres');
+    if (_gc2 && _gl2 && seriesData.genres && seriesData.genres.length > 0) {
+        _gl2.innerHTML = seriesData.genres.map(g => `<span class="vod-genre-tag">${g}</span>`).join('');
+        _gc2.style.display = 'block';
+    } else if (_gc2) { _gc2.style.display = 'none'; }
     const _cc2 = document.getElementById('vodModalCastContainer');   if (_cc2) _cc2.style.display = 'none';
     const _dc2 = document.getElementById('vodModalDirectorContainer'); if (_dc2) _dc2.style.display = 'none';
     
@@ -24874,6 +25113,32 @@ function openSeriesModal(seriesName, originalIndex) {
     
     modal.style.display = 'flex';
     playKeySound('click');
+
+    // ── Kumanda (D-Pad) focus listesini güncelle ──
+    if (state.remote) {
+        state.remote.zone = 'vodModal';
+        state.remote.vodModalIndex = 0;
+        state.remote.vodModalElements = null; // Eski elements listesini temizle — buton sistemi kullanılacak
+        state.remote.vodModalButtons = ['vodModalCloseBtn'];
+        const _smTrailerOv = document.getElementById('vodTrailerOverlay');
+        if (_smTrailerOv) { state.remote.vodModalButtons.push('vodTrailerOverlay'); }
+        if (seriesData && seriesData.trailer) state.remote.vodModalButtons.push('vodTrailerBtn');
+        const _smContinueBtn = document.getElementById('vodModalContinueBtn');
+        if (_smContinueBtn && _smContinueBtn.style.display === 'flex') state.remote.vodModalButtons.push('vodModalContinueBtn');
+        state.remote.vodModalButtons.push('vodModalPlayBtn');
+        // Sezon butonlarını ekle
+        setTimeout(() => {
+            const _smSeasonBtns = document.querySelectorAll('#vodSeasonSelector .vod-season-btn');
+            _smSeasonBtns.forEach(btn => {
+                if (btn.id) state.remote.vodModalButtons.push(btn.id);
+            });
+            // İlk sezon butonuna focus ver
+            if (_smSeasonBtns.length > 0) {
+                _smSeasonBtns[0].classList.add('remote-focused');
+                _smSeasonBtns[0].focus();
+            }
+        }, 150);
+    }
 }
 // 😄 Kategorileri M3U'daki orijinal sıraya göre oluştur
 function updateCategoriesFromFiltered() {
@@ -28957,7 +29222,12 @@ function playChannelByName(name) {
    function playChannel(index, startTime = 0) {
     const ch = state.filtered[index]; 
     if (!ch) return;
-    
+    // Fragman çalışıyorsa durdur
+    if (state.player.isTrailerPlaying || document.getElementById('trailerIframe')) {
+        if (window.trailerPlayer && window.trailerPlayer.player) { try { window.trailerPlayer.player.stopVideo(); window.trailerPlayer.player.destroy(); } catch(e) {} }
+        const _pci = document.getElementById('trailerIframe'); if (_pci) { try { _pci.src='about:blank'; } catch(e) {} }
+        window.trailerPlayer = null; state.player.isTrailerPlaying = false;
+    }
     // ZAPPING EKRANINI GÖSTER
     const logo = ch.logo || 'https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg';
     showZappingScreen(ch.name, logo, true);
@@ -29230,13 +29500,13 @@ function resumeChannel(startTime) {
                                 state.player.hls = null;
                                 const _hlsFb2 = new Hls(HLS_CONFIG);
                                 state.player.hls = _hlsFb2;
-                                _hlsFb2.loadSource(_PROXY_FB + encodeURIComponent(_fb));
                                 _hlsFb2.attachMedia(video);
+                                _hlsFb2.loadSource(_PROXY_FB + encodeURIComponent(_fb));
                                 video.play().catch(()=>{});
                             }
                         });
-                        _hlsFb.loadSource(_proxyUrl);
                         _hlsFb.attachMedia(video);
+                        _hlsFb.loadSource(_proxyUrl);
                         video.play().catch(()=>{});
                     }
                 }
@@ -29531,7 +29801,7 @@ function resumeChannel(startTime) {
         try {
             const buf = video.buffered;
             const bufAhead = buf && buf.length > 0 ? buf.end(buf.length - 1) - video.currentTime : 0;
-            if (bufAhead > 3) { // buffer 3sn+ varsa play() yeterli, müdahale etme
+            if (bufAhead > (isHighRes || is4K ? 5 : 3)) { // HD: 5sn+ buffer varsa müdahale etme
                 if (video.paused && !window._userPaused) video.play().catch(()=>{});
                 return;
             }
@@ -29539,11 +29809,11 @@ function resumeChannel(startTime) {
 
         // Çok sık recovery önle
         const now = Date.now();
-        const minGap = is4K ? 3000 : isHighRes ? 2000 : 1200; // artırıldı: erken recovery = daha fazla donma
+        const minGap = is4K ? 5000 : isHighRes ? 3500 : 2000; // artırıldı: erken recovery = daha fazla donma
         if (now - lastStallRecoveryTime < minGap) return;
 
         // VOD: çok daha uzun bekle — erken müdahale = atlama sebebi
-        // Canlı: 1sn | 1080p: 1.5sn | 4K: 2sn | VOD: 3sn (buffer kendiliğinden dolacak)
+        // Canlı: 2sn | 1080p: 3sn | 4K: 4sn | VOD: 5sn (buffer kendiliğinden dolacak)
         const _isVodStall = !state.player.isLiveStream;
         stallTimer = setTimeout(() => {
             const hls = state.player.hls;
@@ -29553,7 +29823,7 @@ function resumeChannel(startTime) {
             try {
                 const _buf2 = video.buffered;
                 const _ahead2 = _buf2 && _buf2.length > 0 ? _buf2.end(_buf2.length - 1) - video.currentTime : 0;
-                if (_ahead2 > 2) {
+                if (_ahead2 > (isHighRes || is4K ? 4 : 2)) {
                     // Buffer zaten var — sadece play() yeter, startLoad/seek YOK
                     if (video.paused && !window._userPaused) video.play().catch(()=>{});
                     return;
@@ -29585,9 +29855,16 @@ function resumeChannel(startTime) {
                     }, 500);
                 } catch(e) { window._recoveryLock = false; }
             } else if (stallCount <= 9) {
-                // Kaliteyi EN DÜŞÜĞE düşür — zayıf internet için kritik adım
+                // Kaliteyi kademeli düşür — önce bir seviye, ağır stallda en düşüğe
                 try {
-                    hls.nextLevel = 0; // direkt en düşük seviye
+                    const _hls3 = state.player.hls;
+                    if (_hls3 && _hls3.levels && _hls3.levels.length > 1) {
+                        const _curLvl = _hls3.currentLevel;
+                        const _midLvl = Math.floor(_hls3.levels.length / 2);
+                        // stallCount 6-7 → orta seviye; 8-9 → en düşük
+                        const _targetLvl = (stallCount <= 7 && _curLvl > _midLvl) ? _midLvl : 0;
+                        _hls3.nextLevel = _targetLvl;
+                    }
                     hls.stopLoad();
                     setTimeout(() => {
                         try {
@@ -29605,7 +29882,7 @@ function resumeChannel(startTime) {
                 const curCh = state.filtered[state.player.index];
                 if (curCh) setTimeout(() => playChannel(curCh), 500);
             }
-        }, _isVodStall ? 3000 : (is4K ? 2000 : isHighRes ? 1500 : 1000));
+        }, _isVodStall ? 5000 : (is4K ? 4000 : isHighRes ? 3000 : 2000));
     };
     video.onstalled = onStall;
     video.onwaiting = onStall;
@@ -29709,7 +29986,90 @@ function resumeChannel(startTime) {
     const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
     const rawUrl = ch.url;
 
+    // ── VİDMODY.COM / EMBED PLAYER DESTEĞİ ──
+    // vidmody.com URL'leri web sayfasıdır; HLS.js ile açılmaz.
+    // Cloudflare Worker resolver ile gerçek stream URL'sini çek, HLS.js ile aç.
+    if (rawUrl && (rawUrl.includes('vidmody.com') || rawUrl.includes('/vs/tt'))) {
+        hideZappingScreen();
+        showToast('🎬 Dizi stream aranıyor...');
 
+        (async () => {
+            try {
+                // Worker resolver'ı dene
+                const resolverUrl = (typeof VIDMODY_RESOLVER !== 'undefined' && !VIDMODY_RESOLVER.includes('YOUR-SUBDOMAIN'))
+                    ? `${VIDMODY_RESOLVER}/?url=${encodeURIComponent(rawUrl)}`
+                    : null;
+
+                let streamUrl = null;
+
+                if (resolverUrl) {
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), 15000);
+                    try {
+                        const resp = await fetch(resolverUrl, { signal: ctrl.signal });
+                        clearTimeout(timer);
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            streamUrl = data.stream || null;
+                        }
+                    } catch (e) {
+                        clearTimeout(timer);
+                        console.warn('Vidmody resolver hatası:', e);
+                    }
+                }
+
+                if (streamUrl) {
+                    // Gerçek stream bulundu → HLS.js ile aç
+                    showToast('✅ Stream bulundu, oynatılıyor...');
+                    // State'i güncelle
+                    state.player.url = streamUrl;
+                    state.player.isLiveStream = false;
+                    // Video elementine yükle
+                    const video = document.getElementById('videoPlayer');
+                    if (video) {
+                        if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
+                        hideZappingScreen();
+                        if (streamUrl.includes('.m3u8') || streamUrl.includes('/hls/')) {
+                            if (Hls && Hls.isSupported()) {
+                                const hlsInst = new Hls(HLS_CONFIG || {});
+                                state.player.hls = hlsInst;
+                                hlsInst.loadSource(streamUrl);
+                                hlsInst.attachMedia(video);
+                                hlsInst.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                            } else {
+                                video.src = streamUrl;
+                                video.load();
+                                video.play().catch(() => {});
+                            }
+                        } else {
+                            // MP4
+                            video.src = streamUrl;
+                            video.load();
+                            video.play().catch(() => {});
+                        }
+                    }
+                } else {
+                    // Resolver çalışmıyorsa → embedModal iframe fallback
+                    showToast('⚠️ Worker bulunamadı, embed player açılıyor...');
+                    const _em = document.getElementById('embedModal');
+                    const _ei = document.getElementById('embedIframe');
+                    const _et = document.getElementById('embedModalTitle');
+                    if (_em && _ei) {
+                        if (_et) _et.textContent = ch.name || 'Video';
+                        _ei.src = rawUrl;
+                        _em.style.display = 'flex';
+                        if (state && state.remote) state.remote.zone = 'embedModal';
+                    }
+                }
+            } catch (e) {
+                console.error('Vidmody oynatma hatası:', e);
+                showToast('❌ Stream açılamadı');
+            }
+        })();
+
+        state.remote.zone = 'player';
+        return;
+    }
 
     // Direkt açılması gereken domain'ler (proxy'den geçmez)
     const DIRECT_DOMAINS = [
@@ -29776,6 +30136,17 @@ function resumeChannel(startTime) {
         state.player._isDvr = false;
 
         const hlsInst = new Hls(HLS_CONFIG);
+
+        // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
+        // Canlı: 12sn buffer = HD segmentler için yeterli; VOD: 45sn = kesintisiz izleme
+        if (state.player.isLiveStream) {
+            hlsInst.config.maxBufferLength    = 12;
+            hlsInst.config.maxMaxBufferLength = 30;
+        } else {
+            hlsInst.config.maxBufferLength    = 45;
+            hlsInst.config.maxMaxBufferLength = 90;
+        }
+
         state.player.hls = hlsInst;
 
         let fallbackDone = false;
@@ -29819,7 +30190,7 @@ function resumeChannel(startTime) {
                         state.player._dvrJumped = false;
                     }
                 } catch(e) {}
-            }, 5000); // 3→5sn: daha kesin DVR tespiti için bekle
+            }, 2000); // DVR tespiti: 2sn yeterli (5→2sn: daha hızlı live edge'e zıplama)
 
             video.play().catch(e => {
                 if (e.name !== 'AbortError') console.warn('Play hatası:', e);
@@ -29877,13 +30248,12 @@ function resumeChannel(startTime) {
                         };
                     }
 
-                    // DONMA-FIX: FRAG_BUFFERED'da play() sadece video gerçekten hazırsa çağır.
-                    // readyState < 3 ise video buffer'ı henüz dolmamış — play() çağrısı beklemede kalır,
-                    // onplaying zaten onPlayStart'ı çalıştıracak. Erken play() + onPlayStart() = donma.
-                    if (!state.player.streamStarted && video.readyState >= 3) {
+                    // DONMA-FIX: FRAG_BUFFERED'da play() readyState >= 2 (HAVE_CURRENT_DATA) yeterli.
+                    // readyState >= 3 bazen çok geç tetikler — açılış yavaşlıyor.
+                    // onplaying event'i zaten onPlayStart'ı çalıştıracak — çift tetikleme yok.
+                    if (!state.player.streamStarted && video.readyState >= 2) {
                         video.play().catch(()=>{});
                         // onPlayStart buradan ÇAĞIRILMIYOR — onplaying event'i zaten tetikleyecek.
-                        // Böylece çift onPlayStart + zapping-ekranı flicker engellenir.
                     }
                 }
             } catch(e) {}
@@ -29928,8 +30298,13 @@ function resumeChannel(startTime) {
 
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 mediaErrorCount++;
-                if (mediaErrorCount <= 2) {
+                if (mediaErrorCount === 1) {
+                    // 1. deneme: standart media error recovery
                     try { hlsInst.recoverMediaError(); } catch(e) {}
+                    return;
+                } else if (mediaErrorCount === 2) {
+                    // 2. deneme: audio codec swap — bazı akışlarda codec uyumsuzluğu çözülür
+                    try { hlsInst.swapAudioCodec(); hlsInst.recoverMediaError(); } catch(e) {}
                     return;
                 }
                 // 3+ hata: fatal olarak işle
@@ -29952,8 +30327,10 @@ function resumeChannel(startTime) {
             }
         });
 
-        hlsInst.loadSource(streamUrl);
+        // HLS.js best-practice: attachMedia ÖNCE, loadSource SONRA
+        // Ters sırada bazı tarayıcılarda MANIFEST_PARSED gecikeblir veya buffer senkronu kaçar
         hlsInst.attachMedia(video);
+        hlsInst.loadSource(streamUrl);
     }
 
     // ── REDIRECT RESOLVE: dt-switch, akamai redirect URL'leri ──
@@ -30018,7 +30395,7 @@ function resumeChannel(startTime) {
             let _koolLastTime = -1, _koolStallCount = 0;
             window._koolReconnectTimer = setInterval(() => {
                 if (!video || video.paused || video.ended) return;
-                if (video.readyState >= 2 && video.currentTime === _koolLastTime) {
+                if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _koolLastTime) {
                     _koolStallCount++;
                     if (_koolStallCount >= 3) { // 2→3: daha az false positive
                         _koolStallCount = 0;
@@ -32658,8 +33035,10 @@ function deleteContinueWatchingRecord(name) {
                 } else if (epIdx + 1 < episodeCards.length) {
                     // Son satır tek eleman — o elemana git
                     _focusEpCard(episodeCards[episodeCards.length - 1]);
+                } else {
+                    // Zaten son karttayız — scrollIntoView ile görünür yap
+                    episodeCards[epIdx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                 }
-                // Son satırdayız, aşağıya çıkma (döngü yapmasın)
             } else {
                 state.remote.vodModalIndex = Math.min(elements.length - 1, currentIdx + 1);
             }
@@ -32759,7 +33138,7 @@ function deleteContinueWatchingRecord(name) {
         newEl.style.outline = '4px solid #FFD700';
         newEl.style.boxShadow = '0 0 20px #FFD700';
         newEl.focus({ preventScroll: false });
-        newEl.scrollIntoView({ block: 'center', behavior: 'auto' });
+        newEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }
     
     updateRemoteFocus();
@@ -36959,221 +37338,253 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
     const style = document.createElement('style');
     style.textContent = `
-        /* YATAY VOD MODAL - TV VE MOBİL İÇİN OPTİMİZE */
+        /* ── VOD MODAL GENEL ── */
         .vod-modal {
-            padding: 10px !important;
+            padding: 6px !important;
             align-items: center !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
         }
-        
         .vod-modal-content {
-            max-width: 800px !important;
-            width: 95% !important;
-            max-height: 90vh !important;
+            max-width: 860px !important;
+            width: 98% !important;
+            max-height: 96vh !important;
             margin: 0 auto !important;
-            border-radius: 16px !important;
+            border-radius: 14px !important;
             overflow: hidden !important;
-        }
-        
-        /* Modal body - YATAY DÜZEN (Poster sol, bilgi sağ) */
-        .vod-modal-body {
-            display: flex !important;
-            flex-direction: row !important;
-            max-height: calc(90vh - 60px) !important;
-            overflow: hidden !important;
-        }
-        
-        /* Poster konteynır - SOL TARAF */
-        .vod-poster-container {
-            flex: 0 0 50% !important;
-            max-width: 50% !important;
             display: flex !important;
             flex-direction: column !important;
-            background: #000 !important;
+            box-sizing: border-box !important;
         }
-        
-        .vod-poster-wrapper {
-            width: 100% !important;
-            aspect-ratio: unset !important;
-            flex: 1 !important;
-            min-height: 200px !important;
-            max-height: none !important;
-            border-bottom: none !important;
-            border-right: 2px solid var(--accent-primary) !important;
-        }
-        
-        .vod-poster {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            object-position: center top !important;
-        }
-        
-        /* Poster altındaki butonlar */
-        .vod-buttons-group {
-            padding: 10px !important;
-            gap: 6px !important;
-            flex-direction: column !important;
-            background: var(--bg-panel) !important;
-        }
-        
-        .vod-play-btn, .vod-continue-btn {
-            padding: 10px !important;
-            font-size: 13px !important;
-            width: 100% !important;
-        }
-        
-        /* Bilgi konteynır - SAĞ TARAF */
-        .vod-info-container {
-            flex: 1 !important;
-            padding: 12px !important;
-            overflow-y: auto !important;
-            max-height: calc(90vh - 60px) !important;
-            background: var(--bg-panel) !important;
-        }
-        
-        .vod-title {
-            font-size: 18px !important;
-            margin-bottom: 8px !important;
-            line-height: 1.3 !important;
-        }
-        
-        .vod-meta {
-            flex-wrap: wrap !important;
-            gap: 5px !important;
-            margin-bottom: 10px !important;
-        }
-        
-        .vod-meta-item {
-            font-size: 11px !important;
-            padding: 3px 8px !important;
-        }
-        
-        .vod-overview {
-            font-size: 13px !important;
-            max-height: 80px !important;
-            overflow-y: auto !important;
-            margin-bottom: 12px !important;
-            line-height: 1.4 !important;
-        }
-        
-        /* Sezonlar ve Bölümler */
-        .vod-seasons-container {
-            margin-top: 5px !important;
-        }
-        
-        .vod-section-title {
-            font-size: 14px !important;
-            margin-bottom: 6px !important;
-        }
-        
-        .vod-season-selector {
-            padding: 5px 0 !important;
-            gap: 5px !important;
-            flex-wrap: wrap !important;
-        }
-        
-        .vod-season-btn {
-            padding: 6px 12px !important;
-            font-size: 12px !important;
-        }
-        
-        .vod-episodes-container {
-            display: grid !important;
-            grid-template-columns: 1fr !important; /* Tek sütun - daha okunaklı */
-            max-height: 200px !important;
-            gap: 5px !important;
-            overflow-y: auto !important;
-        }
-        
-        .vod-episode-card {
-            padding: 10px !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        
-        .vod-episode-number {
-            font-size: 11px !important;
-            margin-bottom: 4px !important;
-        }
-        
-        .vod-episode-title {
-            font-size: 13px !important;
-            line-height: 1.3 !important;
-        }
-        
-        .vod-episode-desc {
-            font-size: 11px !important;
-            -webkit-line-clamp: 2 !important;
-        }
-        
-        /* Fragman butonu */
-        .vod-trailer-btn {
-            width: 100% !important;
-            margin-top: 0 !important;
-            padding: 8px !important;
-            font-size: 12px !important;
-            border-radius: 0 !important;
-        }
-        
-        /* Modal header */
         .vod-modal-header {
             padding: 10px 14px !important;
             flex-shrink: 0 !important;
         }
-        
         .vod-modal-close {
             width: 36px !important;
             height: 36px !important;
         }
-        
-        /* Mobil için küçük düzenlemeler */
+
+        /* ── DİKEY (portrait ≤600px) ── */
         @media (max-width: 600px) {
-            .vod-modal-body {
+            .vod-modal-content {
+                max-height: 96vh !important;
+                display: flex !important;
                 flex-direction: column !important;
-                max-height: 85vh !important;
+                overflow: hidden !important;
+            }
+            /* BODY: sabit yükseklik + scroll — tüm içerik görünür */
+            .vod-modal-body {
+                flex: 1 !important;
+                min-height: 0 !important;
+                flex-direction: column !important;
                 overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                display: flex !important;
             }
-            
             .vod-poster-container {
-                flex: 0 0 auto !important;
-                max-width: 100% !important;
+                flex-shrink: 0 !important;
+                width: 100% !important;
             }
-            
             .vod-poster-wrapper {
+                width: 100% !important;
                 aspect-ratio: 16/9 !important;
+                max-height: 200px !important;
                 border-right: none !important;
                 border-bottom: 2px solid var(--accent-primary) !important;
             }
-            
             .vod-buttons-group {
                 flex-direction: row !important;
+                padding: 10px 12px !important;
+                gap: 8px !important;
+                flex-shrink: 0 !important;
             }
-            
+            .vod-play-btn, .vod-continue-btn {
+                flex: 1 !important;
+                padding: 12px 8px !important;
+                font-size: 14px !important;
+            }
+            /* INFO: flex-shrink 0, scroll yok — body scroll eder */
             .vod-info-container {
-                max-height: none !important;
+                flex-shrink: 0 !important;
+                overflow: visible !important;
+                padding: 12px 14px 20px !important;
             }
-            
+            .vod-info-scroll {
+                overflow: visible !important;
+                height: auto !important;
+            }
+            /* BÖLÜMLER: kendi scroll eder, türler body scroll ile görünür */
             .vod-episodes-container {
+                display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
+                max-height: 300px !important;
+                min-height: 80px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                gap: 7px !important;
+                scrollbar-width: thin !important;
+                scrollbar-color: rgba(255,215,0,0.4) transparent !important;
+            }
+            .vod-episode-card {
+                padding: 11px 10px !important;
+                font-size: 13px !important;
+            }
+            /* TÜRLER — body scroll ile görünür */
+            .vod-genres {
+                display: block !important;
+                margin-top: 12px !important;
+            }
+            .vod-cast {
+                display: block !important;
+                margin-top: 8px !important;
             }
         }
-        
-        /* TV Box için odak çerçevesi */
+
+        /* ── YATAY (landscape >600px): Sol poster, sağ scroll ── */
+        @media (min-width: 601px) {
+            .vod-modal-content {
+                max-height: 98vh !important;
+                width: 99vw !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .vod-modal-body {
+                display: flex !important;
+                flex-direction: row !important;
+                overflow: hidden !important;
+                flex: 1 !important;
+                min-height: 0 !important;
+                max-height: calc(98vh - 52px) !important;
+            }
+            .vod-poster-container {
+                flex: 0 0 38% !important;
+                max-width: 280px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background: #000 !important;
+                overflow: hidden !important;
+            }
+            .vod-poster-wrapper {
+                width: 100% !important;
+                aspect-ratio: unset !important;
+                flex: 1 !important;
+                max-height: none !important;
+                border-bottom: none !important;
+                border-right: 2px solid var(--accent-primary) !important;
+            }
+            .vod-poster {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+                object-position: center top !important;
+            }
+            .vod-buttons-group {
+                flex-shrink: 0 !important;
+                padding: 10px 12px !important;
+                gap: 8px !important;
+                flex-direction: column !important;
+                background: var(--bg-panel) !important;
+            }
+            .vod-play-btn, .vod-continue-btn {
+                width: 100% !important;
+                padding: 12px 8px !important;
+                font-size: 14px !important;
+            }
+            /* SAĞ TARAF — scroll eder, tüm içerik (türler dahil) görünür */
+            .vod-info-container {
+                flex: 1 !important;
+                min-width: 0 !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 10px 14px 20px !important;
+                background: var(--bg-panel) !important;
+                min-height: 0 !important;
+            }
+            .vod-info-scroll {
+                overflow: visible !important;
+                height: auto !important;
+            }
+            .vod-title {
+                font-size: 17px !important;
+                margin-bottom: 6px !important;
+            }
+            .vod-overview {
+                font-size: 12px !important;
+                max-height: 72px !important;
+                overflow-y: auto !important;
+                margin-bottom: 10px !important;
+            }
+            .vod-meta-item {
+                font-size: 11px !important;
+            }
+            .vod-seasons-container {
+                margin-top: 6px !important;
+            }
+            .vod-section-title {
+                font-size: 13px !important;
+                margin-bottom: 5px !important;
+            }
+            .vod-season-selector {
+                padding: 4px 0 6px !important;
+                gap: 5px !important;
+                flex-wrap: wrap !important;
+            }
+            .vod-season-btn {
+                padding: 6px 14px !important;
+                font-size: 12px !important;
+            }
+            /* Bölümler — kendi scroll eder */
+            .vod-episodes-container {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                max-height: 200px !important;
+                min-height: 60px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                gap: 6px !important;
+                scrollbar-width: thin !important;
+                scrollbar-color: rgba(255,215,0,0.4) transparent !important;
+            }
+            .vod-episode-card {
+                padding: 10px 12px !important;
+                font-size: 13px !important;
+            }
+            .vod-episode-number {
+                font-size: 11px !important;
+                margin-bottom: 3px !important;
+            }
+            .vod-episode-title {
+                font-size: 12px !important;
+            }
+            .vod-episode-desc {
+                display: none !important;
+            }
+            /* Türler ve oyuncular yatayda da görünür */
+            .vod-genres, .vod-cast {
+                display: block !important;
+                margin-top: 10px !important;
+            }
+        }
+
+        /* ── TV Box odak ── */
         .tv-focused {
             outline: 4px solid #FFD700 !important;
             outline-offset: 2px !important;
             box-shadow: 0 0 20px #FFD700 !important;
-            transform: scale(1.02) !important;
-            transition: all 0.15s !important;
             border-radius: 8px !important;
             z-index: 10 !important;
         }
-        
         .vod-season-btn.tv-focused {
             background: #FFD700 !important;
             color: #000 !important;
         }
-        
         .vod-episode-card.tv-focused {
             background: rgba(255, 215, 0, 0.25) !important;
             border-color: #FFD700 !important;
@@ -43371,9 +43782,8 @@ window.showControls = function(duration) {
             if (st && st.player && st.player.hls) {
                 st.player.hls.stopLoad();
                 try {
-                    st.player.hls.config.maxBufferLength    = 30;
-                    st.player.hls.config.maxMaxBufferLength = 60;
-                    st.player.hls.config.backBufferLength   = 0;
+                    // buffer config reset: startHls içinde canlı/VOD ayrımıyla yapılır
+                    st.player.hls.config.backBufferLength = 0;
                 } catch(e2) {}
             }
         } catch(e) {}
@@ -43429,22 +43839,27 @@ setInterval(function() {
         if (hls.currentLevel !== hls.nextLevel && hls.nextLevel !== -1) {
             _wdLastTime = v.currentTime; _wdTicks = 0; return;
         }
-        // readyState < 3: buffer dolmamış
-        if (v.readyState < 3) { _wdLastTime = v.currentTime; return; }
+        // readyState < 2: metadata bile yok — beklemeye devam et
+        // readyState = 2 (HAVE_CURRENT_DATA): veri var ama oynamıyor → gerçek donma
+        if (v.readyState < 2) { _wdLastTime = v.currentTime; return; }
         if (v.currentTime === 0) { _wdLastTime = 0; return; }
         if (window._recoveryLock) { _wdLastTime = v.currentTime; return; }
 
         var ct = v.currentTime;
         if (ct === _wdLastTime) {
             _wdTicks++;
-            // 3 tik = ~2.4sn donma — zayıf internette HIZLI tespit et
+            // 3 tik = ~2.4sn donma tespiti (800ms × 3)
             if (_wdTicks >= 3 && !_wdBusy) {
                 _wdBusy = true; _wdTicks = 0;
                 _wdRecoverAttempts++;
                 var buf = v.buffered;
                 var ahead = buf && buf.length > 0 ? buf.end(buf.length-1) - ct : 0;
+                // HD/1080p için daha yüksek buffer eşiği — büyük segment henüz dolmuyor olabilir
+                var _res = st.player && st.player.resolutionInfo;
+                var _isHDwd = _res && (_res.width >= 1920 || _res.height >= 1080);
+                var _bufThresh = _isHDwd ? 4.0 : 2.0;
 
-                if (ahead > 2.0) {
+                if (ahead > _bufThresh) {
                     // Buffer var ama oynamıyor — play() yeterli
                     try { v.play().catch(function(){}); } catch(e) {}
                     setTimeout(function() { _wdBusy = false; }, 500);
@@ -43456,9 +43871,15 @@ setInterval(function() {
                         _wdBusy = false;
                     }, 1000);
                 } else if (_wdRecoverAttempts <= 6) {
-                    // Kaliteyi EN DÜŞÜĞE al — zayıf internet kurtarma
+                    // Kaliteyi kademeli düşür — 4-5. deneme: orta seviye; 6: en düşük
                     try {
-                        hls.nextLevel = 0;
+                        var _wdLevels = hls.levels || [];
+                        if (_wdLevels.length > 1) {
+                            var _wdMid = Math.floor(_wdLevels.length / 2);
+                            hls.nextLevel = (_wdRecoverAttempts <= 5 && hls.currentLevel > _wdMid) ? _wdMid : 0;
+                        } else {
+                            hls.nextLevel = 0;
+                        }
                         hls.stopLoad();
                     } catch(e) {}
                     setTimeout(function() {
@@ -43740,9 +44161,13 @@ document.addEventListener('visibilitychange', function() {
         var hls = st && st.player && st.player.hls;
         if (!hls || hls._destroyed) return;
         if (document.hidden) {
-            if (st.player.isLiveStream) { hls.config.maxBufferLength = 4; hls.config.maxMaxBufferLength = 8; }
+            if (st.player.isLiveStream) { hls.config.maxBufferLength = 6; hls.config.maxMaxBufferLength = 12; }
         } else {
-            hls.config.maxBufferLength = 30; hls.config.maxMaxBufferLength = 60;
+            if (st.player.isLiveStream) {
+                hls.config.maxBufferLength = 12; hls.config.maxMaxBufferLength = 30;
+            } else {
+                hls.config.maxBufferLength = 45; hls.config.maxMaxBufferLength = 90;
+            }
         }
     } catch(e) {}
 });
@@ -44237,3 +44662,301 @@ window.channelNumbering = {
 })(); // CHANNEL_NUMBERING
 </script>
 <!-- ═══════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     VOD MODAL MASTER FIX - V4 (FINAL)
+     Tüm önceki CSS/JS çakışmalarını eze
+═══════════════════════════════════════════ -->
+<style id="vodMasterFix">
+/* ── TEMEL MODAL KUTU ── */
+#vodModal {
+    position: fixed !important;
+    inset: 0 !important;
+    display: none;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    z-index: 5000 !important;
+}
+#vodModal[style*="flex"] {
+    display: flex !important;
+}
+#vodModal .vod-modal-content {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    border-radius: 14px !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+}
+
+/* ══ DİKEY MOD (portrait) ══ */
+@media (orientation: portrait) {
+    #vodModal {
+        padding: 0 !important;
+        align-items: flex-start !important;
+    }
+    #vodModal .vod-modal-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-top: none !important;
+    }
+    #vodModalBody {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    #vodPosterContainer {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+    }
+    #vodPosterWrapper {
+        width: 100% !important;
+        max-height: 210px !important;
+        aspect-ratio: 16/9 !important;
+        border-right: none !important;
+        border-bottom: 2px solid var(--accent-primary, #FFD700) !important;
+    }
+    /* Butonlar poster altında */
+    #vodPosterContainer .vod-buttons-group {
+        flex-direction: column !important;
+        padding: 10px 12px !important;
+        gap: 8px !important;
+    }
+    #vodPosterContainer .vod-play-btn,
+    #vodPosterContainer .vod-continue-btn {
+        width: 100% !important;
+        padding: 13px !important;
+        font-size: 15px !important;
+    }
+    /* Info: scroll yok, body scroll eder → türler görünür */
+    #vodInfoContainer {
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+        padding: 14px 16px 30px !important;
+        min-height: 0 !important;
+    }
+    #vodInfoScroll {
+        overflow: visible !important;
+        height: auto !important;
+    }
+    /* Bölümler: kendi scroll eder */
+    #vodEpisodesContainer {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        max-height: 320px !important;
+        min-height: 60px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(255,215,0,0.4) transparent !important;
+        gap: 8px !important;
+    }
+    /* Türler mutlaka görünür */
+    #vodModalGenresContainer,
+    #vodModalCastContainer,
+    #vodModalDirectorContainer {
+        display: block !important;
+    }
+}
+
+/* ══ YATAY MOD (landscape) ══ */
+@media (orientation: landscape) {
+    #vodModal {
+        padding: 0 !important;
+        align-items: center !important;
+    }
+    #vodModal .vod-modal-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        border-top: 2px solid var(--accent-primary, #FFD700) !important;
+        border-bottom: 2px solid var(--accent-primary, #FFD700) !important;
+    }
+    .vod-modal-header {
+        padding: 8px 14px !important;
+        flex-shrink: 0 !important;
+    }
+    #vodModalBody {
+        display: flex !important;
+        flex-direction: row !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+    /* Sol: poster + butonlar */
+    #vodPosterContainer {
+        flex: 0 0 220px !important;
+        width: 220px !important;
+        max-width: 220px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        border-right: 2px solid var(--accent-primary, #FFD700) !important;
+    }
+    #vodPosterWrapper {
+        flex: 1 1 0 !important;
+        width: 100% !important;
+        max-height: none !important;
+        aspect-ratio: unset !important;
+        border-bottom: none !important;
+        border-right: none !important;
+        overflow: hidden !important;
+    }
+    #vodPosterWrapper .vod-poster {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center top !important;
+    }
+    #vodPosterContainer .vod-buttons-group {
+        flex: 0 0 auto !important;
+        flex-direction: column !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        background: var(--bg-panel, #1a1a1a) !important;
+    }
+    #vodPosterContainer .vod-play-btn,
+    #vodPosterContainer .vod-continue-btn {
+        width: 100% !important;
+        padding: 10px 6px !important;
+        font-size: 13px !important;
+    }
+    /* Sağ: info scroll eder */
+    #vodInfoContainer {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 10px 14px 20px !important;
+    }
+    #vodInfoScroll {
+        overflow: visible !important;
+        height: auto !important;
+    }
+    .vod-title {
+        font-size: 16px !important;
+        margin-bottom: 6px !important;
+    }
+    .vod-overview {
+        font-size: 12px !important;
+        max-height: 70px !important;
+        overflow-y: auto !important;
+        margin-bottom: 10px !important;
+    }
+    /* Bölümler: 3 sütun, kendi scroll eder */
+    #vodEpisodesContainer {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        max-height: 185px !important;
+        min-height: 50px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(255,215,0,0.4) transparent !important;
+        gap: 6px !important;
+    }
+    .vod-episode-card {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+    .vod-episode-desc { display: none !important; }
+    /* Türler info scroll ile görünür */
+    #vodModalGenresContainer,
+    #vodModalCastContainer,
+    #vodModalDirectorContainer {
+        display: block !important;
+    }
+    .vod-meta-item { font-size: 11px !important; }
+    .vod-section-title { font-size: 13px !important; margin-bottom: 5px !important; }
+    .vod-season-btn { padding: 5px 12px !important; font-size: 11px !important; }
+}
+</style>
+
+<script>
+/* ===== VOD MODAL MASTER JS FIX - V4 =====
+   CSS !important yeterli değilse JS ile de zorla uygula.
+   Sadece inline style override'larını temizler.
+*/
+(function() {
+    'use strict';
+
+    // İzlenecek elementlerin inline style'larını temizle
+    function clearInline(el, props) {
+        if (!el) return;
+        props.forEach(function(p) { el.style.removeProperty(p); });
+    }
+
+    function fix() {
+        var modal   = document.getElementById('vodModal');
+        var content = document.querySelector('#vodModal .vod-modal-content');
+        var body    = document.getElementById('vodModalBody');
+        var poster  = document.getElementById('vodPosterContainer');
+        var pw      = document.getElementById('vodPosterWrapper');
+        var info    = document.getElementById('vodInfoContainer');
+        var ep      = document.getElementById('vodEpisodesContainer');
+        if (!content || !body) return;
+
+        var ls = window.innerWidth > window.innerHeight;
+
+        // Inline style'ları temizle — CSS'in devralmasına izin ver
+        clearInline(content, ['max-height','width','max-width','overflow','flex-direction','display','box-sizing']);
+        clearInline(body,    ['flex-direction','overflow','overflow-y','overflow-x','flex','min-height','max-height','height']);
+        clearInline(poster,  ['flex','max-width','width','overflow','display','flex-direction']);
+        clearInline(pw,      ['flex','max-height','aspect-ratio','border-bottom','border-right']);
+        clearInline(info,    ['flex','min-width','min-height','overflow','overflow-y','overflow-x','padding','height']);
+        if (ep) clearInline(ep, ['max-height','min-height','grid-template-columns','overflow-y','display']);
+
+        // Türler/oyuncular: display:none inline'ını koru sadece gerçekten boşsa
+        ['vodModalGenresContainer','vodModalCastContainer','vodModalDirectorContainer'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            // İçi doluysa inline display:none'ı kaldır
+            var list = el.querySelector('[id$="Genres"],[id$="Cast"],[id$="Director"]');
+            if (list && list.children.length > 0) {
+                el.style.removeProperty('display');
+            }
+        });
+    }
+
+    function init() {
+        var m = document.getElementById('vodModal');
+        if (!m) { setTimeout(init, 300); return; }
+        new MutationObserver(function(muts) {
+            muts.forEach(function(mu) {
+                if (mu.attributeName === 'style' && m.style.display === 'flex') {
+                    setTimeout(fix, 100);
+                    setTimeout(fix, 400);
+                    setTimeout(fix, 900);
+                }
+            });
+        }).observe(m, {attributes: true});
+        window.addEventListener('resize',            function() { if (m.style.display === 'flex') setTimeout(fix, 150); });
+        window.addEventListener('orientationchange', function() { setTimeout(function() { if (m.style.display === 'flex') fix(); }, 300); });
+    }
+
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', init)
+        : init();
+})();
+</script>

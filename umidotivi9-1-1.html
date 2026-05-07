@@ -13167,81 +13167,11 @@ async function loadContinueWatching() {
                 
 
                 playKeySound('back');
-                _confirmAppExit();
-            }
-        }
-
-        // ── DOUBLE-BACK / ÇIKIŞ ONAY ──────────────────────────────
-        let _backPressTime = 0;
-        let _exitConfirmToast = null;
-        function _confirmAppExit() {
-            const now = Date.now();
-            if (now - _backPressTime < 2000) {
-                // İkinci basış — onay modalı göster
-                _backPressTime = 0;
-                _showExitConfirmModal();
-            } else {
-                _backPressTime = now;
-                showToast('Çıkmak için geri tuşuna tekrar basın', 'info');
-            }
-        }
-
-        function _showExitConfirmModal() {
-            // Varsa eski modalı temizle
-            const old = document.getElementById('_exitConfirmOverlay');
-            if (old) old.remove();
-
-            const overlay = document.createElement('div');
-            overlay.id = '_exitConfirmOverlay';
-            overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;';
-
-            overlay.innerHTML = `
-<div style="background:#1a1a1a;border:2px solid #FFD700;border-radius:16px;padding:36px 40px;text-align:center;max-width:360px;width:90%;box-shadow:0 0 40px rgba(255,215,0,0.18);">
-  <div style="font-size:2.4em;margin-bottom:12px;">🚪</div>
-  <div style="color:#FFD700;font-size:1.2em;font-weight:700;margin-bottom:8px;">Uygulamadan Çık</div>
-  <div style="color:#ccc;font-size:0.95em;margin-bottom:28px;">Çıkmak istediğinize emin misiniz?</div>
-  <div style="display:flex;gap:16px;justify-content:center;">
-    <button id="_exitNo"  style="flex:1;padding:12px;border-radius:10px;border:2px solid #555;background:transparent;color:#ccc;font-size:1em;cursor:pointer;transition:border-color .15s,color .15s;">Hayır</button>
-    <button id="_exitYes" style="flex:1;padding:12px;border-radius:10px;border:2px solid #FFD700;background:rgba(255,215,0,0.12);color:#FFD700;font-size:1em;font-weight:700;cursor:pointer;transition:background .15s;" autofocus>Evet</button>
-  </div>
-</div>`;
-
-            document.body.appendChild(overlay);
-
-            const yes = document.getElementById('_exitYes');
-            const no  = document.getElementById('_exitNo');
-
-            function _doExit() {
-                overlay.remove();
                 goNavigate('http://action_exit');
             }
-            function _doCancel() {
-                overlay.remove();
-            }
-
-            yes.addEventListener('click', _doExit);
-            no.addEventListener('click',  _doCancel);
-            overlay.addEventListener('click', function(e) { if (e.target === overlay) _doCancel(); });
-
-            // D-pad desteği
-            yes.focus();
-            overlay.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    if (document.activeElement === yes) no.focus();
-                    else yes.focus();
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (document.activeElement === yes) _doExit();
-                    else _doCancel();
-                } else if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Back') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    _doCancel();
-                }
-            }, true);
         }
-        // ─────────────────────────────────────────────────────────
+
+        
 
         function closeAllModals() {
             const modals = [
@@ -18033,10 +17963,13 @@ let sleepCanceled = false;
 ================================ */
 function closeAppSafely() {
     try {
-        goNavigate('http://action_exit');
+        window.location.href = "http://action_exit";
     } catch (e) {
-        try { window.location.href = 'go:http://action_exit'; } catch(e2) {}
     }
+
+    setTimeout(() => {
+        location.href = "about:blank";
+    }, 500);
 }
 
 /* ===============================
@@ -29687,6 +29620,10 @@ function resumeChannel(startTime) {
     state.remote.playerControlsVisible = false;
     clearTimeout(window.autoHideControlsTimer);
     clearTimeout(window.controlsTimer);
+    // _controlsHidden modunda zone'u player'a kilitle — kanal değişimi sonrası router sıfırlanmasın
+    if (window._controlsHidden) {
+        state.remote.zone = 'player';
+    }
     // İlk ok tuşu basımında hangi butona odaklanılacağını ayarla
     // Canlı: Kanal Listesi (index 9 = btnPlayerList), VOD/Film: Play/Pause (index 1 = btnPlayPause)
     if (ch.isLive && !ch.isVod) {
@@ -29734,7 +29671,9 @@ function resumeChannel(startTime) {
         }
         // VOD/dizi açılırken _controlsHidden'ı sıfırla — her yeni film taze başlasın
         // Canlı yayın kanal değişiminde: kullanıcı gizlemişse gizli kalsın
-        if (!state.player.isLiveStream && window._controlsHidden) {
+        // ch.isLive kullan (state.player.isLiveStream'den daha güvenilir — _doChSwitch race kondisyonu yok)
+        const _chIsLive = ch.isLive && !ch.isVod;
+        if (!_chIsLive && window._controlsHidden) {
             window._controlsHidden = false;
             document.getElementById('playerContainer')?.classList.remove('controls-hidden');
             const _hcI = document.getElementById('hideControlsIcon');
@@ -29744,6 +29683,11 @@ function resumeChannel(startTime) {
         }
         if (!window._controlsHidden) {
             showControls(4000);
+        } else {
+            // Canlı: kontroller kalıcı gizli — zone='player' kilitle, kumanda çalışmaya devam etsin
+            state.remote.zone = 'player';
+            state.remote.playerControlsVisible = false;
+            state.remote.playerBoxIndex = 9; // btnPlayerList — odak hazır
         }
         startResolutionMonitoring();
 
@@ -30776,6 +30720,9 @@ function _doChSwitch() {
     state.player.logo = ch.logo || '';
     state.currentChannel = ch;
     state.player.streamStarted = false;
+    // _controlsHidden modunda _isLive'ın doğru okunması için önceden set et
+    state.player.isLiveStream = ch.isLive && !ch.isVod;
+    state.player.vodPlaying   = !ch.isLive || !!ch.isVod;
 
     showZappingScreen(ch.name, ch.logo, true);
     if (typeof showChannelInfoBanner === 'function') {
@@ -30783,9 +30730,10 @@ function _doChSwitch() {
     }
     setTimeout(() => { updatePlayerEpgBar(ch.name, ch.tvgId); }, 500);
     playKeySound('ch_change');
-    // Kontroller gizliyse kanal değişiminde playerControlsVisible'ı false tut — görünmez buton odağını önle
+    // _controlsHidden modunda: zone='player' sabitle, buton odağı yok
     if (window._controlsHidden) {
         state.remote.playerControlsVisible = false;
+        state.remote.zone = 'player'; // kanal değişimi sonrası router kaybetmesin
     }
     resumeChannel(0);
 }

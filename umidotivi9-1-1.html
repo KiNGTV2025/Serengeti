@@ -8761,7 +8761,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
         
         <div class="login-logo-wrap">
-            <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umit.svg" class="login-logo-img" alt="Ümit TV">
+            <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg" class="login-logo-img" alt="Ümit TV">
             <div class="login-title">ÜMİT TV</div>
             <div class="login-subtitle">🜲ÜⲘ𝖎ţ Ⲙ0Ď🜲 · GÜVENLİ GİRİŞ</div>
         </div>
@@ -13167,11 +13167,81 @@ async function loadContinueWatching() {
                 
 
                 playKeySound('back');
-                goNavigate('http://action_exit');
+                _confirmAppExit();
             }
         }
 
-        
+        // ── DOUBLE-BACK / ÇIKIŞ ONAY ──────────────────────────────
+        let _backPressTime = 0;
+        let _exitConfirmToast = null;
+        function _confirmAppExit() {
+            const now = Date.now();
+            if (now - _backPressTime < 2000) {
+                // İkinci basış — onay modalı göster
+                _backPressTime = 0;
+                _showExitConfirmModal();
+            } else {
+                _backPressTime = now;
+                showToast('Çıkmak için geri tuşuna tekrar basın', 'info');
+            }
+        }
+
+        function _showExitConfirmModal() {
+            // Varsa eski modalı temizle
+            const old = document.getElementById('_exitConfirmOverlay');
+            if (old) old.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = '_exitConfirmOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;';
+
+            overlay.innerHTML = `
+<div style="background:#1a1a1a;border:2px solid #FFD700;border-radius:16px;padding:36px 40px;text-align:center;max-width:360px;width:90%;box-shadow:0 0 40px rgba(255,215,0,0.18);">
+  <div style="font-size:2.4em;margin-bottom:12px;">🚪</div>
+  <div style="color:#FFD700;font-size:1.2em;font-weight:700;margin-bottom:8px;">Uygulamadan Çık</div>
+  <div style="color:#ccc;font-size:0.95em;margin-bottom:28px;">Çıkmak istediğinize emin misiniz?</div>
+  <div style="display:flex;gap:16px;justify-content:center;">
+    <button id="_exitNo"  style="flex:1;padding:12px;border-radius:10px;border:2px solid #555;background:transparent;color:#ccc;font-size:1em;cursor:pointer;transition:border-color .15s,color .15s;">Hayır</button>
+    <button id="_exitYes" style="flex:1;padding:12px;border-radius:10px;border:2px solid #FFD700;background:rgba(255,215,0,0.12);color:#FFD700;font-size:1em;font-weight:700;cursor:pointer;transition:background .15s;" autofocus>Evet</button>
+  </div>
+</div>`;
+
+            document.body.appendChild(overlay);
+
+            const yes = document.getElementById('_exitYes');
+            const no  = document.getElementById('_exitNo');
+
+            function _doExit() {
+                overlay.remove();
+                goNavigate('http://action_exit');
+            }
+            function _doCancel() {
+                overlay.remove();
+            }
+
+            yes.addEventListener('click', _doExit);
+            no.addEventListener('click',  _doCancel);
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) _doCancel(); });
+
+            // D-pad desteği
+            yes.focus();
+            overlay.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (document.activeElement === yes) no.focus();
+                    else yes.focus();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (document.activeElement === yes) _doExit();
+                    else _doCancel();
+                } else if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Back') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    _doCancel();
+                }
+            }, true);
+        }
+        // ─────────────────────────────────────────────────────────
 
         function closeAllModals() {
             const modals = [
@@ -17963,13 +18033,10 @@ let sleepCanceled = false;
 ================================ */
 function closeAppSafely() {
     try {
-        window.location.href = "http://action_exit";
+        goNavigate('http://action_exit');
     } catch (e) {
+        try { window.location.href = 'go:http://action_exit'; } catch(e2) {}
     }
-
-    setTimeout(() => {
-        location.href = "about:blank";
-    }, 500);
 }
 
 /* ===============================
@@ -35691,46 +35758,52 @@ function handleFavoriteChannelSelect(key) {
                 const _isLiveH = !!(state.player && state.player.isLiveStream);
                 const _isSeriesH = !!(state.series && state.series.currentSeries);
                 if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Back') {
-                    e.preventDefault(); e.stopPropagation(); closePlayer(); return;
+                    e.preventDefault(); e.stopImmediatePropagation(); closePlayer(); return;
                 }
                 if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
-                    e.preventDefault(); e.stopPropagation(); togglePlayPause(); return;
+                    e.preventDefault(); e.stopImmediatePropagation(); togglePlayPause(); return;
                 }
                 if (e.key === 'Enter' || e.key === 'OK') {
-                    e.preventDefault(); e.stopPropagation();
+                    e.preventDefault(); e.stopImmediatePropagation();
                     window._controlsHidden = false;
-                    document.getElementById('playerContainer')?.classList.remove('controls-hidden');
+                    const _pc3 = document.getElementById('playerContainer');
+                    if (_pc3) { _pc3.classList.remove('controls-hidden'); _pc3.classList.add('show-controls'); }
                     const _ic = document.getElementById('hideControlsIcon');
                     const _lb = document.getElementById('hideControlsLabel');
                     if (_ic) _ic.textContent = 'visibility_off';
                     if (_lb) _lb.textContent = 'Gizle';
                     state.remote.playerBoxIndex = _isLiveH ? 9 : 1;
                     state.remote.zone = 'player';
+                    state.remote.playerControlsVisible = true;
                     showControls(5000);
+                    if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                    showToast('👁 Kontroller Açıldı');
                     return;
                 }
                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                    e.preventDefault(); e.stopPropagation();
+                    e.preventDefault(); e.stopImmediatePropagation();
                     if (_isLiveH) {
-                        // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
+                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → EPG
                         if (e.key === 'ArrowUp')    { nextCh(); }
                         if (e.key === 'ArrowDown')  { prevCh(); }
-                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
-                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                        if (e.key === 'ArrowRight') { if (typeof openEpgModal  === 'function') openEpgModal(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof openSidebar  === 'function') openSidebar(); }
                     } else if (_isSeriesH) {
-                        // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
+                        // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
+                        // Film: Sol/Sağ sarma, Yukarı/Aşağı işlevsiz
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     }
                     return;
                 }
+                // Diğer tüm tuşlar gizli modda engelle — arka plan butonlarına gitmesin
+                e.preventDefault(); e.stopImmediatePropagation();
                 return;
             }
 
@@ -41476,7 +41549,7 @@ function _favIcons(ch, isFav) {
 
     <div id="__UMD_TVX_DOCK" role="complementary" aria-label="Haber Bandı">
         <div class="__UMD_TVX_SIDE">
-            <img loading="lazy" class="__UMD_TVX_LOGO" id="__UMD_TVX_LOGO" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umit.svg" alt="Ümit Mod" aria-hidden="true">
+            <img loading="lazy" class="__UMD_TVX_LOGO" id="__UMD_TVX_LOGO" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg" alt="Ümit Mod" aria-hidden="true">
             <div class="__UMD_TVX_META">
                 <div class="__UMD_TVX_DATE_TIME">
                     <div id="__UMD_TVX_D" class="__UMD_TVX_DATE">20 NİS</div>

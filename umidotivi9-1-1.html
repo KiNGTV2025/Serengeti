@@ -30155,6 +30155,15 @@ function resumeChannel(startTime) {
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
+        // ── REFERRER-PROXY: #EXTVLCOPT:http-referrer olan kanalları proxy üzerinden aç ──
+        // Tarayıcılar XHR'da Referer başlığını bloke eder; Worker sunucu tarafında ekler.
+        const _rCh = state.filtered[state.player.index];
+        if (_rCh && _rCh.referrer && !streamUrl.includes('sadecenjoy.workers.dev')) {
+            const _encodedRef = encodeURIComponent(_rCh.referrer);
+            const _encodedUrl = encodeURIComponent(streamUrl);
+            streamUrl = `https://turk.sadecenjoy.workers.dev/proxy?url=${_encodedUrl}&referer=${_encodedRef}`;
+        }
+
         if (!Hls.isSupported()) {
             video.src = streamUrl;
             video.load();

@@ -11893,20 +11893,6 @@ const HLS_CONFIG = {
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
         xhr.timeout = 20000;             // XHR zaman aşımı: segment ve manifest için güvenlik ağı
-
-        // ── REFERRER-PROXY: Aktif kanalın referrer'ı varsa tüm HLS isteklerini proxy'den geçir ──
-        // Manifest + segment URL'lerinin hepsi (relative olanlar dahil) buradan geçer.
-        try {
-            const _activeCh = (typeof state !== 'undefined' && state.filtered && state.player)
-                ? state.filtered[state.player.index]
-                : null;
-            if (_activeCh && _activeCh.referrer && url && !url.includes('sadecenjoy.workers.dev')) {
-                const _proxied = 'https://turk.sadecenjoy.workers.dev/proxy?url='
-                    + encodeURIComponent(url)
-                    + '&referer=' + encodeURIComponent(_activeCh.referrer);
-                xhr.open('GET', _proxied, true);
-            }
-        } catch(e) {}
     }
 };
 
@@ -13168,6 +13154,29 @@ async function loadContinueWatching() {
                 }
                 
                 if (document.getElementById('playerView').style.display === 'flex') {
+                    const _isLiveNow = !!(state.player && state.player.isLiveStream);
+                    if (_isLiveNow) {
+                        // Canlı yayın: açık panel/modal varsa kapat, yoksa ana sayfaya dön
+                        if (document.getElementById('qualityModal')?.classList.contains('qm-open')) {
+                            if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
+                            playKeySound('back');
+                            return;
+                        }
+                        if (document.getElementById('subtitleModal')?.classList.contains('qm-open')) {
+                            if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
+                            playKeySound('back');
+                            return;
+                        }
+                        if (document.getElementById('epgModal') && (document.getElementById('epgModal').style.display === 'flex' || document.getElementById('epgModal').style.display === 'block')) {
+                            if (typeof closeEpgModal === 'function') closeEpgModal(); else document.getElementById('epgModal').style.display = 'none';
+                            playKeySound('back');
+                            return;
+                        }
+                        // Hiçbir panel açık değil → ana sayfaya dön (player'ı kapat)
+                        closePlayer();
+                        playKeySound('back');
+                        return;
+                    }
                     closePlayer();
                     playKeySound('back');
                     return;
@@ -29727,6 +29736,17 @@ function resumeChannel(startTime) {
             _progBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
         }
 
+        // DVR-ONLY BUTONLAR: Canlı yayında başlangıçta gizle — DVR tespit edilince göster
+        // (PlayPause, SeekAmount, LiveSync butonları DVR olmayan canlı yayında gereksiz)
+        if (state.player.isLiveStream) {
+            const _ppBtn  = document.getElementById('btnPlayPause');
+            const _saBtn  = document.getElementById('btnSeekAmount');
+            const _lsBtn2 = document.getElementById('btnLiveSync');
+            if (_ppBtn)  _ppBtn.style.display  = 'none'; // DVR tespitinde açılacak
+            if (_saBtn)  _saBtn.style.display   = 'none'; // DVR tespitinde açılacak
+            if (_lsBtn2) _lsBtn2.style.display  = 'none'; // zaten kendi mantığıyla kontrol ediliyor
+        }
+
         // KONTROL GİZLE BUTONU: canlı yayın VE VOD'da göster
         const _hideCtrlBtn = document.getElementById('btnHideControls');
         if (_hideCtrlBtn) {
@@ -30069,11 +30089,6 @@ function resumeChannel(startTime) {
                     // State'i güncelle
                     state.player.url = streamUrl;
                     state.player.isLiveStream = false;
-                    // ── REFERRER-PROXY: VOD kanalında da referrer varsa proxy üzerinden aç ──
-                    const _vodCh = state.filtered[state.player.index] || ch;
-                    if (_vodCh && _vodCh.referrer && !streamUrl.includes('sadecenjoy.workers.dev')) {
-                        streamUrl = 'https://turk.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(streamUrl) + '&referer=' + encodeURIComponent(_vodCh.referrer);
-                    }
                     // Video elementine yükle
                     const video = document.getElementById('videoPlayer');
                     if (video) {
@@ -30174,15 +30189,6 @@ function resumeChannel(startTime) {
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
-        // ── REFERRER-PROXY: #EXTVLCOPT:http-referrer olan kanalları proxy üzerinden aç ──
-        // Tarayıcılar XHR'da Referer başlığını bloke eder; Worker sunucu tarafında ekler.
-        const _rCh = state.filtered[state.player.index];
-        if (_rCh && _rCh.referrer && !streamUrl.includes('sadecenjoy.workers.dev')) {
-            const _encodedRef = encodeURIComponent(_rCh.referrer);
-            const _encodedUrl = encodeURIComponent(streamUrl);
-            streamUrl = `https://turk.sadecenjoy.workers.dev/proxy?url=${_encodedUrl}&referer=${_encodedRef}`;
-        }
-
         if (!Hls.isSupported()) {
             video.src = streamUrl;
             video.load();
@@ -30240,6 +30246,11 @@ function resumeChannel(startTime) {
                     const _dvrWindow = _skLen ? (_sk.end(_sk.length-1) - _sk.start(0)) : 0;
                     if (_dvrWindow > 300) { // 30→300sn: sadece gerçek DVR (5dk+ geçmiş)
                         state.player._isDvr = true;
+                        // DVR aktif → PlayPause ve SeekAmount butonlarını göster
+                        const _ppBtnDvr = document.getElementById('btnPlayPause');
+                        const _saBtnDvr = document.getElementById('btnSeekAmount');
+                        if (_ppBtnDvr) _ppBtnDvr.style.display = 'flex';
+                        if (_saBtnDvr) _saBtnDvr.style.display = 'flex';
                         const _liveEdge = _sk.end(_sk.length - 1);
                         if (_liveEdge - video.currentTime > 15) {
                             state.player._dvrJumped = true;
@@ -30251,6 +30262,11 @@ function resumeChannel(startTime) {
                     } else {
                         state.player._isDvr = false;
                         state.player._dvrJumped = false;
+                        // DVR yok → bu butonları gizli tut
+                        const _ppBtnNoDvr = document.getElementById('btnPlayPause');
+                        const _saBtnNoDvr = document.getElementById('btnSeekAmount');
+                        if (_ppBtnNoDvr) _ppBtnNoDvr.style.display = 'none';
+                        if (_saBtnNoDvr) _saBtnNoDvr.style.display = 'none';
                     }
                 } catch(e) {}
             }, 2000); // DVR tespiti: 2sn yeterli (5→2sn: daha hızlı live edge'e zıplama)
@@ -32856,11 +32872,11 @@ function deleteContinueWatchingRecord(name) {
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
                     if (_isLive) {
-                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → EPG
+                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Çözünürlük, Sağ → EPG
                         if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
-                        if (e.key === 'ArrowRight') { if (typeof openEpgModal === 'function') openEpgModal(); }
-                        if (e.key === 'ArrowLeft')  { if (typeof openSidebar === 'function') openSidebar(); }
+                        if (e.key === 'ArrowRight') { if (typeof showChannelEpg === 'function') showChannelEpg(); else if (typeof openEpgModal === 'function') openEpgModal(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal(); }
                     } else if (_isSeries) {
                         // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
@@ -32914,13 +32930,20 @@ function deleteContinueWatchingRecord(name) {
                         // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
                         return;
                     }
-                    // Canlı: Yukarı/Aşağı → kanal değiştir, Sol/Sağ/Enter → kontrolleri aç
+                    // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Çözünürlük, Sağ → EPG, OK → Kanal Listesi
                     if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
                     if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
-                    state.remote.playerBoxIndex = 9; // btnPlayerList
-                    state.remote.zone = 'player';
-                    showControls(5000);
-                    updateRemoteFocus();
+                    if (e.key === 'ArrowLeft') {
+                        if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal();
+                        return;
+                    }
+                    if (e.key === 'ArrowRight') {
+                        if (typeof showChannelEpg === 'function') showChannelEpg();
+                        else if (typeof openEpgModal === 'function') openEpgModal();
+                        return;
+                    }
+                    // OK → Kanal Listesi
+                    if (typeof openSidebar === 'function') openSidebar();
                     return;
                 }
                 return;
@@ -32947,33 +32970,57 @@ function deleteContinueWatchingRecord(name) {
             switch(e.key) {
                 case 'ArrowLeft':
                     e.preventDefault(); e.stopPropagation();
-                    state.remote.playerBoxIndex = Math.max(0, state.remote.playerBoxIndex - 1);
+                    if (_isLive) {
+                        // Canlı yayın: Sol tuş → Çözünürlük paneli
+                        if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal();
+                    } else {
+                        state.remote.playerBoxIndex = Math.max(0, state.remote.playerBoxIndex - 1);
+                    }
                     break;
 
                 case 'ArrowRight':
                     e.preventDefault(); e.stopPropagation();
-                    state.remote.playerBoxIndex = Math.min(visibleButtons.length - 1, state.remote.playerBoxIndex + 1);
+                    if (_isLive) {
+                        // Canlı yayın: Sağ tuş → EPG
+                        if (typeof showChannelEpg === 'function') showChannelEpg();
+                        else if (typeof openEpgModal === 'function') openEpgModal();
+                    } else {
+                        state.remote.playerBoxIndex = Math.min(visibleButtons.length - 1, state.remote.playerBoxIndex + 1);
+                    }
                     break;
 
                 case 'ArrowUp':
                     e.preventDefault();
-                    // ↑ → ProgressBar'a geç
-                    state.remote.zone = 'progressBar';
-                    updateRemoteFocus();
+                    if (_isLive) {
+                        // Canlı yayın: Yukarı → Sonraki kanal
+                        if (typeof nextCh === 'function') nextCh();
+                    } else {
+                        // VOD/Dizi: ↑ → ProgressBar'a geç
+                        state.remote.zone = 'progressBar';
+                        updateRemoteFocus();
+                    }
                     return;
 
                 case 'ArrowDown':
                     e.preventDefault();
-                    // ↓ → Kontrolleri kapat (gizle, oto-gizle gibi)
-                    clearTimeout(window.autoHideControlsTimer);
-                    clearTimeout(window.controlsTimer);
-                    document.getElementById('playerContainer').classList.remove('show-controls');
-                    state.remote.playerControlsVisible = false;
+                    if (_isLive) {
+                        // Canlı yayın: Aşağı → Önceki kanal
+                        if (typeof prevCh === 'function') prevCh();
+                    } else {
+                        // VOD: ↓ → Kontrolleri kapat
+                        clearTimeout(window.autoHideControlsTimer);
+                        clearTimeout(window.controlsTimer);
+                        document.getElementById('playerContainer').classList.remove('show-controls');
+                        state.remote.playerControlsVisible = false;
+                    }
                     return;
 
                 case 'Enter': case 'OK':
                     e.preventDefault();
-                    {
+                    if (_isLive) {
+                        // Canlı yayın: OK → Kanal listesi (sidebar)
+                        if (typeof openSidebar === 'function') openSidebar();
+                    } else {
                         const activeButton = visibleButtons[state.remote.playerBoxIndex];
                         if (activeButton === 'btnPlayPause') {
                             handlePlayPauseClick();
@@ -32985,9 +33032,18 @@ function deleteContinueWatchingRecord(name) {
 
                 case 'Backspace': case 'Escape':
                     e.preventDefault();
-                    if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
-                    if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
-                    closePlayer();
+                    // Önce açık panelleri kapat, hiçbiri açık değilse player'ı kapat
+                    if (document.getElementById('qualityModal')?.classList.contains('qm-open')) {
+                        if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
+                    } else if (document.getElementById('subtitleModal')?.classList.contains('qm-open')) {
+                        if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
+                    } else if (document.getElementById('epgModal')?.style.display === 'flex' || document.getElementById('epgModal')?.style.display === 'block') {
+                        if (typeof closeEpgModal === 'function') closeEpgModal(); else document.getElementById('epgModal').style.display = 'none';
+                    } else if (document.getElementById('sidebar')?.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        closePlayer();
+                    }
                     break;
 
                 case 'ChannelUp':   e.preventDefault(); nextCh(); break;
@@ -33950,11 +34006,16 @@ function handlePlayerRemote(e) {
             if (_isLive) {
                 if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
                 if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
-                // Sol/Sağ → kontrolleri aç
-                state.remote.playerBoxIndex = 9; // btnPlayerList
-                state.remote.zone = 'player';
-                showControls(5000);
-                updateRemoteFocus();
+                // Sol → Çözünürlük, Sağ → EPG
+                if (e.key === 'ArrowLeft') {
+                    if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal();
+                    return;
+                }
+                if (e.key === 'ArrowRight') {
+                    if (typeof showChannelEpg === 'function') showChannelEpg();
+                    else if (typeof openEpgModal === 'function') openEpgModal();
+                    return;
+                }
             }
             return;
         }
@@ -35801,11 +35862,11 @@ function handleFavoriteChannelSelect(key) {
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopImmediatePropagation();
                     if (_isLiveH) {
-                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → EPG
+                        // Canlı: ↑↓ kanal değiştir, ← Çözünürlük, → EPG
                         if (e.key === 'ArrowUp')    { nextCh(); }
                         if (e.key === 'ArrowDown')  { prevCh(); }
-                        if (e.key === 'ArrowRight') { if (typeof openEpgModal  === 'function') openEpgModal(); }
-                        if (e.key === 'ArrowLeft')  { if (typeof openSidebar  === 'function') openSidebar(); }
+                        if (e.key === 'ArrowRight') { if (typeof showChannelEpg === 'function') showChannelEpg(); else if (typeof openEpgModal === 'function') openEpgModal(); }
+                        if (e.key === 'ArrowLeft')  { if (typeof window.toggleQualityModal === 'function') window.toggleQualityModal(); }
                     } else if (_isSeriesH) {
                         // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }

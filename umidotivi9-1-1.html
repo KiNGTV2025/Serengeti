@@ -11893,20 +11893,6 @@ const HLS_CONFIG = {
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
         xhr.timeout = 20000;             // XHR zaman aşımı: segment ve manifest için güvenlik ağı
-
-        // ── REFERRER-PROXY: Aktif kanalın referrer'ı varsa tüm HLS isteklerini proxy'den geçir ──
-        // Manifest + segment URL'lerinin hepsi (relative olanlar dahil) buradan geçer.
-        try {
-            const _activeCh = (typeof state !== 'undefined' && state.filtered && state.player)
-                ? state.filtered[state.player.index]
-                : null;
-            if (_activeCh && _activeCh.referrer && url && !url.includes('sadecenjoy.workers.dev')) {
-                const _proxied = 'https://turk.sadecenjoy.workers.dev/proxy?url='
-                    + encodeURIComponent(url)
-                    + '&referer=' + encodeURIComponent(_activeCh.referrer);
-                xhr.open('GET', _proxied, true);
-            }
-        } catch(e) {}
     }
 };
 
@@ -30069,11 +30055,6 @@ function resumeChannel(startTime) {
                     // State'i güncelle
                     state.player.url = streamUrl;
                     state.player.isLiveStream = false;
-                    // ── REFERRER-PROXY: VOD kanalında da referrer varsa proxy üzerinden aç ──
-                    const _vodCh = state.filtered[state.player.index] || ch;
-                    if (_vodCh && _vodCh.referrer && !streamUrl.includes('sadecenjoy.workers.dev')) {
-                        streamUrl = 'https://turk.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(streamUrl) + '&referer=' + encodeURIComponent(_vodCh.referrer);
-                    }
                     // Video elementine yükle
                     const video = document.getElementById('videoPlayer');
                     if (video) {
@@ -30174,15 +30155,6 @@ function resumeChannel(startTime) {
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
-        // ── REFERRER-PROXY: #EXTVLCOPT:http-referrer olan kanalları proxy üzerinden aç ──
-        // Tarayıcılar XHR'da Referer başlığını bloke eder; Worker sunucu tarafında ekler.
-        const _rCh = state.filtered[state.player.index];
-        if (_rCh && _rCh.referrer && !streamUrl.includes('sadecenjoy.workers.dev')) {
-            const _encodedRef = encodeURIComponent(_rCh.referrer);
-            const _encodedUrl = encodeURIComponent(streamUrl);
-            streamUrl = `https://turk.sadecenjoy.workers.dev/proxy?url=${_encodedUrl}&referer=${_encodedRef}`;
-        }
-
         if (!Hls.isSupported()) {
             video.src = streamUrl;
             video.load();

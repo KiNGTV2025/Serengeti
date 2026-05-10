@@ -2011,6 +2011,10 @@ body {
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
     pointer-events: none;
 }
+/* MiBox/TVBox: ::before pseudo-element gereksiz GPU katmanı — kapat */
+.low-performance-mode .vod-episode-card::before {
+    display: none !important;
+}
 
 .vod-episode-card:hover {
     background: linear-gradient(145deg, rgba(255,215,0,0.12) 0%, rgba(255,215,0,0.05) 100%);
@@ -2031,7 +2035,7 @@ body {
 .vod-episode-card.focused .vod-episode-number,
 .vod-episode-card.remote-focused .vod-episode-number {
     color: #FFD700 !important;
-    text-shadow: 0 0 8px rgba(255,215,0,0.6);
+    text-shadow: none !important;
 }
 .vod-episode-card.focused .vod-episode-title,
 .vod-episode-card.remote-focused .vod-episode-title {
@@ -14498,11 +14502,11 @@ async function loadEPGData() {
                 clearTimeout(tid);
                 if (r.ok) {
                     const ct = r.headers.get('content-type') || '';
-                    
-
-                    if (!ct.includes('application/json') || url.includes('allorigins')) {
-                        return r;
+                    // HTML yanıtı reddet — redirect sayfası ya da hata sayfasıdır, XML değil
+                    if (ct.includes('text/html') && !url.includes('allorigins')) {
+                        return null;
                     }
+                    return r;
                 }
                 return null;
             } catch(e) { return null; }
@@ -14540,6 +14544,10 @@ async function loadEPGData() {
         }
 
         function parseEpgXml(text) {
+            if (!text || typeof text !== 'string') return null;
+            const trimmed = text.trim();
+            // HTML redirect/hata sayfası kontrolü — XML değilse reddet
+            if (trimmed.startsWith('<!DOCTYPE html') || trimmed.startsWith('<html')) return null;
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(text, 'text/xml');
             if (xmlDoc.getElementsByTagName('parsererror').length > 0) return null;
@@ -14615,6 +14623,10 @@ async function loadEPGData() {
             mergeEpgData(state.epgData, parsed);
             totalLoaded++;
         }
+
+        // Sort cache'i temizle — yeni EPG verisi geldi
+        state._epgSortCache = Object.create(null);
+        state._epgNormCache = null;
 
         if (totalLoaded === 0) {
             throw new Error('EPG fetch başarısız (tüm kaynaklar denendi)');
@@ -14891,58 +14903,50 @@ function editDistance(s1, s2) {
 function processEPGForChannel(channelKey) {
     const programs = state.epgData[channelKey];
     if (!programs || programs.length === 0) return null;
-    
-    const sortedPrograms = programs.slice().sort((a, b) => {
-        const timeA = parseEPGTime(a.start);
-        const timeB = parseEPGTime(b.start);
-        return timeA - timeB;
-    });
-    
-    // ⚠️ KRİTİK DÜZELTME: Şu anki Türkiye saatini manuel hesapla
 
-    const trNow = new Date(); // parseEPGTime yerel saat döndürür, +3 ekleme gereksiz
-    
+    // Sıralanmış program listesini cache'le — her çağrıda sort+parseEPGTime tekrarı önlenir
+    if (!state._epgSortCache) state._epgSortCache = Object.create(null);
+    if (!state._epgSortCache[channelKey] || state._epgSortCache[channelKey].length !== programs.length) {
+        // Her programın start/stop'unu bir kez parse et, ms olarak sakla
+        const withMs = [];
+        for (let i = 0; i < programs.length; i++) {
+            const p = programs[i];
+            const s = parseEPGTime(p.start);
+            const e = parseEPGTime(p.stop);
+            if (s && e) withMs.push({ program: p, startMs: s.getTime(), endMs: e.getTime() });
+        }
+        withMs.sort((a, b) => a.startMs - b.startMs);
+        state._epgSortCache[channelKey] = withMs;
+    }
+    const sortedPrograms = state._epgSortCache[channelKey];
+
+    const trNow = Date.now();
+
     let currentProgram = null;
     let nextProgram = null;
-    let allPrograms = [];
-    
+    const allPrograms = [];
+
     for (let i = 0; i < sortedPrograms.length; i++) {
-        const prog = sortedPrograms[i];
-        const startTime = parseEPGTime(prog.start);
-        const endTime = parseEPGTime(prog.stop);
-        
-        if (!startTime || !endTime) continue;
-        
-        // ⚠️ KARŞILAŞTIRMAYI DÜZELT: nowUtc yerine trNow kullan
-        const isNow = trNow >= startTime && trNow < endTime;
-        
-        allPrograms.push({
-            program: prog,
-            start: startTime,
-            end: endTime,
-            isNow: isNow
-        });
-        
+        const { program, startMs, endMs } = sortedPrograms[i];
+        const isNow = trNow >= startMs && trNow < endMs;
+
+        allPrograms.push({ program, start: new Date(startMs), end: new Date(endMs), isNow });
+
         if (isNow && !currentProgram) {
-            currentProgram = prog;
-            if (i + 1 < sortedPrograms.length) {
-                nextProgram = sortedPrograms[i + 1];
-            }
+            currentProgram = program;
+            if (i + 1 < sortedPrograms.length) nextProgram = sortedPrograms[i + 1].program;
         }
     }
-    
-    // Eğer şu anki program bulunamadıysa...
+
     if (!currentProgram && allPrograms.length > 0) {
-        const futurePrograms = allPrograms.filter(p => p.start > trNow);
+        const futurePrograms = allPrograms.filter(p => p.start.getTime() > trNow);
         if (futurePrograms.length > 0) {
-            // Gelecekte program var — en yakın gelecek programı "sonraki" olarak göster, current yok
             futurePrograms.sort((a, b) => a.start - b.start);
             nextProgram = futurePrograms[0].program;
-            currentProgram = null; // Şu an yayında program yok
+            currentProgram = null;
         }
-        // Tüm programlar geçmişte kaldıysa (eski EPG verisi): current = null, yanlış program gösterme
     }
-    
+
     return {
         current: currentProgram,
         next: nextProgram,
@@ -17773,90 +17777,96 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
     }
 
     const episodes = info.seasons[seasonNumber];
-    episodesContainer.innerHTML = '';
 
+    // MiBox optimizasyonu: innerHTML string birleştirme — per-card createElement/appendChild'dan 5-10x hızlı
+    // Event delegation: tek listener, N ayrı addEventListener yok
+    let html = '';
     episodes.forEach((episode) => {
-        const episodeCard = document.createElement('div');
-        episodeCard.className = 'vod-episode-card focusable-vod-item';
-        episodeCard.setAttribute('tabindex', '0');
-        episodeCard.setAttribute('data-season', seasonNumber);
-        episodeCard.setAttribute('data-episode', episode.episode);
-
         const isPlaying = state.series.currentSeries === seriesName &&
                           Number(state.series.currentSeason) === Number(seasonNumber) &&
                           Number(state.series.currentEpisode) === Number(episode.episode);
 
-        // Bölüm başlığını temizle (dizi adını ve sezon/bölüm bilgisini çıkar)
         let displayTitle = episode.title || `Bölüm ${episode.episode}`;
-        // Eğer title tüm kanal adını içeriyorsa, sadece anlam ifade eden kısmı al
         if (displayTitle.startsWith(seriesName)) {
             displayTitle = displayTitle.replace(seriesName, '').replace(/^[\s\-]+/, '').trim();
         }
+        const safeTitle = displayTitle || `Bölüm ${episode.episode}`;
+        const safeDesc = (episode.description || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const safeUrl = (episode.url || '').replace(/'/g, '&#39;');
 
-        episodeCard.innerHTML = `
+        html += `<div class="vod-episode-card focusable-vod-item" tabindex="0" data-season="${seasonNumber}" data-episode="${episode.episode}" data-url="${safeUrl}">
             <div class="vod-episode-number">S${seasonNumber}:E${episode.episode}</div>
-            <div class="vod-episode-title">${displayTitle || `Bölüm ${episode.episode}`}</div>
-            ${episode.description ? `<div class="vod-episode-desc" data-full-desc="${episode.description.replace(/"/g,'"')}" onclick="openEpDescDialog(event,this,'S${seasonNumber}:E${episode.episode}','${(displayTitle||`Bölüm ${episode.episode}`).replace(/'/g,"\\'")}','${(episode.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${episode.duration||''}','${(episode.url||'').replace(/'/g,"\\'")}','${seriesName.replace(/'/g,"\\'")}',${seasonNumber},${episode.episode})">${episode.description}</div>` : ''}
+            <div class="vod-episode-title">${safeTitle}</div>
+            ${episode.description ? `<div class="vod-episode-desc">${safeDesc}</div>` : ''}
             ${episode.duration ? `<div class="vod-episode-duration">${episode.duration}</div>` : ''}
             ${isPlaying ? '<div class="vod-episode-playing">▶ OYNATILIYOR</div>' : ''}
-        `;
-
-        episodeCard.addEventListener('click', (e) => {
-            // Açıklama div'ine tıklandıysa dialog açılır (yukarıda onclick ile), kartın oynamasını engelle
-            if (e.target.classList.contains('vod-episode-desc')) return;
-            document.querySelectorAll('.vod-episode-card').forEach(c => c.classList.remove('focused'));
-            episodeCard.classList.add('focused');
-            
-            // URL doğrudan varsa oyna, yoksa M3U kanallarında ara
-            let epUrl = episode.url;
-            if (!epUrl) {
-                const sn = seasonNumber;
-                const en = episode.episode;
-                const allChs = (window.state && window.state.channels) ? window.state.channels : [];
-                const found = allChs.find(c => {
-                    if (!c || c.isLive || !c.url || !c.name) return false;
-                    const n = c.name;
-                    // Dizi adı eşleşiyor mu (group veya name prefix)
-                    const seriesMatch = (c.group && c.group === seriesName) ||
-                                       c.name.startsWith(seriesName) ||
-                                       c.name.toLowerCase().includes(seriesName.toLowerCase().slice(0, Math.min(seriesName.length, 8)));
-                    if (!seriesMatch) return false;
-                    return (
-                        new RegExp(`S0*${sn}\\s*[EB]0*${en}\\b`, 'i').test(n) ||
-                        new RegExp(`S0*${sn}\\s*B0*${en}\\b`, 'i').test(n) ||
-                        new RegExp(`\\b${sn}x0*${en}\\b`).test(n) ||
-                        new RegExp(`Sezon\\s+0*${sn}.*Bölüm\\s+0*${en}\\b`, 'i').test(n) ||
-                        new RegExp(`Sezon\\s+0*${sn}.*Bolum\\s+0*${en}\\b`, 'i').test(n) ||
-                        new RegExp(`${sn}\\.\\s*Sezon.*${en}\\.\\s*[BbÖö]`, 'i').test(n) ||
-                        new RegExp(`\\b0*${en}\\.\\s*Bölüm\\b`, 'i').test(n) ||
-                        new RegExp(`Bölüm\\s+0*${en}\\b`, 'i').test(n) ||
-                        new RegExp(`\\b${en}$`).test(n.trim())
-                    );
-                });
-                if (found) {
-                    epUrl = found.url;
-                    episode.url = epUrl; // Cache'e yaz, tekrar aramayı önle
-                }
-            }
-            
-            if (epUrl) {
-                playSeriesEpisode(seriesName, seasonNumber, episode.episode, epUrl);
-            } else {
-                showToast('Bölüm URL bulunamadı');
-            }
-        });
-
-        episodeCard.addEventListener('focus', () => {
-            episodeCard.style.outline = '3px solid var(--accent-primary)';
-            episodeCard.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-        });
-
-        episodeCard.addEventListener('blur', () => {
-            episodeCard.style.outline = 'none';
-        });
-
-        episodesContainer.appendChild(episodeCard);
+        </div>`;
     });
+
+    episodesContainer.innerHTML = html;
+
+    // Event delegation — tek listener tüm kartları yönetir
+    episodesContainer.onclick = function(e) {
+        const card = e.target.closest('.vod-episode-card');
+        if (!card) return;
+        // Açıklama div tıklaması — kart oynatma değil
+        if (e.target.classList.contains('vod-episode-desc')) return;
+
+        document.querySelectorAll('.vod-episode-card').forEach(c => c.classList.remove('focused'));
+        card.classList.add('focused');
+
+        const sn = Number(card.dataset.season);
+        const en = Number(card.dataset.episode);
+        let epUrl = card.dataset.url || '';
+
+        // URL yoksa M3U kanallarında ara (ve cache'e yaz)
+        if (!epUrl) {
+            const allChs = (window.state && window.state.channels) ? window.state.channels : [];
+            const found = allChs.find(c => {
+                if (!c || c.isLive || !c.url || !c.name) return false;
+                const seriesMatch = (c.group && c.group === seriesName) ||
+                                   c.name.startsWith(seriesName) ||
+                                   c.name.toLowerCase().includes(seriesName.toLowerCase().slice(0, Math.min(seriesName.length, 8)));
+                if (!seriesMatch) return false;
+                const n = c.name;
+                return (
+                    new RegExp(`S0*${sn}\\s*[EB]0*${en}\\b`, 'i').test(n) ||
+                    new RegExp(`S0*${sn}\\s*B0*${en}\\b`, 'i').test(n) ||
+                    new RegExp(`\\b${sn}x0*${en}\\b`).test(n) ||
+                    new RegExp(`Sezon\\s+0*${sn}.*Bölüm\\s+0*${en}\\b`, 'i').test(n) ||
+                    new RegExp(`\\b0*${en}\\.\\s*Bölüm\\b`, 'i').test(n) ||
+                    new RegExp(`Bölüm\\s+0*${en}\\b`, 'i').test(n) ||
+                    new RegExp(`\\b${en}$`).test(n.trim())
+                );
+            });
+            if (found) {
+                epUrl = found.url;
+                card.dataset.url = epUrl;
+                // Seriesinfo cache'e de yaz
+                const epObj = episodes.find(ep => Number(ep.episode) === en);
+                if (epObj) epObj.url = epUrl;
+            }
+        }
+
+        if (epUrl) {
+            playSeriesEpisode(seriesName, sn, en, epUrl);
+        } else {
+            showToast('Bölüm URL bulunamadı');
+        }
+    };
+
+    // Focus stili — delegation
+    episodesContainer.onfocus = function(e) {
+        const card = e.target.closest('.vod-episode-card');
+        if (card) {
+            card.style.outline = '3px solid var(--accent-primary)';
+            card.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+        }
+    };
+    episodesContainer.onblur = function(e) {
+        const card = e.target.closest('.vod-episode-card');
+        if (card) card.style.outline = '';
+    };
 
     // Aktif sezon butonunu güncelle
     document.querySelectorAll('.vod-season-btn').forEach(btn => {
@@ -31341,6 +31351,11 @@ function resumeChannel(startTime) {
         if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
         state.player._dvrJumped = false;
         state.player._isDvr = false;
+
+        // Yeni kanal/film için stall sayacını sıfırla — önceki kanaldan kalan sayaç yanlış recovery tetikler
+        stallCount = 0;
+        lastStallRecoveryTime = 0;
+        clearTimeout(stallTimer);
 
         const hlsInst = new Hls(HLS_CONFIG);
 

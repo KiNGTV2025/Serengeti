@@ -12045,9 +12045,11 @@ const UmitSecurityManager = (function () {
     // ════════════════════════════════════════════════════
     function _isTampered() {
         if (IS_DEV) return false;
+        // AppCreator24 WebView (okhttp UA) native XHR/fetch override yapar → yanlış pozitif verir, skip
+        const ua = (navigator.userAgent || '').toLowerCase();
+        if (ua.includes('okhttp')) return false;
         try {
-            if (XMLHttpRequest.prototype.open.toString().indexOf('[native code]') === -1) return true;
-            if (window.fetch && window.fetch.toString().indexOf('[native code]') === -1) return true;
+            // Sadece JSON kontrol — XHR/fetch AppCreator24'te override edilebilir
             if (JSON.parse.toString().indexOf('[native code]') === -1) return true;
             if (JSON.stringify.toString().indexOf('[native code]') === -1) return true;
         } catch(e) { return true; }
@@ -12137,15 +12139,50 @@ const UmitSecurityManager = (function () {
         if (_blocked) return;
         _blocked = true;
 
+        // ── Tüm klavye / kumanda / remote olaylarını yakala ve durdur ──
+        const _blockEvent = function(e) {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+        };
+        ['keydown','keyup','keypress',
+         'click','mousedown','mouseup','mousemove',
+         'touchstart','touchend','touchmove',
+         'wheel','scroll','pointerdown','pointerup','pointermove'
+        ].forEach(function(ev) {
+            window.addEventListener(ev, _blockEvent, { capture: true, passive: false });
+            document.addEventListener(ev, _blockEvent, { capture: true, passive: false });
+        });
+
+        // Mevcut odağı kaldır
+        try { document.activeElement && document.activeElement.blur(); } catch(e) {}
+
         try {
             document.body.style.filter = 'blur(24px)';
             document.body.style.pointerEvents = 'none';
             document.body.style.userSelect = 'none';
+            document.body.setAttribute('inert', '');
+            document.body.setAttribute('aria-hidden', 'true');
+        } catch(e) {}
+
+        // Video/ses durdur
+        try {
+            document.querySelectorAll('video,audio').forEach(function(m) {
+                try { m.pause(); m.src = ''; } catch(_) {}
+            });
+        } catch(e) {}
+
+        // HLS.js varsa yok et
+        try {
+            if (window.playerHls && typeof window.playerHls.destroy === 'function') {
+                window.playerHls.destroy();
+            }
         } catch(e) {}
 
         const overlay = document.createElement('div');
         overlay.id = '__umit_sec_overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;padding:24px;box-sizing:border-box;';
+        overlay.setAttribute('tabindex', '0');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;padding:24px;box-sizing:border-box;outline:none;';
 
         overlay.innerHTML = `
           <div style="max-width:440px;width:100%;background:linear-gradient(135deg,rgba(28,8,8,0.99),rgba(18,8,8,1));
@@ -12168,14 +12205,20 @@ const UmitSecurityManager = (function () {
 
         document.body.appendChild(overlay);
 
-        // Overlay kaldırılmaya çalışılırsa geri ekle
+        // Overlay'e focus ver — kumanda odağı burada kalsın
+        try { overlay.focus(); } catch(e) {}
+
+        // Overlay veya inert kaldırılmaya çalışılırsa geri al
         try {
-            new MutationObserver(() => {
+            new MutationObserver(function() {
                 if (!document.getElementById('__umit_sec_overlay')) {
                     document.body.appendChild(overlay);
-                    document.body.style.filter = 'blur(24px)';
+                    try { overlay.focus(); } catch(e) {}
                 }
-            }).observe(document.body, { childList: true, subtree: false });
+                document.body.style.filter = 'blur(24px)';
+                document.body.style.pointerEvents = 'none';
+                document.body.setAttribute('inert', '');
+            }).observe(document.body, { childList: true, subtree: false, attributes: true, attributeFilter: ['inert','style'] });
         } catch(e) {}
 
         if (typeof onBlock === 'function') { try { onBlock(); } catch(e) {} }
@@ -12280,7 +12323,7 @@ UmitSecurityManager.init({
     devtools: false,   // TVBox'ta false — yanlış pozitif riski var
     proxy:    true,    // WebRTC VPN/proxy tespiti
     ext:      true,    // HTTP intercept eklentisi tespiti
-    tamper:   true,    // Prototype kurcalama tespiti
+    tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
     block:    true,    // Tespit edilince kilitle
     threshold:160,
     onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },

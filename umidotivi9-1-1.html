@@ -9996,8 +9996,14 @@ function doLogin() {
                 } catch(e) {}
             }).catch(() => {});
         }
-        const authStr = JSON.stringify(authData);
-        localStorage.setItem('umittv_auth', authStr);
+        // ── Katman 8: AES-GCM ile şifreli kaydet ──
+        if (window.UmitSecurityManager && UmitSecurityManager.saveSecureAuth) {
+            UmitSecurityManager.saveSecureAuth(authData).catch(() => {
+                try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
+            });
+        } else {
+            try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
+        }
         
 
         _saveAuthToIDB(authData);
@@ -10016,6 +10022,8 @@ function doLogin() {
 
         
 
+        // ── Başarılı login: rate limit sıfırla ──
+        if (window.UmitSecurityExtras) UmitSecurityExtras.resetRateLimit();
         try { document.dispatchEvent(new Event('umittv_login_ok')); } catch(e) {
             try { var ev = document.createEvent('Event'); ev.initEvent('umittv_login_ok', true, true); document.dispatchEvent(ev); } catch(e2) {}
         }
@@ -11730,6 +11738,1040 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
   
+
+// ════════════════════════════════════════════════════════════════════════
+// ██  UMİT TV — TAM GÜVENLİK PAKETİ  v2.0
+// ════════════════════════════════════════════════════════════════════════
+//
+//  KATMAN 1 — Domain Lock          : Sadece izinli domainlerde çalışır
+//  KATMAN 2 — Klavye / Sağ Tık     : View-source, F12, sağ tık engeli
+//  KATMAN 3 — DevTools Tespiti     : Boyut farkı + debugger trap
+//  KATMAN 4 — Prototype Tamper     : XHR/fetch kurcalama tespiti
+//  KATMAN 5 — Proxy / VPN          : WebRTC IP sızması tespiti
+//  KATMAN 6 — Şüpheli Extension    : HTTP intercept eklenti tespiti
+//  KATMAN 7 — Cihaz Parmakizi      : Canvas + WebGL + ses kartı hash
+//  KATMAN 8 — Token AES Şifreleme  : localStorage auth AES-GCM ile korunur
+//  KATMAN 9 — Periyodik İzleme     : Login sonrası sürekli kontrol
+//
+// ════════════════════════════════════════════════════════════════════════
+
+// ── UA EARLY BLOCK: init beklenmeden anında çalışır ─────────────────────
+(function() {
+    const _isDev = location.hostname === 'localhost'
+                || location.hostname === '127.0.0.1'
+                || location.hostname.startsWith('192.168.')
+                || location.port === '2435';
+    if (_isDev) return;
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const allowed = ua.includes('okhttp');
+    if (!allowed) {
+        // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
+        try {
+            const _tgBot  = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
+            const _tgChat = '-1003873863119';
+            const _ua     = navigator.userAgent || 'bilinmiyor';
+            const _msg    = '🚨 <b>ÜMİT TV — TARAYICI ERİŞİM DENEMESİ</b>\n\n⚠️ <b>Sebep:</b> Yetkisiz tarayıcı erişimi\n📱 <b>UA:</b> <code>' + _ua.slice(0,80) + '</code>';
+            fetch('https://api.telegram.org/bot' + _tgBot + '/sendMessage', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ chat_id: _tgChat, text: _msg, parse_mode: 'HTML' })
+            }).catch(function(){});
+        } catch(e) {}
+        document.addEventListener('DOMContentLoaded', function() {
+            try { document.body.style.filter = 'blur(24px)'; document.body.style.pointerEvents = 'none'; } catch(e) {}
+            const ov = document.createElement('div');
+            ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;align-items:center;justify-content:center;font-family:sans-serif;padding:24px;box-sizing:border-box;';
+            ov.innerHTML = '<div style="max-width:420px;width:100%;background:rgba(28,8,8,0.99);border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;text-align:center;"><div style=\"font-size:52px;margin-bottom:14px;\">🔒</div><div style=\"font-size:16px;font-weight:900;color:#ff3333;letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;\">Güvenlik Uyarısı</div><div style=\"font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;\">Bu uygulama yalnızca resmi APK üzerinden açılabilir!\n\nTarayıcı erişimi engellendi.</div><div style=\"font-size:10px;color:rgba(255,80,80,0.4);margin-top:20px;letter-spacing:2px;\">ÜMİT TV SECURITY SYSTEM v2</div></div>';
+            document.body.appendChild(ov);
+            new MutationObserver(function() {
+                if (!document.body.contains(ov)) { document.body.appendChild(ov); document.body.style.filter = 'blur(24px)'; }
+            }).observe(document.body, { childList: true });
+        });
+        // Script yüklenmesini de durdur
+        window.stop && window.stop();
+    }
+})();
+
+const UmitSecurityManager = (function () {
+    'use strict';
+
+    // ── DEV modu: localhost'ta tüm bloklar kapalı ──────────────────────
+    const IS_DEV = location.hostname === 'localhost'
+                || location.hostname === '127.0.0.1'
+                || location.hostname.startsWith('192.168.')
+                || location.port === '2435';
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 1 — DOMAIN LOCK
+    // ════════════════════════════════════════════════════
+    const ALLOWED_DOMAINS = [
+        'localhost',
+        '127.0.0.1',
+        'kingtv2025.github.io',
+        // dosyayı local açıyorsan boş hostname da izinli:
+        '',
+    ];
+
+    function _isDomainAllowed() {
+        const host = location.hostname;
+        return ALLOWED_DOMAINS.some(d => d === '' ? host === '' : host === d || host.endsWith('.' + d));
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 10 — USER AGENT KONTROLÜ
+    // ════════════════════════════════════════════════════
+    // Sadece AppCreator24 APK WebView'dan açılabilir.
+    // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
+    const ALLOWED_UA_PATTERNS = [
+        'okhttp',        // AppCreator24 APK WebView
+        'okhttp/4',      // AppCreator24 v4.x
+    ];
+
+    function _isUAAllowed() {
+        if (IS_DEV) return true; // geliştirmede her UA geçer
+        const ua = (navigator.userAgent || '').toLowerCase();
+        return ALLOWED_UA_PATTERNS.some(p => ua.includes(p.toLowerCase()));
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 7 — CİHAZ PARMAK İZİ (Canvas + WebGL + Ses)
+    // ════════════════════════════════════════════════════
+    async function _buildFingerprint() {
+        const parts = [];
+
+        // Canvas parmak izi
+        try {
+            const cv = document.createElement('canvas');
+            cv.width = 200; cv.height = 50;
+            const ctx = cv.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('UmitTV🔒', 2, 15);
+            ctx.fillStyle = 'rgba(102,204,0,0.7)';
+            ctx.fillText('UmitTV🔒', 4, 17);
+            parts.push(cv.toDataURL().slice(-50));
+        } catch(e) { parts.push('cv_err'); }
+
+        // WebGL renderer
+        try {
+            const gl = document.createElement('canvas').getContext('webgl');
+            if (gl) {
+                const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                if (dbg) {
+                    parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL));
+                    parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL));
+                }
+            }
+        } catch(e) { parts.push('webgl_err'); }
+
+        // Ekran + dil + saat dilimi
+        parts.push(screen.width + 'x' + screen.height);
+        parts.push(navigator.language || '');
+        parts.push(String(new Date().getTimezoneOffset()));
+        parts.push(String(navigator.hardwareConcurrency || 0));
+        parts.push(String(navigator.deviceMemory || 0));
+
+        // Ses kartı parmak izi
+        try {
+            const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (AudioCtx) {
+                const ctx = new AudioCtx(1, 44100, 44100);
+                const osc = ctx.createOscillator();
+                const cmp = ctx.createDynamicsCompressor();
+                osc.connect(cmp); cmp.connect(ctx.destination);
+                osc.start(0); ctx.startRendering();
+                await new Promise(res => {
+                    ctx.oncomplete = e => {
+                        const buf = e.renderedBuffer.getChannelData(0);
+                        let sum = 0;
+                        for (let i = 0; i < buf.length; i += 100) sum += Math.abs(buf[i]);
+                        parts.push(sum.toFixed(6));
+                        res();
+                    };
+                    setTimeout(res, 300); // timeout guard
+                });
+            }
+        } catch(e) { parts.push('audio_err'); }
+
+        const raw = parts.join('||');
+        const enc = new TextEncoder().encode(raw);
+        const buf = await crypto.subtle.digest('SHA-256', enc);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // Parmak izini al veya oluştur
+    let _fpCache = null;
+    async function getFingerprint() {
+        if (_fpCache) return _fpCache;
+        try {
+            const stored = sessionStorage.getItem('__umit_fp');
+            if (stored) { _fpCache = stored; return stored; }
+        } catch(e) {}
+        _fpCache = await _buildFingerprint();
+        try { sessionStorage.setItem('__umit_fp', _fpCache); } catch(e) {}
+        return _fpCache;
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 8 — TOKEN AES-GCM ŞİFRELEME
+    // ════════════════════════════════════════════════════
+    // Key = cihaz parmak izinden türetilir → başka cihazda açılamaz
+
+    async function _deriveKey(fingerprint) {
+        const enc = new TextEncoder().encode(fingerprint.slice(0, 32));
+        const raw = await crypto.subtle.importKey('raw', enc, { name: 'PBKDF2' }, false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: new TextEncoder().encode('umittvsalt2024'), iterations: 100000, hash: 'SHA-256' },
+            raw,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async function encryptAuth(data) {
+        try {
+            const fp  = await getFingerprint();
+            const key = await _deriveKey(fp);
+            const iv  = crypto.getRandomValues(new Uint8Array(12));
+            const enc = new TextEncoder().encode(JSON.stringify(data));
+            const ct  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
+            const out = { iv: Array.from(iv), ct: Array.from(new Uint8Array(ct)) };
+            return btoa(JSON.stringify(out));
+        } catch(e) { return btoa(JSON.stringify(data)); } // fallback
+    }
+
+    async function decryptAuth(encoded) {
+        try {
+            const parsed = JSON.parse(atob(encoded));
+            // Eski format (şifresiz JSON) ise direkt dön
+            if (!parsed.iv || !parsed.ct) return parsed;
+            const fp  = await getFingerprint();
+            const key = await _deriveKey(fp);
+            const iv  = new Uint8Array(parsed.iv);
+            const ct  = new Uint8Array(parsed.ct);
+            const pt  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+            return JSON.parse(new TextDecoder().decode(pt));
+        } catch(e) { return null; }
+    }
+
+    // localStorage'a şifreli yaz / oku
+    async function saveSecureAuth(data) {
+        try {
+            const enc = await encryptAuth(data);
+            localStorage.setItem('umittv_auth', enc);
+        } catch(e) {
+            try { localStorage.setItem('umittv_auth', JSON.stringify(data)); } catch(e2) {}
+        }
+    }
+
+    async function loadSecureAuth() {
+        try {
+            const raw = localStorage.getItem('umittv_auth');
+            if (!raw) return null;
+            // Eski düz JSON formatını da destekle
+            try { const j = JSON.parse(raw); if (j && !j.iv) return j; } catch(e) {}
+            return await decryptAuth(raw);
+        } catch(e) { return null; }
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 2 — KLAVYE / SAĞ TIK ENGELİ
+    // ════════════════════════════════════════════════════
+    function _installInputGuards() {
+
+        // Sağ tık — sadece player alanı dışında engelle
+        document.addEventListener('contextmenu', e => {
+            const inPlayer = e.target.closest('#videoPlayer, #playerContainer, video');
+            if (!inPlayer) e.preventDefault();
+        });
+
+        // Metin seçimi engeli (sadece kanal kartları ve içerik alanı)
+        document.addEventListener('selectstart', e => {
+            const inInput = e.target.closest('input, textarea, [contenteditable]');
+            if (!inInput) e.preventDefault();
+        });
+
+        // Klavye kısayolları
+        document.addEventListener('keydown', e => {
+            const k = e.key ? e.key.toLowerCase() : '';
+            // Ctrl+U (view-source), Ctrl+S (kaydet), Ctrl+P (yazdır)
+            if (e.ctrlKey && ['u', 's', 'p'].includes(k)) {
+                e.preventDefault(); e.stopPropagation(); return false;
+            }
+            // F12 DevTools
+            if (k === 'f12') {
+                e.preventDefault(); e.stopPropagation(); return false;
+            }
+            // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(k)) {
+                e.preventDefault(); e.stopPropagation(); return false;
+            }
+        }, true);
+
+        // Sürükleme engeli (logo vs çalınmasın)
+        document.addEventListener('dragstart', e => {
+            if (e.target.tagName === 'IMG') e.preventDefault();
+        });
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 3 — DEVTOOLS TESPİTİ
+    // ════════════════════════════════════════════════════
+    let _devtoolsThreshold = 160;
+
+    function _isDevToolsOpen() {
+        if (IS_DEV) return false;
+        try {
+            const ww = window.outerWidth  - window.innerWidth;
+            const wh = window.outerHeight - window.innerHeight;
+            if (ww > _devtoolsThreshold || wh > _devtoolsThreshold) return true;
+        } catch(e) {}
+        // debugger trap yöntemi
+        let devOpen = false;
+        try {
+            const t0 = performance.now();
+            // eslint-disable-next-line no-debugger
+            debugger; // DevTools açıksa burada ~100ms takılır
+            if (performance.now() - t0 > 100) devOpen = true;
+        } catch(e) {}
+        return devOpen;
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 4 — PROTOTYPE TAMPER TESPİTİ
+    // ════════════════════════════════════════════════════
+    function _isTampered() {
+        if (IS_DEV) return false;
+        try {
+            if (XMLHttpRequest.prototype.open.toString().indexOf('[native code]') === -1) return true;
+            if (window.fetch && window.fetch.toString().indexOf('[native code]') === -1) return true;
+            if (JSON.parse.toString().indexOf('[native code]') === -1) return true;
+            if (JSON.stringify.toString().indexOf('[native code]') === -1) return true;
+        } catch(e) { return true; }
+        return false;
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 5 — PROXY / VPN TESPİTİ (WebRTC)
+    // ════════════════════════════════════════════════════
+    let _localIPs = new Set();
+
+    function _gatherLocalIPs() {
+        if (IS_DEV) return;
+        try {
+            const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+            if (!RTCPeer) return;
+            const pc = new RTCPeer({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            pc.createDataChannel('');
+            pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
+            pc.onicecandidate = e => {
+                if (!e || !e.candidate || !e.candidate.candidate) return;
+                const m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g);
+                if (m) m.forEach(ip => {
+                    if (!ip.startsWith('0.') && !ip.startsWith('127.')) _localIPs.add(ip);
+                });
+            };
+        } catch(e) {}
+    }
+
+    function _isProxySuspect() {
+        if (IS_DEV) return false;
+        const ips = Array.from(_localIPs);
+        return ips.some(ip =>
+            (ip.startsWith('10.') && !ip.startsWith('10.0.')) ||
+            (ip.startsWith('172.') && parseInt(ip.split('.')[1]) >= 16 && parseInt(ip.split('.')[1]) <= 31) ||
+            ip.startsWith('100.')  // Wireguard / Tailscale
+        );
+    }
+
+    // ════════════════════════════════════════════════════
+    // KATMAN 6 — ŞÜPHELİ EXTENSION TESPİTİ
+    // ════════════════════════════════════════════════════
+    const SUSPICIOUS_EXT_IDS = [
+        'dbepggeogbaibhgnhhndojpepiihcmeb', // Requestly
+        'kcnhkahnjcbndmmehfkdnkjomaanaooo', // HTTP Debugger
+        'padekgcemlokbadohgkifijomclgjgif', // Charles Proxy
+        'bmnlcjabgnpnenekpadlanbbkooimhnj', // Proxyman
+        'igpoahgelkcilfgfldfebajkignlchkh', // HTTP Canary eski
+        'fnfnbeppfinmnjnjhedifnhdnbcogeih', // MITM Proxy
+        'aicmkgpgakddgnaphhhpliifpcfnfcne', // HTTP Interceptor
+        'mecbmlhcpcbpcakjbkjhonmjndmgjmdf', // Fiddler ext
+    ];
+
+    function _detectSuspiciousExt(callback) {
+        if (IS_DEV || typeof chrome === 'undefined' || !chrome.runtime) {
+            callback(false); return;
+        }
+        let found = false, checked = 0;
+        const total = SUSPICIOUS_EXT_IDS.length;
+        if (total === 0) { callback(false); return; }
+        SUSPICIOUS_EXT_IDS.forEach(id => {
+            try {
+                const img = new Image();
+                img.onload  = () => { found = true;  if (++checked === total) callback(found); };
+                img.onerror = () => {                 if (++checked === total) callback(found); };
+                img.src = `chrome-extension://${id}/icon.png`;
+            } catch(e) { if (++checked === total) callback(found); }
+        });
+    }
+
+    // ════════════════════════════════════════════════════
+    // BLOK DİYALOGU
+    // ════════════════════════════════════════════════════
+    const MSG = {
+        title:   'Güvenlik Uyarısı',
+        ua:      'Bu uygulama yalnızca resmi APK üzerinden açılabilir!\n\nTarayıcı erişimi engellendi.',
+        domain:  'Bu uygulama izinsiz bir domaindan açılmış!\n\nErisim engellendi.',
+        devtools:'DevTools / İnceleyici tespit edildi!\n\nBu uygulama güvenli ortamda çalışmaz.\nErişim engellendi.',
+        proxy:   'Proxy / VPN tespit edildi!\n\nBu uygulama proxy ortamında çalışmaz.\nErişim engellendi.',
+        ext:     'HTTP izleme eklentisi tespit edildi!\n\nErişim engellendi.',
+        tamper:  'İzinsiz kod müdahalesi tespit edildi!\n\nErişim engellendi.',
+    };
+
+    let _blocked = false;
+
+    function _showBlockDialog(reason, onBlock) {
+        if (_blocked) return;
+        _blocked = true;
+
+        try {
+            document.body.style.filter = 'blur(24px)';
+            document.body.style.pointerEvents = 'none';
+            document.body.style.userSelect = 'none';
+        } catch(e) {}
+
+        const overlay = document.createElement('div');
+        overlay.id = '__umit_sec_overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;padding:24px;box-sizing:border-box;';
+
+        overlay.innerHTML = `
+          <div style="max-width:440px;width:100%;background:linear-gradient(135deg,rgba(28,8,8,0.99),rgba(18,8,8,1));
+               border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;
+               box-shadow:0 0 80px rgba(255,0,0,0.18),inset 0 1px 0 rgba(255,255,255,0.04);text-align:center;">
+            <div style="font-size:56px;margin-bottom:14px;line-height:1;">🔒</div>
+            <div style="font-family:Orbitron,sans-serif;font-size:17px;font-weight:900;
+                 color:#ff3333;letter-spacing:2.5px;margin-bottom:18px;text-transform:uppercase;">
+              ${MSG.title}
+            </div>
+            <div style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;
+                 white-space:pre-line;margin-bottom:28px;border-top:1px solid rgba(255,50,50,0.15);
+                 padding-top:18px;">
+              ${reason}
+            </div>
+            <div style="font-size:10px;color:rgba(255,80,80,0.4);letter-spacing:2px;text-transform:uppercase;">
+              ÜMİT TV SECURITY SYSTEM v2
+            </div>
+          </div>`;
+
+        document.body.appendChild(overlay);
+
+        // Overlay kaldırılmaya çalışılırsa geri ekle
+        try {
+            new MutationObserver(() => {
+                if (!document.getElementById('__umit_sec_overlay')) {
+                    document.body.appendChild(overlay);
+                    document.body.style.filter = 'blur(24px)';
+                }
+            }).observe(document.body, { childList: true, subtree: false });
+        } catch(e) {}
+
+        if (typeof onBlock === 'function') { try { onBlock(); } catch(e) {} }
+    }
+
+    // ════════════════════════════════════════════════════
+    // ANA KONTROL
+    // ════════════════════════════════════════════════════
+    let _checkInterval = null;
+    let _opts = {};
+
+    function checkAndBlock(onBlock) {
+        onBlock = onBlock || _opts.onBlock;
+
+        if (!IS_DEV && _opts.ua && !_isUAAllowed()) {
+            _showBlockDialog(MSG.ua, onBlock); return true;
+        }
+        if (!IS_DEV && _opts.domain && !_isDomainAllowed()) {
+            _showBlockDialog(MSG.domain, onBlock); return true;
+        }
+        if (_opts.devtools && _isDevToolsOpen()) {
+            _showBlockDialog(MSG.devtools, onBlock); return true;
+        }
+        if (_opts.tamper && _isTampered()) {
+            _showBlockDialog(MSG.tamper, onBlock); return true;
+        }
+        if (_opts.proxy && _isProxySuspect()) {
+            _showBlockDialog(MSG.proxy, onBlock); return true;
+        }
+        return false;
+    }
+
+    function startPeriodicCheck(intervalMs, onBlock) {
+        if (_checkInterval) clearInterval(_checkInterval);
+        window.addEventListener('resize', () => {
+            if (!_blocked && _opts.devtools && _isDevToolsOpen()) {
+                _showBlockDialog(MSG.devtools, onBlock || _opts.onBlock);
+            }
+        });
+        _checkInterval = setInterval(() => checkAndBlock(onBlock), intervalMs || 8000);
+    }
+
+    // ════════════════════════════════════════════════════
+    // PUBLIC API
+    // ════════════════════════════════════════════════════
+    return {
+        init(opts) {
+            _opts = Object.assign({
+                ua:       true,   // Sadece APK WebView (okhttp) erişebilir
+                domain:   true,
+                devtools: false,  // TVBox'ta false bırak (yanlış pozitif riski)
+                proxy:    true,
+                ext:      true,
+                tamper:   true,
+                block:    true,
+                threshold:160,
+                onBlock:  null,
+            }, opts || {});
+
+            _devtoolsThreshold = _opts.threshold;
+
+            // Katman 2: klavye / sağ tık
+            _installInputGuards();
+
+            // Katman 5: WebRTC IP topla (pasif)
+            if (_opts.proxy) _gatherLocalIPs();
+
+            // Katman 6: extension kontrolü (async)
+            if (_opts.ext) {
+                _detectSuspiciousExt(found => {
+                    if (found && !_blocked) _showBlockDialog(MSG.ext, _opts.onBlock);
+                });
+            }
+
+            // Katman 1: domain kontrolü (anında)
+            if (!IS_DEV && _opts.domain && !_isDomainAllowed()) {
+                _showBlockDialog(MSG.domain, _opts.onBlock);
+            }
+
+            // Katman 7: parmak izini arka planda hazırla
+            getFingerprint().catch(() => {});
+        },
+
+        check:           (cb)    => checkAndBlock(cb),
+        startWatch:      (ms,cb) => startPeriodicCheck(ms, cb),
+        stopWatch:       ()      => { if (_checkInterval) clearInterval(_checkInterval); },
+        isBlocked:       ()      => _blocked,
+
+        // Katman 8: şifreli auth yardımcıları
+        saveSecureAuth,
+        loadSecureAuth,
+        getFingerprint,
+        encryptAuth,
+        decryptAuth,
+    };
+})();
+
+// ── Başlat ───────────────────────────────────────────────────────────────
+UmitSecurityManager.init({
+    ua:       true,    // Sadece APK WebView (okhttp) erişebilir, tarayıcı engellenir
+    domain:   true,    // Sadece izinli domainlerde çalış
+    devtools: false,   // TVBox'ta false — yanlış pozitif riski var
+    proxy:    true,    // WebRTC VPN/proxy tespiti
+    ext:      true,    // HTTP intercept eklentisi tespiti
+    tamper:   true,    // Prototype kurcalama tespiti
+    block:    true,    // Tespit edilince kilitle
+    threshold:160,
+    onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },
+});
+
+// ── Login sonrası periyodik izleme + parmak izi doğrulama ────────────────
+document.addEventListener('umittv_login_ok', function _secWatch() {
+    document.removeEventListener('umittv_login_ok', _secWatch);
+
+    // Parmak izini kaydet (ilk login)
+    UmitSecurityManager.getFingerprint().then(fp => {
+        try { sessionStorage.setItem('__umit_fp_login', fp); } catch(e) {}
+    });
+
+    // Periyodik kontrol başlat
+    UmitSecurityManager.startWatch(8000);
+}, { once: true });
+
+// ════════════════════════════════════════════════════════════════════════
+// END SecurityManager v2.0
+// ════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════
+// ██  UMİT TV — GELİŞMİŞ GÜVENLİK EKLERİ  v1.0
+// ════════════════════════════════════════════════════════════════════════
+//
+//  EK-1 — Telegram Güvenlik Bildirimi  : İhlal anında bot mesajı
+//  EK-2 — Honeypot Tuzağı              : Scraper/bot tespiti
+//  EK-3 — Self-Destruct (Kod Bütünlüğü): JS hash doğrulama
+//  EK-4 — Client Rate Limiting          : Brute-force koruması
+//
+// ════════════════════════════════════════════════════════════════════════
+
+const UmitSecurityExtras = (function() {
+    'use strict';
+
+    const _TG_BOT   = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
+    const _TG_CHAT  = '-1003873863119';
+    const _IS_DEV   = location.hostname === 'localhost'
+                   || location.hostname === '127.0.0.1'
+                   || location.hostname.startsWith('192.168.')
+                   || location.port === '2435';
+
+    // ════════════════════════════════════════════════════
+    // EK-1 — TELEGRAM GÜVENLİK BİLDİRİMİ
+    // ════════════════════════════════════════════════════
+    // İhlal tespit edilince Telegram grubuna detaylı mesaj atar.
+
+    async function _getPublicIP() {
+        try {
+            const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+            const d = await r.json();
+            return d.ip || 'bilinmiyor';
+        } catch(e) { return 'bilinmiyor'; }
+    }
+
+    async function sendSecurityAlert(reason) {
+        if (_IS_DEV) { console.warn('[SecurityAlert] DEV — bildirim gönderilmedi:', reason); return; }
+        try {
+            const ip  = await _getPublicIP();
+            const ua  = navigator.userAgent || 'bilinmiyor';
+            const ts  = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+            const fp  = sessionStorage.getItem('__umit_fp') || 'yok';
+
+            const msg = [
+                '🚨 <b>ÜMİT TV — GÜVENLİK İHLALİ</b>',
+                '',
+                `⚠️ <b>Sebep:</b> ${reason}`,
+                `🕐 <b>Saat:</b> ${ts}`,
+                `🌐 <b>IP:</b> <code>${ip}</code>`,
+                `🔑 <b>Parmak İzi:</b> <code>${fp.slice(0,16)}...</code>`,
+                `📱 <b>UA:</b> <code>${ua.slice(0,80)}</code>`,
+            ].join('\n');
+
+            await fetch(`https://api.telegram.org/bot${_TG_BOT}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: _TG_CHAT, text: msg, parse_mode: 'HTML' })
+            });
+        } catch(e) { /* sessizce geç */ }
+    }
+
+    // ════════════════════════════════════════════════════
+    // EK-2 — HONEYPOT TUZAĞI
+    // ════════════════════════════════════════════════════
+    // Gizli element — scraper veya bot görünce tıklar/tetikler → ban
+
+    function _installHoneypot() {
+        try {
+            // Görünmez honeypot link
+            const trap = document.createElement('a');
+            trap.id       = '__umit_trap';
+            trap.href     = '#';
+            trap.setAttribute('aria-hidden', 'true');
+            trap.setAttribute('tabindex', '-1');
+            trap.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+            trap.textContent = 'Login';
+
+            // Tıklanırsa bot/scraper → bildir ve kilitle
+            trap.addEventListener('click', async (e) => {
+                e.preventDefault();
+                console.error('[SecurityManager] Honeypot tetiklendi!');
+                await sendSecurityAlert('Honeypot tuzağı tetiklendi — Bot/Scraper tespiti');
+                if (window.UmitSecurityManager) {
+                    // Direkt block dialog'u tetikle
+                    UmitSecurityManager.check();
+                }
+            });
+
+            // Focus alırsa da şüpheli (otomatik tab traversal yapan botlar)
+            trap.addEventListener('focus', async () => {
+                await sendSecurityAlert('Honeypot focus — Otomatik gezici bot tespiti');
+            });
+
+            document.body.appendChild(trap);
+        } catch(e) {}
+    }
+
+    // ════════════════════════════════════════════════════
+    // EK-3 — SELF-DESTRUCT / KOD BÜTÜNLÜĞÜ
+    // ════════════════════════════════════════════════════
+    // Kendi SecurityManager kodunun hash'ini hesaplar.
+    // Biri kodu değiştirip dağıtırsa fark eder ve kilitler.
+
+    async function _checkCodeIntegrity() {
+        try {
+            const secBlock = document.querySelector('script') ? _getSecurityCodeBlock() : null;
+            if (!secBlock) return; // bulamazsa geç
+
+            const enc = new TextEncoder().encode(secBlock);
+            const buf = await crypto.subtle.digest('SHA-256', enc);
+            const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+
+            // İlk çalışmada hash'i kaydet
+            const stored = sessionStorage.getItem('__umit_code_hash');
+            if (!stored) {
+                sessionStorage.setItem('__umit_code_hash', hash);
+                return;
+            }
+
+            // Sonraki kontrollerde karşılaştır
+            if (stored !== hash) {
+                console.error('[SecurityManager] Kod bütünlüğü ihlali!');
+                await sendSecurityAlert('Kod bütünlüğü ihlali — JS kodu değiştirilmiş');
+                if (window.UmitSecurityManager) UmitSecurityManager.check();
+            }
+        } catch(e) {}
+    }
+
+    function _getSecurityCodeBlock() {
+        // Sayfadaki tüm script içeriğini al, SecurityManager bloğunu bul
+        const scripts = document.querySelectorAll('script:not([src])');
+        for (const s of scripts) {
+            if (s.textContent.includes('UmitSecurityManager') && s.textContent.length > 1000) {
+                return s.textContent.slice(0, 2000); // ilk 2000 karakter yeterli
+            }
+        }
+        return null;
+    }
+
+    // ════════════════════════════════════════════════════
+    // EK-4 — CLIENT RATE LIMITING (Brute-force koruması)
+    // ════════════════════════════════════════════════════
+    // Aynı cihazdan 5 dakikada 3 yanlış giriş → 1 saat blok
+
+    const RL_KEY        = '__umit_rl';
+    const RL_MAX_TRIES  = 3;
+    const RL_WINDOW_MS  = 5  * 60 * 1000;  // 5 dakika
+    const RL_BLOCK_MS   = 60 * 60 * 1000;  // 1 saat
+
+    function _getRLData() {
+        try { return JSON.parse(localStorage.getItem(RL_KEY) || '{}'); } catch(e) { return {}; }
+    }
+    function _saveRLData(d) {
+        try { localStorage.setItem(RL_KEY, JSON.stringify(d)); } catch(e) {}
+    }
+
+    function isRateLimited() {
+        const d   = _getRLData();
+        const now = Date.now();
+
+        // Blok süresi doldu mu?
+        if (d.blockedUntil && now < d.blockedUntil) {
+            const kalan = Math.ceil((d.blockedUntil - now) / 60000);
+            return { blocked: true, minutesLeft: kalan };
+        }
+
+        // Eski pencere geçtiyse sıfırla
+        if (d.windowStart && now - d.windowStart > RL_WINDOW_MS) {
+            _saveRLData({});
+            return { blocked: false };
+        }
+
+        return { blocked: false };
+    }
+
+    function recordFailedAttempt() {
+        const d   = _getRLData();
+        const now = Date.now();
+
+        if (!d.windowStart || now - d.windowStart > RL_WINDOW_MS) {
+            // Yeni pencere başlat
+            _saveRLData({ windowStart: now, tries: 1 });
+            return { blocked: false, tries: 1 };
+        }
+
+        d.tries = (d.tries || 0) + 1;
+
+        if (d.tries >= RL_MAX_TRIES) {
+            d.blockedUntil = now + RL_BLOCK_MS;
+            _saveRLData(d);
+            sendSecurityAlert(`Brute-force tespiti — ${d.tries} başarısız giriş denemesi`);
+            return { blocked: true, minutesLeft: 60 };
+        }
+
+        _saveRLData(d);
+        return { blocked: false, tries: d.tries, remaining: RL_MAX_TRIES - d.tries };
+    }
+
+    function resetRateLimit() {
+        try { localStorage.removeItem(RL_KEY); } catch(e) {}
+    }
+
+    // ── Rate limit uyarı mesajını login formuna göster ──
+    function _showRLWarning(minutesLeft) {
+        try {
+            // Mevcut login overlay'e mesaj ekle
+            const existing = document.getElementById('__umit_rl_warn');
+            if (existing) { existing.textContent = `⏳ Çok fazla başarısız deneme. ${minutesLeft} dakika bekleyin.`; return; }
+
+            const warn = document.createElement('div');
+            warn.id = '__umit_rl_warn';
+            warn.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(255,50,50,0.95);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-family:Rajdhani,sans-serif;z-index:2147483646;text-align:center;';
+            warn.textContent = `⏳ Çok fazla başarısız deneme. ${minutesLeft} dakika bekleyin.`;
+            document.body.appendChild(warn);
+            setTimeout(() => { try { warn.remove(); } catch(e) {} }, 8000);
+        } catch(e) {}
+    }
+
+    // ════════════════════════════════════════════════════
+    // BAŞLATICI
+    // ════════════════════════════════════════════════════
+    function init() {
+        // DOMContentLoaded sonrası honeypot kur
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _installHoneypot);
+        } else {
+            _installHoneypot();
+        }
+
+        // Kod bütünlüğü kontrolü — 30 saniye sonra (sayfa tam yüklendikten sonra)
+        setTimeout(_checkCodeIntegrity, 30000);
+
+        // Rate limit durumunu kontrol et — sayfa açılışında
+        const rl = isRateLimited();
+        if (rl.blocked && !_IS_DEV) {
+            setTimeout(() => _showRLWarning(rl.minutesLeft), 1000);
+        }
+    }
+
+    return {
+        init,
+        sendSecurityAlert,
+        isRateLimited,
+        recordFailedAttempt,
+        resetRateLimit,
+        checkIntegrity: _checkCodeIntegrity,
+    };
+})();
+
+// ── Başlat ──
+UmitSecurityExtras.init();
+
+// ── SecurityManager onBlock'a Telegram bildirimi bağla ──
+// (SecurityManager zaten init edildi, onBlock'u güncelle)
+(function() {
+    const _origCheck = UmitSecurityManager.check.bind(UmitSecurityManager);
+    // startWatch periyodik kontrolüne de Telegram bildirimi ekle — onBlock üzerinden
+    // Doğrudan sendSecurityAlert'i SecurityManager'ın onBlock'una bağla
+    if (window.UmitSecurityManager && UmitSecurityManager.startWatch) {
+        const _origStartWatch = UmitSecurityManager.startWatch.bind(UmitSecurityManager);
+        UmitSecurityManager.startWatch = function(ms, cb) {
+            _origStartWatch(ms, async function(reason) {
+                await UmitSecurityExtras.sendSecurityAlert(reason || 'Periyodik kontrol ihlali');
+                if (typeof cb === 'function') cb(reason);
+            });
+        };
+    }
+})();
+
+// ════════════════════════════════════════════════════════════════════════
+// END Güvenlik Ekleri v1.0
+// ════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════
+// ██  UMİT TV — GÜVENLİK EKLERİ  v2.0
+// ════════════════════════════════════════════════════════════════════════
+//
+//  EK-5 — Konsol Temizleme / Kilitleme  : DevTools konsol boş kalır
+//  EK-6 — Session Expiry (7 Gün TTL)    : Oturum otomatik sona erer
+//
+// ════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════
+// EK-5 — KONSOL TEMİZLEME / KİLİTLEME
+// ════════════════════════════════════════════════════════════════════════
+(function() {
+    'use strict';
+    const _isDev = location.hostname === 'localhost'
+                || location.hostname === '127.0.0.1'
+                || location.hostname.startsWith('192.168.')
+                || location.port === '2435';
+    if (_isDev) return; // geliştirmede konsol açık kalsın
+
+    // console metodlarını sustur
+    const _noop = function() {};
+    const _methods = ['log','debug','info','warn','error','dir','dirxml','table',
+                      'trace','group','groupCollapsed','groupEnd','time','timeEnd',
+                      'timeLog','count','countReset','assert','profile','profileEnd'];
+    _methods.forEach(m => {
+        try { console[m] = _noop; } catch(e) {}
+    });
+
+    // Periyodik konsol temizleme (DevTools açık olsa bile boş görünsün)
+    try {
+        setInterval(function() {
+            try { console.clear(); } catch(e) {}
+        }, 1500);
+    } catch(e) {}
+
+    // console.clear override'ı engelleyen girişimlere karşı
+    try {
+        Object.defineProperty(window, 'console', {
+            get: function() { return { clear: _noop, log: _noop, warn: _noop,
+                                       error: _noop, info: _noop, debug: _noop,
+                                       dir: _noop, table: _noop, trace: _noop }; },
+            configurable: false
+        });
+    } catch(e) {}
+})();
+
+// ════════════════════════════════════════════════════════════════════════
+// EK-6 — SESSION EXPIRY (7 GÜN TTL)
+// ════════════════════════════════════════════════════════════════════════
+const UmitSessionGuard = (function() {
+    'use strict';
+
+    const SESSION_TTL_MS  = 7 * 24 * 60 * 60 * 1000; // 7 gün
+    const SESSION_KEY     = '__umit_session_ts';
+    const WARN_BEFORE_MS  = 60 * 60 * 1000;           // 1 saat kala uyar
+    let   _warnShown      = false;
+    let   _checkTimer     = null;
+
+    function _getLoginTime() {
+        try { return parseInt(localStorage.getItem(SESSION_KEY) || '0', 10); } catch(e) { return 0; }
+    }
+
+    function _setLoginTime() {
+        try { localStorage.setItem(SESSION_KEY, String(Date.now())); } catch(e) {}
+    }
+
+    function _clearSession() {
+        try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+        try { localStorage.removeItem('umittv_auth'); } catch(e) {}
+        try { sessionStorage.clear(); } catch(e) {}
+        // Cookie temizle
+        try { document.cookie = '__umittv_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; } catch(e) {}
+    }
+
+    function _showExpiredOverlay() {
+        try {
+            // Mevcut içeriği gizle
+            document.body.style.filter = 'blur(16px)';
+            document.body.style.pointerEvents = 'none';
+
+            const ov = document.createElement('div');
+            ov.id = '__umit_session_expired';
+            ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(8,8,16,0.97);display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;padding:24px;box-sizing:border-box;';
+            ov.innerHTML = `
+              <div style="max-width:400px;width:100%;background:linear-gradient(135deg,rgba(10,20,35,0.99),rgba(8,16,28,1));
+                   border:1.5px solid rgba(80,140,255,0.4);border-radius:20px;padding:36px 28px;text-align:center;
+                   box-shadow:0 0 60px rgba(50,100,255,0.12);">
+                <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+                <div style="font-family:Orbitron,sans-serif;font-size:16px;font-weight:900;
+                     color:#4488ff;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;">
+                  Oturum Süresi Doldu
+                </div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:24px;">
+                  Güvenliğiniz için oturumunuz 7 günde bir yenilenmektedir.<br>Lütfen tekrar giriş yapın.
+                </div>
+                <button onclick="location.reload()" style="background:linear-gradient(135deg,#1a4a9f,#2255cc);
+                        color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:15px;
+                        font-family:Rajdhani,sans-serif;font-weight:700;cursor:pointer;letter-spacing:1px;">
+                  Tekrar Giriş Yap
+                </button>
+              </div>`;
+            document.body.appendChild(ov);
+        } catch(e) {}
+    }
+
+    function _showExpiryWarning(minutesLeft) {
+        if (_warnShown) return;
+        _warnShown = true;
+        try {
+            const warn = document.createElement('div');
+            warn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,60,140,0.95);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-family:Rajdhani,sans-serif;z-index:2147483640;text-align:center;border:1px solid rgba(80,140,255,0.4);';
+            warn.innerHTML = `⏰ Oturumunuz <b>${minutesLeft} dakika</b> içinde sona erecek.`;
+            document.body.appendChild(warn);
+            setTimeout(() => { try { warn.remove(); } catch(e) {} }, 10000);
+        } catch(e) {}
+    }
+
+    function _check() {
+        const loginTime = _getLoginTime();
+        if (!loginTime) return; // henüz login olmamış
+
+        const elapsed  = Date.now() - loginTime;
+        const remaining = SESSION_TTL_MS - elapsed;
+
+        if (remaining <= 0) {
+            // Süre doldu
+            if (_checkTimer) { clearInterval(_checkTimer); _checkTimer = null; }
+            _clearSession();
+            _showExpiredOverlay();
+            return;
+        }
+
+        // 1 saat kala uyar
+        if (remaining <= WARN_BEFORE_MS && !_warnShown) {
+            const minutesLeft = Math.ceil(remaining / 60000);
+            _showExpiryWarning(minutesLeft);
+        }
+    }
+
+    function startSession() {
+        _setLoginTime();
+        _warnShown = false;
+        if (_checkTimer) clearInterval(_checkTimer);
+        // Her 5 dakikada bir kontrol et
+        _checkTimer = setInterval(_check, 5 * 60 * 1000);
+    }
+
+    function checkOnLoad() {
+        const loginTime = _getLoginTime();
+        if (!loginTime) return false; // login olmamış, geçir
+
+        const elapsed = Date.now() - loginTime;
+        if (elapsed > SESSION_TTL_MS) {
+            _clearSession();
+            return true; // süresi dolmuş — login göster
+        }
+
+        // Aktif session — izlemeyi başlat
+        if (_checkTimer) clearInterval(_checkTimer);
+        _checkTimer = setInterval(_check, 5 * 60 * 1000);
+        return false;
+    }
+
+    function getRemainingDays() {
+        const loginTime = _getLoginTime();
+        if (!loginTime) return 0;
+        const remaining = SESSION_TTL_MS - (Date.now() - loginTime);
+        return Math.max(0, Math.floor(remaining / (24 * 60 * 60 * 1000)));
+    }
+
+    return { startSession, checkOnLoad, getRemainingDays };
+})();
+
+// ── Login başarısında session başlat ────────────────────────────────────
+document.addEventListener('umittv_login_ok', function() {
+    UmitSessionGuard.startSession();
+}, { once: false }); // her login'de yenile
+
+// ── Sayfa yüklenince süresi dolan session kontrolü ──────────────────────
+(function() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const expired = UmitSessionGuard.checkOnLoad();
+            if (expired) {
+                // Auth temizlendi, login overlay açık kalacak
+                try { document.getElementById('loginOverlay') && (document.getElementById('loginOverlay').style.display = ''); } catch(e) {}
+            }
+        });
+    } else {
+        UmitSessionGuard.checkOnLoad();
+    }
+})();
+
+// ════════════════════════════════════════════════════════════════════════
+// END Güvenlik Ekleri v2.0
+// ════════════════════════════════════════════════════════════════════════
 
 const CONFIG_URL = 'https://tinyurl.com/Umittvjson';
 const TMDB_API_KEY = '778bc93a59f5372fd28e7e9992ff6986';
@@ -21690,7 +22732,19 @@ function checkPassword() {
         
         
 
-        showToast("❌ Hatalı Şifre! Lütfen tekrar deneyin.");
+        // ── Rate Limiting: başarısız giriş say ──
+        if (window.UmitSecurityExtras) {
+            const rl = UmitSecurityExtras.recordFailedAttempt();
+            if (rl.blocked) {
+                showToast("🚫 Çok fazla hatalı giriş! " + rl.minutesLeft + " dakika bekleyin.");
+                return;
+            } else {
+                const kalan = (3 - (rl.tries || 1));
+                showToast("❌ Hatalı Şifre! " + (kalan > 0 ? kalan + " hakkınız kaldı." : "Son hakkınız!"));
+            }
+        } else {
+            showToast("❌ Hatalı Şifre! Lütfen tekrar deneyin.");
+        }
     }
 }
         

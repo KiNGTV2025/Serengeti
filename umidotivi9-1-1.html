@@ -4456,7 +4456,7 @@ body {
     background: var(--bg-panel);
     z-index: 3001;
     transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -6299,9 +6299,7 @@ input:checked + .toggle-slider:before {
  
 body.sidebar-open {
     overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
+    /* position:fixed KALDIRILDI — scroll pozisyonunu sıfırlıyor, UI "dönüyor" görünüyor */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -13019,7 +13017,7 @@ const HLS_CONFIG = {
     maxBufferLength: 12,                 // 8→12sn: HD/1080p için yeterli ön buffer — hızlı ve stabil açılış
     maxMaxBufferLength: 60,              // Üst limit — VOD için startHls içinde 60'a çıkar
     maxBufferSize: 60 * 1024 * 1024,    // 30MB→60MB: HD/4K segmentleri büyük, buffer dolup taşmasın
-    maxBufferHole: 0.5,                  // 0.3→0.5: küçük delikler atlatılır, playback kesilmez
+    maxBufferHole: 0.8,                  // 0.5→0.8: buffer deliklerini daha geniş atlatır — VOD kare atlamayı önler
     maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
@@ -13046,11 +13044,11 @@ const HLS_CONFIG = {
     autoStartLoad: true,
     startFragPrefetch: false,            // true→false: ilk segment yüklenmeden prefetch = gecikme kaynağı
     capLevelToPlayerSize: false,
-    appendErrorMaxRetry: 10,             // 15→10: hatalı append'de çok bekletme
+    appendErrorMaxRetry: 15,             // 10→15: VOD'da codec/parse hatalarında daha fazla retry — kare atlama önler
     enableSoftwareAES: true,
 
     // ── HLS.js 1.5.x ek parametreler: ses/video senkronu ve canlı stabilite ──
-    maxAudioFramesDrift: 1,              // Ses/video senkron toleransı — 1 frame = en hassas
+    maxAudioFramesDrift: 3,              // 1→3: ses/video senkron toleransı artırıldı — kare atlamayı önler
     stretchShortVideoTrack: true,        // Kısa video trackler ses ile hizalanır — ses kayması önlenir
     initialLiveManifestSize: 1,          // 1 segment yüklenir yüklenmez başla — hızlı açılış
     testBandwidth: true,                 // HLS.js kendi bant testi yapar — abrEwma daha doğru çalışır
@@ -21582,7 +21580,7 @@ function openSidebar() {
         // Buffer değişikliği HLS.js'te segment reorganizasyonuna yol açar = takılma
 
         sidebar.classList.add('open');
-        // TVBox: CSS animasyonu kısa bekle, sonra hızlıca render et
+        // CSS transition (300ms) BİTTİKTEN sonra render — transition sırasında ağır DOM işlemi = UI titremesi
         setTimeout(() => {
             populateSidebar();
             showSidebarLoading(false);
@@ -21597,39 +21595,26 @@ function openSidebar() {
                     if (typeof renderSidebarChannels === 'function') renderSidebarChannels();
                 }
             }, 200);
-        }, 60);
+        }, 270); // 250ms CSS transition bitmeden render YAPMA — kaymayı önler
 
-        setTimeout(() => { updateSidebarFocus(); }, 100);
+        setTimeout(() => { updateSidebarFocus(); }, 330);
 
-        // EPG yüklüyse hemen göster
+        // EPG: populateSidebar zaten renderSidebarChannels çağırıyor — çift render YOK
+        // EPG yüklü değilse yükle, sidebar kapanmadıysa badge güncelle
         const epgReady = state.epgData && Object.keys(state.epgData).length > 0;
-        if (epgReady) {
-            // Kısa gecikme — DOM hazır olsun
-            setTimeout(() => { renderSidebarChannels(); _updateEpgBadge(); }, 200);
-        } else {
-            // EPG yüklü değil — zorla yükle, sonra render et
+        if (!epgReady) {
             const _loadFn = window.loadEPGData || (typeof loadEPGData === 'function' ? loadEPGData : null);
             if (_loadFn) {
                 _loadFn().then(() => {
                     if (sidebar.classList.contains('open')) {
-                        renderSidebarChannels();
                         _updateEpgBadge();
-                    }
-                }).catch(() => { _updateEpgBadge(); });
-            } else {
-                // loadEPGData yok — poll ile bekle
-                let _pollCount = 0;
-                const _poll = setInterval(() => {
-                    _pollCount++;
-                    if (state.epgData && Object.keys(state.epgData).length > 0) {
-                        clearInterval(_poll);
-                        if (sidebar.classList.contains('open')) {
+                        // EPG geldi — sadece badge güncelle, renderSidebarChannels populateSidebar'dan sonra çağrılmış
+                        const _cList2 = document.getElementById('sidebarChannelsList');
+                        if (_cList2 && _cList2.children.length > 0 && typeof renderSidebarChannels === 'function') {
                             renderSidebarChannels();
-                            _updateEpgBadge();
                         }
                     }
-                    if (_pollCount > 60) clearInterval(_poll);
-                }, 1000);
+                }).catch(() => { _updateEpgBadge(); });
             }
         }
     }, 50);
@@ -21740,6 +21725,7 @@ function populateSidebar() {
         }
         state.sidebar.currentCategory = bestCat;
 
+        // FRAME 1: Sadece kategori listesini render et — hafif işlem
         renderSidebarCategories();
 
         const _sfi = document.getElementById('sidebarFilterInput');
@@ -21749,9 +21735,12 @@ function populateSidebar() {
         state.remote.sidebarZone = 1;
         state.remote.sidebarCategoryIndex = Math.max(0, sortedCategories.indexOf(state.sidebar.currentCategory));
 
-        renderSidebarChannels();
-
-        setTimeout(() => { updateSidebarFocus(); }, 100);
+        // FRAME 2: Kanal listesini SONRAKI frame'de render et — oynatmayı dondurmaz
+        // Kategoriler ekranda görünür, kanal listesi hemen arkasından gelir
+        requestAnimationFrame(() => {
+            renderSidebarChannels();
+            setTimeout(() => { updateSidebarFocus(); }, 50);
+        });
     });
 }
 
@@ -21760,13 +21749,22 @@ function renderSidebarCategories() {
     const categories = state.sidebar.categories;
     const currentCategory = state.sidebar.currentCategory;
     const hidden = getHiddenCategories();
+
+    // Kategori sayılarını TEK SEFERDE hesapla — her kategori için ayrı filter() ÇAĞRILMAZ
+    // Önceki: 50 kategori × binlerce kanal = dev döngü → oynatma donması
+    const countMap = Object.create(null);
+    countMap['all'] = state.channels.length;
+    state.channels.forEach(function(ch) {
+        const g = ch.group ? ch.group.trim() : '';
+        if (g) countMap[g] = (countMap[g] || 0) + 1;
+    });
     
     let html = '';
     categories.forEach((category, idx) => {
         if (hidden.has(category)) return; // gizli kategori - gösterme
         const displayName = category === 'all' ? 'Tüm Kanallar' : category;
         const isActive = currentCategory && category === currentCategory;
-        const count = getChannelCountByCategory(category);
+        const count = countMap[category] || 0;
         
         html += `<div class="category-tab ${isActive ? 'active' : ''}" data-cat-idx="${idx}" data-category="${category}">${displayName} (${count})</div>`;
     });
@@ -22053,8 +22051,8 @@ function renderSidebarChannels() {
     }
 
     // TVBox Optimizasyonu: innerHTML ile toplu render — DOM node oluşturma yerine string birleştirme
-    // Bu yöntem TVBox'larda 3-5x daha hızlı çalışır
-    const BATCH_SIZE = state.player.streamStarted ? 30 : 60;
+    // Stream oynarken batch küçük tutulur — HLS pipeline'ı bloke etmez
+    const BATCH_SIZE = state.player.streamStarted ? 20 : 60;
 
     function buildItemHTML(channel, i) {
         const isActive = channel.url === currentUrl;
@@ -22083,8 +22081,8 @@ ${vodBadge}</li>`;
         container.insertAdjacentHTML('beforeend', html);
 
         if (endIdx < total) {
-            // TVBox: stream varken biraz bekle, yoksa hızlı devam et
-            const _delay = state.player.streamStarted ? 50 : 10;
+            // Stream oynarken daha uzun bekle — HLS segment işleme ile çakışmaz
+            const _delay = state.player.streamStarted ? 80 : 10;
             // requestIdleCallback varsa kullan (TVBox Android destekler)
             if (window.requestIdleCallback) {
                 requestIdleCallback(() => renderPage(endIdx, total), { timeout: _delay + 100 });
@@ -31351,9 +31349,11 @@ function resumeChannel(startTime) {
         if (state.player.isLiveStream) {
             hlsInst.config.maxBufferLength    = 12;
             hlsInst.config.maxMaxBufferLength = 30;
+            hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 45;
             hlsInst.config.maxMaxBufferLength = 90;
+            hlsInst.config.backBufferLength   = 30; // VOD: 30sn geri buffer — geri sarınca takılmaz
         }
 
         state.player.hls = hlsInst;
@@ -33709,15 +33709,19 @@ function _updateSearchRemoteFocus() {
         el.classList.remove('search-remote-focused');
         el.classList.remove('remote-focused');
         el.style.outline = '';
+        el.style.outlineOffset = '';
         el.style.boxShadow = '';
         el.style.background = '';
         el.style.transform = '';
+        el.style.borderColor = '';
     });
     // Toggle container'larda kalan remote-focused artıklarını da temizle
     document.querySelectorAll('#searchModal .remote-focused').forEach(el => {
         el.classList.remove('remote-focused');
         el.style.outline = '';
+        el.style.outlineOffset = '';
         el.style.boxShadow = '';
+        el.style.borderColor = '';
     });
 
     const baseElements = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform', 'btnSearchBack'];
@@ -33742,24 +33746,23 @@ function _updateSearchRemoteFocus() {
     }
 
     if (focusEl) {
+        // Her elemana her iki class'ı ekle — CSS kuralları hem remote-focused hem search-remote-focused bekliyor
         focusEl.classList.add('search-remote-focused');
-        // Kanal sonuçları için daha belirgin stil
+        focusEl.classList.add('remote-focused');
+
         if (activeId.startsWith('searchResult_')) {
-            focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-            focusEl.style.boxShadow = (getComputedStyle(document.documentElement).getPropertyValue('--focus-glow').trim() || '0 0 0 5px rgba(255,215,0,0.3)') + ', 0 4px 16px rgba(0,0,0,0.5)';
-            focusEl.style.background = getComputedStyle(document.documentElement).getPropertyValue('--focus-bg').trim() || 'rgba(255,215,0,0.15)';
-            focusEl.style.transform = 'translateX(4px)';
-            focusEl.style.borderRadius = '10px';
+            // CSS class yeterli, inline stil ekleme
         } else if (focusEl.classList.contains('toggle-container')) {
-            // Toggle container için her iki class'ı ekle ki temizleme düzgün çalışsın
-            focusEl.classList.add('remote-focused');
-            focusEl.classList.add('search-remote-focused');
-            focusEl.style.outline = '2px solid var(--accent-primary, #FFD700)';
-            focusEl.style.boxShadow = getComputedStyle(document.documentElement).getPropertyValue('--focus-glow').trim() || '0 0 12px rgba(255,215,0,0.4)';
-        } else {
-            // Buton ve input'lar için
+            // Toggle: CSS class yeterli
+        } else if (focusEl.tagName === 'INPUT') {
+            // Input kutusu — belirgin border + outline
             focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-            focusEl.style.boxShadow = getComputedStyle(document.documentElement).getPropertyValue('--focus-glow').trim() || '0 0 12px rgba(255,215,0,0.5)';
+            focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
+            focusEl.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.25)';
+        } else {
+            // Butonlar (İptal, Ara, Geri) — inline outline ile kesin görünürlük
+            focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
+            focusEl.style.outlineOffset = '2px';
         }
         focusEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     }
@@ -38179,12 +38182,21 @@ function optimizeVideoPlayer() {
 }
  
 #searchModal .continue-modal-btn.remote-focused,
+#searchModal .continue-modal-btn.search-remote-focused,
 #searchModal button.remote-focused,
+#searchModal button.search-remote-focused,
 #btnSearchPerform:focus-visible,
 #btnSearchCancel:focus-visible {
     outline: 3px solid var(--accent-primary) !important;
     box-shadow: none !important;
     transform: none !important;
+}
+#searchInput.remote-focused,
+#searchInput.search-remote-focused {
+    outline: 3px solid var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.25) !important;
+    background: rgba(255,215,0,0.07) !important;
 }
 
  

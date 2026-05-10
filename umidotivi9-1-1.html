@@ -20226,6 +20226,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (success) {
             } else {
             }
+            // EPG yüklendi — kanal kartı cache'ini temizle (eski EPG'siz kartlar silinsin)
+            if (state.highPerf && state.highPerf.cache) {
+                state.highPerf.cache.clear();
+            }
             // EPG yüklendi — sidebar'ı yenile (EPG bilgileri gösterilebilsin)
             setTimeout(() => {
                 if (typeof renderSidebarChannels === 'function' && 
@@ -20233,6 +20237,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     renderSidebarChannels();
                 }
             }, 500);
+            // EPG yüklendi — kanal grid'ini yenile (EPG overlay kartlara yansısın)
+            setTimeout(() => {
+                const pv = document.getElementById('playerView');
+                const isPlayerOpen = pv && pv.style.display === 'flex';
+                if (!isPlayerOpen && typeof renderChannels === 'function') {
+                    renderChannels();
+                }
+            }, 700);
             // EPG yüklendi — state hazır olunca banner'ı güncelle
             function _epgBannerUpdate() {
                 try {
@@ -20399,12 +20411,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateSleepModeTimer();
         activateControlMode();
         
-        // 1️⃣1️⃣ CONTINUE WATCHING CARDS
-        setTimeout(() => {
-            if (state.activeCat === 'all') {
-                renderContinueWatching();
+        // 1️⃣1️⃣ CONTINUE WATCHING CARDS — kanallar yüklenene kadar bekle
+        (function _waitAndRenderCW() {
+            if (state.channels && state.channels.length > 0) {
+                if (state.activeCat === 'all' || state.activeCat === 'Tümü') {
+                    renderContinueWatching();
+                }
+            } else {
+                setTimeout(_waitAndRenderCW, 500);
             }
-        }, 500);
+        })();
         
         // 1️⃣2️⃣ SON KONTROL VE GÜNCELLEME
         setTimeout(() => {
@@ -20457,7 +20473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Hata durumunda bile continue watching göster
         setTimeout(() => {
-            if (state.activeCat === 'all') {
+            if (state.activeCat === 'all' || state.activeCat === 'Tümü') {
                 renderContinueWatching();
             }
         }, 500);
@@ -27303,6 +27319,12 @@ var _origRC = window.renderChannels;
 window.renderChannels = function() {
     if (_origRC) _origRC.apply(this, arguments);
     setTimeout(_vhsCatCheck, 150);
+    // Devam Et kartlarını da güncelle (kanallar yüklendikten sonra)
+    setTimeout(function() {
+        if (typeof renderContinueWatching === 'function' && (state.activeCat === 'all' || state.activeCat === 'Tümü')) {
+            renderContinueWatching();
+        }
+    }, 200);
 };
 
 /* ── selectM3U hook: panel değişince slider yenile ── */
@@ -27335,9 +27357,14 @@ setTimeout(_vhsInit, 1200);
    function renderContinueWatching() {
     const container = document.getElementById('continueWatchingContainer');
     const continueList = Object.values(state.continueWatching).filter(c => {
+        // Kanallar henüz yüklenmemişse sadece progress kontrolü yap
+        if (!state.channels || state.channels.length === 0) {
+            return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT;
+        }
         const channel = state.channels.find(ch => ch.name === c.name);
-        return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT && 
-               channel && (channel.isLive || !channel.isVod);
+        // VOD ve Canlı kanallar dahil — ikisi de gösterilsin
+        if (!channel) return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT;
+        return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT;
     }).sort((a, b) => b.timestamp - a.timestamp);
 
     // Devam Et kategorisindeysem farklı render et
@@ -27345,7 +27372,7 @@ setTimeout(_vhsInit, 1200);
         return; // Devam Et kategorisinde grid render edilecek
     }
 
-    if (continueList.length === 0 || state.activeCat !== 'all') { 
+    if (continueList.length === 0 || (state.activeCat !== 'all' && state.activeCat !== 'Tümü')) { 
         container.innerHTML = ''; 
         return; 
     }
@@ -46244,5 +46271,126 @@ window.channelNumbering = {
     document.readyState === 'loading'
         ? document.addEventListener('DOMContentLoaded', init)
         : init();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     UMIT TV — FIX PATCH v3.0
+     1) Kaldığın Yerden Devam Et kartları sayfa açılınca görünmüyor
+     2) EPG gösterilmiyor (kanal kartları)
+     3) Player butonları gezinirken sarma yapıyor
+     4) Film izlerken sürekli üstte bilgi / kontroller gösteriliyor
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="fix-patch-v3">
+/* ── FIX 3: Player butonları sarma yapmasın ──────────────────────
+   Butonlar scroll edilebilir satırda kalmalı, hiçbir zaman
+   alt satıra sarmamalı (flex-wrap: nowrap zaten var ama
+   küçük ekranlarda min-width değerleri toplamı aşıyor).
+   Çözüm: portrait mobilde buton boyutlarını küçült.          */
+@media (max-width: 480px) {
+    .player-actions-row {
+        gap: 4px !important;
+        padding: 4px 2px !important;
+    }
+    .player-action-btn {
+        min-width: 32px !important;
+        height: 32px !important;
+        padding: 0 3px !important;
+        font-size: 13px !important;
+    }
+    .player-action-btn .material-symbols-outlined {
+        font-size: 17px !important;
+    }
+    .player-action-btn .btn-label {
+        font-size: 7px !important;
+    }
+    .player-action-btn.play-pause-btn {
+        min-width: 38px !important;
+    }
+    .action-sep {
+        height: 22px !important;
+        margin: 0 1px !important;
+    }
+}
+@media (max-width: 380px) {
+    .player-action-btn {
+        min-width: 28px !important;
+        height: 30px !important;
+        padding: 0 2px !important;
+    }
+    .player-action-btn .material-symbols-outlined {
+        font-size: 15px !important;
+    }
+    .player-action-btn .btn-label {
+        display: none !important;
+    }
+    .action-sep { display: none !important; }
+}
+
+/* ── FIX 4: Film izlerken sürekli üstte bilgi gösteriliyor ──────
+   channelInfoBanner yalnızca 4 sn görünsün (7sn fazla uzun).
+   VOD/Film izlerken banner hiç çıkmasın — CSS ile garanti al. */
+#channelInfoBanner {
+    /* Varsayılan gizle — JS show/hide yönetecek */
+}
+/* VOD oynarken body'ye vod-playing sınıfı eklenince banner gizle */
+body.vod-playing #channelInfoBanner {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* player-top-bar: controls-hidden modunda gösterme */
+.player-container.controls-hidden .player-top-bar {
+    display: none !important;
+}
+</style>
+
+<script id="fix-patch-v3-js">
+(function() {
+'use strict';
+
+/* ══════════════════════════════════════════════════════════
+   FIX 4a: showChannelInfoBanner — süreyi 4sn'e indir
+   showChannelInfoBanner global fonksiyon olarak tanımlı,
+   window üzerinden override edilebilir.
+══════════════════════════════════════════════════════════ */
+function _patchBanner() {
+    var _orig = window.showChannelInfoBanner;
+    if (!_orig) { setTimeout(_patchBanner, 400); return; }
+    window.showChannelInfoBanner = function(channelName, logoUrl, tvgIdHint) {
+        _orig.apply(this, arguments);
+        // 7sn'lik timer'ı iptal et, 4sn'ye indir
+        clearTimeout(window._cibTimer);
+        window._cibTimer = setTimeout(function() {
+            var b = document.getElementById('channelInfoBanner');
+            if (b) { b.style.opacity = '0'; setTimeout(function() { if(b) b.style.display = 'none'; }, 350); }
+        }, 4000);
+    };
+}
+_patchBanner();
+
+/* ══════════════════════════════════════════════════════════
+   FIX 3: Player butonları touch-action düzelt
+══════════════════════════════════════════════════════════ */
+function _fixActionsRow() {
+    document.querySelectorAll('.player-actions-row').forEach(function(r) {
+        r.style.touchAction = 'pan-x';
+        r.style.flexWrap = 'nowrap';
+    });
+}
+new MutationObserver(function(muts) {
+    muts.forEach(function(m) {
+        m.addedNodes.forEach(function(n) {
+            if (n.nodeType !== 1) return;
+            if (n.classList && n.classList.contains('player-actions-row')) { n.style.touchAction='pan-x'; n.style.flexWrap='nowrap'; }
+            else if (n.querySelector) { n.querySelectorAll('.player-actions-row').forEach(function(r){ r.style.touchAction='pan-x'; r.style.flexWrap='nowrap'; }); }
+        });
+    });
+}).observe(document.body, {childList:true, subtree:true});
+document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', _fixActionsRow)
+    : _fixActionsRow();
+
 })();
 </script>

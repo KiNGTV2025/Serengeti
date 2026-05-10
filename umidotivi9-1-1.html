@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿ <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta name="referrer" content="no-referrer">
@@ -31612,52 +31612,16 @@ function resumeChannel(startTime) {
                           (rawUrl.includes('action=redirect') && rawUrl.includes('format=4'));
 
     if (isRedirectUrl) {
-        showToast('🔗 Yayın bağlantısı çözümleniyor...');
         state.remote.zone = 'player';
-        state.remote.playerBoxIndex = 9; // Kanal Listesi butonu
+        state.remote.playerBoxIndex = 9;
         startContinuousWatchingUpdate();
-        // Önceki stream'i temizle (ses bozulması önleme)
         if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-        (async () => {
-            try {
-                // Önce direkt fetch ile redirect'i takip et (CORS varsa çalışır)
-                let resolvedUrl = null;
-                const directResp = await fetch(rawUrl, { method: 'HEAD', redirect: 'follow' }).catch(() => null);
-                if (directResp && directResp.ok && directResp.url && directResp.url !== rawUrl) {
-                    resolvedUrl = directResp.url;
-                }
-                // Direkt çalışmadıysa proxy üzerinden dene
-                if (!resolvedUrl) {
-                    const proxyResp = await fetch(STREAM_PROXY + encodeURIComponent(rawUrl), { method: 'HEAD', redirect: 'follow' }).catch(() => null);
-                    if (proxyResp && proxyResp.ok && proxyResp.url) {
-                        resolvedUrl = proxyResp.url;
-                    }
-                }
-
-                const finalUrl = resolvedUrl || rawUrl;
-                const finalLower = finalUrl.toLowerCase();
-
-                if (finalLower.includes('.m3u8') || finalLower.includes('/hls/') || finalLower.includes('/live/')) {
-                    startHls(finalUrl);
-                } else if (finalLower.includes('.mp4') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
-                    // MP4 / VOD — native video player ile aç
-                    video.src = finalUrl;
-                    video.load();
-                    video.play().catch(() => {
-                        video.load();
-                        video.play().catch(() => {});
-                    });
-                } else {
-                    // Belirsiz — HLS.js ile dene
-                    startHls(finalUrl);
-                }
-            } catch(e) {
-                startHls(rawUrl);
-            }
-        })();
+        // HTTP redirect URL → mixed content engeli için proxy üzerinden HLS olarak aç
+        hideZappingScreen();
+        const _redirProxied = rawUrl.startsWith('http:')
+            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
+            : rawUrl;
+        startHls(_redirProxied);
     } else if (isHlsUrl) {
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan

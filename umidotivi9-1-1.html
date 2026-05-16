@@ -4120,6 +4120,11 @@ body {
             opacity: 0 !important;
             pointer-events: none !important;
         }
+        /* controls-hidden modunda tum player butonlari tiklanamaz — kazara kapatma onle */
+        .player-container.controls-hidden .player-actions-row,
+        .player-container.controls-hidden #btnClosePlayer {
+            pointer-events: none !important;
+        }
         /* controls-hidden modunda channelInfoBanner her zaman görünür */
         #channelInfoBanner {
             z-index: 99999 !important;
@@ -12956,11 +12961,15 @@ const STREAM_PROXY = 'https://proxy.umitmodpremiumtr.workers.dev/?stream='; // p
 const STREAM_PROXY2 = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
 const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=proxy';
 
-const REFERER_PROTECTED_DOMAINS = [
+// ── REDIRECT-RESOLVE DOMAINS: fetch ile gerçek URL'yi bul, sonra HLS.js'e ver ──
+// Bu domainler 302 redirect yapıyor; HLS.js redirect'i takip edemez veya CORS patlar.
+const REDIRECT_RESOLVE_DOMAINS = [
     'uzunmuhalefet.com',
     'streams.uzunmuhalefet',
-    
+];
 
+const REFERER_PROTECTED_DOMAINS = [
+    // uzunmuhalefet.com kaldırıldı → REDIRECT_RESOLVE_DOMAINS'a taşındı
     'kanal7-live',
     'securestream',
     'protected-stream',
@@ -14322,6 +14331,22 @@ async function loadContinueWatching() {
                 }
                 
                 if (document.getElementById('playerView').style.display === 'flex') {
+                    // _controlsHidden modunda Back → kontrolleri GÖSTERmeye dön, kapatma!
+                    if (window._controlsHidden) {
+                        window._controlsHidden = false;
+                        document.getElementById('playerContainer')?.classList.remove('controls-hidden');
+                        const _hcI2 = document.getElementById('hideControlsIcon');
+                        const _hcL2 = document.getElementById('hideControlsLabel');
+                        if (_hcI2) _hcI2.textContent = 'visibility_off';
+                        if (_hcL2) _hcL2.textContent = 'Gizle';
+                        const _isLiveB = !!(state.player && state.player.isLiveStream);
+                        state.remote.playerBoxIndex = _isLiveB ? 9 : 1;
+                        state.remote.zone = 'player';
+                        if (typeof showControls === 'function') showControls(5000);
+                        if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                        playKeySound('back');
+                        return;
+                    }
                     closePlayer();
                     playKeySound('back');
                     return;
@@ -31329,6 +31354,11 @@ function resumeChannel(startTime) {
     const needsStreamProxy = !needsDirect &&
         REFERER_PROTECTED_DOMAINS.some(d => rawUrl.includes(d));
 
+    // ── REDIRECT-RESOLVE: 302 yapan URL'leri fetch ile çöz ──
+    const needsRedirectResolve = !needsDirect &&
+        typeof REDIRECT_RESOLVE_DOMAINS !== 'undefined' &&
+        REDIRECT_RESOLVE_DOMAINS.some(d => rawUrl.includes(d));
+
     // ── Yüksek çözünürlüklü CDN yayın mı? (daioncdn, TRT vb.) ──
     const isHighResDirect = !needsDirect &&
         typeof HIGH_RES_DIRECT_DOMAINS !== 'undefined' &&
@@ -31337,10 +31367,12 @@ function resumeChannel(startTime) {
     // HLS mi yoksa direkt medya mı?
     // ch.isLive = true → canlı yayın, büyük ihtimalle HLS
     const _urlLower = rawUrl.toLowerCase();
-    const isHlsUrl = _urlLower.includes('.m3u8') || _urlLower.includes('/live/') ||
+    const isHlsUrl = _urlLower.includes('.m3u8') || _urlLower.includes('m3u8') || // ?m3u8 query param da yakala
+                     _urlLower.includes('/live/') ||
                      _urlLower.includes(':8080/') || _urlLower.includes(':1935/') ||
                      _urlLower.includes('playlist') || _urlLower.includes('/hls/') ||
                      _urlLower.includes('/stream') || _urlLower.includes('/index.m3u') ||
+                     _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
@@ -31593,8 +31625,16 @@ function resumeChannel(startTime) {
             } else if (isKoolTo) {
                 showToast('⚠️ Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
+            } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
+                // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
+                showToast('🔄 Yedek bağlantı deneniyor...');
+                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
+            } else if (rawUrl.startsWith('http:') && !streamUrl.includes('proxy')) {
+                // http:// mixed content — proxy ile yeniden dene
+                showToast('🔄 Proxy üzerinden bağlanıyor...');
+                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else {
-                // Proxy kullanma — direkt native ile dene
+                // Son çare: native ile dene
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             }
         });
@@ -31623,6 +31663,10 @@ function resumeChannel(startTime) {
             : rawUrl;
         startHls(_redirProxied);
     } else if (isHlsUrl) {
+        // http:// ile başlayan HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç
+        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:')) {
+            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+        } else
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan
             if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
@@ -31653,9 +31697,70 @@ function resumeChannel(startTime) {
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);
+        } else if (needsRedirectResolve) {
+            // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
+            (async function _resolveRedirectM3u8(origUrl) {
+                try {
+                    showToast('🔍 Yayın adresi çözümleniyor...');
+                    // STREAM_PROXY üzerinden fetch → CORS engeli aşılır
+                    const proxyFetch = STREAM_PROXY + encodeURIComponent(origUrl);
+                    let resp;
+                    try {
+                        resp = await fetch(proxyFetch, { cache: 'no-store' });
+                    } catch(e) {
+                        // Proxy fetch başarısız → direkt dene
+                        resp = await fetch(origUrl, { redirect: 'follow', cache: 'no-store' });
+                    }
+
+                    if (!resp.ok) {
+                        // Hata → STREAM_PROXY ile direkt HLS.js'e ver
+                        startHls(STREAM_PROXY + encodeURIComponent(origUrl));
+                        return;
+                    }
+
+                    const text = await resp.text();
+
+                    // İçerik gerçek bir m3u8 manifest mi? → HLS.js'e direkt ver
+                    if (text.trim().startsWith('#EXTM3U') && 
+                        (text.includes('#EXT-X-STREAM-INF') || text.includes('#EXTINF') || text.includes('#EXT-X-TARGETDURATION'))) {
+                        // Gerçek manifest — proxy URL'yi direkt ver (içeriği zaten proxy'den geliyor)
+                        startHls(proxyFetch);
+                        return;
+                    }
+
+                    // İçerik tek bir URL mi? (redirect m3u8 → gerçek stream URL)
+                    const lines = text.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+                    let resolvedUrl = null;
+                    for (const line of lines) {
+                        if (line.startsWith('http://') || line.startsWith('https://')) {
+                            resolvedUrl = line;
+                            break;
+                        }
+                    }
+
+                    if (resolvedUrl) {
+                        // Gerçek URL bulundu — HIGH_RES_DIRECT_DOMAINS'da mı?
+                        const _isHighRes = typeof HIGH_RES_DIRECT_DOMAINS !== 'undefined' &&
+                            HIGH_RES_DIRECT_DOMAINS.some(d => resolvedUrl.includes(d));
+                        if (_isHighRes) {
+                            // daioncdn.net vb. → direkt aç (CORS izni var)
+                            startHls(resolvedUrl);
+                        } else {
+                            // Bilinmeyen CDN → STREAM_PROXY üzerinden aç
+                            startHls(STREAM_PROXY + encodeURIComponent(resolvedUrl));
+                        }
+                    } else {
+                        // İçerik parse edilemedi → proxy ile direkt ver
+                        startHls(STREAM_PROXY + encodeURIComponent(origUrl));
+                    }
+                } catch(err) {
+                    // Genel hata → STREAM_PROXY ile aç
+                    startHls(STREAM_PROXY + encodeURIComponent(origUrl));
+                }
+            })(rawUrl);
         } else if (needsStreamProxy) {
-            // Referer korumalı → önce direkt dene, açılmazsa 30sn'de proxy devreye girer
-            startHls(rawUrl);
+            // Referer korumalı → direkt STREAM_PROXY ile aç (Referer/Origin sorununu çözer)
+            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
         } else if (isHighResDirect) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);
@@ -33983,8 +34088,22 @@ function deleteContinueWatchingRecord(name) {
 
             // ── Kontroller gizliyken (_controlsHidden) ──
             if (window._controlsHidden) {
-                if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Back') {
-                    e.preventDefault(); closePlayer(); return;
+                // Back/Escape: gizli moddan CIK — uygulamayi KAPATMA!
+                if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'Back' || e.key === 'GoBack') {
+                    e.preventDefault(); e.stopPropagation();
+                    window._controlsHidden = false;
+                    var _pc4 = document.getElementById('playerContainer');
+                    if (_pc4) { _pc4.classList.remove('controls-hidden'); }
+                    var _icon4  = document.getElementById('hideControlsIcon');
+                    var _label4 = document.getElementById('hideControlsLabel');
+                    if (_icon4)  _icon4.textContent  = 'visibility_off';
+                    if (_label4) _label4.textContent = 'Gizle';
+                    var _isLive4 = !!(state.player && state.player.isLiveStream);
+                    state.remote.playerBoxIndex = _isLive4 ? 9 : 1;
+                    state.remote.zone = 'player';
+                    if (typeof showControls === 'function') showControls(5000);
+                    if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                    return;
                 }
                 if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
                     e.preventDefault(); togglePlayPause(); return;
@@ -35043,12 +35162,26 @@ function handlePlayerRemote(e) {
     if (e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
         e.preventDefault(); togglePlayPause(); return;
     }
-    if (e.key === 'MediaStop' || e.key === 'Back' || e.key === 'Backspace' || e.key === 'Escape') {
+    if (e.key === 'MediaStop') {
         e.preventDefault(); closePlayer(); return;
     }
 
-    // _controlsHidden modunda (kalici gizle) — sadece OK acar
+    // _controlsHidden modunda (kalici gizle) — OK veya Back kontrolleri açar
     if (window._controlsHidden) {
+        // Back/Escape: kontrolleri GİZLİ moddan çıkar — uygulamayı kapatma!
+        if (e.key === 'Back' || e.key === 'Backspace' || e.key === 'Escape' || e.key === 'GoBack') {
+            e.preventDefault(); e.stopPropagation();
+            window._controlsHidden = false;
+            document.getElementById('playerContainer')?.classList.remove('controls-hidden');
+            const _icon3  = document.getElementById('hideControlsIcon');
+            const _label3 = document.getElementById('hideControlsLabel');
+            if (_icon3)  _icon3.textContent  = 'visibility_off';
+            if (_label3) _label3.textContent = 'Gizle';
+            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.zone = 'player';
+            showControls(5000);
+            return;
+        }
         if (e.key === 'Enter' || e.key === 'OK') {
             e.preventDefault();
             window._controlsHidden = false;

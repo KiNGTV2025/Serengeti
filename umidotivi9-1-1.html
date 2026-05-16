@@ -12095,11 +12095,14 @@ const UmitSecurityManager = (function () {
 
     function _isProxySuspect() {
         if (IS_DEV) return false;
+        // Public IP değişimi kontrolü (en güvenilir yöntem)
+        if (window.__umit_vpn_detected === true) return true;
+        // WebRTC local IP kontrolü (ek katman)
         const ips = Array.from(_localIPs);
         return ips.some(ip =>
             (ip.startsWith('10.') && !ip.startsWith('10.0.')) ||
             (ip.startsWith('172.') && parseInt(ip.split('.')[1]) >= 16 && parseInt(ip.split('.')[1]) <= 31) ||
-            ip.startsWith('100.')  // Wireguard / Tailscale
+            ip.startsWith('100.')
         );
     }
 
@@ -47208,4 +47211,133 @@ window.addEventListener('error', function(e) {
         return false;
     }
 });
+</script>
+
+<script id="umittv-vpn-realcheck">
+/* ═══════════════════════════════════════════════════════
+   ÜMİTTV — Gerçek VPN Tespiti v2.0
+   Public IP bazlı: login'de IP kaydet, sonra periyodik kontrol
+   ═══════════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
+var _IS_DEV = location.hostname === 'localhost'
+           || location.hostname === '127.0.0.1'
+           || location.hostname.startsWith('192.168.')
+           || location.port === '2435';
+
+if (_IS_DEV) return;
+
+var _loginIP     = null;   // Login anındaki public IP
+var _watching    = false;
+var _watchTimer  = null;
+var _blocked     = false;
+
+// Birden fazla IP servisi — biri düşse diğeri çalışır
+var _IP_APIS = [
+    'https://api.ipify.org?format=json',
+    'https://api.my-ip.io/ip.json',
+    'https://ipapi.co/json/'
+];
+
+async function _getPublicIP() {
+    for (var i = 0; i < _IP_APIS.length; i++) {
+        try {
+            var ctrl = new AbortController();
+            var tid  = setTimeout(function() { ctrl.abort(); }, 4000);
+            var r    = await fetch(_IP_APIS[i], { signal: ctrl.signal, cache: 'no-store' });
+            clearTimeout(tid);
+            if (!r.ok) continue;
+            var d = await r.json();
+            // Her servis farklı field döndürür
+            var ip = d.ip || d.IP || d.query || null;
+            if (ip && ip.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) return ip;
+        } catch(e) {}
+    }
+    return null;
+}
+
+// ipapi.is ile VPN/proxy flag kontrolü
+async function _checkIpApiIs(ip) {
+    if (!ip) return false;
+    try {
+        var ctrl = new AbortController();
+        var tid  = setTimeout(function() { ctrl.abort(); }, 5000);
+        var r    = await fetch('https://api.ipapi.is/?q=' + ip, { signal: ctrl.signal, cache: 'no-store' });
+        clearTimeout(tid);
+        if (!r.ok) return false;
+        var d = await r.json();
+        // is_vpn, is_proxy, is_tor, is_datacenter flag'leri
+        return !!(d.is_vpn || d.is_proxy || d.is_tor || d.is_datacenter);
+    } catch(e) { return false; }
+}
+
+function _triggerBlock(reason) {
+    if (_blocked) return;
+    _blocked = true;
+    window.__umit_vpn_detected = true;
+    clearInterval(_watchTimer);
+
+    // SecurityManager'ı tetikle
+    if (window.UmitSecurityManager && typeof UmitSecurityManager.check === 'function') {
+        UmitSecurityManager.check();
+    }
+    // Telegram bildirim
+    if (window.UmitSecurityExtras && typeof UmitSecurityExtras.sendSecurityAlert === 'function') {
+        UmitSecurityExtras.sendSecurityAlert('VPN/Proxy tespit (public IP): ' + reason);
+    }
+}
+
+async function _doCheck() {
+    if (_blocked) return;
+    var currentIP = await _getPublicIP();
+    if (!currentIP) return; // Ağ yok, yanlış pozitif verme
+
+    // Login IP'si ile karşılaştır
+    if (_loginIP && currentIP !== _loginIP) {
+        _triggerBlock('IP değişti: ' + _loginIP + ' → ' + currentIP);
+        return;
+    }
+
+    // ipapi.is ile VPN flag kontrolü
+    var isVpn = await _checkIpApiIs(currentIP);
+    if (isVpn) {
+        _triggerBlock('VPN/Proxy flag: ' + currentIP);
+    }
+}
+
+function _startWatch() {
+    if (_watching) return;
+    _watching = true;
+    // Hemen kontrol
+    _doCheck();
+    // Her 8 saniyede tekrar
+    _watchTimer = setInterval(_doCheck, 8000);
+}
+
+// Login anında public IP'yi kaydet
+document.addEventListener('umittv_login_ok', function() {
+    _getPublicIP().then(function(ip) {
+        if (ip) {
+            _loginIP = ip;
+            try { sessionStorage.setItem('__umit_login_ip', ip); } catch(e) {}
+        }
+        // 3sn sonra izlemeyi başlat (IP oturumu stabilleşsin)
+        setTimeout(_startWatch, 3000);
+    });
+}, { once: true });
+
+// Uygulama öne gelince anında kontrol
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && _watching && !_blocked) {
+        setTimeout(_doCheck, 1000);
+    }
+});
+
+// Ağ değişince kontrol
+window.addEventListener('online', function() {
+    if (_watching && !_blocked) setTimeout(_doCheck, 2000);
+});
+
+})();
 </script>

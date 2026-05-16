@@ -11791,13 +11791,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(function(){});
         } catch(e) {}
         document.addEventListener('DOMContentLoaded', function() {
-            try { document.body.style.filter = 'blur(24px)'; document.body.style.pointerEvents = 'none'; } catch(e) {}
+            try { document.body.style.filter = 'none'; document.body.style.pointerEvents = 'none'; } catch(e) {}
             const ov = document.createElement('div');
             ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;align-items:center;justify-content:center;font-family:sans-serif;padding:24px;box-sizing:border-box;';
             ov.innerHTML = '<div style="max-width:420px;width:100%;background:rgba(28,8,8,0.99);border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;text-align:center;"><div style=\"font-size:52px;margin-bottom:14px;\">🔒</div><div style=\"font-size:16px;font-weight:900;color:#ff3333;letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;\">Güvenlik Uyarısı</div><div style=\"font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;\">Bu uygulama yalnızca resmi APK üzerinden açılabilir!\n\nTarayıcı erişimi engellendi.</div><div style=\"font-size:10px;color:rgba(255,80,80,0.4);margin-top:20px;letter-spacing:2px;\">ÜMİT TV SECURITY SYSTEM v2</div></div>';
             document.body.appendChild(ov);
             new MutationObserver(function() {
-                if (!document.body.contains(ov)) { document.body.appendChild(ov); document.body.style.filter = 'blur(24px)'; }
+                if (!document.body.contains(ov)) { document.body.appendChild(ov); document.body.style.filter = 'none'; }
             }).observe(document.body, { childList: true });
         });
         // Script yüklenmesini de durdur
@@ -12175,7 +12175,7 @@ const UmitSecurityManager = (function () {
         try { document.activeElement && document.activeElement.blur(); } catch(e) {}
 
         try {
-            document.body.style.filter = 'blur(24px)';
+            document.body.style.filter = 'none';
             document.body.style.pointerEvents = 'none';
             document.body.style.userSelect = 'none';
             document.body.setAttribute('inert', '');
@@ -12270,18 +12270,21 @@ const UmitSecurityManager = (function () {
             }, 100);
         }
 
-        var _cdInterval = setInterval(function() {
+        // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
+        (document.documentElement || document.body).appendChild(overlay);
+
+        // Overlay DOM'a eklendikten SONRA başlat — _secEl null olmasın
+        // _origSetInterval kullan: TVBox throttle patchı 1000ms'yi 2000ms'ye çekiyor
+        var _timerFn = (typeof window._origSetInterval === 'function') ? window._origSetInterval : setInterval;
+        var _cdInterval = _timerFn.call(window, function() {
             _secLeft--;
             if (!_secEl) _secEl = document.getElementById('__umit_sec');
             if (_secEl) _secEl.textContent = _secLeft;
             if (_secLeft <= 0) {
-                clearInterval(_cdInterval);
+                (typeof window._origClearInterval === 'function' ? window._origClearInterval : clearInterval)(_cdInterval);
                 _forceClose();
             }
         }, 1000);
-
-        // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
-        (document.documentElement || document.body).appendChild(overlay);
 
         // Overlay'e focus ver — kumanda odağı burada kalsın
         try { overlay.focus(); } catch(e) {}
@@ -12293,7 +12296,7 @@ const UmitSecurityManager = (function () {
                     (document.documentElement || document.body).appendChild(overlay);
                     try { overlay.focus(); } catch(e) {}
                 }
-                document.body.style.filter = 'blur(24px)';
+                document.body.style.filter = 'none';
                 document.body.style.pointerEvents = 'none';
                 document.body.setAttribute('inert', '');
             }).observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['inert','style'] });
@@ -12933,7 +12936,7 @@ const UmitSessionGuard = (function() {
     function _showExpiredOverlay() {
         try {
             // Mevcut içeriği gizle
-            document.body.style.filter = 'blur(16px)';
+            document.body.style.filter = 'none';
             document.body.style.pointerEvents = 'none';
 
             const ov = document.createElement('div');
@@ -13176,10 +13179,10 @@ const HLS_CONFIG = {
 
     // ── BUFFER: Canlı/VOD dinamik — startHls içinde override edilir ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 12,                 // 8→12sn: HD/1080p için yeterli ön buffer — hızlı ve stabil açılış
-    maxMaxBufferLength: 60,              // Üst limit — VOD için startHls içinde 60'a çıkar
-    maxBufferSize: 60 * 1024 * 1024,    // 30MB→60MB: HD/4K segmentleri büyük, buffer dolup taşmasın
-    maxBufferHole: 0.8,                  // 0.5→0.8: buffer deliklerini daha geniş atlatır — VOD kare atlamayı önler
+    maxBufferLength: 10,                 // 12→10sn: TVBox RAM tasarrufu — canlı için yeterli
+    maxMaxBufferLength: 30,              // 60→30sn: TVBox'ta 60sn buffer RAM'i doldurur, kasma yapar
+    maxBufferSize: 30 * 1024 * 1024,    // 60MB→30MB: TVBox düşük RAM — dolup taşma = UI donması önlenir
+    maxBufferHole: 0.5,                  // 0.8→0.5: çok geniş delik toleransı kare atlamaya yol açar
     maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
@@ -16207,6 +16210,10 @@ function applyTVBoxOptimizations() {
 
     // E) cwInterval + tüm kısa interval'ları optimize et
     var _origSetInterval = window.setInterval;
+    var _origClearInterval = window.clearInterval;
+    // Güvenlik countdown gibi kritik timer'ların throttle'dan kaçması için global'e aç
+    window._origSetInterval = _origSetInterval;
+    window._origClearInterval = _origClearInterval;
     window.setInterval = function(fn, ms) {
         var args = Array.prototype.slice.call(arguments, 2);
         var fnStr = (typeof fn === 'function') ? fn.toString() : '';
@@ -16218,7 +16225,9 @@ function applyTVBoxOptimizations() {
         if (ms >= 500 && ms < 2000) {
             var skip = fnStr.indexOf('hls') > -1 || fnStr.indexOf('videoPlayer') > -1 ||
                        fnStr.indexOf('watchdog') > -1 || fnStr.indexOf('Watchdog') > -1 ||
-                       fnStr.indexOf('stall') > -1 || fnStr.indexOf('recover') > -1;
+                       fnStr.indexOf('stall') > -1 || fnStr.indexOf('recover') > -1 ||
+                       fnStr.indexOf('__umit_sec') > -1 || fnStr.indexOf('_secLeft') > -1 ||
+                       fnStr.indexOf('_forceClose') > -1; // Güvenlik countdown throttle edilemez
             if (!skip) ms = 2000;
         }
         return _origSetInterval.apply(window, [fn, ms].concat(args));
@@ -21853,11 +21862,11 @@ function closeSidebar() {
         try {
             if (state.player.hls && !state.player.hls._destroyed) {
                 if (state.player.isLiveStream) {
-                    state.player.hls.config.maxBufferLength = 12;
+                    state.player.hls.config.maxBufferLength = 10;
                     state.player.hls.config.maxMaxBufferLength = 30;
                 } else {
-                    state.player.hls.config.maxBufferLength = 45;
-                    state.player.hls.config.maxMaxBufferLength = 90;
+                    state.player.hls.config.maxBufferLength = 20;   // 45→20: TVBox VOD kasması önle
+                    state.player.hls.config.maxMaxBufferLength = 45; // 90→45: RAM baskısı azalt
                 }
             }
         } catch(e) {}
@@ -31080,7 +31089,10 @@ function resumeChannel(startTime) {
             if (_hcL) _hcL.textContent = 'Gizle';
         }
         if (!window._controlsHidden) {
-            showControls(4000);
+            // Yayın açılınca kontrolleri GÖSTERMEDEN direkt gizle — kullanıcı dokunana kadar görünmesin
+            const _pcAuto = document.getElementById('playerContainer');
+            if (_pcAuto) _pcAuto.classList.remove('show-controls');
+            state.remote.playerControlsVisible = false;
         } else {
             // Canlı: kontroller kalıcı gizli — zone='player' kilitle, kumanda çalışmaya devam etsin
             state.remote.zone = 'player';
@@ -31250,25 +31262,38 @@ function resumeChannel(startTime) {
 
             const ct = video.currentTime;
 
-            if (stallCount <= 2) {
-                // Sadece play() dene — ağ geçici olarak titredi
+            if (stallCount <= 3) {
+                // Sadece play() dene — ağ geçici titredi, müdahale etme
                 try {
                     if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                    setTimeout(() => { window._recoveryLock = false; }, 500);
+                    setTimeout(() => { window._recoveryLock = false; }, 800);
                 } catch(e) { window._recoveryLock = false; }
-            } else if (stallCount <= 5) {
-                // stopLoad/startLoad — segment yeniden yükle
+            } else if (stallCount <= 7) {
+                // Canlı: seekToLiveEdge — buffer'ı boşaltmadan live edge'e atla
+                // VOD: stopLoad/startLoad — segment yeniden yükle
                 try {
-                    hls.stopLoad();
-                    setTimeout(() => {
-                        try {
-                            hls.startLoad(ct);
-                            if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                        } catch(e) {}
-                        window._recoveryLock = false;
-                    }, 500);
+                    if (state.player.isLiveStream) {
+                        // Canlı yayında stopLoad/startLoad YOK — seekToLiveEdge kullan
+                        try { hls.stopLoad(); } catch(e2) {}
+                        setTimeout(() => {
+                            try {
+                                hls.startLoad(-1); // -1 = live edge
+                                if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                            } catch(e2) {}
+                            window._recoveryLock = false;
+                        }, 1000);
+                    } else {
+                        hls.stopLoad();
+                        setTimeout(() => {
+                            try {
+                                hls.startLoad(ct);
+                                if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                            } catch(e) {}
+                            window._recoveryLock = false;
+                        }, 800);
+                    }
                 } catch(e) { window._recoveryLock = false; }
-            } else if (stallCount <= 9) {
+            } else if (stallCount <= 12) {
                 // Kaliteyi kademeli düşür — önce bir seviye, ağır stallda en düşüğe
                 try {
                     const _hls3 = state.player.hls;
@@ -31569,15 +31594,15 @@ function resumeChannel(startTime) {
         const hlsInst = new Hls(HLS_CONFIG);
 
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
-        // Canlı: 12sn buffer = HD segmentler için yeterli; VOD: 45sn = kesintisiz izleme
+        // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 12;
+            hlsInst.config.maxBufferLength    = 10;
             hlsInst.config.maxMaxBufferLength = 30;
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
-            hlsInst.config.maxBufferLength    = 45;
-            hlsInst.config.maxMaxBufferLength = 90;
-            hlsInst.config.backBufferLength   = 30; // VOD: 30sn geri buffer — geri sarınca takılmaz
+            hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
+            hlsInst.config.maxMaxBufferLength = 45;  // 90→45: RAM baskısı azalt
+            hlsInst.config.backBufferLength   = 15; // 30→15: VOD geri sarma için yeterli
         }
 
         state.player.hls = hlsInst;
@@ -39040,8 +39065,9 @@ if (typeof window.fetchM3UChannels === 'undefined') {
             .vod-poster {
                 width: 100% !important;
                 height: 100% !important;
-                object-fit: cover !important;
-                object-position: center top !important;
+                object-fit: contain !important;
+                object-position: center center !important;
+                background: #000 !important;
             }
             .vod-buttons-group {
                 flex-shrink: 0 !important;
@@ -45735,9 +45761,9 @@ document.addEventListener('visibilitychange', function() {
             if (st.player.isLiveStream) { hls.config.maxBufferLength = 6; hls.config.maxMaxBufferLength = 12; }
         } else {
             if (st.player.isLiveStream) {
-                hls.config.maxBufferLength = 12; hls.config.maxMaxBufferLength = 30;
+                hls.config.maxBufferLength = 10; hls.config.maxMaxBufferLength = 30;
             } else {
-                hls.config.maxBufferLength = 45; hls.config.maxMaxBufferLength = 90;
+                hls.config.maxBufferLength = 20; hls.config.maxMaxBufferLength = 45; // 45/90→20/45 TVBox
             }
         }
     } catch(e) {}
@@ -46394,8 +46420,9 @@ window.channelNumbering = {
     #vodPosterWrapper .vod-poster {
         width: 100% !important;
         height: 100% !important;
-        object-fit: cover !important;
-        object-position: center top !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+        background: #000 !important;
     }
     #vodPosterContainer .vod-buttons-group {
         flex: 0 0 auto !important;
@@ -46843,17 +46870,17 @@ _ready(function() {
     // HLS_CONFIG global'i varsa TVBox parametrelerini uygula
     if (typeof window.HLS_CONFIG !== 'undefined') {
         // Düşük başlangıç buffer — hızlı açılış (TVBox RAM kısıtlı)
-        window.HLS_CONFIG.maxBufferLength        = 8;   // 12→8: daha az RAM, daha hızlı başlangıç
-        window.HLS_CONFIG.maxMaxBufferLength     = 30;  // 60→30: TVBox için yeterli
-        window.HLS_CONFIG.maxBufferSize          = 30 * 1024 * 1024; // 60MB→30MB
+        window.HLS_CONFIG.maxBufferLength        = 16;  // 8→16sn: yeterli buffer = donma olmaz
+        window.HLS_CONFIG.maxMaxBufferLength     = 40;  // 30→40sn: TVBox için güvenli üst limit
+        window.HLS_CONFIG.maxBufferSize          = 50 * 1024 * 1024; // 30MB→50MB
         window.HLS_CONFIG.backBufferLength       = 0;   // Geri buffer yok — RAM öne
-        window.HLS_CONFIG.maxBufferHole          = 1.0; // 0.8→1.0: delik toleransı artır
+        window.HLS_CONFIG.maxBufferHole          = 1.0; // delik toleransı
 
-        // ABR: TVBox'ta ani kalite düşüşü = donma. Daha konservatif başla
-        window.HLS_CONFIG.startLevel             = 0;   // -1→0: en düşükten başla, kademeli çıkar
-        window.HLS_CONFIG.abrEwmaDefaultEstimate = 2000000; // 5Mbps→2Mbps: TVBox bağlantısına göre
-        window.HLS_CONFIG.abrBandWidthFactor     = 0.75; // 0.85→0.75: daha konservatif bant kullanımı
-        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.60; // 0.70→0.60: kalite artışına yavaş geç
+        // ABR: startLevel=-1 (ABR otomatik) — 0 her seferinde kalite değişimi yapıyor = donma
+        window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik seçsin
+        window.HLS_CONFIG.abrEwmaDefaultEstimate = 3000000; // 3Mbps: gerçekçi TVBox tahmini
+        window.HLS_CONFIG.abrBandWidthFactor     = 0.80; // güvenli bant kullanımı
+        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.65; // kalite artışına temkinli geç
 
         // Stall recovery — TVBox'ta daha agresif
         window.HLS_CONFIG.nudgeOffset            = 0.3; // 0.2→0.3: daha güçlü nudge
@@ -46903,23 +46930,9 @@ _ready(function() {
                         ? buf.end(buf.length - 1) - video.currentTime
                         : 0;
 
-                    // Buffer 0.5sn'den azsa HLS'i uyar
-                    if (ahead < 0.5) {
-                        var hls = window.state && window.state.player && window.state.player.hls;
-                        if (hls && !window._recoveryLock) {
-                            _lastFastRecovery = now;
-                            try {
-                                hls.stopLoad();
-                                setTimeout(function() {
-                                    try {
-                                        hls.startLoad(video.currentTime);
-                                        if (video.paused && !window._userPaused) {
-                                            video.play().catch(function(){});
-                                        }
-                                    } catch(e2) {}
-                                }, 300);
-                            } catch(e) {}
-                        }
+                    // Buffer azsa sadece play() dene — stopLoad/startLoad döngüsü yapma
+                    if (ahead < 0.5 && video.paused && !window._userPaused) {
+                        try { video.play().catch(function(){}); } catch(e) {}
                     }
                 } catch(e) {}
             }, 1500); // 1.5sn sonra müdahale — mevcut watchdog'dan daha hızlı
@@ -47134,51 +47147,8 @@ _ready(function() {
     };
 });
 
-/* ── 10. FPS MONİTÖR: Uzun frame'leri tespit et, UI'yi durdur ── */
-_ready(function() {
-    var _lastFrame = performance.now();
-    var _longFrameCount = 0;
-
-    function _fpsCheck(ts) {
-        var delta = ts - _lastFrame;
-        _lastFrame = ts;
-
-        // 100ms+ frame → UI dondu demek (ideal: 16ms)
-        if (delta > 100) {
-            _longFrameCount++;
-            if (_longFrameCount >= 3) {
-                // 3 ardışık uzun frame: agresif mod — tüm non-critical iş iptali
-                _longFrameCount = 0;
-                // Player varsa buffer kontrolü
-                var vid = document.getElementById('videoPlayer') || document.querySelector('video');
-                if (vid && !vid.paused && !window._userPaused) {
-                    var hls = window.state && window.state.player && window.state.player.hls;
-                    if (hls) {
-                        try {
-                            var buf = vid.buffered;
-                            var ahead = buf && buf.length > 0
-                                ? buf.end(buf.length - 1) - vid.currentTime
-                                : 0;
-                            // Buffer azalmışsa yeniden yükle
-                            if (ahead < 1) {
-                                hls.stopLoad();
-                                setTimeout(function() {
-                                    try { hls.startLoad(vid.currentTime); } catch(e) {}
-                                }, 200);
-                            }
-                        } catch(e) {}
-                    }
-                }
-            }
-        } else {
-            if (_longFrameCount > 0) _longFrameCount--;
-        }
-
-        requestAnimationFrame(_fpsCheck);
-    }
-
-    requestAnimationFrame(_fpsCheck);
-});
+/* ── 10. FPS MONİTÖR: Devre dışı — stopLoad/startLoad döngüsü yapıyordu ── */
+// FPS monitor kaldırıldı: buffer < 1 kontrolü sürekli stopLoad tetikliyor = 5sn donma kaynağı
 
 })(); // IIFE sonu
 </script>
@@ -47312,7 +47282,7 @@ function _startWatch() {
     // Hemen kontrol
     _doCheck();
     // Her 8 saniyede tekrar
-    _watchTimer = setInterval(_doCheck, 8000);
+    _watchTimer = setInterval(_doCheck, 2000);
 }
 
 // Login anında public IP'yi kaydet

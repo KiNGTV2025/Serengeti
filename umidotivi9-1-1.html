@@ -12241,17 +12241,39 @@ const UmitSecurityManager = (function () {
         // 10 saniye geri sayım + kapat
         var _secLeft = 10;
         var _secEl = null;
+
+        function _forceClose() {
+            // AppCreator24 / Android WebView kapatma yöntemleri
+            try { window.close(); } catch(e) {}
+            try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
+            try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
+            try { if (window.JSBridge && window.JSBridge.exitApp) window.JSBridge.exitApp(); } catch(e) {}
+            try { history.go(-(history.length + 10)); } catch(e) {}
+            try { window.location.replace('about:blank'); } catch(e) {}
+            // DOM'u komple yok et
+            setTimeout(function() {
+                try {
+                    document.documentElement.innerHTML =
+                        '<html><body style="background:#000;margin:0"></body></html>';
+                } catch(e) {}
+                // video/ses durdur
+                try {
+                    document.querySelectorAll('video,audio').forEach(function(v) {
+                        v.pause(); v.src = ''; v.load();
+                    });
+                } catch(e) {}
+                // Script'leri durdur
+                try { window.stop && window.stop(); } catch(e) {}
+            }, 100);
+        }
+
         var _cdInterval = setInterval(function() {
             _secLeft--;
             if (!_secEl) _secEl = document.getElementById('__umit_sec');
             if (_secEl) _secEl.textContent = _secLeft;
             if (_secLeft <= 0) {
                 clearInterval(_cdInterval);
-                // Uygulamayı kapat — AppCreator24 WebView + genel yöntemler
-                try { window.close(); } catch(e) {}
-                try { history.go(-(history.length)); } catch(e) {}
-                try { window.location.replace('about:blank'); } catch(e) {}
-                try { document.documentElement.innerHTML = ''; } catch(e) {}
+                _forceClose();
             }
         }, 1000);
 
@@ -12440,6 +12462,123 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
 // ════════════════════════════════════════════════════════════════════════
 // END SecurityManager v2.0
 // ════════════════════════════════════════════════════════════════════════
+
+// ── VPN SÜREKLI İZLEME: Login sonrası her 5sn WebRTC IP kontrolü ──
+(function() {
+    'use strict';
+
+    var _vpnWatchActive = false;
+    var _vpnWatchTimer  = null;
+    var _vpnBlocked     = false;
+
+    var VPN_RANGES = [
+        function(ip) { return ip.startsWith('10.') && !ip.startsWith('10.0.'); },
+        function(ip) {
+            if (!ip.startsWith('172.')) return false;
+            var n = parseInt(ip.split('.')[1]);
+            return n >= 16 && n <= 31;
+        },
+        function(ip) { return ip.startsWith('100.'); },   // Wireguard/Tailscale
+        function(ip) { return ip.startsWith('198.18.') || ip.startsWith('198.19.'); },
+    ];
+
+    function _isVpnIp(ip) {
+        return VPN_RANGES.some(function(fn) { return fn(ip); });
+    }
+
+    function _checkVpnNow(onDetected) {
+        try {
+            var RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+            if (!RTCPeer) return;
+            var pc = new RTCPeer({ iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]});
+            pc.createDataChannel('__vpn_check');
+            pc.createOffer().then(function(o) {
+                return pc.setLocalDescription(o);
+            }).catch(function() {});
+
+            var _found = false;
+            pc.onicecandidate = function(e) {
+                if (_found || !e || !e.candidate || !e.candidate.candidate) return;
+                var m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g) || [];
+                for (var i = 0; i < m.length; i++) {
+                    if (_isVpnIp(m[i])) {
+                        _found = true;
+                        try { pc.close(); } catch(e2) {}
+                        if (typeof onDetected === 'function') onDetected(m[i]);
+                        return;
+                    }
+                }
+            };
+
+            setTimeout(function() { try { pc.close(); } catch(e) {} }, 4000);
+        } catch(e) {}
+    }
+
+    function _startVpnWatch() {
+        if (_vpnWatchActive) return;
+        _vpnWatchActive = true;
+
+        function _tick() {
+            if (_vpnBlocked) return;
+            _checkVpnNow(function(ip) {
+                if (_vpnBlocked) return;
+                _vpnBlocked = true;
+
+                // SecurityManager block dialog'u göster
+                if (window.UmitSecurityManager && UmitSecurityManager.check) {
+                    UmitSecurityManager.check();
+                }
+
+                // Telegram bildirim
+                if (window.UmitSecurityExtras && UmitSecurityExtras.sendSecurityAlert) {
+                    UmitSecurityExtras.sendSecurityAlert('VPN/Proxy tespit edildi (login sonrası). IP: ' + ip);
+                }
+
+                // Periyodik kontrolü durdur
+                clearInterval(_vpnWatchTimer);
+            });
+        }
+
+        // Hemen bir kez kontrol et, sonra her 5sn
+        _tick();
+        _vpnWatchTimer = setInterval(_tick, 5000);
+    }
+
+    // Login başarılı olunca izlemeyi başlat
+    document.addEventListener('umittv_login_ok', function() {
+        setTimeout(_startVpnWatch, 2000);
+    });
+
+    // Uygulama öne gelince tekrar kontrol
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && _vpnWatchActive && !_vpnBlocked) {
+            setTimeout(function() { _checkVpnNow(function(ip) {
+                if (_vpnBlocked) return;
+                _vpnBlocked = true;
+                if (window.UmitSecurityManager) UmitSecurityManager.check();
+                if (window.UmitSecurityExtras) UmitSecurityExtras.sendSecurityAlert('VPN tespit - uygulama öne geldi. IP: ' + ip);
+                clearInterval(_vpnWatchTimer);
+            }); }, 800);
+        }
+    });
+
+    // Ağ değişince kontrol
+    window.addEventListener('online', function() {
+        if (_vpnWatchActive && !_vpnBlocked) {
+            setTimeout(function() { _checkVpnNow(function(ip) {
+                if (_vpnBlocked) return;
+                _vpnBlocked = true;
+                if (window.UmitSecurityManager) UmitSecurityManager.check();
+                clearInterval(_vpnWatchTimer);
+            }); }, 1500);
+        }
+    });
+
+    window._startVpnWatch = _startVpnWatch;
+})();
 
 // ════════════════════════════════════════════════════════════════════════
 // ██  UMİT TV — GELİŞMİŞ GÜVENLİK EKLERİ  v1.0

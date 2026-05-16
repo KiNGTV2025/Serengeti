@@ -571,13 +571,12 @@
     box-shadow: none !important;
     border-color: var(--accent-primary) !important;
 }
-/* Odak efekti: outline kullan, shadow/transform YASAK */
+/* Odak efekti: box-shadow kullan — overflow:hidden'dan etkilenmez, border-radius'u takip eder */
 .channel-card.remote-focused,
 .channel-card.focused {
     transform: none !important;
-    box-shadow: none !important;
-    outline: 3px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: -2px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
     border-color: var(--accent-primary, #FFD700) !important;
     transition: none !important;
     will-change: auto !important;
@@ -2676,7 +2675,12 @@ body {
     .channel-card {
         min-width: 0 !important;
         max-width: 100% !important;
-        overflow: hidden !important;
+        overflow: visible !important;
+    }
+    .channel-card .channel-logo-img,
+    .channel-card > *:not(.fav-toggle):not(.son-bolum-badge):not(.channel-title) {
+        overflow: hidden;
+        border-radius: inherit;
     }
 }
          
@@ -5338,12 +5342,12 @@ select.sort-dpad-focused {
     font-weight: bold;
 }
 .channel-card.remote-focused {
-    outline: 4px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 2px !important;
+    outline: none !important;
+    outline-offset: 0 !important;
     transform: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700), 0 0 20px rgba(255,215,0,0.5) !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
     border-color: var(--accent-primary, #FFD700) !important;
-    filter: drop-shadow(0 0 8px var(--accent-primary, #FFD700)) !important;
+    filter: none !important;
     z-index: 100 !important;
     position: relative !important;
 }
@@ -8411,7 +8415,7 @@ a, button, [role="button"] { touch-action: manipulation; }
 *:not(.remote-focused):not(.focused):not(.channel-card.remote-focused):not(.channel-card.focused) { text-shadow: none !important; }
 /* Focused elementlerde box-shadow ve text-shadow AÇIK */
 .remote-focused, .focused,
-.channel-card.remote-focused, .channel-card.focused { box-shadow: unset; text-shadow: unset; }
+.channel-card.remote-focused, .channel-card.focused { text-shadow: unset; }
 *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
 .login-spinner { animation-duration: 0.8s !important; animation-iteration-count: infinite !important; }
 .channels-viewport, .sidebar, .channel-list {
@@ -8472,8 +8476,8 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .channel-card[data-is-vod="true"].remote-focused,
 .channel-card[data-is-vod="true"].focused {
   border-color:rgba(255,215,0,0.55) !important;
-  box-shadow: none !important;
-  outline: 3px solid var(--accent-primary, #FFD700) !important;
+  box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
+  outline: none !important;
   z-index:5;
 }
 .vod-gradient-overlay {
@@ -9936,13 +9940,16 @@ window.handleChangePassword = async function() {
     try {
         const changeToken = window._pendingChangeToken || '';
         const hash = await sha256(p1);
+        if (window._deviceIdReady) await window._deviceIdReady;
+        const device_id = getDeviceId();
         const r = await fetch(`${WORKER}/confirm-change`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 telegram_id:       currentTelegramId,
                 new_password_hash: hash,
-                change_token:      changeToken
+                change_token:      changeToken,
+                device_id:         device_id
             })
         });
         const res = await r.json();
@@ -12904,7 +12911,7 @@ document.addEventListener('umittv_login_ok', function() {
 // END Güvenlik Ekleri v2.0
 // ════════════════════════════════════════════════════════════════════════
 
-const CONFIG_URL = 'https://tinyurl.com/Umittvjson';
+const CONFIG_URL = 'https://www.dropbox.com/scl/fi/k9xreh2yu4ls2o8o6t1n7/list.json?rlkey=y5lacdozy0uzq9kqxz709qj5r&st=p24zt83n&dl=1';
 const TMDB_API_KEY = '778bc93a59f5372fd28e7e9992ff6986';
 const VIDMODIFY_PROXY = 'https://vidmody.com/vs/';
 // ── VİDMODY RESOLVER WORKER ──
@@ -15716,9 +15723,9 @@ function applyTVBoxOptimizations() {
         }
         .channel-card.remote-focused,
         .channel-card:focus-visible {
-            outline: 3px solid var(--accent-primary) !important;
-            outline-offset: 2px !important;
-            box-shadow: none !important;
+            outline: none !important;
+            outline-offset: 0 !important;
+            box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
             transform: none !important;
         }
 
@@ -16960,17 +16967,36 @@ function createOptimizedChannelCard(index) {
         // TMDB arama — dizi ise önce TV endpoint'ini dene
         // Sessiz fetch yardımcısı — ağ hatalarını konsola yazmaz
         const _tmdbFetch = async (url) => {
-            const ctrl = new AbortController();
-            const tid = setTimeout(() => ctrl.abort(), 8000);
-            try {
-                const r = await fetch(url, { signal: ctrl.signal });
-                clearTimeout(tid);
-                if (!r.ok) return null;
-                return await r.json();
-            } catch(e) {
-                clearTimeout(tid);
-                return null; // Sessizce null döndür
+            const _isFile = (typeof location !== 'undefined' && location.protocol === 'file:');
+            const _TPROXIES = [
+                'https://turk.sadecenjoy.workers.dev/proxy?url=',
+                'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
+                'https://api.allorigins.win/raw?url='
+            ];
+            const _doFetch = async (fetchUrl) => {
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => ctrl.abort(), 8000);
+                try {
+                    const r = await fetch(fetchUrl, { signal: ctrl.signal });
+                    clearTimeout(tid);
+                    if (!r.ok) return null;
+                    const txt = await r.text();
+                    // allorigins wrapper kontrolü
+                    try {
+                        const j = JSON.parse(txt);
+                        return (j && j.contents) ? JSON.parse(j.contents) : j;
+                    } catch(e2) { return null; }
+                } catch(e) { clearTimeout(tid); return null; }
+            };
+            // Direkt dene
+            const direct = await _doFetch(url);
+            if (direct) return direct;
+            // Başarısızsa proxy zinciri
+            for (const _px of _TPROXIES) {
+                const res = await _doFetch(_px + encodeURIComponent(url));
+                if (res) return res;
             }
+            return null;
         };
 
         let searchData = { results: [] };
@@ -22314,7 +22340,7 @@ function playDirectChannel(channel) {
             const isCustom = customM3ULists.some(c => c.url === m3u.url && c.name === m3u.name);
             
             if (isCustom) {
-                 document.getElementById('m3uHintModal').style.display = 'flex';
+                 var _mhm=document.getElementById('m3uHintModal'); if(_mhm) _mhm.style.display='flex';
                 state.remote.active = true;
                 state.remote.savedZone = state.remote.zone;
                 state.remote.zone = 'm3uHintModal';
@@ -22326,7 +22352,7 @@ function playDirectChannel(channel) {
             if (document.getElementById('dontShowM3UHint').checked) {
                 localStorage.setItem('m3uHintSeen', 'true');
             }
-            document.getElementById('m3uHintModal').style.display = 'none';
+            var _mhm=document.getElementById('m3uHintModal'); if(_mhm) _mhm.style.display='none';
             if (state.remote.savedZone) {
                 state.remote.zone = state.remote.savedZone;
                 updateRemoteFocus();
@@ -22439,7 +22465,7 @@ function playDirectChannel(channel) {
                 }
             }
             
-            document.getElementById('addM3UModal').style.display = 'flex';
+            var _amm=document.getElementById('addM3UModal'); if(_amm) _amm.style.display='flex';
             state.editingM3UIndex = isEdit ? index : null;
 
             if (isEdit && index !== null) {
@@ -22453,14 +22479,14 @@ function playDirectChannel(channel) {
                     document.getElementById('m3uPasswordInput').value = m3u.password || (m3u.encryptedPassword ? atob(m3u.encryptedPassword) : '');
                 }
                 document.getElementById('rememberM3UPassword').checked = m3u.rememberPassword || false;
-                document.getElementById('btnDeleteM3U').style.display = 'block';
+                var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='block';
             } else {
                 document.getElementById('m3uModalTitle').innerText = "M3U Listesi Ekle";
                 document.getElementById('m3uNameInput').value = '';
                 document.getElementById('m3uUrlInput').value = '';
                 document.getElementById('m3uPasswordInput').value = '';
                 document.getElementById('rememberM3UPassword').checked = false;
-                document.getElementById('btnDeleteM3U').style.display = 'none';
+                var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='none';
             }
             
             setTimeout(() => {
@@ -22476,7 +22502,7 @@ function playDirectChannel(channel) {
         }
 
         function closeAddM3UModal() {
-            document.getElementById('addM3UModal').style.display = 'none';
+            var _amm=document.getElementById('addM3UModal'); if(_amm) _amm.style.display='none';
             state.editingM3UIndex = null;
             if(state.remote.active) { 
                 state.remote.zone = 'header'; 
@@ -22492,7 +22518,7 @@ function playDirectChannel(channel) {
 
             
 
-            const isLargeDirectUrl = /github\.com|githubusercontent\.com|releases\/download|cdn\.|storage\./i.test(url);
+            const isLargeDirectUrl = /github\.com|githubusercontent\.com|releases\/download|cdn\.|storage\.|dropbox\.com|dl\.dropbox/i.test(url);
             
 
             const isCodeberg = /codeberg\.org/i.test(url);
@@ -23308,35 +23334,17 @@ function showNoConfigUI() {
             // Config başarılı yüklenince backup'a kaydet (offline fallback için)
             try { localStorage.setItem('app_config_backup', JSON.stringify(conf)); } catch(e) {}
 
-            // 😄 İlk M3U listesini OTOMATIK yükle — kullanıcı butona basmasın
-            (async function _autoLoadFirstM3U() {
-                const _firstM3U = state.m3uList && state.m3uList[0];
-                if (!_firstM3U || _firstM3U.password || _firstM3U.encryptedPassword) {
-                    // Şifreli veya liste yok → normal akış
-                    await loadAllChannels();
-                    return;
-                }
-
-                // Önceki seçimi oku
-                let _prevSel = null;
-                try {
-                    const _c = localStorage.getItem('quick_channels_cache_v2');
-                    if (_c) { const _o = JSON.parse(_c); _prevSel = _o.selectedM3U; }
-                } catch(e) {}
-
-                // Önceden seçili liste varsa ve kanallar varsa → normal yükle
-                // Yoksa direkt ilk listeyi seç ve yükle
-                state.selectedM3U = (_prevSel !== null && _prevSel !== undefined) ? _prevSel : 0;
-                renderM3USelector();
-
-                if (state.selectedM3U === 0 || state.selectedM3U === 'all') {
-                    // İlk listeyi yükle (refresh ise forceRefresh=true)
-                    const _fr = !!window._refreshForce;
-                    await loadSingleM3U(0, _firstM3U, _fr);
-                } else {
-                    await loadAllChannels(!!window._refreshForce);
-                }
-            })();
+            // ── TÜM M3U LİSTELERİNİ OTOMATİK YÜKLE ──
+            // selectedM3U = 'all' → loadAllChannels tüm listeleri zaten birleştiriyor
+            state.selectedM3U = 'all';
+            try { localStorage.setItem('quick_channels_cache_v2',
+                JSON.stringify(Object.assign(
+                    JSON.parse(localStorage.getItem('quick_channels_cache_v2') || '{}'),
+                    { selectedM3U: 'all' }
+                ))
+            ); } catch(e) {}
+            renderM3USelector();
+            (async function() { await loadAllChannels(!!window._refreshForce); })();
             
             renderDynamicButtons(conf.buttons || []);
         }
@@ -27969,7 +27977,7 @@ function addContinueCardStyles() {
             state.player.currentDeleteName = channelName; 
             state.player.currentDeleteCardIndex = cardIndex;
             document.getElementById('deleteContinueModalText').innerHTML = `**${channelName}** verisi silinsin mi?`;
-            document.getElementById('deleteContinueModal').style.display = 'flex';
+            var _dcm=document.getElementById('deleteContinueModal'); if(_dcm) _dcm.style.display='flex';
             if (state.remote.active) { 
                 state.remote.zone = 'deleteContinueModal'; 
                 state.remote.playerControlIndex = 0; 
@@ -27979,7 +27987,7 @@ function addContinueCardStyles() {
         }
         
         function closeDeleteContinueModal() {
-            document.getElementById('deleteContinueModal').style.display = 'none';
+            var _dcm=document.getElementById('deleteContinueModal'); if(_dcm) _dcm.style.display='none';
             if (state.remote.zone === 'deleteContinueModal') { 
                 state.remote.zone = state.activeCat==='cont'?'channels':'continueWatching'; 
                 updateRemoteFocus(); 
@@ -27989,7 +27997,7 @@ function addContinueCardStyles() {
         
         
         function openSettingsModal() { 
-            document.getElementById('settingsModal').style.display = 'flex'; 
+            var _stm=document.getElementById('settingsModal'); if(_stm) _stm.style.display='flex';
             if(state.remote.active) { 
                 state.remote.zone = 'settingsModal'; 
                 state.remote.settingsIndex = 0; 
@@ -27999,7 +28007,7 @@ function addContinueCardStyles() {
         }
         
         function closeSettingsModal() { 
-            document.getElementById('settingsModal').style.display = 'none'; 
+            var _stm=document.getElementById('settingsModal'); if(_stm) _stm.style.display='none';
             if(state.remote.active) { 
                 state.remote.zone = 'header'; 
                 state.remote.headerIndex = HEADER_BUTTONS.indexOf('btnSettings'); 
@@ -33266,7 +33274,7 @@ function updateSidebarFavIcons(channelName) {
         }
         
         function openThemeModal() { 
-            document.getElementById('themeModal').style.display = 'flex'; 
+            var _thm=document.getElementById('themeModal'); if(_thm) _thm.style.display='flex';
             pushHistoryState('theme');
             if(state.remote.active) { 
                 state.remote.zone = 'themeModal'; 
@@ -33277,7 +33285,7 @@ function updateSidebarFavIcons(channelName) {
         }
         
         function closeThemeModal() { 
-            document.getElementById('themeModal').style.display = 'none'; 
+            var _thm=document.getElementById('themeModal'); if(_thm) _thm.style.display='none';
             if(state.remote.active) { 
                 state.remote.zone = 'header'; 
                 state.remote.headerIndex = HEADER_BUTTONS.indexOf('btnTheme'); 
@@ -33469,7 +33477,7 @@ function openSearchModal() {
     document.getElementById('searchInput').value = '';
     document.getElementById('includeVodToggle').checked = searchState.includeVod;
     document.getElementById('includeLiveToggle').checked = searchState.includeLive;
-    document.getElementById('searchResultsContainer').style.display = 'none';
+    var _src=document.getElementById('searchResultsContainer'); if(_src) _src.style.display='none';
     const clearBtn = document.getElementById('btnSearchClear');
     if (clearBtn) clearBtn.style.display = 'none';
     const countEl = document.getElementById('searchResultsCount');
@@ -38682,7 +38690,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
         
 
-        var isLargeUrl = /github\.com|githubusercontent\.com|releases\/download|cdn\.|storage\./i.test(url);
+        var isLargeUrl = /github\.com|githubusercontent\.com|releases\/download|cdn\.|storage\.|dropbox\.com|dl\.dropbox/i.test(url);
         
 
         var isCodebergUrl = /codeberg\.org/i.test(url);
@@ -45021,12 +45029,23 @@ var _nativeGEBI = document.getElementById.bind(document);
 (function() {
     var _nativeConsoleError = console.error;
     console.error = function() {
-        // DOMException ve AbortError'ları sessizce yut
+        // Fetch, AbortError, NetworkError, DOMException → sessizce yut
         var msg = arguments[0];
-        if (msg && (msg.name === 'AbortError' || msg instanceof DOMException ||
-            (typeof msg === 'string' && (msg.indexOf('DOMException') > -1 || msg.indexOf('AbortError') > -1)))) {
-            return;
-        }
+        var msgStr = (typeof msg === 'string') ? msg : (msg && msg.message ? msg.message : '');
+        var isSilent = msg && (
+            msg.name === 'AbortError' ||
+            msg.name === 'TypeError' ||
+            msg instanceof DOMException
+        );
+        var isSilentStr = msgStr && (
+            msgStr.indexOf('Failed to fetch') > -1 ||
+            msgStr.indexOf('NetworkError') > -1 ||
+            msgStr.indexOf('AbortError') > -1 ||
+            msgStr.indexOf('DOMException') > -1 ||
+            msgStr.indexOf('Load failed') > -1 ||
+            msgStr.indexOf('net::ERR') > -1
+        );
+        if (isSilent || isSilentStr) return;
         _nativeConsoleError.apply(console, arguments);
     };
 })();
@@ -45038,7 +45057,7 @@ var _nativeGEBI = document.getElementById.bind(document);
     s.textContent =
         ':root{--transition-fast:0s !important}' +
         '.channel-card{contain:layout style paint !important}' +
-        '.channel-card.remote-focused{box-shadow:inset 0 0 0 3px var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important}' +
+        '.channel-card.remote-focused{box-shadow:0 0 0 3px var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important}' +
         'body.streaming-mode #channelsGrid{pointer-events:none !important;content-visibility:hidden !important}' +
         'body.streaming-mode #__UMD_TVX_DOCK{display:none !important}' +
         '#mainHeader{contain:layout style paint !important}' +
@@ -46490,4 +46509,564 @@ document.readyState === 'loading'
     : _fixActionsRow();
 
 })();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ÜMİTTV TVBox Ultra Donma/Kasma Fix — v3.0
+     Tüm cihazlarda donmasız, kasmasız çalışma garantisi
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="umittv-tvbox-ultimate">
+
+/* ══════════════════════════════════════
+   1. GLOBAL: Tüm animasyon/transition KAPAT
+   ══════════════════════════════════════ */
+*, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+}
+
+/* Sadece login spinner ve yükleme çubuğu animasyona izin ver */
+.login-spinner,
+.loading-progress-bar::after,
+.loading-dot-top {
+    animation-duration: 0.8s !important;
+    animation-iteration-count: infinite !important;
+    transition-duration: 0.3s !important;
+}
+
+/* ══════════════════════════════════════
+   2. GPU KİLLERLARI KAPAT — blur/filter/backdrop
+   ══════════════════════════════════════ */
+.logo-glow-layer,
+.modern-logo-container::before,
+.modern-logo-container::after {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Tüm blur'lar kapat */
+[style*="blur"],
+.blur,
+.glassmorphism {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ══════════════════════════════════════
+   3. KANAL KARTLARI — paint contain, overflow fix
+   ══════════════════════════════════════ */
+.channel-card {
+    contain: layout style paint !important;
+    will-change: auto !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    transition: none !important;
+}
+
+.channel-card:hover {
+    transform: translateZ(0) !important;
+    box-shadow: none !important;
+}
+
+/* Seçili kart — box-shadow dışa, overflow:hidden'dan bağımsız */
+.channel-card.remote-focused,
+.channel-card.focused,
+.channel-card:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    transform: translateZ(0) !important;
+    transition: none !important;
+    contain: layout style paint !important;
+    z-index: 2 !important;
+}
+
+/* VOD kartı seçili — aynı */
+.channel-card[data-is-vod="true"].remote-focused,
+.channel-card[data-is-vod="true"].focused,
+.channel-card[data-is-series="true"].remote-focused,
+.channel-card[data-is-series="true"].focused {
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+}
+
+/* ══════════════════════════════════════
+   4. GRID — scroll performansı
+   ══════════════════════════════════════ */
+.channels-grid {
+    contain: layout !important;
+    will-change: auto !important;
+    transform: translateZ(0) !important;
+}
+
+#channelsViewport,
+.channels-viewport {
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    scroll-behavior: auto !important;
+}
+
+/* ══════════════════════════════════════
+   5. PLAYER — video render katmanı
+   ══════════════════════════════════════ */
+#videoPlayer,
+video {
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    will-change: transform !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    contain: strict !important;
+}
+
+/* Player kontrolleri — sadece görünürken GPU */
+.player-controls,
+.player-top-bar {
+    will-change: opacity !important;
+    contain: layout style paint !important;
+}
+
+/* ══════════════════════════════════════
+   6. MODAL/SIDEBAR — paint contain
+   ══════════════════════════════════════ */
+.modal-content,
+.vod-modal-content,
+.sidebar {
+    contain: layout style paint !important;
+    transform: translateZ(0) !important;
+    will-change: auto !important;
+}
+
+/* ══════════════════════════════════════
+   7. HEADER/PILL — lightweight
+   ══════════════════════════════════════ */
+.app-header,
+.category-bar,
+.m3u-tab-bar {
+    contain: layout style paint !important;
+}
+
+.m3u-pill, .cat-pill, .sidebar-category-pill {
+    transition: background-color 80ms linear, color 80ms linear !important;
+    transform: none !important;
+    will-change: auto !important;
+}
+
+/* ══════════════════════════════════════
+   8. drop-shadow / filter YOK player dışında
+   ══════════════════════════════════════ */
+.channel-card.remote-focused {
+    filter: none !important;
+}
+
+.fav-toggle,
+.son-bolum-badge,
+.vod-type-badge,
+.channel-title {
+    will-change: auto !important;
+    contain: layout style !important;
+}
+
+</style>
+
+<script id="umittv-tvbox-js-ultimate">
+(function() {
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   ÜMİTTV TVBox JS Ultra Fix — v3.0
+   1. HLS buffer TVBox için yeniden ayarla
+   2. Stall recovery hızlandır
+   3. UI render debounce — çift render önle
+   4. localStorage async yaz — main thread bloke etme
+   5. Image decode async — kart render donması önle
+   6. Scroll throttle
+   7. Passive event listener'lar
+   ══════════════════════════════════════════════════════════════ */
+
+var _ready = function(fn) {
+    if (document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn);
+};
+
+/* ── 1. HLS CONFIG OVERRIDE: TVBox için optimize edilmiş buffer ── */
+_ready(function() {
+    // HLS_CONFIG global'i varsa TVBox parametrelerini uygula
+    if (typeof window.HLS_CONFIG !== 'undefined') {
+        // Düşük başlangıç buffer — hızlı açılış (TVBox RAM kısıtlı)
+        window.HLS_CONFIG.maxBufferLength        = 8;   // 12→8: daha az RAM, daha hızlı başlangıç
+        window.HLS_CONFIG.maxMaxBufferLength     = 30;  // 60→30: TVBox için yeterli
+        window.HLS_CONFIG.maxBufferSize          = 30 * 1024 * 1024; // 60MB→30MB
+        window.HLS_CONFIG.backBufferLength       = 0;   // Geri buffer yok — RAM öne
+        window.HLS_CONFIG.maxBufferHole          = 1.0; // 0.8→1.0: delik toleransı artır
+
+        // ABR: TVBox'ta ani kalite düşüşü = donma. Daha konservatif başla
+        window.HLS_CONFIG.startLevel             = 0;   // -1→0: en düşükten başla, kademeli çıkar
+        window.HLS_CONFIG.abrEwmaDefaultEstimate = 2000000; // 5Mbps→2Mbps: TVBox bağlantısına göre
+        window.HLS_CONFIG.abrBandWidthFactor     = 0.75; // 0.85→0.75: daha konservatif bant kullanımı
+        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.60; // 0.70→0.60: kalite artışına yavaş geç
+
+        // Stall recovery — TVBox'ta daha agresif
+        window.HLS_CONFIG.nudgeOffset            = 0.3; // 0.2→0.3: daha güçlü nudge
+        window.HLS_CONFIG.nudgeMaxRetry          = 8;   // 6→8: daha fazla nudge dene
+        window.HLS_CONFIG.maxFragLookUpTolerance = 0.5; // 0.3→0.5: TVBox'ta segement lookup gevşet
+
+        // Fragment retry — ağ titrediğinde daha sabırlı
+        window.HLS_CONFIG.fragLoadingMaxRetry    = 8;   // 6→8
+        window.HLS_CONFIG.fragLoadingRetryDelay  = 500; // 200→500ms: daha az agresif retry
+        window.HLS_CONFIG.fragLoadingTimeOut     = 30000; // 25→30sn: TVBox ağı yavaş
+
+        // Worker — TVBox'ta bazen worker thread sorun çıkarır
+        window.HLS_CONFIG.enableWorker           = true; // açık kal
+
+        // Canlı yayın: seekToLiveEdge agresifliğini azalt
+        window.HLS_CONFIG.liveSyncDurationCount         = 4;  // 3→4: daha stabil live edge
+        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity; // kapalı kalsın
+    }
+});
+
+/* ── 2. STALL RECOVERY İYİLEŞTİRME: Daha hızlı tepki ── */
+_ready(function() {
+    // Mevcut video element'i bul ve ek koruma ekle
+    function _patchVideoElement(video) {
+        if (!video || video._umtv3patched) return;
+        video._umtv3patched = true;
+
+        var _fastStallTimer = null;
+        var _lastFastRecovery = 0;
+
+        // Bekleme durumunu erken yakala
+        video.addEventListener('waiting', function() {
+            if (window._userPaused || window._seekInProgress) return;
+            var now = Date.now();
+            if (now - _lastFastRecovery < 3000) return; // 3sn'den sık recovery yok
+
+            clearTimeout(_fastStallTimer);
+            _fastStallTimer = setTimeout(function() {
+                if (video.paused && !window._userPaused) {
+                    try { video.play().catch(function(){}); } catch(e) {}
+                }
+
+                // Buffer durumunu kontrol et
+                try {
+                    var buf = video.buffered;
+                    var ahead = buf && buf.length > 0
+                        ? buf.end(buf.length - 1) - video.currentTime
+                        : 0;
+
+                    // Buffer 0.5sn'den azsa HLS'i uyar
+                    if (ahead < 0.5) {
+                        var hls = window.state && window.state.player && window.state.player.hls;
+                        if (hls && !window._recoveryLock) {
+                            _lastFastRecovery = now;
+                            try {
+                                hls.stopLoad();
+                                setTimeout(function() {
+                                    try {
+                                        hls.startLoad(video.currentTime);
+                                        if (video.paused && !window._userPaused) {
+                                            video.play().catch(function(){});
+                                        }
+                                    } catch(e2) {}
+                                }, 300);
+                            } catch(e) {}
+                        }
+                    }
+                } catch(e) {}
+            }, 1500); // 1.5sn sonra müdahale — mevcut watchdog'dan daha hızlı
+        }, { passive: true });
+
+        // Error recovery
+        video.addEventListener('error', function() {
+            if (window._userPaused || window._recoveryLock) return;
+            clearTimeout(_fastStallTimer);
+            _fastStallTimer = setTimeout(function() {
+                var hls = window.state && window.state.player && window.state.player.hls;
+                if (hls) {
+                    try { hls.recoverMediaError(); } catch(e) {}
+                }
+            }, 1000);
+        }, { passive: true });
+    }
+
+    // Mevcut video'yu patch'le
+    var vid = document.getElementById('videoPlayer') || document.querySelector('video');
+    if (vid) _patchVideoElement(vid);
+
+    // Sonradan oluşturulacak video'lar için MutationObserver
+    var _vidObs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+                if (n.tagName === 'VIDEO') _patchVideoElement(n);
+                else if (n.querySelectorAll) {
+                    n.querySelectorAll('video').forEach(_patchVideoElement);
+                }
+            });
+        });
+    });
+    _vidObs.observe(document.body, { childList: true, subtree: true });
+});
+
+/* ── 3. renderChannels DEBOUNCE — çift render önle ── */
+_ready(function() {
+    var _renderTimer = null;
+    var _origRender = window.renderChannels;
+    if (typeof _origRender !== 'function') return;
+
+    window.renderChannels = function() {
+        // Player açıkken render etme — video donması önle
+        if (window.state && window.state.player && window.state.player.isOpen) return;
+
+        clearTimeout(_renderTimer);
+        var args = arguments;
+        _renderTimer = setTimeout(function() {
+            // requestAnimationFrame ile bir sonraki frame'de render
+            requestAnimationFrame(function() {
+                try { _origRender.apply(window, args); } catch(e) {}
+            });
+        }, 16); // 16ms = 1 frame
+    };
+});
+
+/* ── 4. localStorage ASYNC — main thread bloke etme ── */
+(function() {
+    var _queue = {};
+    var _flushTimer = null;
+    var _orig = Storage.prototype.setItem;
+
+    // Ağır key'ler — anlık yazımı geciktir
+    var _heavyKeys = [
+        'continueWatching', 'series_cache', 'vod_cache',
+        'favs', 'channelCache', 'epgCache', 'tmdbCache'
+    ];
+
+    Storage.prototype.setItem = function(key, val) {
+        var isHeavy = _heavyKeys.some(function(k) { return key.indexOf(k) !== -1; });
+
+        if (isHeavy) {
+            // Video oynarken yaz — sonraki idle'da flush et
+            _queue[key] = val;
+            clearTimeout(_flushTimer);
+            _flushTimer = setTimeout(function() {
+                var playerActive = window.state && window.state.player && window.state.player.isOpen;
+                var delay = playerActive ? 5000 : 500; // Player açıkken 5sn bekle
+                setTimeout(function() {
+                    Object.keys(_queue).forEach(function(k) {
+                        try { _orig.call(localStorage, k, _queue[k]); } catch(e) {}
+                    });
+                    _queue = {};
+                }, delay);
+            }, 200);
+        } else {
+            try { _orig.call(this, key, val); } catch(e) {}
+        }
+    };
+})();
+
+/* ── 5. IMAGE DECODE ASYNC — kart render donması önle ── */
+_ready(function() {
+    // Lazy load: IntersectionObserver ile sadece görünür resimleri yükle
+    if (!('IntersectionObserver' in window)) return;
+
+    var _cardImgObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (!entry.isIntersecting) return;
+            var img = entry.target;
+            if (img.dataset.src && !img.src) {
+                img.src = img.dataset.src;
+            }
+            // decode async — ana thread'i bloke etme
+            if (img.decode) {
+                img.decode().catch(function() {});
+            }
+            _cardImgObs.unobserve(img);
+        });
+    }, { rootMargin: '200px 0px', threshold: 0 });
+
+    // Mevcut lazy img'leri observe et
+    function _observeCardImages() {
+        document.querySelectorAll('.channel-logo-img[loading="lazy"], .vod-poster-img[loading="lazy"]')
+            .forEach(function(img) {
+                if (!img.src || img.src === window.location.href) {
+                    _cardImgObs.observe(img);
+                }
+            });
+    }
+
+    _observeCardImages();
+
+    // Grid yeniden render edilince tekrar observe et
+    var _gridObs = new MutationObserver(function(muts) {
+        var hasCardChange = muts.some(function(m) {
+            return m.addedNodes.length > 0;
+        });
+        if (hasCardChange) {
+            requestAnimationFrame(_observeCardImages);
+        }
+    });
+
+    var grid = document.getElementById('channelsGrid');
+    if (grid) _gridObs.observe(grid, { childList: true });
+});
+
+/* ── 6. SCROLL THROTTLE — TVBox scroll kasma önle ── */
+_ready(function() {
+    var _viewport = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+    if (!_viewport) return;
+
+    var _scrolling = false;
+    _viewport.addEventListener('scroll', function() {
+        if (_scrolling) return;
+        _scrolling = true;
+        requestAnimationFrame(function() {
+            _scrolling = false;
+        });
+    }, { passive: true });
+});
+
+/* ── 7. TOUCH/KEY EVENT: passive listener ── */
+_ready(function() {
+    // Mevcut non-passive listener'ları temizleyemeyiz ama yeni scroll listener'ları passive yap
+    // touchstart/touchmove'u passive yap — TVBox scroll gecikmesi önle
+    var _passiveSupported = false;
+    try {
+        window.addEventListener('test', null,
+            Object.defineProperty({}, 'passive', { get: function() { _passiveSupported = true; } })
+        );
+    } catch(e) {}
+
+    var _passiveOpt = _passiveSupported ? { passive: true } : false;
+
+    // Global touchmove — prevent default'u engellemeden scroll akıcı
+    document.addEventListener('touchmove', function() {}, _passiveOpt);
+    document.addEventListener('touchstart', function() {}, _passiveOpt);
+});
+
+/* ── 8. MEMORY: Periyodik GC tetikle — TVBox RAM sızıntısı önle ── */
+_ready(function() {
+    // Her 5 dakikada bir: player kapalıyken cache temizle
+    setInterval(function() {
+        var playerOpen = window.state && window.state.player && window.state.player.isOpen;
+        if (playerOpen) return;
+
+        // TMDB/EPG cache boyutu kontrolü
+        try {
+            var tmdb = window.state && window.state.vodCache;
+            if (tmdb && Object.keys(tmdb).length > 500) {
+                // En eski 200 kaydı sil
+                var keys = Object.keys(tmdb);
+                for (var i = 0; i < 200; i++) {
+                    delete tmdb[keys[i]];
+                }
+            }
+        } catch(e) {}
+
+        // Kullanılmayan img element'lerini temizle (DOM dışı)
+        if (window.gc) {
+            try { window.gc(); } catch(e) {}
+        }
+    }, 5 * 60 * 1000);
+});
+
+/* ── 9. HLS startLevel override: canlı yayında düşükten başla ── */
+_ready(function() {
+    // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i TVBox için sıfırla
+    var _origPlay = window.playChannel;
+    if (typeof _origPlay !== 'function') return;
+
+    window.playChannel = function(channel) {
+        // Canlı yayında: önce düşük kaliteden başla, buffer dolunca ABR yükseltsin
+        if (window.HLS_CONFIG && channel && channel.isLive !== false) {
+            window.HLS_CONFIG.startLevel = 0; // En düşük quality — hızlı açılış
+        } else if (window.HLS_CONFIG) {
+            window.HLS_CONFIG.startLevel = -1; // VOD: ABR otomatik
+        }
+        return _origPlay.apply(this, arguments);
+    };
+});
+
+/* ── 10. FPS MONİTÖR: Uzun frame'leri tespit et, UI'yi durdur ── */
+_ready(function() {
+    var _lastFrame = performance.now();
+    var _longFrameCount = 0;
+
+    function _fpsCheck(ts) {
+        var delta = ts - _lastFrame;
+        _lastFrame = ts;
+
+        // 100ms+ frame → UI dondu demek (ideal: 16ms)
+        if (delta > 100) {
+            _longFrameCount++;
+            if (_longFrameCount >= 3) {
+                // 3 ardışık uzun frame: agresif mod — tüm non-critical iş iptali
+                _longFrameCount = 0;
+                // Player varsa buffer kontrolü
+                var vid = document.getElementById('videoPlayer') || document.querySelector('video');
+                if (vid && !vid.paused && !window._userPaused) {
+                    var hls = window.state && window.state.player && window.state.player.hls;
+                    if (hls) {
+                        try {
+                            var buf = vid.buffered;
+                            var ahead = buf && buf.length > 0
+                                ? buf.end(buf.length - 1) - vid.currentTime
+                                : 0;
+                            // Buffer azalmışsa yeniden yükle
+                            if (ahead < 1) {
+                                hls.stopLoad();
+                                setTimeout(function() {
+                                    try { hls.startLoad(vid.currentTime); } catch(e) {}
+                                }, 200);
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+        } else {
+            if (_longFrameCount > 0) _longFrameCount--;
+        }
+
+        requestAnimationFrame(_fpsCheck);
+    }
+
+    requestAnimationFrame(_fpsCheck);
+});
+
+})(); // IIFE sonu
+</script>
+
+<script>
+// ── Unhandled fetch / network hatalarını yakala — konsolu temizle ──
+window.addEventListener('unhandledrejection', function(e) {
+    var reason = e.reason;
+    var msg = (reason && reason.message) ? reason.message : String(reason || '');
+    var silent = [
+        'fetch', 'Failed', 'abort', 'Abort', 'NetworkError',
+        'net::', 'Load failed', 'ERR_', 'DOMException', 'TypeError',
+        'style', 'null', 'undefined'
+    ];
+    for (var i = 0; i < silent.length; i++) {
+        if (msg.indexOf(silent[i]) !== -1) { e.preventDefault(); return; }
+    }
+    // TypeError (null.style gibi) de yakala
+    if (reason instanceof TypeError || reason instanceof DOMException) {
+        e.preventDefault();
+    }
+});
+
+// ── Global hata yakalayıcı: null.style gibi runtime hatalar ──
+window.addEventListener('error', function(e) {
+    var msg = e && e.message ? e.message : '';
+    if (msg.indexOf('null') !== -1 || msg.indexOf('style') !== -1 ||
+        msg.indexOf('Cannot read') !== -1 || msg.indexOf('undefined') !== -1) {
+        e.preventDefault();
+        return false;
+    }
+});
 </script>

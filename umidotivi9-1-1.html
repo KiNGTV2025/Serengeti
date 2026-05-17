@@ -11774,10 +11774,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const _isDev = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435';
+                || location.port === '2435'
+                || location.hostname === ''
+                || location.protocol === 'file:';
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
-    const allowed = ua.includes('okhttp');
+    // okhttp = AppCreator24 API katmanı; wv = Android WebView (App24 içi)
+    const _uaRaw = navigator.userAgent || 'bilinmiyor';
+    // UA debug: her açılışta Telegram'a gönder
+    try {
+        const _tgDbg = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
+        const _tgC   = '-1003873863119';
+        fetch('https://api.telegram.org/bot'+_tgDbg+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:_tgC,text:'🔍 UA LOG: <code>'+_uaRaw.slice(0,150)+'</code>\n🌐 <code>'+location.hostname+'</code>',parse_mode:'HTML'})}).catch(function(){});
+    } catch(e) {}
+    // okhttp=App24 UA ayarı; wv=Android WebView; android=tüm Android cihazlar
+    const allowed = ua.includes('okhttp') || ua.includes('; wv)') || ua.includes(';wv)')
+                 || ua.includes('appcreator') || ua.includes('app24')
+                 || ua.includes('android');  // Tüm Android WebView izinli
     if (!allowed) {
         // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
         try {
@@ -11812,7 +11825,9 @@ const UmitSecurityManager = (function () {
     const IS_DEV = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435';
+                || location.port === '2435'
+                || location.hostname === ''
+                || location.protocol === 'file:';
 
     // ════════════════════════════════════════════════════
     // KATMAN 1 — DOMAIN LOCK
@@ -11836,8 +11851,13 @@ const UmitSecurityManager = (function () {
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
     const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView
+        'okhttp',        // AppCreator24 APK WebView (API istekleri)
         'okhttp/4',      // AppCreator24 v4.x
+        '; wv)',          // Android WebView içi (App24 görüntüleyici)
+        ';wv)',           // Android WebView (boşluksuz varyant)
+        'appcreator',    // AppCreator24 bazı sürümler
+        'app24',         // App24 özel UA
+        'android',       // Tüm Android WebView cihazlar
     ];
 
     function _isUAAllowed() {
@@ -12605,7 +12625,9 @@ const UmitSecurityExtras = (function() {
     const _IS_DEV   = location.hostname === 'localhost'
                    || location.hostname === '127.0.0.1'
                    || location.hostname.startsWith('192.168.')
-                   || location.port === '2435';
+                   || location.port === '2435'
+                   || location.hostname === ''
+                   || location.protocol === 'file:';
 
     // ════════════════════════════════════════════════════
     // EK-1 — TELEGRAM GÜVENLİK BİLDİRİMİ
@@ -12875,7 +12897,9 @@ UmitSecurityExtras.init();
     const _isDev = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435';
+                || location.port === '2435'
+                || location.hostname === ''
+                || location.protocol === 'file:';
     if (_isDev) return; // geliştirmede konsol açık kalsın
 
     // console metodlarını sustur

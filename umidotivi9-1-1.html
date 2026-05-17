@@ -11780,13 +11780,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
     // okhttp = AppCreator24 API katmanı; wv = Android WebView (App24 içi)
-    const _uaRaw = navigator.userAgent || 'bilinmiyor';
-    // UA debug: her açılışta Telegram'a gönder
-    try {
-        const _tgDbg = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
-        const _tgC   = '-1003873863119';
-        fetch('https://api.telegram.org/bot'+_tgDbg+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:_tgC,text:'🔍 UA LOG: <code>'+_uaRaw.slice(0,150)+'</code>\n🌐 <code>'+location.hostname+'</code>',parse_mode:'HTML'})}).catch(function(){});
-    } catch(e) {}
     // okhttp=App24 UA ayarı; wv=Android WebView; android=tüm Android cihazlar
     const allowed = ua.includes('okhttp') || ua.includes('; wv)') || ua.includes(';wv)')
                  || ua.includes('appcreator') || ua.includes('app24')

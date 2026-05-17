@@ -11690,7 +11690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     <div class="cache-indicator" id="cacheIndicator">Önbellek: 0</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script>
         
@@ -13103,6 +13103,7 @@ const EPG_MULTI_SOURCES = [
     },
     {
         urls: [
+            'https://kabloepg.umitmodpremiumtr.workers.dev/',
             'https://www.dropbox.com/scl/fi/bwxzc5miltrj45yniclrh/umitmod_kablo.xml?rlkey=702doma05wpa8nxq1awjcvruf&raw=1',
         ],
         label: 'EPG-Kablo'
@@ -13175,7 +13176,7 @@ const HLS_CONFIG = {
 
     lowLatencyMode: false,
     liveSyncDurationCount: 3,             // 2→3: live edge stabilizasyonu — titreme/atlama önlenir
-    liveMaxLatencyDurationCount: Infinity, // HLS.js otomatik seekToLiveEdge KAPALI — ~60sn donma önlendi
+    liveMaxLatencyDurationCount: 10,       // Infinity→10: canlı yayın edge stabilizasyonu — ~60sn donma önlendi
 
     // ── BUFFER: Canlı/VOD dinamik — startHls içinde override edilir ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
@@ -13222,6 +13223,12 @@ const HLS_CONFIG = {
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
         xhr.timeout = 20000;             // XHR zaman aşımı: segment ve manifest için güvenlik ağı
+    },
+    // Fetch API kullan (XHR'den hızlı, CORS daha iyi handle eder)
+    fetchSetup: function(context, initParams) {
+        initParams.credentials = 'omit';
+        initParams.cache = 'no-store';
+        return new Request(context.url, initParams);
     }
 };
 
@@ -13244,8 +13251,8 @@ class AppDatabase {
         
 
         this.stores = {
-            CHANNELS: 'channels_v2',
-            M3U_CACHE: 'm3u_cache_v2',
+            CHANNELS: 'channels_v3',
+            M3U_CACHE: 'm3u_cache_v3',
             VOD_CACHE: 'vod_cache_v2',
             SETTINGS: 'settings_v2',
             CONTINUE: 'continue_v2',
@@ -16530,7 +16537,19 @@ function initPerformanceMonitor() {
             const c = state.filtered[index];
             if (!c) return document.createElement('div');
             
-            const isVod = !c.isLive;
+            // Group-based live detection: fix bad isLive from old cache
+            const _liveGrpPfx = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
+            const _grpLow = (c.group||'').toLowerCase();
+            const _grpIsLive = _liveGrpPfx.some(p => (c.group||'').startsWith(p)) ||
+                _grpLow.startsWith('canl') || _grpLow.startsWith('live') ||
+                _grpLow.startsWith('sinema') || _grpLow.startsWith('radyo');
+            const _grpIsVod = _grpLow.includes('panel') || _grpLow.includes('arsiv') ||
+                _grpLow.includes('arşiv') || _grpLow.startsWith('film') || _grpLow.startsWith('dizi') || _grpLow === 'sinema yerli film';
+            // isVod açıkça set edilmişse (parse'da zorlandıysa) grup tespitini override etme
+            if (c.isVod === true) { /* VOD olarak kalsın */ }
+            else if (c.isLive === true) { /* canlı olarak kalsın */ }
+            else if (_grpIsLive && !_grpIsVod) c.isLive = true;
+            const isVod = (c.isVod === true) || !c.isLive;
             const hasContinue = state.continueWatching[c.name] && 
                 state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
                 state.continueWatching[c.name].progress < MAX_WATCH_PERCENT;
@@ -16725,7 +16744,15 @@ function createOptimizedChannelCard(index) {
     const c = state.filtered[index];
     if (!c) return document.createElement('div');
     
-    const isVod = !c.isLive;
+    // Group-based live detection: fix bad isLive from old cache
+    const _liveGrpPfx2 = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
+    const _grpLow2 = (c.group||'').toLowerCase();
+    const _grpIsLive2 = _liveGrpPfx2.some(p => (c.group||'').startsWith(p)) || _grpLow2.startsWith('canl') || _grpLow2.startsWith('sinema') || _grpLow2.startsWith('radyo');
+    const _grpIsVod2 = _grpLow2.includes('panel') || _grpLow2.includes('arsiv') || _grpLow2.includes('arşiv') || _grpLow2.startsWith('film') || _grpLow2.startsWith('dizi') || _grpLow2 === 'sinema yerli film';
+    if (c.isVod === true) { /* VOD olarak kalsın */ }
+    else if (c.isLive === true) { /* canlı olarak kalsın */ }
+    else if (_grpIsLive2 && !_grpIsVod2) c.isLive = true;
+    const isVod = (c.isVod === true) || !c.isLive;
     const hasContinue = state.continueWatching[c.name] && 
         state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
         state.continueWatching[c.name].progress < MAX_WATCH_PERCENT;
@@ -23439,6 +23466,21 @@ function showNoConfigUI() {
             const customM3ULists = JSON.parse(localStorage.getItem('customM3ULists') || '[]');
             state.m3uList = state.m3uList.concat(customM3ULists);
             
+            // JSON config'den gelen şifreli listeleri otomatik unlock et
+            state.m3uList.forEach(m => {
+                if (!m || !m.url) return;
+                if (m.password) {
+                    state.passwordManager.sessionUnlocked.add(m.url);
+                    state.passwordManager.rememberedPasswords[m.url] = m.password;
+                } else if (m.encryptedPassword) {
+                    try {
+                        const decoded = atob(m.encryptedPassword);
+                        state.passwordManager.sessionUnlocked.add(m.url);
+                        state.passwordManager.rememberedPasswords[m.url] = decoded;
+                    } catch(e) {}
+                }
+            });
+            
             
 
             try {
@@ -24276,8 +24318,35 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
                         if (!m3uContent) {
                             
+                            // Şifreyi belirle
+                            const _qPass = state.passwordManager.rememberedPasswords[m3u.url] || m3u.password || (m3u.encryptedPassword ? (() => { try { return atob(m3u.encryptedPassword); } catch(e) { return ''; } })() : '');
 
-                            const resp = await fetchWithTimeout(m3u.url, 90000).catch(() => null);
+                            // Önce fetchM3UChannels ile dene (proxy zinciri dahil)
+                            if (typeof window.fetchM3UChannels === 'function') {
+                                try {
+                                    const _fmChannels = await window.fetchM3UChannels(m3u.url, _qPass || null);
+                                    if (_fmChannels && _fmChannels.length > 0) {
+                                        // listIdx'i düzelt
+                                        _fmChannels.forEach(ch => { ch.listIdx = i; });
+                                        quickChannels.push(..._fmChannels);
+                                        const partial = removeDuplicateChannels([...quickChannels]);
+                                        state.channels = partial;
+                                        if (typeof extractCategories === 'function') extractCategories(state.channels);
+                                        immediateRenderChannels();
+                                        if (typeof filterChannels === 'function') filterChannels();
+                                        if (state.useIndexedDB && state.db && state.db.isReady()) {
+                                            state.db.put(state.db.stores.M3U_CACHE, { url: m3u.url, channels: _fmChannels, content: null, timestamp: Date.now() }).catch(() => {});
+                                        }
+                                        m3uContent = '__streamed__';
+                                    }
+                                } catch(e) { /* fetchM3UChannels başarısız, fetchWithTimeout dene */ }
+                            }
+
+                            if (!m3uContent) {
+                            let _qUrl = m3u.url || '';
+                            if (_qPass) _qUrl += (_qUrl.includes('?') ? '&' : '?') + 'password=' + encodeURIComponent(_qPass);
+
+                            const resp = await fetchWithTimeout(_qUrl, 90000).catch(() => null);
                             
                             if (resp && resp.ok) {
                                 let streamedChannels = null;
@@ -24321,7 +24390,8 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                     }
                                 }
                             }
-                        }
+                        } // end inner if (!m3uContent)
+                        } // end outer if (!m3uContent)
                         
                         if (m3uContent && m3uContent !== '__streamed__') {
                             const parsed = parseM3U(m3uContent, i);
@@ -24449,7 +24519,25 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
 
                         if (!m3uContent) {
                             try {
-                                const response = await fetchWithTimeout(m3u.url, 120000);
+                                const _bgPass = state.passwordManager.rememberedPasswords[m3u.url] || m3u.password || (m3u.encryptedPassword ? (() => { try { return atob(m3u.encryptedPassword); } catch(e) { return ''; } })() : '');
+                                // fetchM3UChannels ile dene (proxy zinciri dahil)
+                                if (typeof window.fetchM3UChannels === 'function') {
+                                    try {
+                                        const _fmCh = await window.fetchM3UChannels(m3u.url, _bgPass || null);
+                                        if (_fmCh && _fmCh.length > 0) {
+                                            _fmCh.forEach(ch => { ch.listIdx = i + 2; });
+                                            newChannels.push(..._fmCh);
+                                            if (state.useIndexedDB && state.db && state.db.isReady()) {
+                                                state.db.put(state.db.stores.M3U_CACHE, { url: m3u.url, channels: _fmCh, content: null, timestamp: Date.now() }).catch(() => {});
+                                            }
+                                            m3uContent = '__streamed__';
+                                        }
+                                    } catch(e2) { /* fetchM3UChannels başarısız */ }
+                                }
+                                let _bgUrl = m3u.url || '';
+                                if (!m3uContent) {
+                                if (_bgPass) _bgUrl += (_bgUrl.includes('?') ? '&' : '?') + 'password=' + encodeURIComponent(_bgPass);
+                                const response = await fetchWithTimeout(_bgUrl, 120000);
                                 if (response && response.ok) {
                                     if (response.body && typeof response.body.getReader === 'function') {
                                         
@@ -24479,6 +24567,7 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                                         }
                                     }
                                 }
+                                } // end inner if (!m3uContent)
                             } catch (error) {
                                 return;
                             }
@@ -24729,14 +24818,22 @@ async function parseM3UStream(response, listIdx, onBatch) {
             if (groupMatch) {
                 currentItem.group = groupMatch[1].trim();
                 const gl = currentItem.group.toLowerCase();
+                // Kesinlikle CANLI yayın olan grup prefix'leri — VOD kontrolünden ÖNCE
+                const _liveGroupPrefixes1 = ['Ulusal', 'Haber', 'Spor', 'Belgesel', 'Eglence', 'Muzik', 'Cocuk', 'Dini', 'Radyo', 'Sinema', 'Yemek', 'Kultur', 'Sinema TV', 'Sinema Aksiyon', 'Sinema Yerli', 'Sinema Aile', 'Sinema Komedi', 'Sinema Korku', 'Sinema Belgesel'];
+                const _isDefinitelyLive = _liveGroupPrefixes1.some(p => currentItem.group.startsWith(p)) ||
+                    gl.startsWith('canl') || gl.startsWith('live') ||
+                    gl.startsWith('ulusal') || gl.startsWith('haber') || gl.startsWith('spor') ||
+                    gl.startsWith('belgesel') || gl.startsWith('sinema') || gl.startsWith('radyo');
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false; currentItem.isSeries = true;
+                } else if (_isDefinitelyLive && !gl.includes('panel') && gl !== 'sinema yerli film' && !gl.includes('arşiv') && !gl.includes('arsiv')) {
+                    currentItem.isLive = true; // Kesinlikle canli yayın — VOD kontrolu atlansın
                 } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
-                    gl.includes('eklen') || gl.includes('yeni') ||
+                    gl.startsWith('eklen') || (gl.startsWith('yeni') && (gl.includes('film') || gl.includes('dizi') || gl.includes('bölüm') || gl.includes('eklenen'))) ||
                     extraVodGroups.has(gl) ||
                     gl.includes('animasyon') || gl.includes('bollywood') ||
-                    gl.includes('imdb') || gl.includes('yerli') ||
+                    gl.includes('imdb') || (gl.startsWith('yerli') || gl === 'sinema yerli film') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
                     gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
@@ -24761,7 +24858,14 @@ async function parseM3UStream(response, listIdx, onBatch) {
             const durMatch = line.match(/#EXTINF:(-?\d+)/);
             if (durMatch) {
                 const dur = parseInt(durMatch[1]);
-                if (dur > 0) currentItem.isLive = false;
+                if (dur > 0) {
+                    // Pozitif duration normalde VOD, ANCAK grup canli olarak tespit edilmisse ezme
+                    const _glDur = (currentItem.group||'').toLowerCase();
+                    const _liveGrpD = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
+                    const _grpLiveD = _liveGrpD.some(p => (currentItem.group||'').startsWith(p)) ||
+                        _glDur.startsWith('canl') || _glDur.startsWith('sinema') || _glDur.startsWith('radyo');
+                    if (!_grpLiveD) currentItem.isLive = false;
+                }
             }
         } else if (line.startsWith('#EXTVLCOPT:') && currentItem) {
             if (line.includes('http-user-agent=')) currentItem.userAgent = line.split('http-user-agent=')[1].trim();
@@ -25034,7 +25138,7 @@ function parseM3UOptimized(text, listIdx) {
     
     
 
-    const liveGroupPrefixes = ['Ulusal', 'Haber', 'Spor', 'Belgesel', 'Eğlence', 'Müzik', 'Çocuk', 'Dini', 'Radyo'];
+    const liveGroupPrefixes = ['Ulusal', 'Haber', 'Spor', 'Belgesel', 'Eğlence', 'Müzik', 'Çocuk', 'Dini', 'Radyo', 'Sinema', 'Sinema TV', 'Spor', 'Belgesel', 'Haber', 'Çocuk', 'Yemek', 'Kültür', 'Dini', 'Eğlence'];
     
     
 
@@ -25085,8 +25189,7 @@ function parseM3UOptimized(text, listIdx) {
                 else if (group.includes('Film') || group.includes('Dizi') || 
                          group.includes('VOD') || group.includes('Movie') || 
                          group.includes('Series') || group.toLowerCase().includes('film') ||
-                         group.toLowerCase().includes('dizi') || group.toLowerCase().includes('vod') ||
-                         group.toLowerCase().includes('eklen') || group.toLowerCase().includes('yeni')) {
+                         group.toLowerCase().includes('dizi') || group.toLowerCase().includes('vod')) {
                     currentItem.isLive = false;
                 }
                 // 3. Canlı grup kontrolü
@@ -25149,7 +25252,12 @@ function parseM3UOptimized(text, listIdx) {
                 const duration = parseInt(durationMatch[1]);
                 if (duration > 0) {
                     currentItem.duration = duration;
-                    currentItem.isLive = false; // Pozitif duration = VOD
+                    // Pozitif duration normalde VOD, ANCAK grup canli olarak tespit edilmisse ezme
+                    const _gl2 = (currentItem.group||'').toLowerCase();
+                    const _liveGrpPfxD = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
+                    const _grpConfirmedLive = _liveGrpPfxD.some(p => (currentItem.group||'').startsWith(p)) ||
+                        _gl2.startsWith('canl') || _gl2.startsWith('sinema') || _gl2.startsWith('radyo');
+                    if (!_grpConfirmedLive) currentItem.isLive = false; // Sadece grup canli degilse VOD say
                 } else if (duration === -1) {
                     // -1 = genel IPTV standardı — ama grup zaten VOD dediyse ezme
                     if (currentItem.isLive !== false) {
@@ -25918,7 +26026,7 @@ function parseM3U(text, listIdx) {
     // 😄 window.appConfig'den otomatik çek - yoksa varsayılan kullan
     const appConfig = window.appConfig || {};
     const vodGroups = appConfig.vodGroups || ["Film", "Dizi", "VOD"];
-    const liveGroups = appConfig.liveGroups || ["Ulusal", "Haber", "Spor"];
+    const liveGroups = appConfig.liveGroups || ["Ulusal", "Haber", "Spor", "Sinema", "Eğlence", "Çocuk", "Dini", "Müzik", "Belgesel"];
 
     // 😄 DİZİ TESPİTİ İÇİN ÖZEL KONTROLLER
     const seriesIndicators = [
@@ -25932,7 +26040,7 @@ function parseM3U(text, listIdx) {
     const vodGroupsSet = new Set(vodGroups.map(g => String(g).toLowerCase()));
     const liveGroupsSet = new Set(liveGroups.map(g => String(g).toLowerCase()));
     const vodPrefixes = ['film', 'dizi', 'vod', 'movie', 'series', 'yabancı'];
-    const livePrefixes = ['ulusal', 'haber', 'spor', 'belgesel', 'eğlence', 'müzik', 'çocuk', 'dini', 'canlı'];
+    const livePrefixes = ['ulusal', 'haber', 'spor', 'belgesel', 'eğlence', 'müzik', 'çocuk', 'dini', 'canlı', 'sinema'];
     const vodUrlIndicators = ['.mp4', '.mkv', '.avi', '.m4v', '.mov', '.wmv', '.flv', '.webm'];
     const vodDomainIndicators = ['youtube.com/watch', 'youtu.be/', 'vidmody.com', '/movie/', '/film/', '/dizi/'];
 
@@ -25974,9 +26082,9 @@ function parseM3U(text, listIdx) {
                     currentItem.isSeries = true;
                 } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
-                    gl.includes('eklen') || gl.includes('yeni') ||
+                    gl.startsWith('eklen') || (gl.startsWith('yeni') && (gl.includes('film') || gl.includes('dizi') || gl.includes('bölüm') || gl.includes('eklenen'))) ||
                     gl.includes('animasyon') || gl.includes('western') || gl.includes('bollywood') ||
-                    gl.includes('imdb') || gl.includes('yerli') ||
+                    gl.includes('imdb') || (gl.startsWith('yerli') || gl === 'sinema yerli film') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
                     gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
@@ -26001,6 +26109,16 @@ function parseM3U(text, listIdx) {
             }
             if (/tvg-radio="true"/.test(line)) {
                 currentItem.isRadio = true; currentItem.isLive = true; currentItem.group = 'Radyo';
+            }
+            // EXTINF duration: -1 = canlı, pozitif = VOD
+            const _durM = line.match(/#EXTINF:(-?\d+)/);
+            if (_durM) {
+                const _dur = parseInt(_durM[1]);
+                if (_dur > 0 && currentItem.isLive !== false) {
+                    currentItem.isLive = false; // Pozitif süre = VOD
+                } else if (_dur === -1 && currentItem.isLive === false) {
+                    // grup VOD dedi ama duration -1 ise grup kararına güven, dokunma
+                }
             }
         } else if (line && !line.startsWith('#') && currentItem) {
             currentItem.url = line;
@@ -26829,7 +26947,11 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                 const cachedM3U = await state.db.get(state.db.stores.M3U_CACHE, m3u.url);
                 if (cachedM3U && cachedM3U.content) {
                     const cacheAge = Date.now() - (cachedM3U.timestamp || 0);
-                    if (cacheAge < 6 * 60 * 60 * 1000) {
+                    // KabloTV: 48 saat (2 gün) cache, diğerleri 6 saat
+                    const _cacheMaxAge = (m3u.name || '').trim() === 'KabloTV'
+                        ? 48 * 60 * 60 * 1000
+                        :  6 * 60 * 60 * 1000;
+                    if (cacheAge < _cacheMaxAge) {
                         m3uContent = cachedM3U.content;
                         showInlineLoading(55, `${m3u.name} Önbellekten...`);
                         // Büyükse belleğe al (bir daha IndexedDB okumaya gerek yok)
@@ -26952,7 +27074,16 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                                 state.channels = state.channels.filter(c => c.listIdx != idx);
                             }
                             // Her batch doğrudan state.channels'a ekle (spread değil, push loop)
+                            // m3u.name bazlı isLive/isVod zorla set et
+                            const _forceIsLiveList = ['KabloTV'];
+                            const _forceIsVodList  = ['Film', 'Dizi', 'Dizi/Film'];
+                            const _mName = (m3u.name || '').trim();
                             for (let _bi = 0; _bi < batch.length; _bi++) {
+                                if (_forceIsLiveList.indexOf(_mName) !== -1) {
+                                    batch[_bi].isLive = true; batch[_bi].isVod = false;
+                                } else if (_forceIsVodList.indexOf(_mName) !== -1) {
+                                    batch[_bi].isLive = false; batch[_bi].isVod = true;
+                                }
                                 state.channels.push(batch[_bi]);
                             }
 
@@ -27041,12 +27172,12 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             if (sizeBytes >= MB20) {
                 state.m3uMemoryCache.set(m3u.url, { content: m3uContent, timestamp: Date.now(), sizeMB });
                 showToast(`📦 ${sizeMB.toFixed(0)} MB liste bellekte tutuldu`, 'info', 2500);
-            } else {
-                if (state.useIndexedDB && state.db.isReady()) {
-                    state.db.put(state.db.stores.M3U_CACHE, {
-                        url: m3u.url, content: m3uContent, timestamp: Date.now()
-                    }).catch(() => {});
-                }
+            }
+            // IndexedDB'ye her zaman yaz (KabloTV gibi büyük listeler dahil)
+            if (state.useIndexedDB && state.db.isReady()) {
+                state.db.put(state.db.stores.M3U_CACHE, {
+                    url: m3u.url, content: m3uContent, timestamp: Date.now()
+                }).catch(() => {});
             }
         }
 
@@ -27117,6 +27248,15 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         showInlineLoading(88, `${m3u.name} Hazırlanıyor...`);
 
         // State'i güncelle
+        // m3u.name bazlı isLive/isVod zorla set et
+        const _fILLive = ['KabloTV'];
+        const _fILVod  = ['Film', 'Dizi', 'Dizi/Film'];
+        const _mN = (m3u.name || '').trim();
+        if (_fILLive.indexOf(_mN) !== -1) {
+            parsed.forEach(function(c){ c.isLive = true; c.isVod = false; });
+        } else if (_fILVod.indexOf(_mN) !== -1) {
+            parsed.forEach(function(c){ c.isLive = false; c.isVod = true; });
+        }
         state.channels = state.channels.filter(c => c.listIdx != idx);
         state.channels.push(...parsed);
         state.filtered = [...parsed];
@@ -29785,6 +29925,18 @@ function addContinueCardStyles() {
             return true;
         });
         
+        // Grup adina gore isLive duzeltme: cache/parser hatasini gider
+        const _fixLiveGrp = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
+        state.filtered.forEach(function(ch) {
+            if (!ch || ch.isSpecial) return;
+            const _gl = (ch.group||'').toLowerCase();
+            const _grpOkLive = _fixLiveGrp.some(function(p){ return (ch.group||'').startsWith(p); }) ||
+                _gl.startsWith('canl') || _gl.startsWith('live');
+            const _grpOkVod = _gl.includes('panel') || _gl.includes('arsiv') ||
+                _gl.includes('arşiv') || _gl.startsWith('film') || _gl.startsWith('dizi') ||
+                _gl === 'sinema yerli film' || _gl.startsWith('vod');
+            if (_grpOkLive && !_grpOkVod) { ch.isLive = true; delete ch.isVod; }
+        });
         // currentLoadedCards sıfırla (yeni kategori/filtre)
         state.currentLoadedCards = 50;
         
@@ -30886,13 +31038,39 @@ function resumeChannel(startTime) {
                 if (skipNum) skipNum.textContent = Math.max(0, remaining);
 
                 // 30sn kaldığında ve hâlâ açılmadıysa proxy ile yeniden dene
-                if (remaining === 30 && !state.player.streamStarted && !window._proxyFallbackTriggered) {
+                // NOT: needsDirect URL'ler (trycloudflare vb.) proxy'ye gönderilmez —
+                // proxy bu tür URL'leri açamaz; startLoad(-1) ile live edge'e yeniden bağlan
+                const _fbDirect = ['trycloudflare.com','ngrok.io','ngrok-free.app',
+                    'localhost','127.0.0.1','workers.dev','umitmod-farki.onrender.com']
+                    .some(d => (ch.url || '').includes(d));
+                if (_fbDirect && !state.player.streamStarted && !window._proxyFallbackTriggered) {
+                    window._proxyFallbackTriggered = true;
+                    // Direkt stream açılmadı → HLS'i yeniden başlat (live edge)
+                    showToast('🔄 Yayın yenileniyor...');
+                    try {
+                        const _hls = state.player.hls;
+                        if (_hls) { _hls.stopLoad(); setTimeout(() => { try { _hls.startLoad(-1); } catch(e){} }, 300); }
+                        else {
+                            if (Hls && Hls.isSupported()) {
+                                const _reHls = new Hls(Object.assign({}, HLS_CONFIG, { startPosition: -1 }));
+                                state.player.hls = _reHls;
+                                _reHls.loadSource(ch.url);
+                                _reHls.attachMedia(video);
+                                _reHls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); });
+                            }
+                        }
+                    } catch(e) {}
+                } else if (!_fbDirect && remaining === 30 && !state.player.streamStarted && !window._proxyFallbackTriggered) {
                     window._proxyFallbackTriggered = true;
                     showToast('😄 Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
+                    // Direkt olmayan URL'lerde non-ASCII encode et
+                    const _fbEncoded = (_fb && !/%[0-9A-Fa-f]{2}/.test(_fb))
+                        ? _fb.replace(/[\u0080-\uFFFF]/g, function(c){ return encodeURIComponent(c); })
+                        : _fb;
                     const _fbLower = (_fb || '').toLowerCase();
                     const _isKool = _fb && (_fb.includes('kool.to') || _fb.includes('vavoo.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
-                    if (!_isKool && _fb) {
+                    if (!_isKool && _fbEncoded) {
                         // Mevcut HLS'i durdur, proxy ile yeniden başlat
                         try {
                             if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
@@ -30902,7 +31080,7 @@ function resumeChannel(startTime) {
                         const _PROXY_FB = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
                         const _STREAM_PROXY_FB = 'https://umittv.sadecenjoy.workers.dev/?url=';
                         // Önce STREAM_PROXY dene (referer sorununu çözer), sonra PROXY
-                        const _proxyUrl = _STREAM_PROXY_FB + encodeURIComponent(_fb);
+                        const _proxyUrl = _STREAM_PROXY_FB + encodeURIComponent(_fbEncoded);
                         const _hlsFb = new Hls(HLS_CONFIG);
                         state.player.hls = _hlsFb;
                         _hlsFb.on(Hls.Events.ERROR, (ev, data) => {
@@ -30913,7 +31091,7 @@ function resumeChannel(startTime) {
                                 const _hlsFb2 = new Hls(HLS_CONFIG);
                                 state.player.hls = _hlsFb2;
                                 _hlsFb2.attachMedia(video);
-                                _hlsFb2.loadSource(_PROXY_FB + encodeURIComponent(_fb));
+                                _hlsFb2.loadSource(_PROXY_FB + encodeURIComponent(_fbEncoded));
                                 video.play().catch(()=>{});
                             }
                         });
@@ -31428,7 +31606,74 @@ function resumeChannel(startTime) {
     }
 
     const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
-    const rawUrl = ch.url;
+
+    // === DIREKT ACILIS: trycloudflare.com / ngrok vb. === 
+    // Bu URL'ler hic proxy/encode/parse olmadan direkt HLS.js ile acilir
+    const _earlyDirectDomains = ['trycloudflare.com', 'ngrok.io', 'ngrok-free.app'];
+    if (_earlyDirectDomains.some(d => (ch.url||'').includes(d))) {
+        // Eğer URL proxy'ye sarılmışsa içindeki gerçek URL'yi çıkar
+        let _directUrl = ch.url;
+        const _proxyPrefixes = [
+            'turk.sadecenjoy.workers.dev/proxy?url=',
+            'proxy.umitmodpremiumtr.workers.dev/?stream=',
+            'proxy.umittv.workers.dev/?url=proxy',
+        ];
+        for (const _pfx of _proxyPrefixes) {
+            const _pfxIdx = _directUrl.indexOf(_pfx);
+            if (_pfxIdx !== -1) {
+                try { _directUrl = decodeURIComponent(_directUrl.substring(_pfxIdx + _pfx.length)); } catch(e) {}
+                break;
+            }
+        }
+        state.player.isLiveStream = true;
+        state.player.vodPlaying = false;
+        state.player.url = _directUrl;
+        console.log('[DIRECT] trycloudflare/ngrok URL direkt aciliyor:', _directUrl);
+        hideZappingScreen();
+        state.remote.zone = 'player';
+        startContinuousWatchingUpdate();
+        if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
+        if (!Hls.isSupported()) {
+            video.src = _directUrl; video.load(); video.play().catch(()=>{});
+        } else {
+            const _dHls = new Hls(Object.assign({}, HLS_CONFIG, { startPosition: -1 }));
+            state.player.hls = _dHls;
+            _dHls.loadSource(_directUrl);
+            _dHls.attachMedia(video);
+            _dHls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.muted = false;
+                video.play().catch(function(e){ if(e.name!=='AbortError') console.warn(e); });
+            });
+            _dHls.on(Hls.Events.ERROR, function(ev, data) {
+                if (!data.fatal) return;
+                console.warn('[DIRECT] HLS fatal hata, native deneniyor:', data.type, data.details);
+                _dHls.destroy(); state.player.hls = null;
+                // trycloudflare/ngrok → proxy çalışmaz, native ile dene
+                video.src = _directUrl; video.load(); video.play().catch(()=>{});
+            });
+        }
+        return;
+    }
+
+    // Türkçe/özel karakter içeren URL'leri encode et (örn: muhtesemyuzyıl.m3u8)
+    // NOT: Direkt açılan URL'lerde (trycloudflare.com, ngrok vb.) encode YAPILMAZ —
+    // Cloudflare Tunnel sunucu tarafında URL'yi zaten decode eder;
+    // encode edilmiş form (%C4%B1) bazı sunucular tarafından tanınmaz ve 404 döner.
+    const _chUrlRaw = ch.url || '';
+    const _isDirectDomain = ['trycloudflare.com','ngrok.io','ngrok-free.app',
+        'localhost','127.0.0.1','192.168.','10.0.','172.16.',
+        'workers.dev','umitmod-farki.onrender.com'].some(d => _chUrlRaw.includes(d));
+    const rawUrl = (function(u) {
+        if (!u) return u;
+        try {
+            // Direkt açılacak URL'lerde (trycloudflare, ngrok, workers.dev vb.) encode etme
+            if (_isDirectDomain) return u;
+            // Zaten encode edilmişse dokunma
+            if (/%[0-9A-Fa-f]{2}/.test(u)) return u;
+            // Path kısmındaki non-ASCII karakterleri encode et, protocol/host'a dokunma
+            return u.replace(/[\u0080-\uFFFF]/g, function(c) { return encodeURIComponent(c); });
+        } catch(e) { return u; }
+    })(ch.url);
 
     // ── VİDMODY.COM / EMBED PLAYER DESTEĞİ ──
     // vidmody.com URL'leri web sayfasıdır; HLS.js ile açılmaz.
@@ -31522,8 +31767,15 @@ function resumeChannel(startTime) {
         'umido.umitm0d.workers.dev',   // kool.to proxy Worker
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
         'umitmod-farki.onrender.com',  // kool.to/vavoo birincil resolver
+        'kablowebtv.net',              // KabloTV CDN → direkt aç
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
+    // Direct URLs (trycloudflare/ngrok) with .m3u8 = always live stream
+    if (needsDirect && rawUrl.toLowerCase().includes('.m3u8') && !ch.isLive) {
+        ch.isLive = true;
+        state.player.isLiveStream = true;
+        state.player.vodPlaying = false;
+    }
 
     // ── YENİ: Referer/Origin korumalı mı? ──
     const needsStreamProxy = !needsDirect &&
@@ -31591,7 +31843,13 @@ function resumeChannel(startTime) {
         lastStallRecoveryTime = 0;
         clearTimeout(stallTimer);
 
-        const hlsInst = new Hls(HLS_CONFIG);
+        // startPosition: -1 = live edge'den başla (canlı yayınlar için kritik)
+        // Cloudflare Tunnel / sliding window HLS'de 0'dan başlamaya çalışmak
+        // artık mevcut olmayan eski segment isteğine yol açar → manifest/frag hataları
+        const _hlsCfg = Object.assign({}, HLS_CONFIG, {
+            startPosition: state.player.isLiveStream !== false ? -1 : (startTime > 0 ? startTime : -1)
+        });
+        const hlsInst = new Hls(_hlsCfg);
 
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
@@ -31756,7 +32014,23 @@ function resumeChannel(startTime) {
 
         hlsInst.on(Hls.Events.ERROR, (ev, data) => {
             if (fallbackDone) return;
-            if (!data.fatal) return;
+            // Debug log: her hatayı konsola yaz
+            console.warn('[HLS] error:', data.type, data.details, 'fatal:', data.fatal, 'url:', (data.url||streamUrl).substring(0,80));
+            // Non-fatal NETWORK hatası: 3 kez ard ışıkına gelirse fallback yap
+            if (!data.fatal) {
+                if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                    mediaErrorCount++;
+                    if (mediaErrorCount >= 5 && needsDirect) {
+                        // needsDirect domain: proxy çalışmaz, native ile dene
+                        fallbackDone = true;
+                        hlsInst.destroy(); state.player.hls = null;
+                        showToast('🔄 Native player ile deneniyor...');
+                        video.src = rawUrl; video.load(); video.play().catch(()=>{});
+                        return;
+                    }
+                }
+                return;
+            }
 
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 mediaErrorCount++;
@@ -31773,15 +32047,13 @@ function resumeChannel(startTime) {
                     setTimeout(function() { video.muted = false; if (video.volume === 0) video.volume = 1.0; }, 300);
                     return;
                 } else if (mediaErrorCount === 3) {
-                    // 3. deneme: video elementini yeniden bağla — ses bozulmasının kökten çözümü
+                    // 3. deneme: stopLoad + startLoad(-1) — live edge'e yeniden bağlan
+                    // Sliding-window HLS'de (Cloudflare Tunnel vb.) buffer sıfırlanıp live edge'den devam edilir
                     try {
-                        hlsInst.detachMedia();
+                        hlsInst.stopLoad();
+                        video.muted = false;
                         setTimeout(function() {
-                            try {
-                                video.muted = false;
-                                hlsInst.attachMedia(video);
-                                hlsInst.recoverMediaError();
-                            } catch(e) {}
+                            try { hlsInst.startLoad(-1); } catch(e) {}
                         }, 200);
                     } catch(e) {}
                     return;
@@ -31800,6 +32072,15 @@ function resumeChannel(startTime) {
             } else if (isKoolTo) {
                 showToast('⚠️ Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
+            } else if (needsDirect && streamUrl === rawUrl) {
+                // Direkt HLS.js basarisiz → native video.src ile dene (proxy çalışmaz)
+                console.warn('needsDirect HLS.js basarisiz -> native deneniyor:', rawUrl);
+                showToast('🔄 Native player ile deneniyor...');
+                video.src = rawUrl; video.load(); video.play().catch(()=>{});
+            } else if (needsDirect && streamUrl !== rawUrl) {
+                // Native de basarisiz -> son care
+                showToast('🔄 Son bağlantı deneniyor...');
+                video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
                 showToast('🔄 Yedek bağlantı deneniyor...');
@@ -31814,10 +32095,16 @@ function resumeChannel(startTime) {
             }
         });
 
-        // HLS.js best-practice: attachMedia ÖNCE, loadSource SONRA
-        // Ters sırada bazı tarayıcılarda MANIFEST_PARSED gecikeblir veya buffer senkronu kaçar
-        hlsInst.attachMedia(video);
-        hlsInst.loadSource(streamUrl);
+        // needsDirect (Cloudflare Tunnel/ngrok): loadSource ÖNCE, attachMedia SONRA
+        // → option.html'deki çalışan sıra.
+        // Diğer tüm URL'ler: attachMedia ÖNCE, loadSource SONRA (HLS.js best-practice)
+        if (needsDirect) {
+            hlsInst.loadSource(streamUrl);
+            hlsInst.attachMedia(video);
+        } else {
+            hlsInst.attachMedia(video);
+            hlsInst.loadSource(streamUrl);
+        }
     }
 
     // ── REDIRECT RESOLVE: dt-switch, akamai redirect URL'leri ──
@@ -31870,7 +32157,10 @@ function resumeChannel(startTime) {
             // Vavoo Worker → her zaman direkt, hiç proxy'e gönderme
             startHls(rawUrl);
         } else if (needsDirect) {
-            // Cloudflare Tunnel, ngrok vb. → direkt
+            // Cloudflare Tunnel, ngrok vb. → tarayıcı native video.src ile aç (CORS bypass)
+            // Tarayıcı bu URL'yi native olarak açabiliyor (HLS.js CORS'a takılıyor)
+            // trycloudflare.com ve diger direkt URL'ler: HLS.js ile direkt ac
+            // Native video.src m3u8 playlist'i oynatamaz (NotSupportedError)
             startHls(rawUrl);
         } else if (needsRedirectResolve) {
             // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
@@ -37563,31 +37853,43 @@ function tryIframeRedirect(action) {
     goNavigate(action);
 }
   async function fetchWithTimeout(url, timeout = 8000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    
-    try {
-        const response = await fetch(url, {
-            signal: controller.signal,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'text/plain,*/*'
-            }
-        });
-        clearTimeout(id);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+    // Proxy zinciri: direkt → turk proxy → allorigins
+    const M3U_PROXIES = [
+        'https://turk.sadecenjoy.workers.dev/proxy?url=',
+        'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
+        'https://api.allorigins.win/raw?url='
+    ];
+
+    async function _tryUrl(fetchUrl, ms) {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), ms);
+        try {
+            const r = await fetch(fetchUrl, {
+                signal: ctrl.signal,
+                redirect: 'follow',
+                headers: { 'Accept': 'text/plain,application/x-mpegurl,*/*' }
+            });
+            clearTimeout(tid);
+            if (r && r.ok) return r;
+            return null;
+        } catch(e) {
+            clearTimeout(tid);
+            return null;
         }
-        
-        return await response.text();
-    } catch (error) {
-        clearTimeout(id);
-        if (error.name === 'AbortError') {
-            throw new Error(`Timeout: ${url} yüklenemedi (${timeout}ms)`);
-        }
-        throw error;
     }
+
+    // 1. Direkt dene
+    let resp = await _tryUrl(url, timeout);
+    if (resp) return resp;
+
+    // 2. Proxy zinciri
+    for (const proxy of M3U_PROXIES) {
+        resp = await _tryUrl(proxy + encodeURIComponent(url), Math.min(timeout, 90000));
+        if (resp) return resp;
+    }
+
+    // 3. Hiç çalışmadı — null döndür (caller'lar null kontrolü yapıyor)
+    return null;
 }
       
         // INIT AUDIO CONTEXT
@@ -46897,7 +47199,7 @@ _ready(function() {
 
         // Canlı yayın: seekToLiveEdge agresifliğini azalt
         window.HLS_CONFIG.liveSyncDurationCount         = 4;  // 3→4: daha stabil live edge
-        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity; // kapalı kalsın
+        // liveMaxLatencyDurationCount: 10 kalır (Infinity = live stream açılmıyor)
     }
 });
 
@@ -47282,7 +47584,7 @@ function _startWatch() {
     // Hemen kontrol
     _doCheck();
     // Her 8 saniyede tekrar
-    _watchTimer = setInterval(_doCheck, 2000);
+    _watchTimer = setInterval(_doCheck, 8000);
 }
 
 // Login anında public IP'yi kaydet

@@ -26945,13 +26945,27 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             try {
                 showInlineLoading(15, `${m3u.name} Yükleniyor...`);
                 const cachedM3U = await state.db.get(state.db.stores.M3U_CACHE, m3u.url);
-                if (cachedM3U && cachedM3U.content) {
+                if (cachedM3U && (cachedM3U.content || cachedM3U.channels)) {
                     const cacheAge = Date.now() - (cachedM3U.timestamp || 0);
                     // KabloTV: 48 saat (2 gün) cache, diğerleri 6 saat
                     const _cacheMaxAge = (m3u.name || '').trim() === 'KabloTV'
                         ? 48 * 60 * 60 * 1000
                         :  6 * 60 * 60 * 1000;
-                    if (cacheAge < _cacheMaxAge) {
+                    // Kanallar doğrudan cache'de varsa (büyük listeler) direkt yükle
+                    if (cacheAge < _cacheMaxAge && cachedM3U.channels && cachedM3U.channels.length > 0) {
+                        showInlineLoading(80, `${m3u.name} Önbellekten...`);
+                        state.channels = state.channels.filter(c => c.listIdx != idx);
+                        cachedM3U.channels.forEach(c => state.channels.push(c));
+                        state.filtered = state.channels.filter(c => c.listIdx == idx);
+                        try { updateCategoriesFromFiltered(); renderCats(); } catch(e2) {}
+                        updateChannelCount(state.filtered.length);
+                        document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
+                        try { renderChannels(); } catch(e2) {}
+                        showToast(`✅ ${state.filtered.length.toLocaleString()} içerik (önbellekten)`);
+                        hideInlineLoading();
+                        return;
+                    }
+                    if (cacheAge < _cacheMaxAge && cachedM3U.content) {
                         m3uContent = cachedM3U.content;
                         showInlineLoading(55, `${m3u.name} Önbellekten...`);
                         // Büyükse belleğe al (bir daha IndexedDB okumaya gerek yok)
@@ -27137,6 +27151,24 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                             }));
                         }
                     } catch(e2) {}
+                    // Kanalları IndexedDB'ye kaydet — requestIdleCallback ile UI'ı bloklamadan
+                    if (state.useIndexedDB && state.db.isReady() && _finalChannels.length > 0) {
+                        const _saveChannels = function() {
+                            try {
+                                state.db.put(state.db.stores.M3U_CACHE, {
+                                    url: m3u.url,
+                                    content: null,
+                                    channels: _finalChannels,
+                                    timestamp: Date.now()
+                                }).catch(() => {});
+                            } catch(e3) {}
+                        };
+                        if (typeof requestIdleCallback === 'function') {
+                            requestIdleCallback(_saveChannels, { timeout: 5000 });
+                        } else {
+                            setTimeout(_saveChannels, 500);
+                        }
+                    }
                     if (state.remote.active) {
                         state.remote.zone = 'channels';
                         state.remote.index = 0;
@@ -27172,12 +27204,18 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             if (sizeBytes >= MB20) {
                 state.m3uMemoryCache.set(m3u.url, { content: m3uContent, timestamp: Date.now(), sizeMB });
                 showToast(`📦 ${sizeMB.toFixed(0)} MB liste bellekte tutuldu`, 'info', 2500);
-            }
-            // IndexedDB'ye her zaman yaz (KabloTV gibi büyük listeler dahil)
-            if (state.useIndexedDB && state.db.isReady()) {
-                state.db.put(state.db.stores.M3U_CACHE, {
-                    url: m3u.url, content: m3uContent, timestamp: Date.now()
-                }).catch(() => {});
+                // Büyük listeler için içerik değil, sadece timestamp kaydet (donma önleme)
+                if (state.useIndexedDB && state.db.isReady()) {
+                    state.db.put(state.db.stores.M3U_CACHE, {
+                        url: m3u.url, content: null, timestamp: Date.now()
+                    }).catch(() => {});
+                }
+            } else {
+                if (state.useIndexedDB && state.db.isReady()) {
+                    state.db.put(state.db.stores.M3U_CACHE, {
+                        url: m3u.url, content: m3uContent, timestamp: Date.now()
+                    }).catch(() => {});
+                }
             }
         }
 
@@ -27289,7 +27327,23 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         
         showToast(`✅ ${parsed.length.toLocaleString()} içerik yüklendi!`);
         hideInlineLoading();
-        
+
+        // Kanalları IndexedDB'ye kaydet (non-streaming path)
+        if (state.useIndexedDB && state.db.isReady() && parsed.length > 0) {
+            const _saveP = function() {
+                try {
+                    state.db.put(state.db.stores.M3U_CACHE, {
+                        url: m3u.url, content: null, channels: parsed, timestamp: Date.now()
+                    }).catch(() => {});
+                } catch(e3) {}
+            };
+            if (typeof requestIdleCallback === 'function') {
+                requestIdleCallback(_saveP, { timeout: 5000 });
+            } else {
+                setTimeout(_saveP, 500);
+            }
+        }
+
         if (state.remote.active) {
             state.remote.zone = 'channels';
             state.remote.index = 0;

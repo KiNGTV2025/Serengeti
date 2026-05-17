@@ -11774,16 +11774,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const _isDev = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435'
-                || location.hostname === ''
-                || location.protocol === 'file:';
+                || location.port === '2435';
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
-    // okhttp = AppCreator24 API katmanı; wv = Android WebView (App24 içi)
-    // okhttp=App24 UA ayarı; wv=Android WebView; android=tüm Android cihazlar
-    const allowed = ua.includes('okhttp') || ua.includes('; wv)') || ua.includes(';wv)')
-                 || ua.includes('appcreator') || ua.includes('app24')
-                 || ua.includes('android');  // Tüm Android WebView izinli
+    const allowed = ua.includes('okhttp');
     if (!allowed) {
         // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
         try {
@@ -11818,9 +11812,7 @@ const UmitSecurityManager = (function () {
     const IS_DEV = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435'
-                || location.hostname === ''
-                || location.protocol === 'file:';
+                || location.port === '2435';
 
     // ════════════════════════════════════════════════════
     // KATMAN 1 — DOMAIN LOCK
@@ -11844,13 +11836,8 @@ const UmitSecurityManager = (function () {
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
     const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView (API istekleri)
+        'okhttp',        // AppCreator24 APK WebView
         'okhttp/4',      // AppCreator24 v4.x
-        '; wv)',          // Android WebView içi (App24 görüntüleyici)
-        ';wv)',           // Android WebView (boşluksuz varyant)
-        'appcreator',    // AppCreator24 bazı sürümler
-        'app24',         // App24 özel UA
-        'android',       // Tüm Android WebView cihazlar
     ];
 
     function _isUAAllowed() {
@@ -12618,9 +12605,7 @@ const UmitSecurityExtras = (function() {
     const _IS_DEV   = location.hostname === 'localhost'
                    || location.hostname === '127.0.0.1'
                    || location.hostname.startsWith('192.168.')
-                   || location.port === '2435'
-                   || location.hostname === ''
-                   || location.protocol === 'file:';
+                   || location.port === '2435';
 
     // ════════════════════════════════════════════════════
     // EK-1 — TELEGRAM GÜVENLİK BİLDİRİMİ
@@ -12890,9 +12875,7 @@ UmitSecurityExtras.init();
     const _isDev = location.hostname === 'localhost'
                 || location.hostname === '127.0.0.1'
                 || location.hostname.startsWith('192.168.')
-                || location.port === '2435'
-                || location.hostname === ''
-                || location.protocol === 'file:';
+                || location.port === '2435';
     if (_isDev) return; // geliştirmede konsol açık kalsın
 
     // console metodlarını sustur
@@ -32038,7 +32021,7 @@ function resumeChannel(startTime) {
         'kablowebtv.net',              // KabloTV CDN → direkt aç
         'ottcdn.',                     // ottcdn.kablowebtv.net vb. → direkt aç
         'cdn07.kablowebtv',            // KabloTV CDN subdomain → direkt aç
-        '45.159.95.10',                // IPTV MKV sunucusu → proxy YOK, direkt aç
+        '45.159.95.10',                // IPTV MKV sunucusu → proxy YOK
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
     // Direct URLs (trycloudflare/ngrok) with .m3u8 = always live stream

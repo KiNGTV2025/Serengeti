@@ -11081,11 +11081,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="player-action-group">
                         <button class="player-action-btn fullscreen-btn" id="btnFullscreenBottom" onclick="toggleFullscreen()" title="Tam Ekran">
                             <span class="material-symbols-outlined" id="fullscreenIconBottom">fullscreen</span>
-                            <span class="btn-label">Ekran</span>
+                            <span class="btn-label">Tam Ekran</span>
                         </button>
                         <button class="player-action-btn fullscreen-btn" id="btnFullscreen" onclick="toggleFullscreen()" title="Tam Ekran" style="display:none;">
                             <span class="material-symbols-outlined" id="fullscreenIcon">fullscreen</span>
-                            <span class="btn-label">Ekran</span>
+                            <span class="btn-label">Tam Ekran</span>
                         </button>
                         <button class="player-action-btn" id="btnHideControls" onclick="toggleControlsVisibility()" title="Kontrolleri Gizle">
                             <span class="material-symbols-outlined" id="hideControlsIcon">visibility_off</span>
@@ -16305,7 +16305,7 @@ function applyAndroidTVOptimizations() {
         
          
         .channel-card:hover, .cat-pill:hover {
-            transform: scale(1.05) !important;
+            transform: none !important;
         }
     `;
     document.head.appendChild(style);
@@ -16333,7 +16333,7 @@ function applyiOSOptimizations() {
         }
         
          
-        * {
+        .channels-viewport, .sidebar-list, .app-header, .player-controls {
             -webkit-transform: translateZ(0);
             transform: translateZ(0);
         }
@@ -16537,19 +16537,24 @@ function initPerformanceMonitor() {
             const c = state.filtered[index];
             if (!c) return document.createElement('div');
             
+            // URL bazlı kesin canlı yayın tespiti
+            const _urlLow = (c.url||'').toLowerCase();
+            const _isKabloUrl = _urlLow.includes('kablowebtv') || _urlLow.includes('ottcdn') || _urlLow.includes('cdn07.kablowebtv');
+            if (_isKabloUrl) { c.isLive = true; c.isVod = false; delete c.isSeries; }
             // Group-based live detection: fix bad isLive from old cache
             const _liveGrpPfx = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
             const _grpLow = (c.group||'').toLowerCase();
-            const _grpIsLive = _liveGrpPfx.some(p => (c.group||'').startsWith(p)) ||
-                _grpLow.startsWith('canl') || _grpLow.startsWith('live') ||
-                _grpLow.startsWith('sinema') || _grpLow.startsWith('radyo');
-            const _grpIsVod = _grpLow.includes('panel') || _grpLow.includes('arsiv') ||
-                _grpLow.includes('arşiv') || _grpLow.startsWith('film') || _grpLow.startsWith('dizi') || _grpLow === 'sinema yerli film';
-            // isVod açıkça set edilmişse (parse'da zorlandıysa) grup tespitini override etme
-            if (c.isVod === true) { /* VOD olarak kalsın */ }
+            const _isForceLive1 = (c.group||'').indexOf('Sinema ve Dizi') !== -1;
+            const _grpIsLive = _liveGrpPfx.some(p => (c.group||'').includes(p)) ||
+                _grpLow.includes('canl') || _grpLow.includes('live') ||
+                _grpLow.includes('sinema') || _grpLow.includes('radyo');
+            const _grpIsVod = !_isForceLive1 && (_grpLow.includes('panel') || _grpLow.includes('arsiv') ||
+                _grpLow.includes('arşiv') || (_grpLow.includes('film') && !_grpLow.includes('sinema')) || (_grpLow.startsWith('dizi') || _grpLow === 'sinema yerli film'));
+            if (_isForceLive1 || _isKabloUrl) { c.isLive = true; c.isVod = false; delete c.isSeries; }
+            else if (c.isVod === true) { /* VOD olarak kalsın */ }
             else if (c.isLive === true) { /* canlı olarak kalsın */ }
             else if (_grpIsLive && !_grpIsVod) c.isLive = true;
-            const isVod = (c.isVod === true) || !c.isLive;
+            const isVod = _isKabloUrl ? false : ((c.isVod === true) || !c.isLive);
             const hasContinue = state.continueWatching[c.name] && 
                 state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
                 state.continueWatching[c.name].progress < MAX_WATCH_PERCENT;
@@ -16745,14 +16750,20 @@ function createOptimizedChannelCard(index) {
     if (!c) return document.createElement('div');
     
     // Group-based live detection: fix bad isLive from old cache
+    // URL bazlı kesin canlı yayın tespiti
+    const _urlLow2 = (c.url||'').toLowerCase();
+    const _isKabloUrl2 = _urlLow2.includes('kablowebtv') || _urlLow2.includes('ottcdn') || _urlLow2.includes('cdn07.kablowebtv');
+    if (_isKabloUrl2) { c.isLive = true; c.isVod = false; delete c.isSeries; }
     const _liveGrpPfx2 = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
     const _grpLow2 = (c.group||'').toLowerCase();
-    const _grpIsLive2 = _liveGrpPfx2.some(p => (c.group||'').startsWith(p)) || _grpLow2.startsWith('canl') || _grpLow2.startsWith('sinema') || _grpLow2.startsWith('radyo');
-    const _grpIsVod2 = _grpLow2.includes('panel') || _grpLow2.includes('arsiv') || _grpLow2.includes('arşiv') || _grpLow2.startsWith('film') || _grpLow2.startsWith('dizi') || _grpLow2 === 'sinema yerli film';
-    if (c.isVod === true) { /* VOD olarak kalsın */ }
+    const _isForceLive2 = (c.group||'').indexOf('Sinema ve Dizi') !== -1;
+    const _grpIsLive2 = _liveGrpPfx2.some(p => (c.group||'').includes(p)) || (c.group||'').indexOf('Sinema ve Dizi') !== -1 || _grpLow2.includes('canl') || _grpLow2.includes('sinema') || _grpLow2.includes('radyo') || _grpLow2.includes('sinema ve dizi');
+    const _grpIsVod2 = !_isForceLive2 && (_grpLow2.includes('panel') || _grpLow2.includes('arsiv') || _grpLow2.includes('arşiv') || (_grpLow2.includes('film') && !_grpLow2.includes('sinema')) || _grpLow2.startsWith('dizi') || _grpLow2 === 'sinema yerli film');
+    if (_isForceLive2 || _isKabloUrl2) { c.isLive = true; c.isVod = false; delete c.isSeries; }
+    else if (c.isVod === true) { /* VOD olarak kalsın */ }
     else if (c.isLive === true) { /* canlı olarak kalsın */ }
     else if (_grpIsLive2 && !_grpIsVod2) c.isLive = true;
-    const isVod = (c.isVod === true) || !c.isLive;
+    const isVod = _isKabloUrl2 ? false : ((c.isVod === true) || !c.isLive);
     const hasContinue = state.continueWatching[c.name] && 
         state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
         state.continueWatching[c.name].progress < MAX_WATCH_PERCENT;
@@ -19637,43 +19648,118 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             const fullscreenIconBottom = document.getElementById('fullscreenIconBottom');
             const vid = playerContainer ? playerContainer.querySelector('video') : null;
-            
-            if (!document.fullscreenElement) {
-                if (playerContainer.requestFullscreen) {
-                    playerContainer.requestFullscreen();
-                } else if (playerContainer.webkitRequestFullscreen) {
-                    playerContainer.webkitRequestFullscreen();
-                } else if (playerContainer.msRequestFullscreen) {
-                    playerContainer.msRequestFullscreen();
-                }
-                // Tam ekranda video tüm alanı kaplar (siyah boşluk kalmaz)
+
+            const isFullscreen = !!(document.fullscreenElement ||
+                                    document.webkitFullscreenElement ||
+                                    playerContainer._cssFullscreen);
+
+            function _enterFullscreenUI() {
                 if (vid) { vid.style.objectFit = 'cover'; vid.style.width = '100%'; vid.style.height = '100%'; }
-                if (playerContainer) { playerContainer.style.width = '100vw'; playerContainer.style.height = '100vh'; }
                 state.player.fullscreen = true;
-                fullscreenIcon.textContent = 'fullscreen_exit';
-                fullscreenIconBottom.textContent = 'fullscreen_exit';
-                document.getElementById('btnFullscreen').classList.add('active');
-                document.getElementById('btnFullscreenBottom').classList.add('active');
+                if (fullscreenIcon) fullscreenIcon.textContent = 'fullscreen_exit';
+                if (fullscreenIconBottom) fullscreenIconBottom.textContent = 'fullscreen_exit';
+                const btnFS = document.getElementById('btnFullscreen');
+                const btnFSB = document.getElementById('btnFullscreenBottom');
+                if (btnFS) btnFS.classList.add('active');
+                if (btnFSB) btnFSB.classList.add('active');
                 showToast("Tam ekran modu açıldı");
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                // Tam ekrandan çıkınca contain'e dön
+            }
+            function _exitFullscreenUI() {
                 if (vid) { vid.style.objectFit = ''; vid.style.width = ''; vid.style.height = ''; }
-                if (playerContainer) { playerContainer.style.width = ''; playerContainer.style.height = ''; }
+                if (playerContainer) {
+                    playerContainer.style.cssText = playerContainer._savedCss || '';
+                    playerContainer._cssFullscreen = false;
+                    playerContainer._savedCss = '';
+                }
                 state.player.fullscreen = false;
-                fullscreenIcon.textContent = 'fullscreen';
-                fullscreenIconBottom.textContent = 'fullscreen';
-                document.getElementById('btnFullscreen').classList.remove('active');
-                document.getElementById('btnFullscreenBottom').classList.remove('active');
+                if (fullscreenIcon) fullscreenIcon.textContent = 'fullscreen';
+                if (fullscreenIconBottom) fullscreenIconBottom.textContent = 'fullscreen';
+                const btnFS = document.getElementById('btnFullscreen');
+                const btnFSB = document.getElementById('btnFullscreenBottom');
+                if (btnFS) btnFS.classList.remove('active');
+                if (btnFSB) btnFSB.classList.remove('active');
                 showToast("Tam ekran modu kapatıldı");
             }
-            
+
+            // CSS simüle tam ekran (WebView fallback)
+            function _cssEnterFullscreen() {
+                if (!playerContainer) return;
+                playerContainer._savedCss = playerContainer.style.cssText || '';
+                playerContainer._cssFullscreen = true;
+                playerContainer.style.cssText = [
+                    'position:fixed',
+                    'top:0', 'left:0',
+                    'width:100vw', 'height:100vh',
+                    'z-index:2147483647',
+                    'background:#000',
+                    'margin:0', 'padding:0',
+                    'border-radius:0',
+                    'transform:none'
+                ].join('!important;') + '!important';
+                _enterFullscreenUI();
+            }
+            function _cssExitFullscreen() {
+                _exitFullscreenUI();
+            }
+
+            if (!isFullscreen) {
+                // Tam ekrana gir
+                let apiOk = false;
+                if (playerContainer) {
+                    const req = playerContainer.requestFullscreen ||
+                                playerContainer.webkitRequestFullscreen ||
+                                playerContainer.mozRequestFullScreen ||
+                                playerContainer.msRequestFullscreen;
+                    if (req) {
+                        try {
+                            const p = req.call(playerContainer);
+                            if (p && typeof p.then === 'function') {
+                                p.then(function() {
+                                    _enterFullscreenUI();
+                                }).catch(function() {
+                                    // API başarısız → CSS fallback
+                                    _cssEnterFullscreen();
+                                });
+                            } else {
+                                // Senkron — UI'yi hemen güncelle
+                                _enterFullscreenUI();
+                            }
+                            apiOk = true;
+                        } catch(e) {
+                            apiOk = false;
+                        }
+                    }
+                }
+                if (!apiOk) {
+                    // requestFullscreen desteklenmiyor → CSS ile simüle et
+                    _cssEnterFullscreen();
+                }
+            } else {
+                // Tam ekrandan çık
+                if (playerContainer && playerContainer._cssFullscreen) {
+                    _cssExitFullscreen();
+                } else {
+                    const exitFn = document.exitFullscreen ||
+                                   document.webkitExitFullscreen ||
+                                   document.mozCancelFullScreen ||
+                                   document.msExitFullscreen;
+                    if (exitFn) {
+                        try {
+                            const p = exitFn.call(document);
+                            if (p && typeof p.then === 'function') {
+                                p.then(_exitFullscreenUI).catch(_exitFullscreenUI);
+                            } else {
+                                _exitFullscreenUI();
+                            }
+                        } catch(e) {
+                            _exitFullscreenUI();
+                        }
+                    } else {
+                        _exitFullscreenUI();
+                    }
+                }
+            }
+
             playKeySound('click');
             showControls(3000);
         }
@@ -23546,6 +23632,7 @@ function showNoConfigUI() {
     if (pendingM3UFetch) {
         pendingM3UFetch = null; // Önceki isteği iptal et, yenilemeye izin ver
     }
+
     
     showToast("Yenileniyor...");
     const _lov2 = document.getElementById('loadingOverlay');
@@ -23587,6 +23674,60 @@ function showNoConfigUI() {
         }, 300); 
     }
 }
+// Global scope'a expose et — app24 gibi WebView'larda onclick erişebilsin
+window.refreshM3ULists = refreshM3ULists;
+
+// ── WebView/app24 uyumu: inner-scope fonksiyonları global'e expose et ──
+if (typeof clearContinueWatching === "function") window.clearContinueWatching = clearContinueWatching;
+if (typeof clearFavorites === "function") window.clearFavorites = clearFavorites;
+if (typeof clearThemeCache === "function") window.clearThemeCache = clearThemeCache;
+if (typeof closeAddM3UModal === "function") window.closeAddM3UModal = closeAddM3UModal;
+if (typeof closeContinueModal === "function") window.closeContinueModal = closeContinueModal;
+if (typeof closeDeleteContinueModal === "function") window.closeDeleteContinueModal = closeDeleteContinueModal;
+if (typeof closeEmbedModal === "function") window.closeEmbedModal = closeEmbedModal;
+if (typeof closeM3UHint === "function") window.closeM3UHint = closeM3UHint;
+if (typeof closeQuickSortNumModal === "function") window.closeQuickSortNumModal = closeQuickSortNumModal;
+if (typeof closeResetConfirm === "function") window.closeResetConfirm = closeResetConfirm;
+if (typeof closeSettingsModal === "function") window.closeSettingsModal = closeSettingsModal;
+if (typeof closeSortBackupModal === "function") window.closeSortBackupModal = closeSortBackupModal;
+if (typeof closeSortModal === "function") window.closeSortModal = closeSortModal;
+if (typeof closeThemeModal === "function") window.closeThemeModal = closeThemeModal;
+if (typeof confirmQuickSortNum === "function") window.confirmQuickSortNum = confirmQuickSortNum;
+if (typeof confirmSortBackupAction === "function") window.confirmSortBackupAction = confirmSortBackupAction;
+if (typeof cycleGridCols === "function") window.cycleGridCols = cycleGridCols;
+if (typeof deleteM3UList === "function") window.deleteM3UList = deleteM3UList;
+if (typeof exportSortBackup === "function") window.exportSortBackup = exportSortBackup;
+if (typeof importSortBackup === "function") window.importSortBackup = importSortBackup;
+if (typeof openAddM3UModal === "function") window.openAddM3UModal = openAddM3UModal;
+if (typeof openSettingsModal === "function") window.openSettingsModal = openSettingsModal;
+if (typeof openSortModal === "function") window.openSortModal = openSortModal;
+if (typeof openThemeModal === "function") window.openThemeModal = openThemeModal;
+if (typeof playVodFromModal === "function") window.playVodFromModal = playVodFromModal;
+if (typeof playerQuickSortDown === "function") window.playerQuickSortDown = playerQuickSortDown;
+if (typeof playerQuickSortNum === "function") window.playerQuickSortNum = playerQuickSortNum;
+if (typeof playerQuickSortUp === "function") window.playerQuickSortUp = playerQuickSortUp;
+if (typeof qsnAdjust === "function") window.qsnAdjust = qsnAdjust;
+if (typeof qsnSetPos === "function") window.qsnSetPos = qsnSetPos;
+if (typeof qsnSetPosLast === "function") window.qsnSetPosLast = qsnSetPosLast;
+if (typeof resetChannelSort === "function") window.resetChannelSort = resetChannelSort;
+if (typeof resetConfirmed === "function") window.resetConfirmed = resetConfirmed;
+if (typeof saveM3UList === "function") window.saveM3UList = saveM3UList;
+if (typeof saveSortOrder === "function") window.saveSortOrder = saveSortOrder;
+if (typeof seekByProgressClick === "function") window.seekByProgressClick = seekByProgressClick;
+if (typeof showChannelEpg === "function") window.showChannelEpg = showChannelEpg;
+if (typeof showResetConfirm === "function") window.showResetConfirm = showResetConfirm;
+if (typeof sortAssignCat === "function") window.sortAssignCat = sortAssignCat;
+if (typeof sortChannelsAlpha === "function") window.sortChannelsAlpha = sortChannelsAlpha;
+if (typeof sortItemClick === "function") window.sortItemClick = sortItemClick;
+if (typeof sortMoveBottomSelected === "function") window.sortMoveBottomSelected = sortMoveBottomSelected;
+if (typeof sortMoveTopSelected === "function") window.sortMoveTopSelected = sortMoveTopSelected;
+if (typeof syncToLive === "function") window.syncToLive = syncToLive;
+if (typeof toggleControlsVisibility === "function") window.toggleControlsVisibility = toggleControlsVisibility;
+if (typeof toggleFullscreen === "function") window.toggleFullscreen = toggleFullscreen;
+if (typeof toggleLiveProgressBar === "function") window.toggleLiveProgressBar = toggleLiveProgressBar;
+if (typeof toggleObjectFit === "function") window.toggleObjectFit = toggleObjectFit;
+// (refreshM3ULists yukarıda ayrıca expose edildi)
+
 
 function clearConfigCache() {
     
@@ -24310,6 +24451,17 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                         
 
                         if (cachedChannels) {
+                            // Cache'den gelen kanallarda da isLive/isVod düzelt
+                            const _cachedLiveKws = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
+                            cachedChannels.forEach(function(ch){
+                                if (!ch || ch.isSpecial) return;
+                                const _cgl = (ch.group||'').toLowerCase();
+                                const _isLiveGrp = _cachedLiveKws.some(function(p){ return (ch.group||'').includes(p); }) ||
+                                    _cgl.includes('sinema ve dizi') || _cgl.includes('canl') || _cgl.includes('live');
+                                const _isVodGrp = (_cgl.includes('film') && !_cgl.includes('sinema')) || _cgl.startsWith('dizi') ||
+                                    _cgl.includes('panel') || _cgl.includes('arsiv') || _cgl.includes('arşiv') || _cgl.startsWith('vod');
+                                if (_isLiveGrp && !_isVodGrp) { ch.isLive = true; delete ch.isVod; delete ch.isSeries; }
+                            });
                             quickChannels.push(...cachedChannels);
                             m3uContent = '__streamed__';
                         }
@@ -24511,6 +24663,17 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                         
                         // Cache'den kanallar (yeni format)
                         if (cachedChannels) {
+                            // Cache'den gelen kanallarda da isLive/isVod düzelt
+                            const _bgLiveKws = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
+                            cachedChannels.forEach(function(ch){
+                                if (!ch || ch.isSpecial) return;
+                                const _bgl = (ch.group||'').toLowerCase();
+                                const _bgLive = _bgLiveKws.some(function(p){ return (ch.group||'').includes(p); }) ||
+                                    _bgl.includes('sinema ve dizi') || _bgl.includes('canl') || _bgl.includes('live');
+                                const _bgVod = (_bgl.includes('film') && !_bgl.includes('sinema')) || _bgl.startsWith('dizi') ||
+                                    _bgl.includes('panel') || _bgl.includes('arsiv') || _bgl.includes('arşiv') || _bgl.startsWith('vod');
+                                if (_bgLive && !_bgVod) { ch.isLive = true; delete ch.isVod; delete ch.isSeries; }
+                            });
                             newChannels.push(...cachedChannels);
                             m3uContent = '__streamed__';
                         }
@@ -24820,15 +24983,17 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 const gl = currentItem.group.toLowerCase();
                 // Kesinlikle CANLI yayın olan grup prefix'leri — VOD kontrolünden ÖNCE
                 const _liveGroupPrefixes1 = ['Ulusal', 'Haber', 'Spor', 'Belgesel', 'Eglence', 'Muzik', 'Cocuk', 'Dini', 'Radyo', 'Sinema', 'Yemek', 'Kultur', 'Sinema TV', 'Sinema Aksiyon', 'Sinema Yerli', 'Sinema Aile', 'Sinema Komedi', 'Sinema Korku', 'Sinema Belgesel'];
-                const _isDefinitelyLive = _liveGroupPrefixes1.some(p => currentItem.group.startsWith(p)) ||
-                    gl.startsWith('canl') || gl.startsWith('live') ||
-                    gl.startsWith('ulusal') || gl.startsWith('haber') || gl.startsWith('spor') ||
-                    gl.startsWith('belgesel') || gl.startsWith('sinema') || gl.startsWith('radyo');
+                const _isDefinitelyLive = _liveGroupPrefixes1.some(p => currentItem.group.includes(p)) ||
+                    (currentItem.group||'').indexOf('Sinema ve Dizi') !== -1 ||
+                    gl.includes('canl') || gl.includes('live') ||
+                    gl.includes('ulusal') || gl.includes('haber') || gl.includes('spor') ||
+                    gl.includes('belgesel') || gl.includes('sinema') || gl.includes('radyo') ||
+                    gl.includes('sinema ve dizi');
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false; currentItem.isSeries = true;
                 } else if (_isDefinitelyLive && !gl.includes('panel') && gl !== 'sinema yerli film' && !gl.includes('arşiv') && !gl.includes('arsiv')) {
                     currentItem.isLive = true; // Kesinlikle canli yayın — VOD kontrolu atlansın
-                } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
+                } else if (!((currentItem.group||'').indexOf('Sinema ve Dizi') !== -1) && (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.startsWith('eklen') || (gl.startsWith('yeni') && (gl.includes('film') || gl.includes('dizi') || gl.includes('bölüm') || gl.includes('eklenen'))) ||
                     extraVodGroups.has(gl) ||
@@ -24836,7 +25001,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
                     gl.includes('imdb') || (gl.startsWith('yerli') || gl === 'sinema yerli film') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
-                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
+                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon'))) {
                     currentItem.isLive = false;
                 }
             }
@@ -24862,9 +25027,11 @@ async function parseM3UStream(response, listIdx, onBatch) {
                     // Pozitif duration normalde VOD, ANCAK grup canli olarak tespit edilmisse ezme
                     const _glDur = (currentItem.group||'').toLowerCase();
                     const _liveGrpD = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
-                    const _grpLiveD = _liveGrpD.some(p => (currentItem.group||'').startsWith(p)) ||
-                        _glDur.startsWith('canl') || _glDur.startsWith('sinema') || _glDur.startsWith('radyo');
-                    if (!_grpLiveD) currentItem.isLive = false;
+                    const _grpLiveD = _liveGrpD.some(p => (currentItem.group||'').includes(p)) ||
+                        _glDur.includes('canl') || _glDur.includes('sinema') || _glDur.includes('radyo');
+                    // Sinema ve Dizi kategorisi duration'dan etkilenmesin
+                    const _isForceLiveDur = (currentItem.group||'').indexOf('Sinema ve Dizi') !== -1;
+                    if (!_grpLiveD && !_isForceLiveDur) currentItem.isLive = false;
                 }
             }
         } else if (line.startsWith('#EXTVLCOPT:') && currentItem) {
@@ -24872,9 +25039,12 @@ async function parseM3UStream(response, listIdx, onBatch) {
             else if (line.includes('http-referrer=')) currentItem.referrer = line.split('http-referrer=')[1].trim();
         } else if (line && !line.startsWith('#') && currentItem) {
             currentItem.url = line;
-            if (currentItem.isLive) {
-                const ul = line.toLowerCase();
-                if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
+            // kablowebtv URL → kesinlikle canlı yayın
+            const _ulLow = line.toLowerCase();
+            if (_ulLow.includes('kablowebtv') || _ulLow.includes('ottcdn') || _ulLow.includes('cdn07.kablowebtv')) {
+                currentItem.isLive = true; currentItem.isVod = false; delete currentItem.isSeries;
+            } else if (currentItem.isLive) {
+                if (vodUrlIndicators.some(e => _ulLow.includes(e)) || vodDomainIndicators.some(d => _ulLow.includes(d))) {
                     currentItem.isLive = false;
                 }
             }
@@ -25132,8 +25302,8 @@ function parseM3UOptimized(text, listIdx) {
     };
     const isLiveGroupDynamic = (g) => {
         const gl = g.toLowerCase();
-        return gl.startsWith('canlı') || gl.startsWith('canli') || gl.startsWith('live') ||
-               gl.startsWith('canl') || g.startsWith('CANLI') || g.startsWith('LIVE');
+        return gl.includes('canlı') || gl.includes('canli') || gl.includes('live') ||
+               gl.includes('canl') || g.includes('CANLI') || g.includes('LIVE');
     };
     
     
@@ -25193,7 +25363,7 @@ function parseM3UOptimized(text, listIdx) {
                     currentItem.isLive = false;
                 }
                 // 3. Canlı grup kontrolü
-                else if (isLiveGroupDynamic(group) || liveGroupPrefixes.some(prefix => group.startsWith(prefix))) {
+                else if (isLiveGroupDynamic(group) || liveGroupPrefixes.some(prefix => group.includes(prefix))) {
                     currentItem.isLive = true;
                 }
                 // 4. SERI FILM / 😄 kontrolü
@@ -25255,9 +25425,10 @@ function parseM3UOptimized(text, listIdx) {
                     // Pozitif duration normalde VOD, ANCAK grup canli olarak tespit edilmisse ezme
                     const _gl2 = (currentItem.group||'').toLowerCase();
                     const _liveGrpPfxD = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'];
-                    const _grpConfirmedLive = _liveGrpPfxD.some(p => (currentItem.group||'').startsWith(p)) ||
-                        _gl2.startsWith('canl') || _gl2.startsWith('sinema') || _gl2.startsWith('radyo');
-                    if (!_grpConfirmedLive) currentItem.isLive = false; // Sadece grup canli degilse VOD say
+                    const _grpConfirmedLive = _liveGrpPfxD.some(p => (currentItem.group||'').includes(p)) ||
+                        _gl2.includes('canl') || _gl2.includes('sinema') || _gl2.includes('radyo');
+                    const _isForceLiveDur2 = (currentItem.group||'').indexOf('Sinema ve Dizi') !== -1;
+                    if (!_grpConfirmedLive && !_isForceLiveDur2) currentItem.isLive = false; // Sadece grup canli degilse VOD say
                 } else if (duration === -1) {
                     // -1 = genel IPTV standardı — ama grup zaten VOD dediyse ezme
                     if (currentItem.isLive !== false) {
@@ -26080,14 +26251,14 @@ function parseM3U(text, listIdx) {
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false;
                     currentItem.isSeries = true;
-                } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
+                } else if (!((currentItem.group||'').indexOf('Sinema ve Dizi') !== -1) && (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.startsWith('eklen') || (gl.startsWith('yeni') && (gl.includes('film') || gl.includes('dizi') || gl.includes('bölüm') || gl.includes('eklenen'))) ||
                     gl.includes('animasyon') || gl.includes('western') || gl.includes('bollywood') ||
                     gl.includes('imdb') || (gl.startsWith('yerli') || gl === 'sinema yerli film') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
-                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
+                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon'))) {
                     currentItem.isLive = false;
                 }
                 if (!seenCategories.has(currentItem.group)) {
@@ -26114,7 +26285,9 @@ function parseM3U(text, listIdx) {
             const _durM = line.match(/#EXTINF:(-?\d+)/);
             if (_durM) {
                 const _dur = parseInt(_durM[1]);
-                if (_dur > 0 && currentItem.isLive !== false) {
+                const _isForceLiveDur3 = (currentItem.group||'').indexOf('Sinema ve Dizi') !== -1 ||
+                    ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur'].some(p => (currentItem.group||'').includes(p));
+                if (_dur > 0 && currentItem.isLive !== false && !_isForceLiveDur3) {
                     currentItem.isLive = false; // Pozitif süre = VOD
                 } else if (_dur === -1 && currentItem.isLive === false) {
                     // grup VOD dedi ama duration -1 ise grup kararına güven, dokunma
@@ -26122,7 +26295,11 @@ function parseM3U(text, listIdx) {
             }
         } else if (line && !line.startsWith('#') && currentItem) {
             currentItem.url = line;
-            if (currentItem.isLive) {
+            // kablowebtv URL → kesinlikle canlı yayın
+            const _ul3 = line.toLowerCase();
+            if (_ul3.includes('kablowebtv') || _ul3.includes('ottcdn') || _ul3.includes('cdn07.kablowebtv')) {
+                currentItem.isLive = true; currentItem.isVod = false; delete currentItem.isSeries;
+            } else if (currentItem.isLive) {
                 const ul = currentItem.url.toLowerCase();
                 if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
                     currentItem.isLive = false;
@@ -26945,27 +27122,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             try {
                 showInlineLoading(15, `${m3u.name} Yükleniyor...`);
                 const cachedM3U = await state.db.get(state.db.stores.M3U_CACHE, m3u.url);
-                if (cachedM3U && (cachedM3U.content || cachedM3U.channels)) {
+                if (cachedM3U && cachedM3U.content) {
                     const cacheAge = Date.now() - (cachedM3U.timestamp || 0);
-                    // KabloTV: 48 saat (2 gün) cache, diğerleri 6 saat
-                    const _cacheMaxAge = (m3u.name || '').trim() === 'KabloTV'
-                        ? 48 * 60 * 60 * 1000
-                        :  6 * 60 * 60 * 1000;
-                    // Kanallar doğrudan cache'de varsa (büyük listeler) direkt yükle
-                    if (cacheAge < _cacheMaxAge && cachedM3U.channels && cachedM3U.channels.length > 0) {
-                        showInlineLoading(80, `${m3u.name} Önbellekten...`);
-                        state.channels = state.channels.filter(c => c.listIdx != idx);
-                        cachedM3U.channels.forEach(c => state.channels.push(c));
-                        state.filtered = state.channels.filter(c => c.listIdx == idx);
-                        try { updateCategoriesFromFiltered(); renderCats(); } catch(e2) {}
-                        updateChannelCount(state.filtered.length);
-                        document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
-                        try { renderChannels(); } catch(e2) {}
-                        showToast(`✅ ${state.filtered.length.toLocaleString()} içerik (önbellekten)`);
-                        hideInlineLoading();
-                        return;
-                    }
-                    if (cacheAge < _cacheMaxAge && cachedM3U.content) {
+                    if (cacheAge < 6 * 60 * 60 * 1000) {
                         m3uContent = cachedM3U.content;
                         showInlineLoading(55, `${m3u.name} Önbellekten...`);
                         // Büyükse belleğe al (bir daha IndexedDB okumaya gerek yok)
@@ -27093,8 +27252,10 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                             const _forceIsVodList  = ['Film', 'Dizi', 'Dizi/Film'];
                             const _mName = (m3u.name || '').trim();
                             for (let _bi = 0; _bi < batch.length; _bi++) {
-                                if (_forceIsLiveList.indexOf(_mName) !== -1) {
-                                    batch[_bi].isLive = true; batch[_bi].isVod = false;
+                                const _bUrl = (batch[_bi].url||'').toLowerCase();
+                                const _bIsKablo = _bUrl.includes('kablowebtv') || _bUrl.includes('ottcdn') || _bUrl.includes('cdn07.kablowebtv');
+                                if (_forceIsLiveList.indexOf(_mName) !== -1 || _bIsKablo) {
+                                    batch[_bi].isLive = true; batch[_bi].isVod = false; delete batch[_bi].isSeries;
                                 } else if (_forceIsVodList.indexOf(_mName) !== -1) {
                                     batch[_bi].isLive = false; batch[_bi].isVod = true;
                                 }
@@ -27151,24 +27312,6 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                             }));
                         }
                     } catch(e2) {}
-                    // Kanalları IndexedDB'ye kaydet — requestIdleCallback ile UI'ı bloklamadan
-                    if (state.useIndexedDB && state.db.isReady() && _finalChannels.length > 0) {
-                        const _saveChannels = function() {
-                            try {
-                                state.db.put(state.db.stores.M3U_CACHE, {
-                                    url: m3u.url,
-                                    content: null,
-                                    channels: _finalChannels,
-                                    timestamp: Date.now()
-                                }).catch(() => {});
-                            } catch(e3) {}
-                        };
-                        if (typeof requestIdleCallback === 'function') {
-                            requestIdleCallback(_saveChannels, { timeout: 5000 });
-                        } else {
-                            setTimeout(_saveChannels, 500);
-                        }
-                    }
                     if (state.remote.active) {
                         state.remote.zone = 'channels';
                         state.remote.index = 0;
@@ -27204,12 +27347,6 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             if (sizeBytes >= MB20) {
                 state.m3uMemoryCache.set(m3u.url, { content: m3uContent, timestamp: Date.now(), sizeMB });
                 showToast(`📦 ${sizeMB.toFixed(0)} MB liste bellekte tutuldu`, 'info', 2500);
-                // Büyük listeler için içerik değil, sadece timestamp kaydet (donma önleme)
-                if (state.useIndexedDB && state.db.isReady()) {
-                    state.db.put(state.db.stores.M3U_CACHE, {
-                        url: m3u.url, content: null, timestamp: Date.now()
-                    }).catch(() => {});
-                }
             } else {
                 if (state.useIndexedDB && state.db.isReady()) {
                     state.db.put(state.db.stores.M3U_CACHE, {
@@ -27290,6 +27427,12 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         const _fILLive = ['KabloTV'];
         const _fILVod  = ['Film', 'Dizi', 'Dizi/Film'];
         const _mN = (m3u.name || '').trim();
+        parsed.forEach(function(c){
+            const _pUrl = (c.url||'').toLowerCase();
+            if (_pUrl.includes('kablowebtv') || _pUrl.includes('ottcdn') || _pUrl.includes('cdn07.kablowebtv')) {
+                c.isLive = true; c.isVod = false; delete c.isSeries;
+            }
+        });
         if (_fILLive.indexOf(_mN) !== -1) {
             parsed.forEach(function(c){ c.isLive = true; c.isVod = false; });
         } else if (_fILVod.indexOf(_mN) !== -1) {
@@ -27327,23 +27470,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         
         showToast(`✅ ${parsed.length.toLocaleString()} içerik yüklendi!`);
         hideInlineLoading();
-
-        // Kanalları IndexedDB'ye kaydet (non-streaming path)
-        if (state.useIndexedDB && state.db.isReady() && parsed.length > 0) {
-            const _saveP = function() {
-                try {
-                    state.db.put(state.db.stores.M3U_CACHE, {
-                        url: m3u.url, content: null, channels: parsed, timestamp: Date.now()
-                    }).catch(() => {});
-                } catch(e3) {}
-            };
-            if (typeof requestIdleCallback === 'function') {
-                requestIdleCallback(_saveP, { timeout: 5000 });
-            } else {
-                setTimeout(_saveP, 500);
-            }
-        }
-
+        
         if (state.remote.active) {
             state.remote.zone = 'channels';
             state.remote.index = 0;
@@ -29981,13 +30108,24 @@ function addContinueCardStyles() {
         
         // Grup adina gore isLive duzeltme: cache/parser hatasini gider
         const _fixLiveGrp = ['Ulusal','Haber','Spor','Belgesel','Sinema','Muzik','Cocuk','Dini','Radyo','Yemek','Kultur','Egitim'];
+        // Adında "Dizi" geçse bile canlı yayın olarak zorla işlenecek özel kategoriler
+        const _forceLiveCats = ['Sinema ve Dizi'];
         state.filtered.forEach(function(ch) {
             if (!ch || ch.isSpecial) return;
             const _gl = (ch.group||'').toLowerCase();
-            const _grpOkLive = _fixLiveGrp.some(function(p){ return (ch.group||'').startsWith(p); }) ||
-                _gl.startsWith('canl') || _gl.startsWith('live');
+            // URL bazlı kesin canlı yayın (kablowebtv)
+            const _chUrlLow = (ch.url||'').toLowerCase();
+            if (_chUrlLow.includes('kablowebtv') || _chUrlLow.includes('ottcdn') || _chUrlLow.includes('cdn07.kablowebtv')) {
+                ch.isLive = true; ch.isVod = false; delete ch.isSeries; return;
+            }
+            // Özel kategori kontrolü — isim ne olursa olsun canlı yayın
+            const _isForceLive = _forceLiveCats.some(function(fc){ return (ch.group||'').indexOf(fc) !== -1; });
+            if (_isForceLive) { ch.isLive = true; delete ch.isVod; delete ch.isSeries; return; }
+            const _grpOkLive = _fixLiveGrp.some(function(p){ return (ch.group||'').includes(p); }) ||
+                (ch.group||'').indexOf('Sinema ve Dizi') !== -1 ||
+                _gl.includes('canl') || _gl.includes('live');
             const _grpOkVod = _gl.includes('panel') || _gl.includes('arsiv') ||
-                _gl.includes('arşiv') || _gl.startsWith('film') || _gl.startsWith('dizi') ||
+                _gl.includes('arşiv') || (_gl.includes('film') && !_gl.includes('sinema')) || _gl.startsWith('dizi') ||
                 _gl === 'sinema yerli film' || _gl.startsWith('vod');
             if (_grpOkLive && !_grpOkVod) { ch.isLive = true; delete ch.isVod; }
         });
@@ -30368,7 +30506,12 @@ function renderChannels() {
 
 // VOD kartları için TMDB'den poster çek ve güncelle
 async function fetchTMDBPostersForVisible(displayChannels, maxDisplay) {
-    const BATCH = 3;
+    // Streaming varken hiç başlatma
+    if (window._streamingActive) return;
+    const _vid = document.getElementById('videoPlayer');
+    if (_vid && !_vid.paused && _vid.readyState > 2) return;
+
+    const BATCH = 2; // 3→2: daha az eş zamanlı istek
     const cards = document.querySelectorAll('.channel-card[data-is-vod="true"]');
     if (!cards.length) return;
 
@@ -30381,9 +30524,10 @@ async function fetchTMDBPostersForVisible(displayChannels, maxDisplay) {
 
     async function fetchAndUpdate(c) {
         if (!c || !c.name) return;
+        // Streaming başladıysa dur
+        if (window._streamingActive) return;
         const cardEl = cardMap[c.name];
         if (!cardEl) return;
-        // fetchVodInfo kullan — Türkçe/yabancı ayrımı dahil doğru sonuç verir
         let info = (state.vodCache[c.name] && state.vodCache[c.name].detailed)
             ? state.vodCache[c.name]
             : await fetchVodInfo(c.name);
@@ -30398,9 +30542,11 @@ async function fetchTMDBPostersForVisible(displayChannels, maxDisplay) {
 
     const vodChannels = displayChannels.slice(0, maxDisplay).filter(c => c && !c.isLive);
     for (let i = 0; i < vodChannels.length; i += BATCH) {
+        // Her batch öncesi streaming kontrolü
+        if (window._streamingActive) return;
         const batch = vodChannels.slice(i, i + BATCH).map(c => fetchAndUpdate(c));
         await Promise.allSettled(batch);
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 800)); // 300ms→800ms: CPU'ya daha fazla nefes
     }
 }
 
@@ -30417,23 +30563,42 @@ function setupAutoLoadOnScroll(totalChannels) {
     if (viewport._autoScrollListener) {
         viewport.removeEventListener('scroll', viewport._autoScrollListener);
     }
+
+    // TVBox için debounce — scroll sırasında DOM yıkımını önle
+    let _autoLoadTimer = null;
+    let _autoLoadLast = 0;
     
     viewport._autoScrollListener = function() {
-        const scrollTop = viewport.scrollTop;
-        const scrollHeight = viewport.scrollHeight;
-        const clientHeight = viewport.clientHeight;
-        const scrollPercent = (scrollTop + clientHeight) / scrollHeight;
-        
-        if (scrollPercent > 0.75) {
-            const currentLoaded = state.currentLoadedCards || 50;
-            const newLoad = Math.min(currentLoaded + 24, totalChannels);
-            if (newLoad > currentLoaded) {
-                state.currentLoadedCards = newLoad;
-                const savedScroll = scrollTop;
-                renderChannels();
-                setTimeout(() => { viewport.scrollTop = savedScroll; }, 30);
+        // Streaming varken auto-load tamamen durdur
+        if (window._streamingActive || (function(){var v=document.getElementById('videoPlayer');return v&&!v.paused&&v.readyState>2;}())) return;
+
+        const now = Date.now();
+        // Min 1 saniye aralıkla yükle (scroll jank önle)
+        if (now - _autoLoadLast < 1000) return;
+
+        clearTimeout(_autoLoadTimer);
+        _autoLoadTimer = setTimeout(function() {
+            const scrollTop = viewport.scrollTop;
+            const scrollHeight = viewport.scrollHeight;
+            const clientHeight = viewport.clientHeight;
+            const scrollPercent = (scrollTop + clientHeight) / scrollHeight;
+            
+            // %85'e kadar scroll edilince yükle (daha az agresif)
+            if (scrollPercent > 0.85) {
+                const currentLoaded = window.state && window.state.currentLoadedCards || 24;
+                const newLoad = Math.min(currentLoaded + 24, totalChannels);
+                if (newLoad > currentLoaded) {
+                    _autoLoadLast = Date.now();
+                    if (window.state) window.state.currentLoadedCards = newLoad;
+                    const savedScroll = scrollTop;
+                    // renderChannels async çağır — main thread'i bırak
+                    setTimeout(function() {
+                        try { renderChannels(); } catch(e) {}
+                        setTimeout(function() { viewport.scrollTop = savedScroll; }, 20);
+                    }, 50);
+                }
             }
-        }
+        }, 200); // 200ms debounce
     };
     
     viewport.addEventListener('scroll', viewport._autoScrollListener, { passive: true });
@@ -30587,10 +30752,24 @@ async function loadVodMetadataInBackground() {
 
 // SON.BOLUMLER: TMDB modal olmadan direkt oynat
 function playVodDirect(index) {
-    const ch = state.filtered[index];
+    // Önce state.filtered[index] dene — eğer yoksa state.channels[index] ile fallback
+    let ch = state.filtered[index];
+    let playIdx = index;
+    if (!ch) {
+        // state.channels[index]'ten kanalı bul, state.filtered'da ara
+        const srcCh = state.channels[index];
+        if (!srcCh) return;
+        playIdx = state.filtered.findIndex(c => c.name === srcCh.name || c.url === srcCh.url);
+        if (playIdx === -1) {
+            // filtered'da yok — geçici olarak ekle ve oynat
+            state.filtered.push(srcCh);
+            playIdx = state.filtered.length - 1;
+        }
+        ch = state.filtered[playIdx];
+    }
     if (!ch) return;
     // playChannel ile direkt başlat — modal, TMDB, sezon listesi YOK
-    playChannel(index, 0);
+    playChannel(playIdx, 0);
 }
 
 // URL ile kanal oynatma fonksiyonu
@@ -31095,24 +31274,24 @@ function resumeChannel(startTime) {
                 // NOT: needsDirect URL'ler (trycloudflare vb.) proxy'ye gönderilmez —
                 // proxy bu tür URL'leri açamaz; startLoad(-1) ile live edge'e yeniden bağlan
                 const _fbDirect = ['trycloudflare.com','ngrok.io','ngrok-free.app',
-                    'localhost','127.0.0.1','workers.dev','umitmod-farki.onrender.com']
+                    'localhost','127.0.0.1','workers.dev','umitmod-farki.onrender.com',
+                    'kablowebtv.net','ottcdn.','cdn07.kablowebtv']  // ← KabloTV: kesinlikle proxy'ye gönderme
                     .some(d => (ch.url || '').includes(d));
                 if (_fbDirect && !state.player.streamStarted && !window._proxyFallbackTriggered) {
                     window._proxyFallbackTriggered = true;
-                    // Direkt stream açılmadı → HLS'i yeniden başlat (live edge)
+                    // KabloTV/Direkt stream açılmadı — native video.src ile yeniden dene (proxy YOK)
                     showToast('🔄 Yayın yenileniyor...');
                     try {
                         const _hls = state.player.hls;
-                        if (_hls) { _hls.stopLoad(); setTimeout(() => { try { _hls.startLoad(-1); } catch(e){} }, 300); }
-                        else {
-                            if (Hls && Hls.isSupported()) {
-                                const _reHls = new Hls(Object.assign({}, HLS_CONFIG, { startPosition: -1 }));
-                                state.player.hls = _reHls;
-                                _reHls.loadSource(ch.url);
-                                _reHls.attachMedia(video);
-                                _reHls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); });
-                            }
-                        }
+                        if (_hls) { _hls.destroy(); state.player.hls = null; }
+                        video.pause();
+                        video.removeAttribute('src');
+                        // Native video.src ile direkt aç
+                        setTimeout(function() {
+                            video.src = ch.url;
+                            video.load();
+                            video.play().catch(function(){});
+                        }, 300);
                     } catch(e) {}
                 } else if (!_fbDirect && remaining === 30 && !state.player.streamStarted && !window._proxyFallbackTriggered) {
                     window._proxyFallbackTriggered = true;
@@ -31124,7 +31303,9 @@ function resumeChannel(startTime) {
                         : _fb;
                     const _fbLower = (_fb || '').toLowerCase();
                     const _isKool = _fb && (_fb.includes('kool.to') || _fb.includes('vavoo.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
-                    if (!_isKool && _fbEncoded) {
+                    // KabloTV URL'lerini kesinlikle proxy'ye gönderme
+                    const _isKablo = _fb && (_fbLower.includes('kablowebtv') || _fbLower.includes('ottcdn.') || _fbLower.includes('cdn07.kablowebtv'));
+                    if (!_isKool && !_isKablo && _fbEncoded) {
                         // Mevcut HLS'i durdur, proxy ile yeniden başlat
                         try {
                             if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
@@ -31822,6 +32003,8 @@ function resumeChannel(startTime) {
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
         'umitmod-farki.onrender.com',  // kool.to/vavoo birincil resolver
         'kablowebtv.net',              // KabloTV CDN → direkt aç
+        'ottcdn.',                     // ottcdn.kablowebtv.net vb. → direkt aç
+        'cdn07.kablowebtv',            // KabloTV CDN subdomain → direkt aç
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
     // Direct URLs (trycloudflare/ngrok) with .m3u8 = always live stream
@@ -32075,9 +32258,10 @@ function resumeChannel(startTime) {
                 if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
                     mediaErrorCount++;
                     if (mediaErrorCount >= 5 && needsDirect) {
-                        // needsDirect domain: proxy çalışmaz, native ile dene
+                        // needsDirect domain (kablowebtv vb.): proxy KESİNLİKLE çalışmaz, native ile dene
                         fallbackDone = true;
                         hlsInst.destroy(); state.player.hls = null;
+                        console.warn('needsDirect non-fatal limit -> native:', rawUrl);
                         showToast('🔄 Native player ile deneniyor...');
                         video.src = rawUrl; video.load(); video.play().catch(()=>{});
                         return;
@@ -32132,8 +32316,9 @@ function resumeChannel(startTime) {
                 showToast('🔄 Native player ile deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsDirect && streamUrl !== rawUrl) {
-                // Native de basarisiz -> son care
-                showToast('🔄 Son bağlantı deneniyor...');
+                // Native de basarisiz → rawUrl ile son bir dene, kesinlikle proxy YOK
+                console.warn('needsDirect: son deneme direkt URL ile:', rawUrl);
+                showToast('🔄 Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
@@ -32288,8 +32473,13 @@ function resumeChannel(startTime) {
             startHls(rawUrl);
         }
     } else {
-        // MP4 / diğer medya
-        video.src = rawUrl;
+        // MP4 / MKV / diğer medya
+        // http:// linkler HTTPS sayfasında mixed content engeline takılır → proxy üzerinden aç
+        // NOT: needsDirect URL'ler (kablowebtv vb.) kesinlikle proxy'ye gönderilmez
+        const _nativeUrl = (rawUrl.startsWith('http:') && !needsDirect)
+            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
+            : rawUrl;
+        video.src = _nativeUrl;
         video.load();
         const p = video.play();
         if (p) p.then(() => {
@@ -32297,9 +32487,15 @@ function resumeChannel(startTime) {
             if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
         }).catch(e => {
             if (e.name === 'AbortError') return;
-            // Proxy kullanma — hata olsa da direkt linkte kal
-            video.load();
-            video.play().catch(()=>{});
+            // Proxy başarısız → direkt dene
+            if (_nativeUrl !== rawUrl) {
+                video.src = rawUrl;
+                video.load();
+                video.play().catch(()=>{});
+            } else {
+                video.load();
+                video.play().catch(()=>{});
+            }
         });
     }
 
@@ -44985,7 +45181,7 @@ function _wrapRenderChannels() {
             clearTimeout(_rcStreamDelay);
             _rcStreamDelay = setTimeout(function() {
                 if (!_isStreaming() && _origRenderChannels) _origRenderChannels();
-            }, 1500);
+            }, 3000); // 1500ms→3000ms: streaming bittikten sonra daha uzun bekle
             return;
         }
         if (_origRenderChannels) {
@@ -45013,14 +45209,14 @@ function _wrapFetchTMDB() {
         if (_streamingActive || _isStreaming()) {
             var _retry = 0;
             var _wait = function() {
-                if (++_retry > 12) return;
+                if (++_retry > 8) return; // 12→8: daha az deneme
                 if (!_isStreaming()) {
-                    setTimeout(function() { _origFetchTMDB(displayChannels, maxDisplay); }, 2500);
+                    setTimeout(function() { _origFetchTMDB(displayChannels, maxDisplay); }, 5000); // 2500→5000ms
                 } else {
-                    setTimeout(_wait, 3000);
+                    setTimeout(_wait, 5000); // 3000→5000ms
                 }
             };
-            setTimeout(_wait, 4000);
+            setTimeout(_wait, 6000); // 4000→6000ms: ilk deneme gecikme
             return Promise.resolve();
         }
         return _origFetchTMDB(displayChannels, maxDisplay);
@@ -47664,6 +47860,960 @@ document.addEventListener('visibilitychange', function() {
 window.addEventListener('online', function() {
     if (_watching && !_blocked) setTimeout(_doCheck, 2000);
 });
+
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TVBox FREEZE FIX v3 — Rendering & Remote Focus Overhaul
+     Darboğazlar:
+       1. renderChannels her scroll'da groupChannelsBySeries çalıştırıyor (O(n) regex)
+       2. updateRemoteFocus her ok'ta querySelectorAll('.remote-focused') — layout thrash
+       3. grid.innerHTML tam yeniden yazımı — DOM patlatma
+       4. fetchTMDBPostersForVisible her render'da tetikleniyor
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+// ── 1. groupChannelsBySeries CACHE ──────────────────────────────
+// Aynı filtered dizisi için tekrar regex çalıştırma
+(function patchGroupCache() {
+    var _origGroup = window.groupChannelsBySeries;
+    if (typeof _origGroup !== 'function') {
+        // Fonksiyon henüz tanımlanmamışsa DOMContentLoaded sonra dene
+        document.addEventListener('DOMContentLoaded', patchGroupCache);
+        return;
+    }
+    var _lastInput = null;
+    var _lastResult = null;
+    var _lastLen    = -1;
+    window.groupChannelsBySeries = function(channels) {
+        // Aynı dizi referansı veya aynı uzunluk+ilk eleman → cache döndür
+        if (channels === _lastInput && channels.length === _lastLen) {
+            return _lastResult;
+        }
+        // Cache geçersiz → hesapla
+        _lastInput  = channels;
+        _lastLen    = channels ? channels.length : -1;
+        _lastResult = _origGroup.call(this, channels);
+        return _lastResult;
+    };
+    // filterChannels çağrıldığında cache'i geçersiz kıl
+    var _origFilter = window.filterChannels;
+    if (typeof _origFilter === 'function') {
+        window.filterChannels = function() {
+            _lastInput = null; _lastLen = -1; _lastResult = null;
+            return _origFilter.apply(this, arguments);
+        };
+    }
+})();
+
+// ── 2. renderChannels — DOM DIFF + SCROLL THROTTLE ──────────────
+// grid.innerHTML tüm DOM'u yıkar → TVBox kasma
+// Yeni yaklaşım: displayChannels değişmediyse yeniden yazmaya gerek yok
+(function patchRenderChannels() {
+    var _origRender = window.renderChannels;
+    if (typeof _origRender !== 'function') {
+        document.addEventListener('DOMContentLoaded', patchRenderChannels);
+        return;
+    }
+    var _lastFilteredLen  = -1;
+    var _lastFilteredHash = '';
+    var _lastLoaded       = -1;
+    var _renderScheduled  = false;
+    var _renderRAF        = null;
+
+    function _hashFiltered(arr) {
+        if (!arr || arr.length === 0) return '';
+        // İlk + son + uzunluk — hızlı dirty check (tam hash pahalı)
+        var first = arr[0] ? (arr[0].name || '') + (arr[0].url || '') : '';
+        var last  = arr[arr.length-1] ? (arr[arr.length-1].name || '') : '';
+        return arr.length + '|' + first + '|' + last;
+    }
+
+    window.renderChannels = function() {
+        var st = window.state;
+        if (!st) { _origRender(); return; }
+
+        var currentLen    = st.filtered ? st.filtered.length : 0;
+        var currentHash   = _hashFiltered(st.filtered);
+        var currentLoaded = st.currentLoadedCards || 0;
+
+        // Tamamen aynıysa render atla
+        if (currentLen === _lastFilteredLen &&
+            currentHash === _lastFilteredHash &&
+            currentLoaded === _lastLoaded) {
+            return;
+        }
+
+        // RAF ile birleştir — aynı frame'de birden fazla renderChannels çağrısını tek'e indir
+        if (_renderScheduled) return;
+        _renderScheduled = true;
+
+        if (_renderRAF) cancelAnimationFrame(_renderRAF);
+        _renderRAF = requestAnimationFrame(function() {
+            _renderScheduled = false;
+            _lastFilteredLen  = currentLen;
+            _lastFilteredHash = _hashFiltered(st.filtered);
+            _lastLoaded       = st.currentLoadedCards || 0;
+            _origRender();
+        });
+    };
+})();
+
+// ── 3. updateRemoteFocus — ELEMENT CACHE + FAST CLEAR ───────────
+// Her ok'ta querySelectorAll('.remote-focused') DOM taraması yapıyor
+// Bunu önlemek için son odaklanan elementi cache'te tut
+(function patchRemoteFocus() {
+    var _lastFocused = null; // son remote-focused element
+
+    // Mevcut updateRemoteFocus'u wrap et
+    var _waitAndPatch = function() {
+        var _origFocus = window.updateRemoteFocus;
+        if (typeof _origFocus !== 'function') {
+            setTimeout(_waitAndPatch, 300);
+            return;
+        }
+        window.updateRemoteFocus = function() {
+            // Önceki odağı querySelectorAll yerine cache ile temizle
+            if (_lastFocused) {
+                try { _lastFocused.classList.remove('remote-focused'); } catch(e) {}
+                _lastFocused = null;
+            }
+            // Ama yine de güvenlik için stale focused'ları temizle (100ms debounce)
+            // Bu pahalı işlemi her çağrıda değil, sadece gerektiğinde yap
+            _origFocus();
+            // Yeni odaklanan elementi bul ve cache'e al
+            var focused = document.querySelector('.remote-focused');
+            if (focused) _lastFocused = focused;
+        };
+
+        // querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'))
+        // Bu satır updateRemoteFocus içinde çok sık çalışıyor
+        // İç fonksiyonu override edemeyiz ama updateSidebarFocus'u da patch'leyelim
+        var _origSidebar = window.updateSidebarFocus;
+        if (typeof _origSidebar === 'function') {
+            var _sidebarLastFocused = null;
+            window.updateSidebarFocus = function() {
+                if (_sidebarLastFocused) {
+                    try { _sidebarLastFocused.classList.remove('remote-focused'); } catch(e) {}
+                    _sidebarLastFocused = null;
+                }
+                _origSidebar();
+                var f = document.querySelector('#sidebarContent .remote-focused, #channelListContent .remote-focused');
+                if (f) _sidebarLastFocused = f;
+            };
+        }
+    };
+    _waitAndPatch();
+})();
+
+// ── 4. SCROLL → renderChannels THROTTLE ──────────────────────────
+// setupAutoLoadOnScroll her scroll event'inde render çalıştırıyor
+// Throttle: 300ms'de bir kontrol et
+(function patchScrollLoad() {
+    var _waitSetup = function() {
+        var _origSetup = window.setupAutoLoadOnScroll;
+        if (typeof _origSetup !== 'function') {
+            setTimeout(_waitSetup, 500);
+            return;
+        }
+        window.setupAutoLoadOnScroll = function(totalChannels) {
+            var viewport = document.getElementById('channelsViewport') ||
+                           document.querySelector('.channels-viewport');
+            if (!viewport) { _origSetup(totalChannels); return; }
+
+            // Eski listener temizle
+            if (viewport._autoScrollListener) {
+                viewport.removeEventListener('scroll', viewport._autoScrollListener);
+            }
+            if (viewport._tvboxThrottleTimer) {
+                clearTimeout(viewport._tvboxThrottleTimer);
+            }
+
+            var _scrollThrottle = false;
+            viewport._autoScrollListener = function() {
+                if (_scrollThrottle) return;
+                _scrollThrottle = true;
+                viewport._tvboxThrottleTimer = setTimeout(function() {
+                    _scrollThrottle = false;
+                    var scrollTop    = viewport.scrollTop;
+                    var scrollHeight = viewport.scrollHeight;
+                    var clientHeight = viewport.clientHeight;
+                    if (scrollHeight === 0) return;
+                    var scrollPercent = (scrollTop + clientHeight) / scrollHeight;
+                    if (scrollPercent > 0.75) {
+                        var st = window.state;
+                        var currentLoaded = (st && st.currentLoadedCards) || 50;
+                        var newLoad = Math.min(currentLoaded + 24, totalChannels);
+                        if (newLoad > currentLoaded) {
+                            if (st) st.currentLoadedCards = newLoad;
+                            var savedScroll = scrollTop;
+                            if (typeof window.renderChannels === 'function') window.renderChannels();
+                            setTimeout(function() { viewport.scrollTop = savedScroll; }, 30);
+                        }
+                    }
+                }, 300); // 300ms throttle — TVBox'ta scroll event fırtınasını kes
+            };
+            viewport.addEventListener('scroll', viewport._autoScrollListener, { passive: true });
+        };
+    };
+    _waitSetup();
+})();
+
+// ── 5. fetchTMDBPostersForVisible THROTTLE ───────────────────────
+// Her renderChannels'dan sonra poster çekiyor — ağ ve CPU baskısı
+(function patchTMDB() {
+    var _tmdbTimer = null;
+    var _waitTMDB = function() {
+        var _origTMDB = window.fetchTMDBPostersForVisible;
+        if (typeof _origTMDB !== 'function') {
+            setTimeout(_waitTMDB, 500);
+            return;
+        }
+        window.fetchTMDBPostersForVisible = function(displayChannels, maxDisplay) {
+            clearTimeout(_tmdbTimer);
+            // 800ms sonra başlat — render tamamlansın, UI nefes alsın
+            _tmdbTimer = setTimeout(function() {
+                _origTMDB(displayChannels, maxDisplay);
+            }, 800);
+        };
+    };
+    _waitTMDB();
+})();
+
+// ── 6. keydown HANDLER DEBOUNCE ──────────────────────────────────
+// Hızlı ok basışlarında birden fazla updateRemoteFocus + filterChannels tetiklenebilir
+// Kumanda auto-repeat basışlarını 80ms debounce ile sınırla
+(function patchKeyRepeat() {
+    var _keyLastTime = {};
+    var _KEY_INTERVAL = 80; // ms — 80ms altındaki tekrarları yut
+
+    document.addEventListener('keydown', function(e) {
+        var k = e.keyCode || e.which;
+        var NAV = { 37:1, 38:1, 39:1, 40:1 }; // yalnızca yön tuşları
+        if (!NAV[k]) return;
+        var now = Date.now();
+        var last = _keyLastTime[k] || 0;
+        if (now - last < _KEY_INTERVAL) {
+            e.stopImmediatePropagation();
+            return;
+        }
+        _keyLastTime[k] = now;
+    }, true); // capture phase — diğer listener'lardan önce
+})();
+
+// ── 7. CSS PAINT LAYER — contain strict ─────────────────────────
+// channel-card'lara contain:strict ekle — her kart kendi paint bölgesinde
+(function applyContainStrict() {
+    var s = document.createElement('style');
+    s.id = 'tvbox-freeze-fix-v3-css';
+    s.textContent = [
+        /* Kanal grid'i kendi katmanında — scroll layout thrash önle */
+        '.channels-grid { content-visibility: auto; contain-intrinsic-size: 0 200px; }',
+        /* Her kart bağımsız paint bölgesi */
+        '.channel-card { contain: layout style paint; }',
+        /* Viewport dışı kartları GPU'da tut — compositing hazır */
+        '.channels-viewport { transform: translateZ(0); overflow-y: scroll; -webkit-overflow-scrolling: touch; }',
+        /* Gradient ve blur efektleri TVBox GPU'sunu zorluyor — kaldır */
+        '.vod-gradient-overlay { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%) !important; filter: none !important; }',
+        /* backdrop-filter TVBox'ta çok pahalı — kaldır */
+        '.app-header, .category-bar, .m3u-selector-bar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(10,10,10,0.97) !important; }',
+        '.sidebar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }',
+        '.vodModal, #vodModal, .vod-modal { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }',
+        /* Animasyonları TVBox'ta tamamen kapat */
+        '.tvbox-mode *, .tvbox-mode *::before, .tvbox-mode *::after { animation-duration: 0.001ms !important; animation-delay: 0ms !important; transition-duration: 0.001ms !important; }',
+        /* Img decode async — main thread bloke etme */
+        '.channel-card img, .vod-poster-img { content-visibility: auto; decoding: async; }',
+        /* text-shadow tüm kartlarda kaldır — GPU paint tetikliyor */
+        '.channel-card .channel-title, .channel-card .vod-title { text-shadow: none !important; }',
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+// ── 8. filterChannels DEBOUNCE ───────────────────────────────────
+// Birden fazla hızlı kategori değişimini tek render'a indir
+(function patchFilterDebounce() {
+    var _filterTimer = null;
+    var _waitFilter = function() {
+        var _origFilter = window.filterChannels;
+        if (typeof _origFilter !== 'function') {
+            setTimeout(_waitFilter, 400);
+            return;
+        }
+        var _filtering = false;
+        window.filterChannels = function() {
+            if (_filtering) return; // zaten çalışıyorsa atla
+            clearTimeout(_filterTimer);
+            _filterTimer = setTimeout(function() {
+                _filtering = true;
+                try { _origFilter(); } finally { _filtering = false; }
+            }, 50); // 50ms — art arda çağrıları birleştir
+        };
+    };
+    _waitFilter();
+})();
+
+// ── 9. IMAGE decoding: async ─────────────────────────────────────
+// Yeni eklenen img'lere decoding=async — main thread'i bırak
+(function patchImgDecode() {
+    var _obs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+                if (n.nodeType !== 1) return;
+                var imgs = n.tagName === 'IMG' ? [n] : n.querySelectorAll('img');
+                imgs.forEach(function(img) {
+                    img.decoding = 'async';
+                    img.loading  = 'lazy';
+                });
+            });
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        _obs.observe(document.body, { childList: true, subtree: true });
+        // Mevcut img'leri de güncelle
+        document.querySelectorAll('img').forEach(function(img) {
+            img.decoding = 'async';
+        });
+    });
+})();
+
+// ── 10. MEMORY: continueWatching GC ─────────────────────────────
+// continueWatching büyük objeler tutabilir — 5dk'da bir eski kayıtları temizle
+(function patchContinueGC() {
+    setInterval(function() {
+        try {
+            var st = window.state;
+            if (!st || !st.continueWatching) return;
+            var MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 gün
+            var now = Date.now();
+            var keys = Object.keys(st.continueWatching);
+            if (keys.length < 100) return; // 100'den az ise temizleme
+            keys.forEach(function(k) {
+                var entry = st.continueWatching[k];
+                if (entry && entry.timestamp && (now - entry.timestamp) > MAX_AGE) {
+                    delete st.continueWatching[k];
+                }
+            });
+        } catch(e) {}
+    }, 5 * 60 * 1000);
+})();
+
+console.log('[TVBox Freezefix v3] Loaded — 10 patch aktif');
+
+})();
+</script>
+
+<script>
+/* ── TAM EKRAN FIX — CSS Simülasyon (requestFullscreen bypass) ──
+   requestFullscreen() app24/WebView'da beyaz ekran + donma yapıyor.
+   Çözüm: API'yi hiç çağırma, position:fixed ile tam ekran simüle et.
+*/
+(function() {
+    function _waitReady() {
+        if (typeof window.toggleFullscreen !== 'function') {
+            setTimeout(_waitReady, 200);
+            return;
+        }
+
+        // CSS tam ekran state
+        var _isCSSFullscreen = false;
+        var _savedStyles = {};
+
+        function _enterCSSFullscreen() {
+            if (_isCSSFullscreen) return;
+            _isCSSFullscreen = true;
+
+            var pc = document.getElementById('playerContainer');
+            var vid = pc ? pc.querySelector('video') : null;
+
+            if (pc) {
+                // Mevcut style'ı kaydet
+                _savedStyles.pc = pc.getAttribute('style') || '';
+                _savedStyles.pcClass = pc.className;
+
+                pc.style.cssText = [
+                    'position:fixed',
+                    'top:0',
+                    'left:0',
+                    'width:100vw',
+                    'height:100vh',
+                    'z-index:2147483647',
+                    'background:#000',
+                    'margin:0',
+                    'padding:0',
+                    'border-radius:0',
+                    'transform:none',
+                    'max-width:none',
+                    'max-height:none'
+                ].join('!important;') + '!important';
+            }
+            if (vid) {
+                _savedStyles.vid = vid.getAttribute('style') || '';
+                vid.style.cssText = 'width:100%!important;height:100%!important;object-fit:contain!important;';
+            }
+
+            // UI güncelle
+            var fi  = document.getElementById('fullscreenIcon');
+            var fib = document.getElementById('fullscreenIconBottom');
+            var bf  = document.getElementById('btnFullscreen');
+            var bfb = document.getElementById('btnFullscreenBottom');
+            if (fi)  fi.textContent  = 'fullscreen_exit';
+            if (fib) fib.textContent = 'fullscreen_exit';
+            if (bf)  bf.classList.add('active');
+            if (bfb) bfb.classList.add('active');
+
+            if (window.state) window.state.player.fullscreen = true;
+            if (typeof showToast === 'function') showToast('Tam ekran açıldı');
+            if (typeof showControls === 'function') showControls(3000);
+
+            // Geri tuşuyla çık
+            window._fsBackHandler = function(e) {
+                var k = e.key || e.keyCode;
+                if (k === 'Backspace' || k === 8 || k === 'Escape' || k === 27) {
+                    _exitCSSFullscreen();
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            };
+            document.addEventListener('keydown', window._fsBackHandler, true);
+        }
+
+        function _exitCSSFullscreen() {
+            if (!_isCSSFullscreen) return;
+            _isCSSFullscreen = false;
+
+            var pc  = document.getElementById('playerContainer');
+            var vid = pc ? pc.querySelector('video') : null;
+
+            if (pc)  pc.setAttribute('style', _savedStyles.pc || '');
+            if (vid) vid.setAttribute('style', _savedStyles.vid || '');
+
+            var fi  = document.getElementById('fullscreenIcon');
+            var fib = document.getElementById('fullscreenIconBottom');
+            var bf  = document.getElementById('btnFullscreen');
+            var bfb = document.getElementById('btnFullscreenBottom');
+            if (fi)  fi.textContent  = 'fullscreen';
+            if (fib) fib.textContent = 'fullscreen';
+            if (bf)  bf.classList.remove('active');
+            if (bfb) bfb.classList.remove('active');
+
+            if (window.state) window.state.player.fullscreen = false;
+            if (typeof showToast === 'function') showToast('Tam ekran kapatıldı');
+
+            if (window._fsBackHandler) {
+                document.removeEventListener('keydown', window._fsBackHandler, true);
+                window._fsBackHandler = null;
+            }
+        }
+
+        // toggleFullscreen'i tamamen yeniden yaz
+        window.toggleFullscreen = function() {
+            if (_isCSSFullscreen) {
+                _exitCSSFullscreen();
+            } else {
+                _enterCSSFullscreen();
+            }
+            if (typeof playKeySound === 'function') playKeySound('click');
+        };
+
+        console.log('[FSFix] toggleFullscreen CSS-only moduna alındı');
+    }
+
+    _waitReady();
+})();
+</script>
+
+<style>
+/* Tam Ekran butonu etiketi — iki kelime sığsın */
+#btnFullscreenBottom .btn-label,
+#btnFullscreen .btn-label {
+    font-size: 6.5px !important;
+    white-space: nowrap !important;
+    letter-spacing: 0 !important;
+}
+</style>
+
+<script>
+/* ── SİNEMA VE DİZİ KATEGORİ FİX ──────────────────────────────
+   🜲ÜMİT🜲-Sinema ve Dizi gibi emoji/özel karakter ile başlayan
+   grup adları startsWith kontrolünü geçemiyor → VOD olarak işleniyor.
+   Çözüm: channels yüklendikten sonra isLive'ı zorla düzelt.
+*/
+(function() {
+    // Grup adında bu kelimelerin HEPSİ varsa → canlı yayın olarak zorla
+    // toLowerCase() KULLANMA — Türkçe İ ve özel unicode karakterler bozuyor
+    var FORCE_LIVE_PATTERNS = [
+        'Sinema ve Dizi',
+    ];
+
+    function _fixGroupLive(channels) {
+        if (!channels || !channels.length) return;
+        channels.forEach(function(ch) {
+            if (!ch || ch.isSpecial) return;
+            var grpRaw = ch.group || '';
+            var shouldForceLive = FORCE_LIVE_PATTERNS.some(function(pat) {
+                return grpRaw.indexOf(pat) !== -1;
+            });
+            if (shouldForceLive) {
+                ch.isLive = true;
+                ch.isVod = false;
+                ch.isSeries = false;
+                delete ch._vodChecked;
+            }
+        });
+    }
+
+    // state.channels yüklendikten sonra çalıştır
+    function _tryFix() {
+        var st = window.state;
+        if (!st || !st.channels || st.channels.length === 0) {
+            setTimeout(_tryFix, 500);
+            return;
+        }
+        _fixGroupLive(st.channels);
+        // filterChannels'ı da patch'le — her filtre sonrası tekrar düzelt
+        var _origFilter = window.filterChannels;
+        if (typeof _origFilter === 'function') {
+            window.filterChannels = function() {
+                _origFilter.apply(this, arguments);
+                if (window.state && window.state.filtered) {
+                    _fixGroupLive(window.state.filtered);
+                }
+            };
+        }
+        // İlk yükleme için renderChannels'ı tetikle
+        if (typeof window.filterChannels === 'function') {
+            window.filterChannels();
+        }
+        console.log('[GroupFix] Sinema ve Dizi kategorisi canlı yayın olarak işaretlendi');
+    }
+
+    if (document.readyState === 'complete') {
+        setTimeout(_tryFix, 800);
+    } else {
+        window.addEventListener('load', function() { setTimeout(_tryFix, 800); });
+    }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TVBox DONMA ULTIMATE FIX — Tüm kalan kasma/donma sorunları
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="tvbox-ultimate-css">
+
+/* ── 1. TEMEL TVBox CSS OPTİMİZASYONU ── */
+/* content-visibility: auto → ekran dışı kartları render etme */
+.channel-card {
+    content-visibility: auto !important;
+    contain-intrinsic-size: 0 160px !important;
+}
+
+/* ── 2. EPG OVERLAY — GPU katman sorununu önle ── */
+.live-epg-overlay {
+    transform: none !important;
+    will-change: auto !important;
+    contain: layout style !important;
+}
+.live-epg-bar-fill {
+    transition: none !important;
+}
+
+/* ── 3. VOD GRADIENT — Streaming modda kapat ── */
+body.streaming-mode .vod-gradient-overlay,
+body.streaming-mode .live-epg-overlay {
+    display: none !important;
+}
+
+/* ── 4. SCROLL CONTAINER — TVBox WebView için ── */
+.channels-viewport {
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    isolation: isolate !important;
+}
+
+/* ── 5. MODAL backdrop-filter TAMAMEN KAPAT ── */
+.modal-bg,
+.modal-overlay,
+.vod-modal,
+#vodModal,
+#settingsModal,
+#sleepModeModal {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ── 6. PLAYER VIEW — Tam izolasyon ── */
+#playerView {
+    contain: layout paint style !important;
+    isolation: isolate !important;
+}
+
+/* ── 7. SIDEBAR — Açıkken GPU katman ── */
+.sidebar.open {
+    transform: translateZ(0) !important;
+    will-change: auto !important;
+    contain: layout paint !important;
+}
+
+/* ── 8. VIDEO ELEMENT — En yüksek öncelik ── */
+#videoPlayer {
+    contain: strict !important;
+    will-change: auto !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+}
+
+/* ── 9. TOASTS — Animasyonsuz ── */
+.toast, .toast-notification {
+    animation: none !important;
+    transition: opacity 150ms !important;
+}
+
+/* ── 10. NAVIGATION HINT — Hafif ── */
+#navHintIndicator {
+    animation: none !important;
+    transition: opacity 200ms !important;
+}
+
+/* ── 11. KANAL KARTLARI — Kesin transform=none ── */
+.channel-card,
+.channel-card:hover,
+.channel-card:focus,
+.channel-card:active,
+.channel-card.remote-focused,
+.channel-card.focused {
+    transform: none !important;
+    -webkit-transform: none !important;
+}
+
+/* ── 12. VOD HERO SLIDER — Streaming modda durdur ── */
+body.streaming-mode #vodHeroSlider {
+    display: none !important;
+}
+
+/* ── 13. FONT-SMOOTHING — TVBox için ── */
+* {
+    -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+/* ── 14. IMAGE RENDERING — TVBox için optimize ── */
+.channel-logo-img, .channel-card img {
+    image-rendering: auto !important;
+    transform: none !important;
+    filter: none !important;
+}
+
+/* ── 15. PROGRESS BAR FIX — Repaint önle ── */
+.progress-bar-fill, #progressBar, .live-epg-bar-fill {
+    will-change: auto !important;
+    transform: none !important;
+}
+
+</style>
+
+<script>
+/* ── TVBox ULTIMATE DONMA FIX ── */
+(function() {
+'use strict';
+
+/* ── A. VOD HERO SLIDER'I DURDUR (streaming + ana sayfa dışı) ── */
+(function _fixVodHeroSlider() {
+    // Slider timer'ını streaming modda durdur
+    var _origPlaying = HTMLVideoElement.prototype;
+    var _sliderStopped = false;
+
+    function _checkSlider() {
+        var v = document.getElementById('videoPlayer');
+        var slider = document.getElementById('vodHeroSlider');
+        if (!slider) return;
+        if (v && !v.paused && v.readyState > 2) {
+            // Streaming: slider'ı gizle
+            if (!_sliderStopped) {
+                slider.style.display = 'none';
+                _sliderStopped = true;
+            }
+        } else {
+            _sliderStopped = false;
+        }
+    }
+
+    var v = document.getElementById('videoPlayer');
+    if (v) {
+        v.addEventListener('playing', _checkSlider, { passive: true });
+        v.addEventListener('pause', function() { _sliderStopped = false; }, { passive: true });
+        v.addEventListener('ended', function() { _sliderStopped = false; }, { passive: true });
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            var v2 = document.getElementById('videoPlayer');
+            if (v2) {
+                v2.addEventListener('playing', _checkSlider, { passive: true });
+                v2.addEventListener('pause', function() { _sliderStopped = false; }, { passive: true });
+                v2.addEventListener('ended', function() { _sliderStopped = false; }, { passive: true });
+            }
+        });
+    }
+})();
+
+/* ── B. AŞIRI renderChannels ÇAĞRIMINI ÖNLE ── */
+// Birden fazla hızlı çağrı varsa son birini çalıştır
+(function _throttleRenderChannels() {
+    var _rcTimer = null;
+    var _rcPending = false;
+    var _RC_MIN_INTERVAL = 500; // Min 500ms aralık
+    var _lastRC = 0;
+
+    function _tryWrap() {
+        if (typeof window.renderChannels !== 'function') {
+            setTimeout(_tryWrap, 300);
+            return;
+        }
+        if (window._rcUltimateWrapped) return;
+        window._rcUltimateWrapped = true;
+
+        var _orig = window.renderChannels;
+        window.renderChannels = function() {
+            var now = Date.now();
+            var sinceLastRC = now - _lastRC;
+
+            // Streaming aktifse ertele
+            var v = document.getElementById('videoPlayer');
+            var isStream = v && !v.paused && v.readyState > 2;
+            if (isStream || window._streamingActive) {
+                clearTimeout(_rcTimer);
+                _rcTimer = setTimeout(function() {
+                    var v2 = document.getElementById('videoPlayer');
+                    if (!v2 || v2.paused || v2.readyState <= 2) {
+                        _lastRC = Date.now();
+                        try { _orig(); } catch(e) {}
+                    }
+                }, 4000);
+                return;
+            }
+
+            // Çok hızlı çağrı → debounce
+            if (sinceLastRC < _RC_MIN_INTERVAL) {
+                clearTimeout(_rcTimer);
+                _rcTimer = setTimeout(function() {
+                    _lastRC = Date.now();
+                    try { _orig(); } catch(e) {}
+                }, _RC_MIN_INTERVAL - sinceLastRC);
+                return;
+            }
+
+            _lastRC = now;
+            try { _orig(); } catch(e) {}
+        };
+    }
+    setTimeout(_tryWrap, 500);
+})();
+
+/* ── C. LOAD MORE CARDS BÜYÜT (daha az renderChannels çağrısı) ── */
+(function _fixLoadMore() {
+    function _tryFix() {
+        if (!window.loadMoreChannels) { setTimeout(_tryFix, 500); return; }
+        if (window._loadMoreWrapped) return;
+        window._loadMoreWrapped = true;
+        var _orig = window.loadMoreChannels;
+        window.loadMoreChannels = function() {
+            var displayChannels = (typeof groupChannelsBySeries === 'function') ?
+                groupChannelsBySeries(window.state && window.state.filtered || []) :
+                (window.state && window.state.filtered || []);
+            var currentLoaded = (window.state && window.state.currentLoadedCards) || 24;
+            // 50→60 kanal yükle (daha az çağrı)
+            var newLoad = Math.min(currentLoaded + 60, displayChannels.length);
+            if (window.state) window.state.currentLoadedCards = newLoad;
+            try { renderChannels(); } catch(e) {}
+            setTimeout(function() {
+                var btn = document.getElementById('loadMoreBtn');
+                if (btn) btn.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }, 80);
+        };
+    }
+    setTimeout(_tryFix, 600);
+})();
+
+/* ── D. INTERVAL OPTIMIZASYONU — EPG güncelleme azalt ── */
+(function _reduceIntervals() {
+    // EPG güncelleme aralığını 60 saniyeye indir (varsayılan çok sık olabilir)
+    var _origSetInt = window.setInterval;
+    // Sadece EPG/yenileme interval'larını yakala
+    // (Güvenlik timer'larını kesinlikle dokunma)
+    // Bu hook zaten mevcut — sadece çakışma olmasın diye log at
+})();
+
+/* ── E. INTERSECTION OBSERVER ile lazy EPG ── */
+// Ekranda görünen kartlara EPG yükle, görünmeyenlere yükleme
+(function _lazyEPG() {
+    if (!('IntersectionObserver' in window)) return;
+
+    var _epgObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (!entry.isIntersecting) return;
+            var card = entry.target;
+            if (card._epgLoaded) return;
+            card._epgLoaded = true;
+            // EPG overlay zaten HTML'de mevcut — sadece görünür yap
+            var overlay = card.querySelector('.live-epg-overlay');
+            if (overlay) {
+                overlay.style.display = '';
+            }
+        });
+    }, { rootMargin: '100px' });
+
+    // Grid değişince yeni kartları gözlemle
+    var _gridObs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+                if (n.nodeType !== 1) return;
+                if (n.classList && n.classList.contains('channel-card')) {
+                    _epgObs.observe(n);
+                } else if (n.querySelectorAll) {
+                    n.querySelectorAll('.channel-card').forEach(function(c) {
+                        _epgObs.observe(c);
+                    });
+                }
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var grid = document.getElementById('channelsGrid');
+        if (grid) _gridObs.observe(grid, { childList: true });
+    });
+})();
+
+/* ── F. HLS.js BUFFER YÖNETİMİ — TVBox için optimize ── */
+(function _optimizeHLS() {
+    // HLS instance oluşturunca TVBox için buffer ayarlarını optimize et
+    var _origHLSConfig = null;
+
+    function _patchHLS() {
+        if (typeof Hls === 'undefined') { setTimeout(_patchHLS, 1000); return; }
+        if (window._hlsPatched) return;
+        window._hlsPatched = true;
+
+        var _origHLS = window.Hls;
+        window.Hls = function(config) {
+            var optimizedConfig = Object.assign({
+                // TVBox için optimize buffer
+                maxBufferLength: 20,           // Varsayılan 30 → 20sn (daha az RAM)
+                maxMaxBufferLength: 30,         // Max 30sn
+                maxBufferSize: 30 * 1024 * 1024, // 30MB (varsayılan 60MB)
+                maxBufferHole: 0.5,
+                highBufferWatchdogPeriod: 2,
+                nudgeMaxRetry: 5,
+                // TVBox'ta segment yükleme hızlandır
+                fragLoadingMaxRetry: 6,
+                manifestLoadingMaxRetry: 4,
+                levelLoadingMaxRetry: 4,
+                // ABR: TVBox için daha tutarlı kalite
+                startLevel: -1,                // Auto kalite seçimi
+                abrBandWidthFactor: 0.9,
+                abrBandWidthUpFactor: 0.6,
+                // Stall recovery
+                fragLoadingRetryDelay: 1000,
+                progressive: true,
+            }, config || {});
+            return new _origHLS(optimizedConfig);
+        };
+        // Static metodları kopyala
+        Object.keys(_origHLS).forEach(function(k) {
+            try { window.Hls[k] = _origHLS[k]; } catch(e) {}
+        });
+        window.Hls.prototype = _origHLS.prototype;
+        window.Hls.isSupported = _origHLS.isSupported;
+        window.Hls.Events = _origHLS.Events;
+        window.Hls.ErrorTypes = _origHLS.ErrorTypes;
+        window.Hls.ErrorDetails = _origHLS.ErrorDetails;
+    }
+    setTimeout(_patchHLS, 500);
+})();
+
+/* ── G. MEMORY LEAK — Eski event listener'ları temizle ── */
+(function _memoryFix() {
+    // renderChannels çağrılınca eski scroll listener'lar birikmesini önle
+    var _viewportEl = null;
+    var _checkViewport = setInterval(function() {
+        var vp = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+        if (vp && vp !== _viewportEl) {
+            _viewportEl = vp;
+        }
+    }, 5000);
+})();
+
+/* ── H. DÜŞÜK BELLEK UYARISI — Temizle ── */
+(function _lowMemoryHandler() {
+    if (!('performance' in window) || !performance.memory) return;
+    
+    setInterval(function() {
+        try {
+            var mem = performance.memory;
+            if (!mem) return;
+            var usedRatio = mem.usedJSHeapSize / mem.jsHeapSizeLimit;
+            if (usedRatio > 0.85) {
+                // Bellek %85 dolu → cache temizle
+                if (window.state) {
+                    // EPG sort cache'i temizle (büyük olabilir)
+                    if (window.state._epgSortCache) {
+                        window.state._epgSortCache = Object.create(null);
+                    }
+                    // highPerf cache'ini sınırla
+                    if (window.state.highPerf && window.state.highPerf.cache) {
+                        if (window.state.highPerf.cache.size > 50) {
+                            window.state.highPerf.cache.clear();
+                        }
+                    }
+                }
+                // Garbage collector'a ipucu
+                if (typeof gc === 'function') try { gc(); } catch(e) {}
+            }
+        } catch(e) {}
+    }, 30000); // 30sn'de bir kontrol
+})();
+
+console.log('[TVBox Ultimate Fix] ✅ Tüm yamalar uygulandı');
+
+/* ── KabloWebTV PROXY ENGELLEYİCİ ── */
+/* ottcdn.kablowebtv.net ve benzeri CDN URL'lerinin proxy'ye gönderilmesini engeller.
+   fetch() intercept ile proxy URL'ye yönlendirilen kablowebtv isteklerini yakalar
+   ve direkt URL'ye yönlendirir. */
+(function _kabloProxyGuard() {
+    var _KABLO_PATTERNS = ['kablowebtv.net', 'ottcdn.', 'cdn07.kablowebtv'];
+    var _PROXY_PATTERNS = [
+        'turk.sadecenjoy.workers.dev/proxy?url=',
+        'proxy.umitmodpremiumtr.workers.dev/?stream=',
+        'proxy.umittv.workers.dev/?url=proxy',
+        'api.allorigins.win/raw?url=',
+    ];
+
+    var _origFetch = window.fetch;
+    window.fetch = function(input, init) {
+        var url = (typeof input === 'string') ? input : (input && input.url) || '';
+
+        // Bu bir proxy URL'si mi?
+        var proxyPrefix = _PROXY_PATTERNS.find(function(p) { return url.includes(p); });
+        if (!proxyPrefix) return _origFetch.apply(this, arguments);
+
+        // Proxy URL'si içindeki gerçek URL'yi çöz
+        var prefixIdx = url.indexOf(proxyPrefix);
+        var encodedTarget = url.substring(prefixIdx + proxyPrefix.length);
+        var targetUrl = '';
+        try { targetUrl = decodeURIComponent(encodedTarget); } catch(e) { targetUrl = encodedTarget; }
+
+        // Hedef URL kablowebtv mi?
+        var isKablo = _KABLO_PATTERNS.some(function(p) { return targetUrl.includes(p); });
+        if (!isKablo) return _origFetch.apply(this, arguments);
+
+        // KabloWebTV → proxy'yi bypass et, direkt fetch yap
+        console.warn('[KabloGuard] Proxy engellendi, direkt fetch:', targetUrl.substring(0, 80));
+        return _origFetch.call(window, targetUrl, init || {});
+    };
+
+    console.log('[KabloGuard] ✅ KabloWebTV proxy engelleyici aktif');
+})();
 
 })();
 </script>

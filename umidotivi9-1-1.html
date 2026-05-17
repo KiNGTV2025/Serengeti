@@ -11690,7 +11690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     <div class="cache-indicator" id="cacheIndicator">Önbellek: 0</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script>
         
@@ -15294,9 +15294,20 @@ function processEPGForChannel(channelKey) {
         
         // Bilgi başlığı
         // Tüm programların geçmişte olup olmadığını kontrol et
-        const allPast = epgInfo.all.length > 0 && epgInfo.all.every(p => new Date() > p.end);
-        const lastProgramDate = epgInfo.all.length > 0 
-            ? new Date(epgInfo.all[epgInfo.all.length - 1].end).toLocaleDateString('tr-TR') 
+        const nowForStale = new Date();
+        const todayStr = nowForStale.toDateString();
+        const lastProg = epgInfo.all.length > 0 ? epgInfo.all[epgInfo.all.length - 1] : null;
+        const lastProgEnd = lastProg ? lastProg.end : null;
+        // "Eski" sadece son programın bitiş tarihi bugünden ÖNCE ise (dün veya daha eski EPG)
+        const allPast = lastProgEnd 
+            ? (lastProgEnd.toDateString() !== todayStr && nowForStale > lastProgEnd)
+            : false;
+        // Bugün biten (gün içi geçmiş) programlar için ayrı durum
+        const todayFinished = !allPast && epgInfo.all.length > 0 
+            && epgInfo.all.every(p => nowForStale > p.end)
+            && lastProgEnd && lastProgEnd.toDateString() === todayStr;
+        const lastProgramDate = lastProgEnd
+            ? lastProgEnd.toLocaleDateString('tr-TR') 
             : '';
 
         html += `
@@ -15309,6 +15320,11 @@ function processEPGForChannel(channelKey) {
                     <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
                         <div style="font-size:11px; color:#ff6400; font-weight:700;">⚠️ EPG VERİSİ ESKİ</div>
                         <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG yüklenene kadar program bilgisi gösterilemiyor.</div>
+                    </div>
+                ` : todayFinished ? `
+                    <div style="background:rgba(255,215,0,0.1); padding:8px; border-radius:6px; border-left:3px solid var(--accent-primary); margin-top:8px;">
+                        <div style="font-size:11px; color:var(--accent-primary); font-weight:700;">📋 Bugünkü Yayın Tamamlandı</div>
+                        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">EPG verisi güncel (${lastProgramDate}). Yeni program bilgisi yarın yüklenecek.</div>
                     </div>
                 ` : epgInfo.current ? `
                     <div style="background:rgba(0,255,0,0.1); padding:8px; border-radius:6px; border-left:3px solid #00FF00; margin-top:8px;">
@@ -32005,6 +32021,7 @@ function resumeChannel(startTime) {
         'kablowebtv.net',              // KabloTV CDN → direkt aç
         'ottcdn.',                     // ottcdn.kablowebtv.net vb. → direkt aç
         'cdn07.kablowebtv',            // KabloTV CDN subdomain → direkt aç
+        '45.159.95.10',                // IPTV MKV sunucusu → proxy YOK, direkt aç
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
     // Direct URLs (trycloudflare/ngrok) with .m3u8 = always live stream
@@ -48781,7 +48798,7 @@ console.log('[TVBox Ultimate Fix] ✅ Tüm yamalar uygulandı');
    fetch() intercept ile proxy URL'ye yönlendirilen kablowebtv isteklerini yakalar
    ve direkt URL'ye yönlendirir. */
 (function _kabloProxyGuard() {
-    var _KABLO_PATTERNS = ['kablowebtv.net', 'ottcdn.', 'cdn07.kablowebtv'];
+    var _KABLO_PATTERNS = ['kablowebtv.net', 'ottcdn.', 'cdn07.kablowebtv', '45.159.95.10'];
     var _PROXY_PATTERNS = [
         'turk.sadecenjoy.workers.dev/proxy?url=',
         'proxy.umitmodpremiumtr.workers.dev/?stream=',

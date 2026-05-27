@@ -13072,7 +13072,7 @@ const EPG_MULTI_SOURCES = [
     {
         urls: [
             'https://raw.githubusercontent.com/umitm0d/Liveinlive/refs/heads/main/epg.xml',
-            'https://cdn.jsdelivr.net/gh/umitm0d/Liveinlive@main/epg.xml',
+            'https://kabloepg.umitmodpremiumtr.workers.dev/,
         ],
         label: 'EPG-1'
     },
@@ -13103,7 +13103,7 @@ const EPG_MULTI_SOURCES = [
     },
     {
         urls: [
-            'https://www.dropbox.com/scl/fi/bwxzc5miltrj45yniclrh/umitmod_kablo.xml?rlkey=702doma05wpa8nxq1awjcvruf&raw=1',
+            'https://www.dropbox.com/scl/fi/3pjlobi13kyuhe2x7tgzh/kabloepg.xml?rlkey=x94qwq7bkaleh58dqmav05487&st=soajh7i7&raw=1',
         ],
         label: 'EPG-Kablo'
     },
@@ -16581,11 +16581,12 @@ function initPerformanceMonitor() {
                 `;
                 
                 // Tıklama olayı — film modalı aç
-                card.onclick = () => {
-                    if (state.remote.preventClick) {
+                card.onclick = (e) => {
+                    if (state.remote.preventClick && e && e.pointerType === '') {
                         state.remote.preventClick = false;
                         return;
                     }
+                    state.remote.preventClick = false;
                     if (state.series) { state.series.currentSeries = null; state.series.currentSeason = null; state.series.currentEpisode = null; state.series.autoNextEnabled = false; }
                     state.player.currentContinueName = null;
                     var _cm2 = document.getElementById('continueModal'); if (_cm2) _cm2.style.display = 'none';
@@ -16618,11 +16619,12 @@ function initPerformanceMonitor() {
                 `;
                 
                 // Tıklama olayı
-                card.onclick = () => {
-                    if (state.remote.preventClick) {
+                card.onclick = (e) => {
+                    if (state.remote.preventClick && e && e.pointerType === '') {
                         state.remote.preventClick = false;
                         return;
                     }
+                    state.remote.preventClick = false;
                     playChannel(index);
                 };
             }
@@ -16860,11 +16862,14 @@ function createOptimizedChannelCard(index) {
     }
     
     // Click event
-    card.onclick = () => {
-        if (state.remote.preventClick) {
+    card.onclick = (e) => {
+        // Uzun basma (long press) sonrası önle — ama normal dokunuşu engelleme
+        if (state.remote.preventClick && e && e.pointerType === '') {
+            // Sadece kumanda Enter tuşu kaynaklıysa engelle
             state.remote.preventClick = false;
             return;
         }
+        state.remote.preventClick = false;
         if (isVod) {
             if (state.series) { state.series.currentSeries = null; state.series.currentSeason = null; state.series.currentEpisode = null; state.series.autoNextEnabled = false; }
             state.player.currentContinueName = null;
@@ -16874,6 +16879,32 @@ function createOptimizedChannelCard(index) {
             playChannel(index);
         }
     };
+    
+    // Touch long press — VOD modal için
+    var _lpTimer3 = null;
+    card.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.fav-toggle')) return;
+        state.remote.isLongPress = false;
+        _lpTimer3 = setTimeout(function() {
+            state.remote.isLongPress = true;
+            state.remote.preventClick = true;
+            if (isVod) openVodModal(c.name);
+        }, LONG_PRESS_DURATION || 800);
+    }, {passive: true});
+    card.addEventListener('touchend', function() {
+        clearTimeout(_lpTimer3);
+        if (!state.remote.isLongPress) state.remote.preventClick = false;
+        setTimeout(function() { state.remote.isLongPress = false; }, 50);
+    });
+    card.addEventListener('touchmove', function() {
+        clearTimeout(_lpTimer3);
+        state.remote.isLongPress = false;
+    });
+    card.addEventListener('touchcancel', function() {
+        clearTimeout(_lpTimer3);
+        state.remote.isLongPress = false;
+        state.remote.preventClick = false;
+    });
     
     // Sadece canlı kanalları cache'e al (VOD poster async güncellenir)
     if (!isVod) {
@@ -23620,7 +23651,7 @@ async function loadAllChannels(forceRefresh = false) {
                 }
                 if (idbChannels.length > 0) {
                     const unique = removeDuplicateChannels(idbChannels);
-                    state.channels = unique;
+                    state.channels = unique; fixChannelNames(state.channels);
                     
 
                     const catSet = new Set(['Favoriler', 'Devam Et']);
@@ -23630,7 +23661,7 @@ async function loadAllChannels(forceRefresh = false) {
                     if (Array.from(catSet).includes(radioName)) state.cats.push(radioName);
                     state.activeCat = 'all';
                     state.sidebar.currentCategory = 'all';
-                    state.filtered = unique;
+                    state.filtered = unique; fixChannelNames(state.filtered);
                     immediateRenderChannels();
                     renderCats();
                     loadQuickUserData();
@@ -23667,7 +23698,7 @@ async function loadAllChannels(forceRefresh = false) {
                     
 
                     const uniqueChannels = removeDuplicateChannels(cacheInfo.channels);
-                    state.channels = uniqueChannels;
+                    state.channels = uniqueChannels; fixChannelNames(state.channels);
 
                     
 
@@ -23842,7 +23873,7 @@ async function _DEPRECATED_loadFreshChannelsInBackground_v1(forceRefresh = false
 
                 if (allChannels.length > 0 && index === 0) {
                     const partial = removeDuplicateChannels([...allChannels]);
-                    state.channels = partial;
+                    state.channels = partial; fixChannelNames(state.channels);
                     extractCategories(state.channels);
                     refreshChannelGrid();
                 }
@@ -23862,7 +23893,7 @@ async function _DEPRECATED_loadFreshChannelsInBackground_v1(forceRefresh = false
             
             
 
-            state.channels = uniqueChannels;
+            state.channels = uniqueChannels; fixChannelNames(state.channels);
             
             
 
@@ -23985,7 +24016,7 @@ async function _DEPRECATED_loadFreshChannelsQuick_v1(forceRefresh = false) {
             
 
             const uniqueChannels = removeDuplicateChannels(quickChannels);
-            state.channels = uniqueChannels;
+            state.channels = uniqueChannels; fixChannelNames(state.channels);
             
             
 
@@ -24290,7 +24321,7 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                         quickChannels.push(...batch);
                                         if (quickChannels.length > 0) {
                                             const partial = removeDuplicateChannels([...quickChannels]);
-                                            state.channels = partial;
+                                            state.channels = partial; fixChannelNames(state.channels);
                                             
 
                                             if (typeof extractCategories === 'function') extractCategories(state.channels);
@@ -24367,7 +24398,7 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
         if (quickChannels.length > 0) {
             const uniqueChannels = removeDuplicateChannels(quickChannels);
-            state.channels = uniqueChannels;
+            state.channels = uniqueChannels; fixChannelNames(state.channels);
             
             
 
@@ -24719,8 +24750,14 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 name: 'Kanal', group: 'Diğer', logo: null,
                 listIdx, isRadio: false, isLive: true, url: '', tvgId: null, isSeries: false
             };
-            const _ci = line.indexOf(',');
+            // M3U standardı: kanal adı her zaman son virgülden sonra gelir
+            const _ci = line.lastIndexOf(',');
             if (_ci !== -1) currentItem.name = line.substring(_ci + 1).trim();
+            // tvg-name attribute'u varsa ve ad bozuk görünüyorsa onu kullan
+            if (!currentItem.name || currentItem.name.includes('tvg-') || currentItem.name.includes('group-title')) {
+                const _tvgName = line.match(/tvg-name="([^"]*)"/);
+                if (_tvgName && _tvgName[1]) currentItem.name = _tvgName[1].trim();
+            }
             const nameLower = currentItem.name.toLowerCase();
             if (seriesIndicators.some(s => nameLower.includes(s))) {
                 currentItem.isLive = false; currentItem.isSeries = true;
@@ -24739,7 +24776,14 @@ async function parseM3UStream(response, listIdx, onBatch) {
                     gl.includes('imdb') || gl.includes('yerli') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
-                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
+                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon') ||
+                    gl.includes('romantik') || gl.includes('aksiyon') || gl.includes('komedi') ||
+                    gl.includes('korku') || gl.includes('gerilim') || gl.includes('drama') ||
+                    gl.includes('belgesel') || gl.includes('aile') || gl.includes('fantastik') ||
+                    gl.includes('macera') || gl.includes('bilim') || gl.includes('western') ||
+                    gl.includes('suç') || gl.includes('suc') || gl.includes('tarih') ||
+                    gl.includes('müzik') || gl.includes('muzik') || gl.includes('spor') ||
+                    gl.includes('tvg-lo') || gl.includes('"tvg-lo')) {
                     currentItem.isLive = false;
                 }
             }
@@ -24978,6 +25022,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
+// ── KANAL ADI DÜZELTME ──
+function fixChannelNames(channels) {
+    if (!channels || !channels.length) return channels;
+    channels.forEach(function(ch) {
+        if (!ch || !ch.name) return;
+        var isBroken = ch.name.includes('tvg-') || ch.name.includes('group-title') || /^[^"]*"\s+tvg-/.test(ch.name);
+        if (!isBroken) return;
+        if (ch.tvgName && ch.tvgName.trim() && !ch.tvgName.includes('tvg-')) { ch.name = ch.tvgName.trim(); return; }
+        if (ch.url && ch.url.includes('ID=')) {
+            var idPart = ch.url.split('ID=')[1];
+            if (idPart) { var cleaned = idPart.split('-').filter(function(w){return w!=='film' && w!=='izle' && w!=='dizi' && w.length>0;}).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' '); if (cleaned) { ch.name = cleaned; return; } }
+        }
+        var qi = ch.name.indexOf('"');
+        if (qi > 0) { var gc = ch.name.substring(0,qi).trim(); if (gc && gc.length > 1) ch.name = gc; }
+    });
+    return channels;
+}
+
 function removeDuplicateChannels(channels) {
     const seen = new Set();
     const uniqueChannels = [];
@@ -24992,7 +25054,7 @@ function removeDuplicateChannels(channels) {
         }
     }
     
-    return uniqueChannels;
+    fixChannelNames(uniqueChannels); return uniqueChannels;
 }
 function parseM3UOptimized(text, listIdx) {
     const lines = text.split('\n');
@@ -25061,9 +25123,15 @@ function parseM3UOptimized(text, listIdx) {
             
             
 
-            const commaIndex = line.indexOf(',');
+            // M3U standardı: kanal adı her zaman son virgülden sonra gelir
+            const commaIndex = line.lastIndexOf(',');
             if (commaIndex !== -1) {
                 currentItem.name = line.substring(commaIndex + 1).trim();
+            }
+            // tvg-name attribute'u varsa ve ad bozuk görünüyorsa onu kullan
+            if (!currentItem.name || currentItem.name.includes('tvg-') || currentItem.name.includes('group-title')) {
+                const _tvgName2 = line.match(/tvg-name="([^"]*)"/);
+                if (_tvgName2 && _tvgName2[1]) currentItem.name = _tvgName2[1].trim();
             }
             
             
@@ -25957,9 +26025,15 @@ function parseM3U(text, listIdx) {
                 name: 'Kanal', group: 'Diğer', logo: null,
                 listIdx, isRadio: false, isLive: true, url: '', tvgId: null, isSeries: false
             };
-            const _commaIdx = line.indexOf(',');
+            // M3U standardı: kanal adı her zaman son virgülden sonra gelir
+            const _commaIdx = line.lastIndexOf(',');
             if (_commaIdx !== -1) {
                 currentItem.name = line.substring(_commaIdx + 1).trim();
+            }
+            // tvg-name attribute'u varsa ve ad bozuk görünüyorsa onu kullan
+            if (!currentItem.name || currentItem.name.includes('tvg-') || currentItem.name.includes('group-title')) {
+                const _tvgName3 = line.match(/tvg-name="([^"]*)"/);
+                if (_tvgName3 && _tvgName3[1]) currentItem.name = _tvgName3[1].trim();
             }
             const nameLower = currentItem.name.toLowerCase();
             if (seriesIndicators.some(s => nameLower.includes(s))) {
@@ -30296,6 +30370,7 @@ function playChannelFromContinueCategory(index) {
 // Devam Et kategorisi kart event'leri
 function setupContinueCategoryCards() {
     document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card').forEach((card, index) => {        card.addEventListener('click', function(e) {
+            // Sadece uzun basma (long press) sonrası preventClick'i engelle
             if (state.remote.preventClick) {
                 state.remote.preventClick = false;
                 return;
@@ -30311,8 +30386,10 @@ function setupContinueCategoryCards() {
         // Touch events
         card.addEventListener('touchstart', function(e) {
             if (e.target.closest('.fav-toggle')) return;
+            state.remote.isLongPress = false;
             
             state.remote.longPressTimer = setTimeout(() => { 
+                state.remote.isLongPress = true;
                 state.remote.preventClick = true; 
                 
                 // Clear card değilse silme modalı aç
@@ -30321,17 +30398,27 @@ function setupContinueCategoryCards() {
                     const channelIndex = Array.from(document.querySelectorAll('.continue-card-in-grid')).indexOf(card);
                     openDeleteContinueModal(channelName, channelIndex);
                 }
-                state.remote.isLongPress = true; 
             }, LONG_PRESS_DURATION);
         }, {passive: true});
         
         card.addEventListener('touchend', function() { 
-            clearTimeout(state.remote.longPressTimer); 
-            state.remote.isLongPress = false; 
+            clearTimeout(state.remote.longPressTimer);
+            // Uzun basma değilse preventClick sıfırla — kısa dokunuş çalışsın
+            if (!state.remote.isLongPress) {
+                state.remote.preventClick = false;
+            }
+            setTimeout(function() { state.remote.isLongPress = false; }, 50);
         });
         
         card.addEventListener('touchmove', function() { 
-            clearTimeout(state.remote.longPressTimer); 
+            clearTimeout(state.remote.longPressTimer);
+            state.remote.isLongPress = false;
+        });
+        
+        card.addEventListener('touchcancel', function() {
+            clearTimeout(state.remote.longPressTimer);
+            state.remote.isLongPress = false;
+            state.remote.preventClick = false;
         });
     });
 }
@@ -31430,6 +31517,184 @@ function resumeChannel(startTime) {
     const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
     const rawUrl = ch.url;
 
+    // ── FİLMMODU / WEB EMBED URL DESTEĞİ ──
+    // filmmodu.umitm0d.workers.dev/ID=slug → /resolve=slug JSON endpoint üzerinden stream URL al
+    const _isFilmmoduUrl = rawUrl && rawUrl.includes('filmmodu.umitm0d.workers.dev') && rawUrl.includes('/ID=');
+    const _isWebEmbedUrl = !_isFilmmoduUrl && rawUrl && (
+        (rawUrl.includes('filmmodu') && rawUrl.includes('ID=')) ||
+        (rawUrl.includes('workers.dev') && (rawUrl.includes('ID=') || rawUrl.includes('film-izle') || rawUrl.includes('dizi-izle'))) ||
+        (rawUrl.includes('film-izle') && !rawUrl.includes('.m3u8') && !rawUrl.includes('.mp4'))
+    );
+
+    // ── FİLMMODU ÖZEL: /test= JSON endpoint (worker değişikliği gerektirmez) ──
+    if (_isFilmmoduUrl) {
+        showToast('🎬 Film stream aranıyor...');
+        state.remote.zone = 'player';
+
+        (async () => {
+            try {
+                // /ID=slug → /test=slug dönüştür (worker'da zaten mevcut, JSON döndürür)
+                const slug = rawUrl.split('/ID=')[1];
+                if (!slug) throw new Error('Slug bulunamadı');
+
+                const resolveUrl = 'https://filmmodu.umitm0d.workers.dev/test=' + encodeURIComponent(slug);
+
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 20000);
+
+                const resp = await fetch(resolveUrl, { signal: ctrl.signal, cache: 'no-store' });
+                clearTimeout(timer);
+
+                if (!resp.ok) throw new Error('Worker ' + resp.status + ' döndürdü');
+
+                const json = await resp.json();
+                // /test= endpoint: { srcUrl, tum, videoId }
+                const streamUrl = json.srcUrl || json.url;
+
+                if (!streamUrl) throw new Error('URL bulunamadı');
+
+                showToast('✅ Film bulundu, oynatılıyor...');
+                state.player.url = streamUrl;
+                state.player.isLiveStream = false;
+                state.player.vodPlaying = true;
+                if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
+                hideZappingScreen();
+
+                if (streamUrl.includes('.m3u8') || streamUrl.includes('/hls/')) {
+                    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                        const hlsInst = new Hls(typeof HLS_CONFIG !== 'undefined' ? HLS_CONFIG : {});
+                        state.player.hls = hlsInst;
+                        hlsInst.loadSource(streamUrl);
+                        hlsInst.attachMedia(video);
+                        hlsInst.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                    } else {
+                        video.src = streamUrl; video.load(); video.play().catch(() => {});
+                    }
+                } else {
+                    // mp4 veya direkt video
+                    video.src = streamUrl; video.load(); video.play().catch(() => {});
+                }
+            } catch(e) {
+                hideZappingScreen();
+                showToast('❌ Film açılamadı: ' + (e.message || 'Bilinmeyen hata'));
+            }
+        })();
+
+        return;
+    }
+
+    if (_isWebEmbedUrl) {
+        showToast('🎬 Film stream aranıyor...');
+        state.remote.zone = 'player';
+
+        (async () => {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 15000);
+
+                // 1. Adım: Worker URL'sine fetch at — redirect zincirini takip et
+                let streamUrl = null;
+                let finalUrl = rawUrl;
+
+                try {
+                    const resp = await fetch(rawUrl, {
+                        signal: ctrl.signal,
+                        redirect: 'follow',
+                        cache: 'no-store'
+                    });
+                    clearTimeout(timer);
+                    finalUrl = resp.url; // redirect sonrası gerçek URL
+
+                    const ct = resp.headers.get('content-type') || '';
+
+                    // Doğrudan m3u8 veya mp4 geldi mi?
+                    if (ct.includes('mpegurl') || ct.includes('x-mpegurl') ||
+                        finalUrl.includes('.m3u8') || finalUrl.includes('/hls/')) {
+                        streamUrl = finalUrl;
+                    } else if (ct.includes('mp4') || ct.includes('video/') ||
+                               finalUrl.includes('.mp4') || finalUrl.includes('.mkv')) {
+                        streamUrl = finalUrl;
+                    } else if (ct.includes('text') || ct.includes('html')) {
+                        const html = await resp.text();
+                        const m3u8Match = html.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/);
+                        if (m3u8Match) { streamUrl = m3u8Match[0]; }
+                        if (!streamUrl) {
+                            const mp4Match = html.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>]*/);
+                            if (mp4Match) { streamUrl = mp4Match[0]; }
+                        }
+                        if (!streamUrl) {
+                            const srcMatch = html.match(/"(?:file|src|source|stream|url)"\s*:\s*"(https?:\/\/[^"]+)"/i);
+                            if (srcMatch) { streamUrl = srcMatch[1]; }
+                        }
+                        if (!streamUrl) {
+                            const jwMatch = html.match(/(?:file|source)\s*:\s*['"]([^'"]+\.(?:m3u8|mp4)[^'"]*)['"]/i);
+                            if (jwMatch) { streamUrl = jwMatch[1]; }
+                        }
+                    }
+                } catch (fetchErr) {
+                    clearTimeout(timer);
+                    if (typeof STREAM_PROXY !== 'undefined') {
+                        try {
+                            const ctrl2 = new AbortController();
+                            const t2 = setTimeout(() => ctrl2.abort(), 12000);
+                            const resp2 = await fetch(STREAM_PROXY + encodeURIComponent(rawUrl), {
+                                signal: ctrl2.signal, cache: 'no-store'
+                            });
+                            clearTimeout(t2);
+                            finalUrl = resp2.url || rawUrl;
+                            if (finalUrl.includes('.m3u8') || finalUrl.includes('.mp4')) {
+                                streamUrl = finalUrl;
+                            } else {
+                                const txt2 = await resp2.text();
+                                const m = txt2.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/);
+                                if (m) streamUrl = m[0];
+                                if (!streamUrl) {
+                                    const mp = txt2.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>]*/);
+                                    if (mp) streamUrl = mp[0];
+                                }
+                            }
+                        } catch(e2) {}
+                    }
+                }
+
+                if (streamUrl) {
+                    showToast('✅ Film bulundu, oynatılıyor...');
+                    state.player.url = streamUrl;
+                    state.player.isLiveStream = false;
+                    state.player.vodPlaying = true;
+                    if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
+                    hideZappingScreen();
+
+                    if (streamUrl.includes('.m3u8') || streamUrl.includes('/hls/')) {
+                        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                            const hlsInst = new Hls(typeof HLS_CONFIG !== 'undefined' ? HLS_CONFIG : {});
+                            state.player.hls = hlsInst;
+                            hlsInst.loadSource(streamUrl);
+                            hlsInst.attachMedia(video);
+                            hlsInst.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+                        } else {
+                            video.src = streamUrl; video.load(); video.play().catch(() => {});
+                        }
+                    } else {
+                        video.src = streamUrl; video.load(); video.play().catch(() => {});
+                    }
+                } else {
+                    hideZappingScreen();
+                    showToast('❌ Stream URL bulunamadı');
+                    if (typeof startHls === 'function' && typeof STREAM_PROXY !== 'undefined') {
+                        showToast('🔄 Proxy ile deneniyor...');
+                        startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+                    }
+                }
+            } catch(e) {
+                hideZappingScreen();
+                showToast('❌ Film açılamadı: ' + (e.message || ''));
+            }
+        })();
+
+        return;
+    }
+
     // ── VİDMODY.COM / EMBED PLAYER DESTEĞİ ──
     // vidmody.com URL'leri web sayfasıdır; HLS.js ile açılmaz.
     // Cloudflare Worker resolver ile gerçek stream URL'sini çek, HLS.js ile aç.
@@ -31944,19 +32209,30 @@ function resumeChannel(startTime) {
             startHls(rawUrl);
         }
     } else {
-        // MP4 / diğer medya
-        video.src = rawUrl;
-        video.load();
-        const p = video.play();
-        if (p) p.then(() => {
-            hideZappingScreen();
-            if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
-        }).catch(e => {
-            if (e.name === 'AbortError') return;
-            // Proxy kullanma — hata olsa da direkt linkte kal
+        // MP4 / MKV / diğer direkt medya
+        // http:// URL'ler HTTPS sayfasında Mixed Content engeline takılır → proxy üzerinden aç
+        const _directMediaUrl = rawUrl.startsWith('http:') && location.protocol === 'https:'
+            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
+            : rawUrl;
+
+        state.player.isLiveStream = false;
+        state.player.vodPlaying = true;
+
+        if (_directMediaUrl !== rawUrl && (typeof Hls !== 'undefined') && Hls.isSupported()) {
+            // http:// → proxy üzerinden HLS.js ile dene
+            startHls(_directMediaUrl);
+        } else {
+            video.src = _directMediaUrl;
             video.load();
-            video.play().catch(()=>{});
-        });
+            const p = video.play();
+            if (p) p.then(() => {
+                hideZappingScreen();
+                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+            }).catch(e => {
+                if (e.name === 'AbortError') return;
+                if (typeof startHls === 'function') startHls(_directMediaUrl);
+            });
+        }
     }
 
     state.remote.zone = 'player'; 

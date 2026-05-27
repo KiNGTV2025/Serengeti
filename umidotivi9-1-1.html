@@ -13110,9 +13110,10 @@ const EPG_MULTI_SOURCES = [
     },
 ];
 
-const STREAM_PROXY = 'https://proxy.umitmodpremiumtr.workers.dev/?stream='; // primary
+const STREAM_PROXY = 'https://pompe.sadecenjoy.workers.dev/proxy?url='; // primary — range destekli
 const STREAM_PROXY2 = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
-const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=proxy';
+const STREAM_PROXY3 = 'https://proxy.umitmodpremiumtr.workers.dev/?stream=';
+const STREAM_PROXY4 = 'https://proxy.umittv.workers.dev/?url=proxy';
 
 // ── REDIRECT-RESOLVE DOMAINS: fetch ile gerçek URL'yi bul, sonra HLS.js'e ver ──
 // Bu domainler 302 redirect yapıyor; HLS.js redirect'i takip edemez veya CORS patlar.
@@ -14668,6 +14669,8 @@ async function loadEPGData() {
 
         
         const PROXIES = [
+            'https://pompe.sadecenjoy.workers.dev/proxy?url=',
+            'https://pompe.sadecenjoy.workers.dev/proxy?url=',
             'https://turk.sadecenjoy.workers.dev/proxy?url=',
             'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
             'https://proxy.umittv.workers.dev/?url=proxy',
@@ -22691,7 +22694,7 @@ function playDirectChannel(channel) {
         }
 
         async function fetchM3UWithUserAgent(url) {
-            const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+            const PROXY = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
 
 
             
@@ -23903,7 +23906,7 @@ function lazyLoadRemainingChannels(startIndex) {
 async function _DEPRECATED_loadFreshChannelsInBackground_v1(forceRefresh = false) {
     
     try {
-        const _PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+        const _PROXY = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
         const _cfgUrl = CONFIG_URL + '?t=' + Date.now();
         const configResponse = await fetch(_PROXY + encodeURIComponent(_cfgUrl))
             .catch(() => fetch(_cfgUrl).catch(() => null));
@@ -24161,18 +24164,27 @@ async function loadRemainingM3UsInBackground(startIndex) {
             }
             
             let channels = [];
+            let _usedBatch = false;
             if (response.body && typeof response.body.getReader === 'function') {
-                channels = await parseM3UStream(response, actualIndex, (batch) => {
+                _usedBatch = true;
+                // onBatch callback kanalları zaten ekliyor — return değerini yok say (çift ekleme önlemi)
+                await parseM3UStream(response, actualIndex, (batch) => {
                     const existingUrls = new Set(state.channels.map(c => c.url));
                     const fresh = batch.filter(ch => !existingUrls.has(ch.url));
-                    if (fresh.length > 0) state.channels.push(...fresh);
+                    if (fresh.length > 0) {
+                        state.channels.push(...fresh);
+                        if (state.activeCat === 'all' || state.activeCat === 'Tümü') {
+                            filterChannels();
+                        }
+                    }
                 });
             } else {
                 const text = await response.text().catch(() => null);
                 if (text) channels = (window.parseM3UOptimized || window.parseM3U || parseM3U)(text, actualIndex) || [];
             }
             
-            if (channels.length > 0) {
+            // Sadece batch kullanılmadıysa (text fallback) kanalları ekle
+            if (!_usedBatch && channels.length > 0) {
                 const existingUrls = new Set(state.channels.map(c => c.url));
                 const newChannels = channels.filter(ch => !existingUrls.has(ch.url));
                 
@@ -24424,6 +24436,7 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                     });
                                     
 
+                                    // IDB cache: allChannels dolu (artık return [] değil)
                                     if (streamedChannels.length > 0 && state.useIndexedDB && state.db.isReady()) {
                                         state.db.put(state.db.stores.M3U_CACHE, {
                                             url: m3u.url,
@@ -24432,7 +24445,8 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                             timestamp: Date.now()
                                         }).catch(() => {});
                                     }
-                                    quickChannels.push(...streamedChannels.filter(ch => !quickChannels.includes(ch)));
+                                    // NOT: kanallar zaten onBatch callback'te quickChannels'a eklendi
+                                    // Çift ekleme önleme: streamedChannels'dan tekrar ekleme yapma
                                     m3uContent = '__streamed__'; // Parse edildi işareti
                                 } else {
                                     
@@ -24835,6 +24849,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
     let currentItem = null;
     let leftover = '';
     let batchBuffer = [];
+    let allChannels = []; // TÜM kanalları topla — return için
     let totalCount = 0;
     const BATCH_SIZE = 2000;
 
@@ -24934,6 +24949,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 }
             }
             batchBuffer.push(currentItem);
+            allChannels.push(currentItem); // return için tüm kanalları biriktir
             totalCount++;
             currentItem = null;
             if (batchBuffer.length >= BATCH_SIZE) {
@@ -25002,7 +25018,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
 
     
 
-    return [];
+    return allChannels; // tüm parse edilen kanalları döndür
 }
 
 async function fetchAndParseM3U(url, listIdx, timeout, onBatch) {
@@ -25278,7 +25294,7 @@ function parseM3UOptimized(text, listIdx) {
                 const _corsBlocked = ['prectv', 'prehls', 'precdn', 'm3u.iptv', 'iptv-org'];
                 const needsProxy = rawLogo && _corsBlocked.some(d => rawLogo.includes(d));
                 currentItem.logo = needsProxy
-                    ? 'https://turk.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(rawLogo)
+                    ? 'https://pompe.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(rawLogo)
                     : rawLogo;
                 currentItem.rawLogo = rawLogo;
             }
@@ -27037,7 +27053,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             const _isLargeDirectUrl = /github\.com|githubusercontent\.com|releases\/download|cdn\.|storage\.|workers\.dev/i.test(m3u.url);
             // Kısa URL servisleri (mth.tc, bit.ly, tinyurl, vb.) → CORS redirect sorunu → proxy önce
             const _isShortUrl = /^https?:\/\/(?:mth\.tc|bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|short\.io|rb\.gy|is\.gd|v\.gd|cutt\.ly|tiny\.cc|clck\.ru|shorte\.st|adf\.ly|linktr\.ee|lnkd\.in|buff\.ly|ht\.ly|cli\.re|tr\.im|su\.pr|x\.co|mcaf\.ee|po\.st|go2l\.ink|ref\.so|[a-z0-9-]+\.tc|[a-z0-9-]+\.cc|[a-z0-9-]+\.ly)\//i.test(m3u.url);
-            const PROXY_M3U = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+            const PROXY_M3U = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
 
             const _tryFetchDirect = async (url, timeoutMs) => {
                 const ctrl = new AbortController();
@@ -30235,7 +30251,7 @@ function renderChannels() {
                              alt="${c.name}"
                              data-channel-name="${c.name}"
                              style="width:100%; height:100%; object-fit:cover; border-radius:var(--card-radius);"
-                             onerror="var p='https://turk.sadecenjoy.workers.dev/proxy?url='+encodeURIComponent(this.getAttribute('data-src')||this.src);if(!this.dataset.proxyTried){this.dataset.proxyTried='1';this.src=p;}else{this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+UG9zdGVyIFlvazwvdGV4dD48L3N2Zz4=';}"
+                             onerror="var p='https://pompe.sadecenjoy.workers.dev/proxy?url='+encodeURIComponent(this.getAttribute('data-src')||this.src);if(!this.dataset.proxyTried){this.dataset.proxyTried='1';this.src=p;}else{this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+UG9zdGVyIFlvazwvdGV4dD48L3N2Zz4=';}"
                              data-src="${posterUrl}">
                         
                         <div class="vod-gradient-overlay"></div>
@@ -31142,7 +31158,7 @@ function resumeChannel(startTime) {
                             video.pause();
                             video.removeAttribute('src');
                         } catch(e) {}
-                        const _PROXY_FB = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+                        const _PROXY_FB = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
                         const _STREAM_PROXY_FB = 'https://umittv.sadecenjoy.workers.dev/?url=';
                         // Önce STREAM_PROXY dene (referer sorununu çözer), sonra PROXY
                         const _proxyUrl = _STREAM_PROXY_FB + encodeURIComponent(_fbEncoded);
@@ -31670,7 +31686,7 @@ function resumeChannel(startTime) {
         return;
     }
 
-    const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+    const PROXY = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
 
     // === DIREKT ACILIS: trycloudflare.com / ngrok vb. === 
     // Bu URL'ler hic proxy/encode/parse olmadan direkt HLS.js ile acilir
@@ -32146,7 +32162,7 @@ function resumeChannel(startTime) {
                 // Native de basarisiz -> son care
                 showToast('🔄 Son bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
+            } else if (needsStreamProxy && !streamUrl.includes('pompe.sadecenjoy') && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
                 showToast('🔄 Yedek bağlantı deneniyor...');
                 startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
@@ -32299,29 +32315,86 @@ function resumeChannel(startTime) {
             startHls(rawUrl);
         }
     } else {
-        // MP4 / MKV / diğer medya
-        // http:// linkler HTTPS sayfasında mixed content engeline takılır → proxy üzerinden aç
-        const _nativeUrl = (rawUrl.startsWith('http:') && !needsDirect)
-            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
-            : rawUrl;
-        video.src = _nativeUrl;
-        video.load();
-        const p = video.play();
-        if (p) p.then(() => {
-            hideZappingScreen();
-            if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
-        }).catch(e => {
-            if (e.name === 'AbortError') return;
-            // Proxy başarısız → direkt dene
-            if (_nativeUrl !== rawUrl) {
+        // MP4 / MKV / diğer medya (direkt video dosyası)
+        // ── Strateji ──
+        // http:// URL + HTTPS sayfa = Mixed Content → tarayıcı/WebView engeller
+        // Çözüm sırası:
+        //   1) http:// ise → proxy URL'ye dönüştür (turk.sadecenjoy → range-request iletir)
+        //   2) Proxy başarısız → STREAM_PROXY2 dene
+        //   3) Tümü başarısız → direkt dene (bazı WebView'lar http:// izin verir)
+        const _isHttpUrl = rawUrl.startsWith('http:');
+        const _needsProxyFirst = _isHttpUrl && !needsDirect;
+
+        // Proxy zinciri sırası (MKV/MP4 range-request için)
+        const _mkvProxies = [
+            'https://pompe.sadecenjoy.workers.dev/proxy?url=',      // 1. Range destekli — MKV/MP4 için
+            'https://turk.sadecenjoy.workers.dev/proxy?url=',       // 2. Yedek
+            'https://proxy.umitmodpremiumtr.workers.dev/?stream=',  // 3. Yedek
+            'https://proxy.umittv.workers.dev/?url=proxy',          // 4. Son çare
+        ];
+        let _nativeFallbackIdx = 0;
+        let _vodErrBound = false;
+
+        function _tryNextProxy() {
+            if (_nativeFallbackIdx >= _mkvProxies.length) {
+                // Tüm proxy'ler başarısız → direkt dene (Mixed Content izni olan WebView)
+                showToast('⚠️ Direkt bağlantı deneniyor...');
                 video.src = rawUrl;
                 video.load();
                 video.play().catch(()=>{});
-            } else {
-                video.load();
-                video.play().catch(()=>{});
+                return;
             }
-        });
+            const _px = _mkvProxies[_nativeFallbackIdx++];
+            const _pUrl = _px + encodeURIComponent(rawUrl);
+            showToast('🔄 Proxy ' + _nativeFallbackIdx + '/' + _mkvProxies.length + ' deneniyor...');
+            video.onerror = null; // önceki handler'ı temizle
+            video.src = _pUrl;
+            video.load();
+            // Her proxy denemesi için yeni onerror bağla
+            video.onerror = () => {
+                video.onerror = null;
+                _tryNextProxy();
+            };
+            video.play().catch(e2 => {
+                if (e2.name !== 'AbortError') {
+                    video.onerror = null;
+                    _tryNextProxy();
+                }
+            });
+        }
+
+        // İlk onerror handler — sadece ilk video.src için
+        video.onerror = () => {
+            if (state.player.hls) { video.onerror = null; return; }
+            if (state.player.streamStarted) { video.onerror = null; return; }
+            video.onerror = null;
+            _tryNextProxy();
+        };
+
+        if (_needsProxyFirst) {
+            // http:// Mixed Content: doğrudan ilk proxy ile başla
+            const _p0 = _mkvProxies[_nativeFallbackIdx++];
+            video.src = _p0 + encodeURIComponent(rawUrl);
+            video.load();
+            const p = video.play();
+            if (p) p.then(() => {
+                hideZappingScreen();
+                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+            }).catch(e => {
+                if (e.name !== 'AbortError') _tryNextProxy();
+            });
+        } else {
+            // https:// veya needsDirect → direkt dene
+            video.src = rawUrl;
+            video.load();
+            const p = video.play();
+            if (p) p.then(() => {
+                hideZappingScreen();
+                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+            }).catch(e => {
+                if (e.name !== 'AbortError') _tryNextProxy();
+            });
+        }
     }
 
     state.remote.zone = 'player'; 
@@ -37930,6 +38003,7 @@ function tryIframeRedirect(action) {
   async function fetchWithTimeout(url, timeout = 8000) {
     // Proxy zinciri: direkt → turk proxy → allorigins
     const M3U_PROXIES = [
+        'https://pompe.sadecenjoy.workers.dev/proxy?url=',
         'https://turk.sadecenjoy.workers.dev/proxy?url=',
         'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
         'https://api.allorigins.win/raw?url='
@@ -37953,11 +38027,19 @@ function tryIframeRedirect(action) {
         }
     }
 
+    // workers.dev / CF Workers URL'leri proxy'ye sarılmamalı:
+    // 1) Proxy kendi Workers'ına sarılmış isteği çözemez (iç auth)
+    // 2) CORS zaten Workers tarafında izin verilmiş olmalı
+    const _isWorkerUrl = /workers\.dev|trycloudflare\.com|ngrok\.io|ngrok-free\.app|onrender\.com/.test(url);
+
     // 1. Direkt dene
     let resp = await _tryUrl(url, timeout);
     if (resp) return resp;
 
-    // 2. Proxy zinciri
+    // Workers URL'ler başarısız → proxy fayda sağlamaz, direkt null dön
+    if (_isWorkerUrl) return null;
+
+    // 2. Proxy zinciri (sadece workers olmayan URL'ler için)
     for (const proxy of M3U_PROXIES) {
         resp = await _tryUrl(proxy + encodeURIComponent(url), Math.min(timeout, 90000));
         if (resp) return resp;
@@ -39166,7 +39248,7 @@ document.addEventListener('error', function(e) {
     if (!img.src || img.src.indexOf('placeholder') > -1 || img.src.indexOf('umit.svg') > -1) return;
     img.dataset.proxyTried = '1';
     var orig = img.dataset.src || img.src;
-    img.src = 'https://turk.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(orig);
+    img.src = 'https://pompe.sadecenjoy.workers.dev/proxy?url=' + encodeURIComponent(orig);
 }, true);
 
  
@@ -39215,7 +39297,7 @@ document.head.appendChild(s);
  
 if (typeof window.fetchM3UChannels === 'undefined') {
     window.fetchM3UChannels = async function(url, password) {
-        var PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
+        var PROXY = 'https://pompe.sadecenjoy.workers.dev/proxy?url=';
 
         async function tryFetch(fetchUrl, timeoutMs) {
             var ctrl = new AbortController();
@@ -39239,9 +39321,15 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
         var isCodebergUrl = /codeberg\.org/i.test(url);
 
+        // workers.dev / CF Workers URL'leri SADECE direkt açılır — proxy'ye sarılmamalı
+        var isWorkerUrl = /workers\.dev|trycloudflare\.com|ngrok\.io|ngrok-free\.app|onrender\.com/.test(url);
+
         var _isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:');
         var response = null;
-        if (isCodebergUrl) {
+        if (isWorkerUrl) {
+            // CF Workers: direkt fetch — proxy desteklenmez (iç auth / CORS zaten açık)
+            response = await tryFetch(targetUrl, 120000);
+        } else if (isCodebergUrl) {
             response = await tryFetch(PROXY + encodeURIComponent(targetUrl), 60000);
             if (!response) response = await tryFetch(targetUrl, 30000);
         } else if (isLargeUrl) {

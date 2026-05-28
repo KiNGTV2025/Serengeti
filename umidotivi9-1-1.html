@@ -10634,7 +10634,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="material-symbols-outlined">groups</span>
                 <span id="wpActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#ff4757;border-radius:50%;border:1px solid #000;animation:wpDotBlink 1s infinite;"></span>
             </button>
-            <button class="header-btn" id="btnExitHeader" onclick="exitApp()" title="Uygulamayı Kapat" style="color:#ff4444;">
+            <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
 
@@ -14043,7 +14043,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -37598,7 +37598,7 @@ function handleFavoriteChannelSelect(key) {
             'btnTheme': 'Tema', 'btnSettings': 'Ayarlar', 'btnRefresh': 'Yenile',
             'btnControlSettings': 'Kontrol Ayarları', 'btnAddM3U': 'M3U Ekle',
             'btnUrlKopi': 'URL Kopi', 'btnDestek': 'Destek', 'btnStore': 'Store',
-            'btnExitHeader': 'Çıkış'
+            'btnWatchParty': 'Watch Party', 'btnExitHeader': 'Çıkış'
         };
         hint = _hbHints2[_hbId2] || (el && el.title) || 'Menü';
     }
@@ -48089,7 +48089,15 @@ window.openWatchPartyLobby = function() {
       if(nickInput && !nickInput.value) nickInput.value = savedNick;
     }
   } catch(e) {}
-  setTimeout(()=>{ document.getElementById('wpNickInput').focus(); }, 100);
+  setTimeout(() => {
+    if (state.remote && state.remote.active) {
+      // Remote modda X butonuna focus ver (ilk wp-remote-focus)
+      const firstFocusable = document.querySelector('#wpLobbyModal .wp-remote-focus');
+      if (firstFocusable) { firstFocusable.focus(); firstFocusable.classList.add('remote-focused'); }
+    } else {
+      document.getElementById('wpNickInput').focus();
+    }
+  }, 100);
 };
 function closeWpLobby_internal() {
   document.getElementById('wpLobbyModal').classList.remove('wp-open');
@@ -48097,6 +48105,14 @@ function closeWpLobby_internal() {
 
 function closeWpLobby() {
   document.getElementById('wpLobbyModal').classList.remove('wp-open');
+  document.querySelectorAll('#wpLobbyModal .remote-focused').forEach(el => el.classList.remove('remote-focused'));
+  // Remote zone'u header'a geri döndür
+  if (typeof state !== 'undefined' && state.remote) {
+    state.remote.zone = 'header';
+    const wpIdx = (typeof HEADER_BUTTONS !== 'undefined') ? HEADER_BUTTONS.indexOf('btnWatchParty') : -1;
+    if (wpIdx >= 0) state.remote.headerIndex = wpIdx;
+    if (typeof updateRemoteFocus === 'function') setTimeout(updateRemoteFocus, 50);
+  }
 }
 window.closeWpLobby = closeWpLobby;
 window.closeWpLobby_internal = closeWpLobby_internal;
@@ -48515,11 +48531,19 @@ window.hideWpPanel = function() {
   panel.classList.remove('wp-open');
   panel.classList.remove('wp-video-mode');
   document.body.classList.remove('wp-panel-open');
+  panel.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
   // Aktif nokta KALSIN (hâlâ odadayız)
   document.getElementById('wpActiveDot').style.display = 'block';
   const playerView = document.getElementById('playerView');
   if(playerView) playerView.style.right = '';
   wpShowToast('💬 Panel gizlendi — hâlâ odasındasın');
+  // Remote zone'u header'a geri döndür
+  if (typeof state !== 'undefined' && state.remote) {
+    state.remote.zone = 'header';
+    const wpIdx = (typeof HEADER_BUTTONS !== 'undefined') ? HEADER_BUTTONS.indexOf('btnWatchParty') : -1;
+    if (wpIdx >= 0) state.remote.headerIndex = wpIdx;
+    if (typeof updateRemoteFocus === 'function') setTimeout(updateRemoteFocus, 50);
+  }
   setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 100);
 };
 
@@ -49140,20 +49164,22 @@ function handleWpLobbyRemote(e) {
     if (!container) return;
 
     const active = document.activeElement;
-    const isText = active && (active.classList.contains('wp-text-input') || active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    const isText = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
 
     if (isBack) {
         e.preventDefault(); e.stopPropagation(); e._backHandled = true;
+        container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
         if (typeof closeWpLobby === 'function') closeWpLobby();
         if (typeof playKeySound === 'function') playKeySound('back');
         return;
     }
 
     if (isText) {
-        // Input içindeyken sadece Escape yakala
         if (e.key === 'Escape') { active.blur(); e.preventDefault(); }
         return;
     }
+
+    e.preventDefault(); e.stopPropagation();
 
     const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el => {
         const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
@@ -49163,21 +49189,19 @@ function handleWpLobbyRemote(e) {
     let cur = focusables.indexOf(active);
     if (cur === -1) cur = 0;
 
-    e.preventDefault(); e.stopPropagation();
-
+    let next = cur;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        const next = cur < focusables.length - 1 ? cur + 1 : 0;
-        focusables[next].focus();
-        focusables[next].classList.add('remote-focused');
+        next = cur < focusables.length - 1 ? cur + 1 : 0;
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        const prev = cur > 0 ? cur - 1 : focusables.length - 1;
-        focusables[prev].focus();
-        focusables[prev].classList.add('remote-focused');
+        next = cur > 0 ? cur - 1 : focusables.length - 1;
     } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
-        if (active && active.classList.contains('wp-remote-focus') && active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
-            active.click();
-        }
-    }
+        if (active && active.classList.contains('wp-remote-focus')) active.click();
+        return;
+    } else { return; }
+
+    container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    focusables[next].classList.add('remote-focused');
+    focusables[next].focus();
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
 
@@ -49188,10 +49212,11 @@ function handleWpPanelRemote(e) {
     if (!container) return;
 
     const active = document.activeElement;
-    const isText = active && (active.classList.contains('wp-text-input') || active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    const isText = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
 
     if (isBack) {
         e.preventDefault(); e.stopPropagation(); e._backHandled = true;
+        container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
         if (typeof hideWpPanel === 'function') hideWpPanel();
         if (typeof playKeySound === 'function') playKeySound('back');
         return;
@@ -49202,6 +49227,8 @@ function handleWpPanelRemote(e) {
         return;
     }
 
+    e.preventDefault(); e.stopPropagation();
+
     const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el => {
         const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
     });
@@ -49210,19 +49237,19 @@ function handleWpPanelRemote(e) {
     let cur = focusables.indexOf(active);
     if (cur === -1) cur = 0;
 
-    e.preventDefault(); e.stopPropagation();
-
+    let next = cur;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        const next = cur < focusables.length - 1 ? cur + 1 : 0;
-        focusables[next].focus();
+        next = cur < focusables.length - 1 ? cur + 1 : 0;
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        const prev = cur > 0 ? cur - 1 : focusables.length - 1;
-        focusables[prev].focus();
+        next = cur > 0 ? cur - 1 : focusables.length - 1;
     } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
-        if (active && active.classList.contains('wp-remote-focus') && active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
-            active.click();
-        }
-    }
+        if (active && active.classList.contains('wp-remote-focus')) active.click();
+        return;
+    } else { return; }
+
+    container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    focusables[next].classList.add('remote-focused');
+    focusables[next].focus();
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
 

@@ -2876,7 +2876,7 @@ body {
 .continue-card { 
     background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(241,196,15,0.04)); 
     border-radius: 12px; 
-    padding: 16px; 
+    padding: 10px; 
     margin-bottom: 0;  
     border: 2px solid var(--accent-secondary); 
     position: relative; 
@@ -2885,9 +2885,10 @@ body {
     display: flex; 
     flex-direction: column; 
     justify-content: space-between; 
-    min-width: 280px;  
-    max-width: 280px;  
+    min-width: 190px;  
+    max-width: 240px;  
     height: 120px;  
+    max-height: 130px;
     overflow: hidden;
     flex-shrink: 0;  
 }
@@ -3008,15 +3009,16 @@ body {
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    gap: 16px;
-    padding: 16px 0 24px 0;
+    gap: 10px;
+    padding: 4px 0 10px 0;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-primary) rgba(255,255,255,0.1);
     -webkit-overflow-scrolling: touch;
-    min-height: 140px;
-    margin-bottom: 8px;  
-    position: relative;  
-    z-index: 10;  
+    min-height: 80px;
+    max-height: 160px;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 10;
 }
 /* ═══ VOD HERO SLIDER CSS ═══ */
 #vodHeroSlider {
@@ -3198,11 +3200,13 @@ body {
 #continueWatchingContainer {
     position: relative;
     z-index: 20;
-    margin-bottom: 20px;  
-    background: var(--bg-panel);  
-    border-radius: 12px;  
-    padding: 16px;  
-    border: 1px solid var(--border-color);  
+    margin-bottom: 12px;
+    background: var(--bg-panel);
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    max-height: 220px;
+    overflow: hidden;
 }
 
 #continueWatchingContainer:empty {
@@ -11660,9 +11664,6 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <button class="settings-btn danger" id="btnClearContinue" onclick="clearContinueWatching(); closeSettingsModal();">
                 <span class="material-symbols-outlined">history_toggle_off</span> İzleme Ön Belleği Temizle
             </button>
-            <button class="settings-btn secondary" id="btnClearEpgCache" onclick="handleClearEpgCacheBtn();">
-                <span class="material-symbols-outlined">event_busy</span> EPG Önbelleğini Sıfırla
-            </button>
             <button class="settings-btn secondary" id="btnClearTheme" onclick="clearThemeCache(); closeSettingsModal();">
                 <span class="material-symbols-outlined">palette</span> Tema Ön Belleği Temizle
             </button>
@@ -14219,7 +14220,7 @@ Object.defineProperty(window, 'state', {
 
         const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
-        const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearEpgCache', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
+        const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
         const CONTINUE_MODAL_BUTTONS = ['btnWatchLater', 'btnContinueDelete', 'btnStartOver', 'btnContinue'];
         const DELETE_MODAL_BUTTONS = ['btnDeleteCancel', 'btnDeleteConfirm'];
@@ -15391,26 +15392,6 @@ async function clearEPGCache() {
         });
     } catch (error) {
     }
-}
-
-async function handleClearEpgCacheBtn() {
-    const btn = document.getElementById('btnClearEpgCache');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Temizleniyor...';
-    }
-    try {
-        await clearEPGCache();
-        if (typeof state !== 'undefined') state.epgData = {};
-        if (typeof showToast === 'function') showToast('✅ EPG önbelleği sıfırlandı. Yenilediğinizde tekrar yüklenecek.');
-    } catch(e) {
-        if (typeof showToast === 'function') showToast('❌ EPG önbelleği sıfırlanamadı.');
-    }
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined">event_busy</span> EPG Önbelleğini Sıfırla';
-    }
-    if (typeof closeSettingsModal === 'function') closeSettingsModal();
 }
 
 async function checkEPGCacheStatus() {
@@ -28484,21 +28465,22 @@ setTimeout(_vhsInit, 1200);
     // TVBox tespiti — küçük kompakt görünüm için
     const _ua = navigator.userAgent;
     const _isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(_ua)
-        || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
-    
+        || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0)
+        || (window.screen && window.screen.width >= 1280 && window.innerWidth >= 1280);
+
     // TVBox'ta max 3 kart göster, küçük boyutlar kullan
-    const _displayList = _isTVBox ? continueList.slice(0, 3) : continueList;
-    const _cardW = _isTVBox ? '200px' : '280px';
-    const _cardH = _isTVBox ? '90px' : '160px';
-    const _cardPad = _isTVBox ? '10px' : '16px';
-    const _logoSz = _isTVBox ? '32px' : '50px';
-    const _titleSz = _isTVBox ? '12px' : '18px';
-    const _detailSz = _isTVBox ? '10px' : '13px';
-    const _btnPad = _isTVBox ? '4px 8px' : '8px 12px';
-    const _btnFontSz = _isTVBox ? '10px' : '12px';
-    const _headerMb = _isTVBox ? '8px' : '16px';
-    const _minH = _isTVBox ? '90px' : '140px';
-    const _gap = _isTVBox ? '10px' : '16px';
+    const _displayList = _isTVBox ? continueList.slice(0, 3) : continueList.slice(0, 5);
+    const _cardW = _isTVBox ? '190px' : '240px';
+    const _cardH = _isTVBox ? '85px' : '130px';
+    const _cardPad = _isTVBox ? '8px 10px' : '12px';
+    const _logoSz = _isTVBox ? '28px' : '40px';
+    const _titleSz = _isTVBox ? '11px' : '14px';
+    const _detailSz = _isTVBox ? '10px' : '12px';
+    const _btnPad = _isTVBox ? '3px 7px' : '6px 10px';
+    const _btnFontSz = _isTVBox ? '9px' : '11px';
+    const _headerMb = _isTVBox ? '6px' : '12px';
+    const _minH = _isTVBox ? '85px' : '130px';
+    const _gap = _isTVBox ? '8px' : '12px';
     
     container.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:${_headerMb};">
@@ -28610,6 +28592,9 @@ setTimeout(_vhsInit, 1200);
     // Cards array'ini güncelle
     state.remote.continueCards.cards = Array.from(cards);
     state.remote.continueCards.hasClearButton = !!clearBtn;
+    
+    // tabindex garantile — DOM focus alabilmesi için zorunlu
+    cards.forEach(c => { if (!c.getAttribute('tabindex')) c.setAttribute('tabindex', '0'); });
     
     // Clear butonu için event listener
     if (clearBtn) {
@@ -28823,6 +28808,9 @@ function updateContinueCardsFocus() {
     // Kartı remote-focused yap
     card.classList.add('remote-focused');
     
+    // DOM focus ver — kumanda olaylarının ulaşması için zorunlu
+    try { card.focus({ preventScroll: true }); } catch(e) {}
+    
     // Seçili butonu remote-focused yap
     const actionButtons = card.querySelectorAll('.continue-action-btn');
     if (actionButtons.length > currentCard.selectedButtonIndex) {
@@ -28832,8 +28820,8 @@ function updateContinueCardsFocus() {
     // Kartı görünür alana getir
     card.scrollIntoView({
         behavior: 'auto',
-        block: 'center',
-        inline: 'center'
+        block: 'nearest',
+        inline: 'nearest'
     });
     
     // İpucu göster
@@ -29998,7 +29986,7 @@ function addContinueCardStyles() {
             if (modal) modal.style.display = 'none';
             if (state && state.remote && state.remote.zone === 'sortBackupModal') {
                 state.remote.zone = 'settingsModal';
-                state.remote.settingsIndex = 6; // btnExportSort index
+                state.remote.settingsIndex = 5; // btnExportSort index
                 try { updateRemoteFocus(); } catch(e) {}
             }
         }
@@ -30429,7 +30417,7 @@ function addContinueCardStyles() {
                     if (settingsModal) {
                         settingsModal.style.display = 'flex';
                         state.remote.zone = 'settingsModal';
-                        state.remote.settingsIndex = 4; // btnResetApp
+                        state.remote.settingsIndex = 3; // btnResetApp
                         try { updateRemoteFocus(); } catch(e2) {}
                     } else {
                         state.remote.zone = 'channels';
@@ -37350,6 +37338,8 @@ function cleanupDeleteContinueModalRemote() {
             state.remote.zone = 'continueCards';
             state.remote.continueCards.selectedCardIndex = 0;
             state.remote.continueCards.selectedButtonIndex = 0;
+            // tabindex garantile
+            document.querySelectorAll('.continue-card').forEach(c => { if (!c.getAttribute('tabindex')) c.setAttribute('tabindex', '0'); });
             updateContinueCardsFocus();
         }
         return;
@@ -37968,6 +37958,10 @@ function handleContinueCardsRemote(e) {
             state.remote.zone = 'channels';
             state.remote.index = 0;
             updateRemoteFocus();
+            setTimeout(() => {
+                const _fc = document.querySelector('.channel-card:not(.continue-card-in-grid)');
+                if (_fc) { try { _fc.focus({ preventScroll: true }); } catch(e) {} }
+            }, 50);
             break;
     }
 }

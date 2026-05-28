@@ -31233,6 +31233,12 @@ function setupAutoLoadOnScroll(totalChannels) {
                 const savedScroll = scrollTop;
                 renderChannels();
                 setTimeout(() => { viewport.scrollTop = savedScroll; }, 30);
+                // Kumanda odağını geri yükle — renderChannels innerHTML'i sifirlar
+                setTimeout(() => {
+                    if (window.state && window.state.remote && window.state.remote.active && typeof updateRemoteFocus === 'function') {
+                        updateRemoteFocus();
+                    }
+                }, 80);
             }
         }
     };
@@ -38337,6 +38343,7 @@ function handleFavoriteChannelSelect(key) {
         return; // updateRecentCardsFocus handles hint/focus itself
     }
     else if(state.remote.zone==='channels') {
+        const activeCont = state.activeCat === 'cont';
         if (activeCont) {
             const cards = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
             if (cards.length > 0 && state.remote.index < cards.length) {

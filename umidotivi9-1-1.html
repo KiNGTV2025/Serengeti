@@ -646,6 +646,12 @@ button:active,
     animation: none !important;
     transition: none !important;
 }
+/* ODAKLI kanal kartı içindeki elementleri animasyon yasağından muaf tut */
+.channel-card.remote-focused *,
+.channel-card.focused * {
+    animation: revert !important;
+    transition: revert !important;
+}
 /* Loading overlay animasyonlarını koru */
 .loading-overlay,
 .loading-overlay *,
@@ -908,6 +914,55 @@ img {
     transform: none !important;
     will-change: auto !important;
     z-index: auto !important;
+}
+
+/* ══════════════════════════════════════════════
+   ── 19. TEMA RENGİNDE YANIP SÖNEN ODAK (BLINK) ──
+   Kumandada odaklanan kart, seçili temanın rengiyle
+   glow olarak yanıp söner — odak asla kaybolmaz
+   ══════════════════════════════════════════════ */
+@keyframes focusBlink {
+    0%,100% { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
+                          0 0 10px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
+    50%      { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
+                          0 0 28px rgba(var(--accent-primary-rgb,255,215,0), 0.9),
+                          0 0 50px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
+}
+@keyframes focusBlinkOutline {
+    0%,100% { outline-color: var(--accent-primary, #FFD700); opacity: 1; }
+    50%      { outline-color: var(--accent-primary, #FFD700); opacity: 0.55; }
+}
+
+/* Kanal kartı — tema rengi blink */
+.channel-card.remote-focused,
+.channel-card.focused {
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards,
+               focusBlink 1.1s ease-in-out 220ms infinite !important;
+    transform: scale(1.10) !important;
+    transform-origin: center center !important;
+    will-change: transform, box-shadow !important;
+    z-index: 2 !important;
+    position: relative !important;
+}
+
+/* Buton/pill odağı — outline blink */
+.header-btn.remote-focused,
+.player-action-btn.remote-focused,
+.m3u-pill.remote-focused,
+.cat-pill.remote-focused,
+.sidebar-category-pill.remote-focused,
+.category-list-item.remote-focused {
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards,
+               focusBlinkOutline 1.2s ease-in-out 220ms infinite !important;
+}
+
+/* Odak KORUNUMU — remote-focused class varken outline hiç kaybolmasın */
+.remote-focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
+}
+.channel-card.remote-focused {
+    outline: none !important; /* kanal kartı box-shadow kullanıyor */
 }
 
 </style>
@@ -32993,20 +33048,62 @@ function resumeChannel(startTime) {
                           (rawUrl.includes('action=redirect') && rawUrl.includes('format=4'));
 
     if (isRedirectUrl) {
+        showToast('🔗 Yayın bağlantısı çözümleniyor...');
         state.remote.zone = 'player';
         state.remote.playerBoxIndex = 9;
         startContinuousWatchingUpdate();
+        // Önceki stream'i temizle (ses bozulması önleme)
         if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
-        // HTTP redirect URL → mixed content engeli için proxy üzerinden HLS olarak aç
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
         hideZappingScreen();
-        const _redirProxied = rawUrl.startsWith('http:')
-            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
-            : rawUrl;
-        startHls(_redirProxied);
+        (async () => {
+            try {
+                // Önce direkt fetch ile redirect'i takip et (CORS varsa çalışır)
+                let resolvedUrl = null;
+                const directResp = await fetch(rawUrl, { method: 'HEAD', redirect: 'follow' }).catch(() => null);
+                if (directResp && directResp.ok && directResp.url && directResp.url !== rawUrl) {
+                    resolvedUrl = directResp.url;
+                }
+                // Direkt çalışmadıysa proxy üzerinden dene
+                if (!resolvedUrl) {
+                    const proxyResp = await fetch(STREAM_PROXY + encodeURIComponent(rawUrl), { method: 'HEAD', redirect: 'follow' }).catch(() => null);
+                    if (proxyResp && proxyResp.ok && proxyResp.url) {
+                        resolvedUrl = proxyResp.url;
+                    }
+                }
+
+                const finalUrl = resolvedUrl || rawUrl;
+                const finalLower = finalUrl.toLowerCase();
+
+                if (finalLower.includes('.m3u8') || finalLower.includes('/hls/') || finalLower.includes('/live/')) {
+                    startHls(finalUrl);
+                } else if (finalLower.includes('.mp4') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
+                    // MP4 / VOD — native video player ile aç
+                    video.src = finalUrl;
+                    video.load();
+                    video.play().catch(() => {
+                        video.load();
+                        video.play().catch(() => {});
+                    });
+                } else {
+                    // Belirsiz — HLS.js ile dene
+                    startHls(finalUrl);
+                }
+            } catch(e) {
+                startHls(rawUrl);
+            }
+        })();
     } else if (isHlsUrl) {
+        // AppCreator24 WebView (okhttp UA): http:// HLS URL'lerine Mixed Content engeli UYGULANMAZ → direkt aç
+        const _isOkhttpHls = (navigator.userAgent || '').toLowerCase().includes('okhttp');
         // http:// ile başlayan HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç
-        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:')) {
+        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && !_isOkhttpHls) {
             startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+        } else if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && _isOkhttpHls) {
+            // App24 okhttp WebView → direkt HLS, proxy gerekmez
+            startHls(rawUrl);
         } else
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan
@@ -49716,17 +49813,16 @@ function wpStartNowPlayingListener(code) {
     if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
 
     // Odaya katılınca gelen eski nowPlaying'i işleme:
-    // ts joinTs'den önce veya aynı anda ise → eski kayıt, sadece lastTs'i set et
-    if(np.ts <= joinTs) {
-      // Host şu an player açık olsa bile katıldıktan önce yazılmış → yok say
+    // ts joinTs'den önce ise → eski kayıt, sadece lastTs'i set et
+    if(np.ts < joinTs) {
       lastTs = np.ts;
       return;
     }
 
-    // joinTs'den sonra yazılmış ama host player kapalı ise işleme
-    // WP._hostPlayerOpen: playerState listener tarafından anlık güncellenir
-    const _hpo = (typeof hostPlayerOpen !== 'undefined') ? hostPlayerOpen : (WP._hostPlayerOpen !== false);
-    if(!_hpo && np.ts < joinTs + 10000) {
+    // joinTs ile eş zamanlı veya sonrası — host player durumundan bağımsız işle
+    // (hostPlayerOpen async fbGet'e bağlıydı, race condition yaratıyordu)
+    // Yalnızca joinTs sonrası 500ms içindeki ilk snapshot'ı atla
+    if(np.ts <= joinTs + 500 && isFromPoll) {
       lastTs = np.ts;
       return;
     }

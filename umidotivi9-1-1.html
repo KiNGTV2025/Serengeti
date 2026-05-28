@@ -29181,7 +29181,7 @@ function addContinueCardStyles() {
             closeSidebar();
 
             // Geri sayım overlay
-            let countdown = 5;
+            let countdown = 3;
             const overlay = document.getElementById('sleepCountdownOverlay');
             const numberEl = document.getElementById('sleepCountdownNumber');
             overlay.style.display = 'flex';
@@ -29205,7 +29205,7 @@ function addContinueCardStyles() {
                 if (!sleepCanceled) closeAppSafely();
                 // Metni eski haline döndür (iptal edilirse)
                 if (overlayText) overlayText.innerHTML = origText;
-            }, 5000);
+            }, 3000);
         }
 
         // ── KANAL SIRALAMA SİSTEMİ ────────────────────────────────────────

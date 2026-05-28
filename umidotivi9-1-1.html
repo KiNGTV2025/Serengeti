@@ -33085,8 +33085,8 @@ function resumeChannel(startTime) {
 
                 if (finalLower.includes('.m3u8') || finalLower.includes('/hls/') || finalLower.includes('/live/')) {
                     startHls(finalUrl);
-                } else if (finalLower.includes('.mp4') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
-                    // MP4 / VOD — native video player ile aç
+                } else if (finalLower.includes('.mp4') || finalLower.includes('.mkv') || finalLower.includes('.avi') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
+                    // MP4 / MKV / VOD — native video player ile aç
                     video.src = finalUrl;
                     video.load();
                     video.play().catch(() => {
@@ -33217,29 +33217,66 @@ function resumeChannel(startTime) {
         // AppCreator24 WebView (okhttp UA): http:// linklere Mixed Content engeli UYGULANMAZ
         // → direkt rawUrl kullan, kesinlikle HLS.js'e gönderme (HLS.js MKV/MP4 parse edemez)
         const _isOkhttp = (navigator.userAgent || '').toLowerCase().includes('okhttp');
-        const _directMediaUrl = (!_isOkhttp && rawUrl.startsWith('http:') && location.protocol === 'https:')
-            ? (STREAM_PROXY + encodeURIComponent(rawUrl))
-            : rawUrl;
+        const _isMixedContent = !_isOkhttp && rawUrl.startsWith('http:') && location.protocol === 'https:';
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        // MKV/MP4 için her zaman native video — HLS.js MKV'yi oynatamaz
-        video.src = _directMediaUrl;
-        video.load();
-        const p = video.play();
-        if (p) p.then(() => {
-            hideZappingScreen();
-            if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
-        }).catch(e => {
-            if (e.name === 'AbortError') return;
-            // Yalnızca native play gerçekten hata alırsa ve okhttp değilsek proxy dene
-            if (!_isOkhttp && _directMediaUrl === rawUrl && rawUrl.startsWith('http:')) {
-                video.src = STREAM_PROXY + encodeURIComponent(rawUrl);
-                video.load();
-                video.play().catch(() => {});
-            }
-        });
+        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
+        // Mixed content varsa mutlaka proxy kullan
+        // STREAM_PROXY2 (sadecenjoy) raw video proxy'si — MKV için daha uygun
+        const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
+            ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
+            : null;
+        const _proxy1Url = STREAM_PROXY + encodeURIComponent(rawUrl);
+        const _directMediaUrl = _isMixedContent
+            ? (_proxy2Url || _proxy1Url)
+            : rawUrl;
+
+        function _tryPlayMkv(url, fallbacks) {
+            video.src = url;
+            video.load();
+            const _p = video.play();
+            if (_p) _p.then(() => {
+                hideZappingScreen();
+                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+            }).catch(e => {
+                if (e.name === 'AbortError') return;
+                if (fallbacks && fallbacks.length > 0) {
+                    const next = fallbacks.shift();
+                    showToast('🔄 Alternatif proxy deneniyor...');
+                    _tryPlayMkv(next, fallbacks);
+                }
+            });
+
+            // video error olayını da yakala
+            const _errHandler = function() {
+                video.removeEventListener('error', _errHandler);
+                if (fallbacks && fallbacks.length > 0) {
+                    const next = fallbacks.shift();
+                    showToast('🔄 Alternatif proxy deneniyor...');
+                    _tryPlayMkv(next, fallbacks);
+                } else if (url !== rawUrl && !_isMixedContent) {
+                    // Tüm proxy'ler başarısız → direkt dene
+                    video.src = rawUrl; video.load(); video.play().catch(() => {});
+                }
+            };
+            video.addEventListener('error', _errHandler, { once: true });
+        }
+
+        // Fallback zinciri oluştur
+        const _fallbacks = [];
+        if (_isMixedContent) {
+            // Mixed content: proxy1 → proxy2 → (proxy ile sınırlı)
+            if (_directMediaUrl === _proxy2Url && _proxy1Url) _fallbacks.push(_proxy1Url);
+            else if (_proxy2Url) _fallbacks.push(_proxy2Url);
+        } else {
+            // Direkt: hata olursa proxy dene
+            if (_proxy2Url) _fallbacks.push(_proxy2Url);
+            _fallbacks.push(_proxy1Url);
+        }
+
+        _tryPlayMkv(_directMediaUrl, _fallbacks);
     }
 
     state.remote.zone = 'player'; 

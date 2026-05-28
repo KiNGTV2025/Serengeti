@@ -19623,7 +19623,7 @@ let sleepCanceled = false;
 ================================ */
 function closeAppSafely() {
     try {
-        window.location.href = "http://action_exit";
+        showExitConfirmModal();
     } catch (e) {
     }
 
@@ -47750,49 +47750,68 @@ window.addEventListener('unhandledrejection', function(e) {
 // ── FIREBASE CONFIG ──
 const FB_URL = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
 
-// Firebase REST API yardımcıları
+// Firebase REST — fetch, başarısız olursa XHR ile tekrar dene
+function _fbXHR(method, url, body) {
+  return new Promise((resolve) => {
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 8000;
+      xhr.onload = () => {
+        try { resolve({ ok: xhr.status >= 200 && xhr.status < 300, text: xhr.responseText }); }
+        catch(e) { resolve({ ok: false, text: '' }); }
+      };
+      xhr.onerror = xhr.ontimeout = () => resolve({ ok: false, text: '' });
+      xhr.send(body ? JSON.stringify(body) : null);
+    } catch(e) { resolve({ ok: false, text: '' }); }
+  });
+}
+
+async function _fbFetch(method, path, body) {
+  const url = FB_URL + path + '.json';
+  // Önce fetch dene
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 8000);
+    const opts = { method, mode: 'cors', cache: 'no-store', signal: ctrl.signal };
+    if(body !== undefined) { opts.headers = {'Content-Type':'application/json'}; opts.body = JSON.stringify(body); }
+    const r = await fetch(url, opts);
+    clearTimeout(tid);
+    if(r.ok) return { ok: true, text: await r.text() };
+  } catch(e) {}
+  // Fetch başarısız → XHR ile tekrar dene (Brave uyumluluğu)
+  return _fbXHR(method, url, body);
+}
+
 async function fbGet(path) {
   try {
-    const r = await fetch(FB_URL + path + '.json');
-    if(!r.ok) return null;
-    return await r.json();
+    const res = await _fbFetch('GET', path);
+    if(!res.ok || !res.text) return null;
+    return JSON.parse(res.text);
   } catch(e) { return null; }
 }
 async function fbSet(path, data) {
   try {
-    const r = await fetch(FB_URL + path + '.json', {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    return r.ok;
+    const res = await _fbFetch('PUT', path, data);
+    return res.ok;
   } catch(e) { return false; }
 }
 async function fbPush(path, data) {
   try {
-    const r = await fetch(FB_URL + path + '.json', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    if(!r.ok) return null;
-    const d = await r.json();
-    return d.name; // Firebase push key
+    const res = await _fbFetch('POST', path, data);
+    if(!res.ok) return null;
+    const d = JSON.parse(res.text);
+    return d.name;
   } catch(e) { return null; }
 }
 async function fbDelete(path) {
-  try {
-    await fetch(FB_URL + path + '.json', { method: 'DELETE' });
-  } catch(e) {}
+  try { await _fbFetch('DELETE', path); } catch(e) {}
 }
 async function fbUpdate(path, data) {
   try {
-    const r = await fetch(FB_URL + path + '.json', {
-      method: 'PATCH',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    return r.ok;
+    const res = await _fbFetch('PATCH', path, data);
+    return res.ok;
   } catch(e) { return false; }
 }
 
@@ -47868,12 +47887,19 @@ function wpShowToast(msg) {
 }
 
 // ── AKTİF ODALAR LİSTESİ (Firebase'den) ──
-async function wpLoadRooms() {
+window.wpLoadRooms = async function wpLoadRooms() {
   const list = document.getElementById('wpRoomsList');
   list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:10px;">Odalar yükleniyor...</div>';
   const rooms = await fbGet('/rooms');
   list.innerHTML = '';
-  if(!rooms) {
+  if(rooms === null) {
+    list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
+      '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Bağlantı hatası</div>' +
+      '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
+      '</div>';
+    return;
+  }
+  if(!rooms || Object.keys(rooms).length === 0) {
     list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:10px;">Henüz aktif oda yok. İlk odayı sen aç! 🎉</div>';
     return;
   }
@@ -47882,7 +47908,7 @@ async function wpLoadRooms() {
   let count = 0;
   const sorted = Object.entries(rooms).sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
   sorted.forEach(([code, r]) => {
-    const memberCount = r.members ? Object.values(r.members).filter(m => m && m.online !== false).length : 0;
+    const memberCount = r.members ? Object.values(r.members).filter(m => m && m.online === true && m.lastSeen && (now - m.lastSeen) < 90000).length : 0;
     const lockIcon = r.password ? ' 🔒' : '';
     const isOld = r.createdAt && (now - r.createdAt) > 2*60*60*1000;
     const isMyRoom = savedNick && r.hostNick && r.hostNick === savedNick;
@@ -48094,6 +48120,7 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
     color: WP.myColor,
     isHost,
     joinedAt: Date.now(),
+    lastSeen: Date.now(),
     online: true
   });
   WP.myId = memberId;
@@ -48118,14 +48145,47 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   // Player toolbar Chat butonunu göster
   setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 300);
 
-  // Presence (online kalma) — 30sn'de bir güncelle
+  // Presence (online kalma) — 20sn'de bir güncelle
   WP.presenceTimer = setInterval(async () => {
     if(!WP.inRoom || !WP.myId) return;
     await fbUpdate('/rooms/' + code + '/members/' + WP.myId, { online: true, lastSeen: Date.now() });
-  }, 30000);
+    // Dot renklerini güncelle (lastSeen değişince)
+    wpRenderMembers();
+  }, 20000);
 
   // Sayfadan ayrılınca kendini offline yap
   window.addEventListener('beforeunload', wpLeaveCleanup);
+
+  // Chat polling yedek (SSE bağlantısı kopunca mesajları kaçırma)
+  WP._chatPollTimer = setInterval(async () => {
+    if(!WP.inRoom) return;
+    const chat = await fbGet('/rooms/' + code + '/chat');
+    if(!chat || typeof chat !== 'object') return;
+    Object.entries(chat).forEach(([k, msg]) => {
+      if(WP.lastChatKeys.has(k)) return;
+      WP.lastChatKeys.add(k);
+      if(!msg || typeof msg !== 'object') return;
+      if(msg.isSystem) {
+        wpAddSystemMsg(msg.text || '');
+      } else {
+        wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
+      }
+    });
+  }, 5000);
+
+  // Arka plana alınınca / öne gelince lastSeen güncelle → dot rengi değişsin
+  const _wpVisHandler = async () => {
+    if(!WP.inRoom || !WP.myId) return;
+    if(document.visibilityState === 'hidden') {
+      // Arka plana gitti — lastSeen'i eski bırak (sarı olsun)
+    } else {
+      // Öne geldi — lastSeen güncelle (yeşil olsun)
+      await fbUpdate('/rooms/' + code + '/members/' + WP.myId, { online: true, lastSeen: Date.now() });
+      wpRenderMembers();
+    }
+  };
+  document.addEventListener('visibilitychange', _wpVisHandler);
+  WP._wpVisHandler = _wpVisHandler;
 
   // Host ise oda suresi uyarisini baslat
   if(isHost) {
@@ -48172,7 +48232,7 @@ function wpStartListeners(code) {
           const isOnline = m.online !== false;
           if(!isOnline) return;
           const isMe = id === WP.myId;
-          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe });
+          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
         });
         wpUpdateMeta();
       });
@@ -48188,9 +48248,24 @@ function wpStartListeners(code) {
     try {
       const d = JSON.parse(e.data);
       if(d.path === '/') {
-        // İlk yükleme — geçmiş mesajlar (odaya yeni katıldık, atla)
+        // İlk yükleme veya yeniden bağlanma — geçmiş mesajları göster
         if(d.data && typeof d.data === 'object') {
-          Object.keys(d.data).forEach(k => WP.lastChatKeys.add(k));
+          const isReconnect = WP.lastChatKeys.size > 0;
+          Object.entries(d.data).forEach(([k, msg]) => {
+            if(WP.lastChatKeys.has(k)) return; // zaten gösterilmiş
+            WP.lastChatKeys.add(k);
+            if(!msg || typeof msg !== 'object') return;
+            if(msg.isSystem) {
+              wpAddSystemMsg(msg.text || '');
+            } else {
+              wpAddChatMsg({
+                nick: msg.nick || '?',
+                color: msg.color || '#FFD700',
+                text: msg.text || '',
+                isReaction: !!msg.isReaction
+              });
+            }
+          });
         }
         return;
       }
@@ -48256,9 +48331,11 @@ function wpStartListeners(code) {
 // ── TEMİZLEME (odadan çıkış) ──
 function wpLeaveCleanup() {
   if(!WP.myId || !WP.roomCode) return;
-  // Beacon API ile senkron gönder (sayfa kapanırken)
+  // Beacon API ile üyeyi sil (sayfa kapanırken bile çalışır)
   const url = FB_URL + '/rooms/' + WP.roomCode + '/members/' + WP.myId + '.json';
-  navigator.sendBeacon(url, JSON.stringify({ online: false, leftAt: Date.now() }));
+  try { navigator.sendBeacon(url + '?x-http-method-override=DELETE', JSON.stringify(null)); } catch(e) {}
+  // Normal fetch ile de sil (daha güvenilir)
+  try { fetch(url, { method: 'DELETE', keepalive: true }); } catch(e) {}
 }
 
 function wpUpdateMeta() {
@@ -48349,6 +48426,13 @@ window.closeWpPanel = function() {
   WP.listeners.forEach(es => es.close());
   WP.listeners = [];
   if(WP.presenceTimer) clearInterval(WP.presenceTimer);
+  if(WP._chatPollTimer) clearInterval(WP._chatPollTimer);
+  if(WP._npPollTimer) clearInterval(WP._npPollTimer);
+  if(WP._wpVisHandler) { document.removeEventListener('visibilitychange', WP._wpVisHandler); WP._wpVisHandler = null; }
+  // Üyeyi Firebase'den sil (async — normal çıkışta kesin çalışır)
+  if(WP.myId && WP.roomCode) {
+    fbDelete('/rooms/' + WP.roomCode + '/members/' + WP.myId).catch(()=>{});
+  }
   wpLeaveCleanup();
   WP.inRoom = false;
   WP.myId = '';
@@ -48393,16 +48477,21 @@ window.wpSwitchTab = function(tab) {
 };
 
 // ── ÜYELER ──
-function wpAddMember({ nick, color, isHost, isMe }) {
+function wpAddMember({ nick, color, isHost, isMe, lastSeen }) {
   if(WP.members.find(m=>m.nick===nick)) return;
-  WP.members.push({ nick, color, isHost, isMe });
+  WP.members.push({ nick, color, isHost, isMe, lastSeen: lastSeen || 0 });
   wpRenderMembers();
 }
 
 function wpRenderMembers() {
   const list = document.getElementById('wpMembersList');
   list.innerHTML = '';
+  const now = Date.now();
   WP.members.forEach(m => {
+    // lastSeen son 120sn içindeyse veya kendimizse aktif say
+    const isActive = m.isMe || !m.lastSeen || (now - m.lastSeen) < 120000;
+    const dotColor = isActive ? '#2ed573' : '#FFD700';
+    const dotLabel = isActive ? 'Aktif' : 'Arka planda';
     const el = document.createElement('div');
     el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid transparent;';
     el.className = 'wp-remote-focus';
@@ -48413,7 +48502,7 @@ function wpRenderMembers() {
         <div style="font-size:13px;font-weight:700;color:${m.isMe?'#a29bfe':m.isHost?'#FFD700':'#e8e8f0'}">${m.nick}${m.isMe?' (Sen)':''}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.35);">${m.isHost?'Ev Sahibi':'İzleyici'}</div>
       </div>
-      <div style="width:7px;height:7px;border-radius:50%;background:#2ed573;box-shadow:0 0 5px #2ed573;flex-shrink:0;"></div>
+      <div title="${dotLabel}" style="width:7px;height:7px;border-radius:50%;background:${dotColor};box-shadow:0 0 5px ${dotColor};flex-shrink:0;"></div>
     `;
     list.appendChild(el);
   });
@@ -48614,40 +48703,52 @@ if(typeof _origOpenVod === 'function') {
 
 // ── nowPlaying dinleyicisi — karşı tarafta içerik aç ──
 function wpStartNowPlayingListener(code) {
-  const es = new EventSource(FB_URL + '/rooms/' + code + '/nowPlaying.json');
   let lastTs = 0;
-  es.addEventListener('put', (e) => {
+
+  function wpHandleNowPlaying(np) {
     if(!WP.inRoom) return;
+    if(!np || !np.ts) return;
+    if(np.ts <= lastTs) return;
+    if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
+    lastTs = np.ts;
+
+    wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
+    wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
+
+    if(np.type === 'channel' && np.channelData) {
+      try {
+        const ch = JSON.parse(np.channelData);
+        if(typeof _origPlayChannel === 'function') {
+          setTimeout(() => _origPlayChannel(ch), 500);
+        }
+      } catch(err) {}
+    } else if(np.type === 'vod' && np.vodData) {
+      try {
+        const vod = JSON.parse(np.vodData);
+        if(typeof _origOpenVod === 'function') {
+          setTimeout(() => _origOpenVod(vod), 500);
+        }
+      } catch(err) {}
+    }
+  }
+
+  // SSE ile dinle
+  const es = new EventSource(FB_URL + '/rooms/' + code + '/nowPlaying.json');
+  es.addEventListener('put', (e) => {
     try {
       const d = JSON.parse(e.data);
-      const np = d.data;
-      if(!np || !np.ts) return;
-      if(np.ts <= lastTs) return;
-      if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
-      lastTs = np.ts;
-
-      wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
-      wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
-
-      if(np.type === 'channel' && np.channelData) {
-        try {
-          const ch = JSON.parse(np.channelData);
-          if(typeof _origPlayChannel === 'function') {
-            setTimeout(() => _origPlayChannel(ch), 500);
-          }
-        } catch(err) {}
-      } else if(np.type === 'vod' && np.vodData) {
-        try {
-          const vod = JSON.parse(np.vodData);
-          if(typeof _origOpenVod === 'function') {
-            setTimeout(() => _origOpenVod(vod), 500);
-          }
-        } catch(err) {}
-      }
+      wpHandleNowPlaying(d.data);
     } catch(err) {}
   });
   es.onerror = () => {};
   WP.listeners.push(es);
+
+  // Polling yedek (Brave SSE engeli için) — 3sn'de bir kontrol
+  WP._npPollTimer = setInterval(async () => {
+    if(!WP.inRoom) return;
+    const np = await fbGet('/rooms/' + code + '/nowPlaying');
+    wpHandleNowPlaying(np);
+  }, 3000);
 }
 
 // ── VİDEO MODU: player açılınca paneli overlay'e al ──

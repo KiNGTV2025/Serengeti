@@ -11034,7 +11034,9 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
   transition:all 0.15s;
 }
 .wp-room-item:hover,.wp-room-item.remote-focused {
-  border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);
+  border-color:#FFD700 !important;background:rgba(255,215,0,0.08);
+  box-shadow:0 0 0 2px rgba(255,215,0,0.3);
+  outline:none;
 }
 
 /* Floating reaksiyon */
@@ -14712,6 +14714,26 @@ async function loadContinueWatching() {
                     return;
                 }
                 
+                // ── Watch Party ve Çıkış Modalı — class ile açılır, önce kontrol et ──
+                const _wpLobbyEl = document.getElementById('wpLobbyModal');
+                if (_wpLobbyEl && _wpLobbyEl.classList.contains('wp-open')) {
+                    if (typeof closeWpLobby === 'function') closeWpLobby();
+                    playKeySound('back');
+                    return;
+                }
+                const _wpPanelEl = document.getElementById('wpPanel');
+                if (_wpPanelEl && _wpPanelEl.classList.contains('wp-open')) {
+                    if (typeof hideWpPanel === 'function') hideWpPanel();
+                    playKeySound('back');
+                    return;
+                }
+                const _exitMod = document.getElementById('exitConfirmModal');
+                if (_exitMod && (_exitMod.style.display === 'flex' || _exitMod.style.display === 'block')) {
+                    _exitMod.style.display = 'none';
+                    playKeySound('back');
+                    return;
+                }
+
                 const modalOrder = [
                     { id: 'sortBackupModal',      action: closeSortBackupModal },
                     { id: 'quickSortNumModal',    action: closeQuickSortNumModal },
@@ -48042,10 +48064,11 @@ window.wpLoadRooms = async function wpLoadRooms() {
     el.addEventListener('click', (e) => {
       if(e.target.closest('.wp-del-btn')) return;
       if(isOld) { wpShowToast('⚠ Bu oda süresi dolmuş'); return; }
+      // Nick kontrolü
+      const nick = document.getElementById('wpNickInput').value.trim() || savedNick;
+      if(!nick) { wpShowToast('⚠ Önce kullanıcı adı gir!'); document.getElementById('wpNickInput').focus(); return; }
       // Host kendi odasına tıklıyorsa direkt host olarak gir
       if(isMyRoom) {
-        const nick = document.getElementById('wpNickInput').value.trim() || savedNick;
-        if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
         wpEnterRoom({ nick, code, roomName: r.roomName||'Oda', contentTitle: r.contentTitle||wpGetCurrentContent(), isHost: true });
         return;
       }
@@ -48059,7 +48082,12 @@ window.wpLoadRooms = async function wpLoadRooms() {
         wpJoinRoom();
       }
     });
-    el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ document.getElementById('wpJoinCodeInput').value=code; wpJoinRoom(); }});
+    el.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
     list.appendChild(el);
     count++;
   });
@@ -48151,10 +48179,11 @@ window.wpCreateRoom = async function() {
 
 // ── ODA KATIL ──
 window.wpJoinRoom = async function() {
-  const nick = document.getElementById('wpNickInput').value.trim();
+  const savedNick = (() => { try { return localStorage.getItem('wp_nick') || ''; } catch(e) { return ''; } })();
+  const nick = document.getElementById('wpNickInput').value.trim() || savedNick;
   // Kodu büyük harfe çevir ve boşlukları temizle
   const code = (document.getElementById('wpJoinCodeInput').value || '').trim().toUpperCase().replace(/\s/g,'');
-  if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
+  if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); document.getElementById('wpNickInput').focus(); return; }
   if(code.length < 4) { wpShowToast('⚠ En az 4 haneli oda kodu gir'); return; }
 
   const btn = document.getElementById('wpJoinBtn');
@@ -49181,6 +49210,7 @@ function handleWpLobbyRemote(e) {
 
     e.preventDefault(); e.stopPropagation();
 
+    // Tüm odaklanabilir elemanlar: lobby box içindeki + oda listesi item'ları
     const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el => {
         const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
     });
@@ -49195,13 +49225,17 @@ function handleWpLobbyRemote(e) {
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
         next = cur > 0 ? cur - 1 : focusables.length - 1;
     } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
-        if (active && active.classList.contains('wp-remote-focus')) active.click();
+        if (active && active.classList.contains('wp-remote-focus')) {
+            active.click();
+        }
         return;
     } else { return; }
 
     container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
-    focusables[next].classList.add('remote-focused');
-    focusables[next].focus();
+    const nextEl = focusables[next];
+    nextEl.classList.add('remote-focused');
+    nextEl.focus();
+    nextEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
 

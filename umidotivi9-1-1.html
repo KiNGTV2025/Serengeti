@@ -32115,10 +32115,7 @@ function resumeChannel(startTime) {
             if (_hcL) _hcL.textContent = 'Gizle';
         }
         if (!window._controlsHidden) {
-            // Yayın açılınca kontrolleri GÖSTERMEDEN direkt gizle — kullanıcı dokunana kadar görünmesin
-            const _pcAuto = document.getElementById('playerContainer');
-            if (_pcAuto) _pcAuto.classList.remove('show-controls');
-            state.remote.playerControlsVisible = false;
+            showControls(4000);
         } else {
             // Canlı: kontroller kalıcı gizli — zone='player' kilitle, kumanda çalışmaya devam etsin
             state.remote.zone = 'player';
@@ -32126,28 +32123,6 @@ function resumeChannel(startTime) {
             state.remote.playerBoxIndex = 9; // btnPlayerList — odak hazır
         }
         startResolutionMonitoring();
-        // ── SON İZLENEN KANALLAR (sadece canlı yayınlar) ──
-        if (ch && ch.name && ch.isLive !== false) {
-            try {
-                const _rc = JSON.parse(localStorage.getItem('umittv_recent') || '[]');
-                const _entry = {
-                    name: ch.name,
-                    logo: ch.logo || '',
-                    group: ch.group || '',
-                    isLive: ch.isLive !== false,
-                    url: ch.url || '',
-                    ts: Date.now()
-                };
-                const _idx = _rc.findIndex(x => x.name === ch.name);
-                if (_idx !== -1) _rc.splice(_idx, 1);
-                _rc.unshift(_entry);
-                if (_rc.length > 20) _rc.length = 20;
-                localStorage.setItem('umittv_recent', JSON.stringify(_rc));
-                renderRecentChannels();
-            } catch(e) {}
-        }
-        // ── BUFFER BADGE BAŞLAT ──
-        startBufferBadge();
 
         // EPG butonu: yayın başladığında state'e göre göster/gizle
         const _epgBtnOS = document.getElementById('btnEpg');
@@ -32310,38 +32285,25 @@ function resumeChannel(startTime) {
 
             const ct = video.currentTime;
 
-            if (stallCount <= 3) {
-                // Sadece play() dene — ağ geçici titredi, müdahale etme
+            if (stallCount <= 2) {
+                // Sadece play() dene — ağ geçici olarak titredi
                 try {
                     if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                    setTimeout(() => { window._recoveryLock = false; }, 800);
+                    setTimeout(() => { window._recoveryLock = false; }, 500);
                 } catch(e) { window._recoveryLock = false; }
-            } else if (stallCount <= 7) {
-                // Canlı: seekToLiveEdge — buffer'ı boşaltmadan live edge'e atla
-                // VOD: stopLoad/startLoad — segment yeniden yükle
+            } else if (stallCount <= 5) {
+                // stopLoad/startLoad — segment yeniden yükle
                 try {
-                    if (state.player.isLiveStream) {
-                        // Canlı yayında stopLoad/startLoad YOK — seekToLiveEdge kullan
-                        try { hls.stopLoad(); } catch(e2) {}
-                        setTimeout(() => {
-                            try {
-                                hls.startLoad(-1); // -1 = live edge
-                                if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                            } catch(e2) {}
-                            window._recoveryLock = false;
-                        }, 1000);
-                    } else {
-                        hls.stopLoad();
-                        setTimeout(() => {
-                            try {
-                                hls.startLoad(ct);
-                                if (video.paused && !window._userPaused) video.play().catch(()=>{});
-                            } catch(e) {}
-                            window._recoveryLock = false;
-                        }, 800);
-                    }
+                    hls.stopLoad();
+                    setTimeout(() => {
+                        try {
+                            hls.startLoad(ct);
+                            if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                        } catch(e) {}
+                        window._recoveryLock = false;
+                    }, 500);
                 } catch(e) { window._recoveryLock = false; }
-            } else if (stallCount <= 12) {
+            } else if (stallCount <= 9) {
                 // Kaliteyi kademeli düşür — önce bir seviye, ağır stallda en düşüğe
                 try {
                     const _hls3 = state.player.hls;
@@ -32478,184 +32440,6 @@ function resumeChannel(startTime) {
     const PROXY = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
     const rawUrl = ch.url;
 
-    // ── FİLMMODU / WEB EMBED URL DESTEĞİ ──
-    // filmmodu.umitm0d.workers.dev/ID=slug → /resolve=slug JSON endpoint üzerinden stream URL al
-    const _isFilmmoduUrl = rawUrl && rawUrl.includes('filmmodu.umitm0d.workers.dev') && rawUrl.includes('/ID=');
-    const _isWebEmbedUrl = !_isFilmmoduUrl && rawUrl && (
-        (rawUrl.includes('filmmodu') && rawUrl.includes('ID=')) ||
-        (rawUrl.includes('workers.dev') && (rawUrl.includes('ID=') || rawUrl.includes('film-izle') || rawUrl.includes('dizi-izle'))) ||
-        (rawUrl.includes('film-izle') && !rawUrl.includes('.m3u8') && !rawUrl.includes('.mp4'))
-    );
-
-    // ── FİLMMODU ÖZEL: /test= JSON endpoint (worker değişikliği gerektirmez) ──
-    if (_isFilmmoduUrl) {
-        showToast('🎬 Film stream aranıyor...');
-        state.remote.zone = 'player';
-
-        (async () => {
-            try {
-                // /ID=slug → /test=slug dönüştür (worker'da zaten mevcut, JSON döndürür)
-                const slug = rawUrl.split('/ID=')[1];
-                if (!slug) throw new Error('Slug bulunamadı');
-
-                const resolveUrl = 'https://filmmodu.umitm0d.workers.dev/test=' + encodeURIComponent(slug);
-
-                const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), 20000);
-
-                const resp = await fetch(resolveUrl, { signal: ctrl.signal, cache: 'no-store' });
-                clearTimeout(timer);
-
-                if (!resp.ok) throw new Error('Worker ' + resp.status + ' döndürdü');
-
-                const json = await resp.json();
-                // /test= endpoint: { srcUrl, tum, videoId }
-                const streamUrl = json.srcUrl || json.url;
-
-                if (!streamUrl) throw new Error('URL bulunamadı');
-
-                showToast('✅ Film bulundu, oynatılıyor...');
-                state.player.url = streamUrl;
-                state.player.isLiveStream = false;
-                state.player.vodPlaying = true;
-                if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
-                hideZappingScreen();
-
-                if (streamUrl.includes('.m3u8') || streamUrl.includes('/hls/')) {
-                    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                        const hlsInst = new Hls(typeof HLS_CONFIG !== 'undefined' ? HLS_CONFIG : {});
-                        state.player.hls = hlsInst;
-                        hlsInst.loadSource(streamUrl);
-                        hlsInst.attachMedia(video);
-                        hlsInst.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                    } else {
-                        video.src = streamUrl; video.load(); video.play().catch(() => {});
-                    }
-                } else {
-                    // mp4 veya direkt video
-                    video.src = streamUrl; video.load(); video.play().catch(() => {});
-                }
-            } catch(e) {
-                hideZappingScreen();
-                showToast('❌ Film açılamadı: ' + (e.message || 'Bilinmeyen hata'));
-            }
-        })();
-
-        return;
-    }
-
-    if (_isWebEmbedUrl) {
-        showToast('🎬 Film stream aranıyor...');
-        state.remote.zone = 'player';
-
-        (async () => {
-            try {
-                const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), 15000);
-
-                // 1. Adım: Worker URL'sine fetch at — redirect zincirini takip et
-                let streamUrl = null;
-                let finalUrl = rawUrl;
-
-                try {
-                    const resp = await fetch(rawUrl, {
-                        signal: ctrl.signal,
-                        redirect: 'follow',
-                        cache: 'no-store'
-                    });
-                    clearTimeout(timer);
-                    finalUrl = resp.url; // redirect sonrası gerçek URL
-
-                    const ct = resp.headers.get('content-type') || '';
-
-                    // Doğrudan m3u8 veya mp4 geldi mi?
-                    if (ct.includes('mpegurl') || ct.includes('x-mpegurl') ||
-                        finalUrl.includes('.m3u8') || finalUrl.includes('/hls/')) {
-                        streamUrl = finalUrl;
-                    } else if (ct.includes('mp4') || ct.includes('video/') ||
-                               finalUrl.includes('.mp4') || finalUrl.includes('.mkv')) {
-                        streamUrl = finalUrl;
-                    } else if (ct.includes('text') || ct.includes('html')) {
-                        const html = await resp.text();
-                        const m3u8Match = html.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/);
-                        if (m3u8Match) { streamUrl = m3u8Match[0]; }
-                        if (!streamUrl) {
-                            const mp4Match = html.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>]*/);
-                            if (mp4Match) { streamUrl = mp4Match[0]; }
-                        }
-                        if (!streamUrl) {
-                            const srcMatch = html.match(/"(?:file|src|source|stream|url)"\s*:\s*"(https?:\/\/[^"]+)"/i);
-                            if (srcMatch) { streamUrl = srcMatch[1]; }
-                        }
-                        if (!streamUrl) {
-                            const jwMatch = html.match(/(?:file|source)\s*:\s*['"]([^'"]+\.(?:m3u8|mp4)[^'"]*)['"]/i);
-                            if (jwMatch) { streamUrl = jwMatch[1]; }
-                        }
-                    }
-                } catch (fetchErr) {
-                    clearTimeout(timer);
-                    if (typeof STREAM_PROXY !== 'undefined') {
-                        try {
-                            const ctrl2 = new AbortController();
-                            const t2 = setTimeout(() => ctrl2.abort(), 12000);
-                            const resp2 = await fetch(STREAM_PROXY + encodeURIComponent(rawUrl), {
-                                signal: ctrl2.signal, cache: 'no-store'
-                            });
-                            clearTimeout(t2);
-                            finalUrl = resp2.url || rawUrl;
-                            if (finalUrl.includes('.m3u8') || finalUrl.includes('.mp4')) {
-                                streamUrl = finalUrl;
-                            } else {
-                                const txt2 = await resp2.text();
-                                const m = txt2.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/);
-                                if (m) streamUrl = m[0];
-                                if (!streamUrl) {
-                                    const mp = txt2.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>]*/);
-                                    if (mp) streamUrl = mp[0];
-                                }
-                            }
-                        } catch(e2) {}
-                    }
-                }
-
-                if (streamUrl) {
-                    showToast('✅ Film bulundu, oynatılıyor...');
-                    state.player.url = streamUrl;
-                    state.player.isLiveStream = false;
-                    state.player.vodPlaying = true;
-                    if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
-                    hideZappingScreen();
-
-                    if (streamUrl.includes('.m3u8') || streamUrl.includes('/hls/')) {
-                        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                            const hlsInst = new Hls(typeof HLS_CONFIG !== 'undefined' ? HLS_CONFIG : {});
-                            state.player.hls = hlsInst;
-                            hlsInst.loadSource(streamUrl);
-                            hlsInst.attachMedia(video);
-                            hlsInst.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-                        } else {
-                            video.src = streamUrl; video.load(); video.play().catch(() => {});
-                        }
-                    } else {
-                        video.src = streamUrl; video.load(); video.play().catch(() => {});
-                    }
-                } else {
-                    hideZappingScreen();
-                    showToast('❌ Stream URL bulunamadı');
-                    if (typeof startHls === 'function' && typeof STREAM_PROXY !== 'undefined') {
-                        showToast('🔄 Proxy ile deneniyor...');
-                        startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-                    }
-                }
-            } catch(e) {
-                hideZappingScreen();
-                showToast('❌ Film açılamadı: ' + (e.message || ''));
-            }
-        })();
-
-        return;
-    }
-
     // ── VİDMODY.COM / EMBED PLAYER DESTEĞİ ──
     // vidmody.com URL'leri web sayfasıdır; HLS.js ile açılmaz.
     // Cloudflare Worker resolver ile gerçek stream URL'sini çek, HLS.js ile aç.
@@ -32755,11 +32539,6 @@ function resumeChannel(startTime) {
     const needsStreamProxy = !needsDirect &&
         REFERER_PROTECTED_DOMAINS.some(d => rawUrl.includes(d));
 
-    // ── REDIRECT-RESOLVE: 302 yapan URL'leri fetch ile çöz ──
-    const needsRedirectResolve = !needsDirect &&
-        typeof REDIRECT_RESOLVE_DOMAINS !== 'undefined' &&
-        REDIRECT_RESOLVE_DOMAINS.some(d => rawUrl.includes(d));
-
     // ── Yüksek çözünürlüklü CDN yayın mı? (daioncdn, TRT vb.) ──
     const isHighResDirect = !needsDirect &&
         typeof HIGH_RES_DIRECT_DOMAINS !== 'undefined' &&
@@ -32768,12 +32547,10 @@ function resumeChannel(startTime) {
     // HLS mi yoksa direkt medya mı?
     // ch.isLive = true → canlı yayın, büyük ihtimalle HLS
     const _urlLower = rawUrl.toLowerCase();
-    const isHlsUrl = _urlLower.includes('.m3u8') || _urlLower.includes('m3u8') || // ?m3u8 query param da yakala
-                     _urlLower.includes('/live/') ||
+    const isHlsUrl = _urlLower.includes('.m3u8') || _urlLower.includes('/live/') ||
                      _urlLower.includes(':8080/') || _urlLower.includes(':1935/') ||
                      _urlLower.includes('playlist') || _urlLower.includes('/hls/') ||
                      _urlLower.includes('/stream') || _urlLower.includes('/index.m3u') ||
-                     _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
@@ -32799,49 +32576,6 @@ function resumeChannel(startTime) {
     }
     const effectiveUrl = (isKoolTo && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🔧 MKV/MP4 DÜZELTMESİ: .mkv uzantılı direkt dosya için NATIVE PLAYER KULLAN
-    // ═══════════════════════════════════════════════════════════════════════
-    const isMkv = rawUrl.endsWith('.mkv') || rawUrl.includes('.mkv?') || rawUrl.toLowerCase().includes('.mkv');
-    const isMp4 = rawUrl.endsWith('.mp4') || rawUrl.includes('.mp4?') || rawUrl.toLowerCase().includes('.mp4');
-    const isDirectVideo = isMkv || isMp4;
-    
-    if (isDirectVideo) {
-        // MKV/MP4 direkt video — HLS.js KULLANMA, video elementine doğrudan yükle
-        state.player.isLiveStream = false;
-        state.player.vodPlaying = true;
-        state.player.url = rawUrl;
-        
-        // Video elementini temizle
-        if (state.player.hls) {
-            state.player.hls.destroy();
-            state.player.hls = null;
-        }
-        
-        // Direkt oynat
-        video.src = rawUrl;
-        video.load();
-        video.play().catch(() => {});
-        
-        // Zapping ekranını gizle (oynatma başlayınca)
-        const _playPromise = video.play();
-        if (_playPromise !== undefined) {
-            _playPromise.then(() => {
-                hideZappingScreen();
-                state.player.streamStarted = true;
-                onPlayStart();
-            }).catch(() => {
-                hideZappingScreen();
-                showToast('⚠️ Video oynatılamadı');
-            });
-        }
-        
-        state.remote.zone = 'player';
-        state.remote.playerBoxIndex = 1; // Play/Pause
-        startContinuousWatchingUpdate();
-        return; // MKV işlemi bitti — fonksiyondan çık
-    }
-
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
         if (!Hls.isSupported()) {
@@ -32855,24 +32589,16 @@ function resumeChannel(startTime) {
         state.player._dvrJumped = false;
         state.player._isDvr = false;
 
-        // Yeni kanal/film için stall sayacını sıfırla — önceki kanaldan kalan sayaç yanlış recovery tetikler
-        stallCount = 0;
-        lastStallRecoveryTime = 0;
-        clearTimeout(stallTimer);
-
         const hlsInst = new Hls(HLS_CONFIG);
-        window._hlsInstance = hlsInst; // buffer badge için erişim
 
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
-        // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
+        // Canlı: 12sn buffer = HD segmentler için yeterli; VOD: 45sn = kesintisiz izleme
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 10;
+            hlsInst.config.maxBufferLength    = 12;
             hlsInst.config.maxMaxBufferLength = 30;
-            hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
-            hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
-            hlsInst.config.maxMaxBufferLength = 45;  // 90→45: RAM baskısı azalt
-            hlsInst.config.backBufferLength   = 15; // 30→15: VOD geri sarma için yeterli
+            hlsInst.config.maxBufferLength    = 45;
+            hlsInst.config.maxMaxBufferLength = 90;
         }
 
         state.player.hls = hlsInst;
@@ -33070,16 +32796,8 @@ function resumeChannel(startTime) {
             } else if (isKoolTo) {
                 showToast('⚠️ Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
-                // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
-                showToast('🔄 Yedek bağlantı deneniyor...');
-                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
-            } else if (rawUrl.startsWith('http:') && !streamUrl.includes('proxy')) {
-                // http:// mixed content — proxy ile yeniden dene
-                showToast('🔄 Proxy üzerinden bağlanıyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else {
-                // Son çare: native ile dene
+                // Proxy kullanma — direkt native ile dene
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             }
         });
@@ -33099,14 +32817,13 @@ function resumeChannel(startTime) {
     if (isRedirectUrl) {
         showToast('🔗 Yayın bağlantısı çözümleniyor...');
         state.remote.zone = 'player';
-        state.remote.playerBoxIndex = 9;
+        state.remote.playerBoxIndex = 9; // Kanal Listesi butonu
         startContinuousWatchingUpdate();
         // Önceki stream'i temizle (ses bozulması önleme)
         if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
         video.pause();
         video.removeAttribute('src');
         video.load();
-        hideZappingScreen();
         (async () => {
             try {
                 // Önce direkt fetch ile redirect'i takip et (CORS varsa çalışır)
@@ -33128,8 +32845,8 @@ function resumeChannel(startTime) {
 
                 if (finalLower.includes('.m3u8') || finalLower.includes('/hls/') || finalLower.includes('/live/')) {
                     startHls(finalUrl);
-                } else if (finalLower.includes('.mp4') || finalLower.includes('.mkv') || finalLower.includes('.avi') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
-                    // MP4 / MKV / VOD — native video player ile aç
+                } else if (finalLower.includes('.mp4') || finalLower.includes('.ts') || finalLower.includes('dt-vod')) {
+                    // MP4 / VOD — native video player ile aç
                     video.src = finalUrl;
                     video.load();
                     video.play().catch(() => {
@@ -33145,15 +32862,6 @@ function resumeChannel(startTime) {
             }
         })();
     } else if (isHlsUrl) {
-        // AppCreator24 WebView (okhttp UA): http:// HLS URL'lerine Mixed Content engeli UYGULANMAZ → direkt aç
-        const _isOkhttpHls = (navigator.userAgent || '').toLowerCase().includes('okhttp');
-        // http:// ile başlayan HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç
-        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && !_isOkhttpHls) {
-            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-        } else if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && _isOkhttpHls) {
-            // App24 okhttp WebView → direkt HLS, proxy gerekmez
-            startHls(rawUrl);
-        } else
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan
             if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
@@ -33184,70 +32892,9 @@ function resumeChannel(startTime) {
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);
-        } else if (needsRedirectResolve) {
-            // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
-            (async function _resolveRedirectM3u8(origUrl) {
-                try {
-                    showToast('🔍 Yayın adresi çözümleniyor...');
-                    // STREAM_PROXY üzerinden fetch → CORS engeli aşılır
-                    const proxyFetch = STREAM_PROXY + encodeURIComponent(origUrl);
-                    let resp;
-                    try {
-                        resp = await fetch(proxyFetch, { cache: 'no-store' });
-                    } catch(e) {
-                        // Proxy fetch başarısız → direkt dene
-                        resp = await fetch(origUrl, { redirect: 'follow', cache: 'no-store' });
-                    }
-
-                    if (!resp.ok) {
-                        // Hata → STREAM_PROXY ile direkt HLS.js'e ver
-                        startHls(STREAM_PROXY + encodeURIComponent(origUrl));
-                        return;
-                    }
-
-                    const text = await resp.text();
-
-                    // İçerik gerçek bir m3u8 manifest mi? → HLS.js'e direkt ver
-                    if (text.trim().startsWith('#EXTM3U') && 
-                        (text.includes('#EXT-X-STREAM-INF') || text.includes('#EXTINF') || text.includes('#EXT-X-TARGETDURATION'))) {
-                        // Gerçek manifest — proxy URL'yi direkt ver (içeriği zaten proxy'den geliyor)
-                        startHls(proxyFetch);
-                        return;
-                    }
-
-                    // İçerik tek bir URL mi? (redirect m3u8 → gerçek stream URL)
-                    const lines = text.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-                    let resolvedUrl = null;
-                    for (const line of lines) {
-                        if (line.startsWith('http://') || line.startsWith('https://')) {
-                            resolvedUrl = line;
-                            break;
-                        }
-                    }
-
-                    if (resolvedUrl) {
-                        // Gerçek URL bulundu — HIGH_RES_DIRECT_DOMAINS'da mı?
-                        const _isHighRes = typeof HIGH_RES_DIRECT_DOMAINS !== 'undefined' &&
-                            HIGH_RES_DIRECT_DOMAINS.some(d => resolvedUrl.includes(d));
-                        if (_isHighRes) {
-                            // daioncdn.net vb. → direkt aç (CORS izni var)
-                            startHls(resolvedUrl);
-                        } else {
-                            // Bilinmeyen CDN → STREAM_PROXY üzerinden aç
-                            startHls(STREAM_PROXY + encodeURIComponent(resolvedUrl));
-                        }
-                    } else {
-                        // İçerik parse edilemedi → proxy ile direkt ver
-                        startHls(STREAM_PROXY + encodeURIComponent(origUrl));
-                    }
-                } catch(err) {
-                    // Genel hata → STREAM_PROXY ile aç
-                    startHls(STREAM_PROXY + encodeURIComponent(origUrl));
-                }
-            })(rawUrl);
         } else if (needsStreamProxy) {
-            // Referer korumalı → direkt STREAM_PROXY ile aç (Referer/Origin sorununu çözer)
-            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+            // Referer korumalı → önce direkt dene, açılmazsa 30sn'de proxy devreye girer
+            startHls(rawUrl);
         } else if (isHighResDirect) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);
@@ -33256,76 +32903,26 @@ function resumeChannel(startTime) {
             startHls(rawUrl);
         }
     } else {
-        // MP4 / MKV / diğer direkt medya
-        // AppCreator24 WebView (okhttp UA): http:// linklere Mixed Content engeli UYGULANMAZ
-        // → direkt rawUrl kullan, kesinlikle HLS.js'e gönderme (HLS.js MKV/MP4 parse edemez)
-        const _isOkhttp = (navigator.userAgent || '').toLowerCase().includes('okhttp');
-        const _isMixedContent = !_isOkhttp && rawUrl.startsWith('http:') && location.protocol === 'https:';
-
-        state.player.isLiveStream = false;
-        state.player.vodPlaying = true;
-
-        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
-        // Mixed content varsa mutlaka proxy kullan
-        // STREAM_PROXY2 (sadecenjoy) raw video proxy'si — MKV için daha uygun
-        const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
-            ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
-            : null;
-        const _proxy1Url = STREAM_PROXY + encodeURIComponent(rawUrl);
-        const _directMediaUrl = _isMixedContent
-            ? (_proxy2Url || _proxy1Url)
-            : rawUrl;
-
-        function _tryPlayMkv(url, fallbacks) {
-            video.src = url;
+        // MP4 / diğer medya
+        video.src = rawUrl;
+        video.load();
+        const p = video.play();
+        if (p) p.then(() => {
+            hideZappingScreen();
+            if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+        }).catch(e => {
+            if (e.name === 'AbortError') return;
+            // Proxy kullanma — hata olsa da direkt linkte kal
             video.load();
-            const _p = video.play();
-            if (_p) _p.then(() => {
-                hideZappingScreen();
-                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
-            }).catch(e => {
-                if (e.name === 'AbortError') return;
-                if (fallbacks && fallbacks.length > 0) {
-                    const next = fallbacks.shift();
-                    showToast('🔄 Alternatif proxy deneniyor...');
-                    _tryPlayMkv(next, fallbacks);
-                }
-            });
-
-            // video error olayını da yakala
-            const _errHandler = function() {
-                video.removeEventListener('error', _errHandler);
-                if (fallbacks && fallbacks.length > 0) {
-                    const next = fallbacks.shift();
-                    showToast('🔄 Alternatif proxy deneniyor...');
-                    _tryPlayMkv(next, fallbacks);
-                } else if (url !== rawUrl && !_isMixedContent) {
-                    // Tüm proxy'ler başarısız → direkt dene
-                    video.src = rawUrl; video.load(); video.play().catch(() => {});
-                }
-            };
-            video.addEventListener('error', _errHandler, { once: true });
-        }
-
-        // Fallback zinciri oluştur
-        const _fallbacks = [];
-        if (_isMixedContent) {
-            // Mixed content: proxy1 → proxy2 → (proxy ile sınırlı)
-            if (_directMediaUrl === _proxy2Url && _proxy1Url) _fallbacks.push(_proxy1Url);
-            else if (_proxy2Url) _fallbacks.push(_proxy2Url);
-        } else {
-            // Direkt: hata olursa proxy dene
-            if (_proxy2Url) _fallbacks.push(_proxy2Url);
-            _fallbacks.push(_proxy1Url);
-        }
-
-        _tryPlayMkv(_directMediaUrl, _fallbacks);
+            video.play().catch(()=>{});
+        });
     }
 
     state.remote.zone = 'player'; 
     state.remote.playerBoxIndex = 9; // Kanal Listesi butonu
     startContinuousWatchingUpdate(); 
 }
+
 
 // --- ZAPPING EKRANI ---
 function showZappingScreen(name, logo, isChannelChange = true) {

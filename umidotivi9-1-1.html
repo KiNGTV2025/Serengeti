@@ -48370,8 +48370,6 @@ function wpStartListeners(code) {
   if(typeof window.wpStartPlayerStateListener === 'function') {
     window.wpStartPlayerStateListener(code);
   }
-  // Seek/close wrap'lerin çalışması için event tetikle
-  document.dispatchEvent(new CustomEvent('_wp_room_entered', { detail: { code } }));
 }
 
 // ── TEMİZLEME (odadan çıkış) ──
@@ -48835,94 +48833,52 @@ function wpStartNowPlayingListener(code) {
   }, 3000);
 }
 
-// ── SEEK / PAUSE / CLOSE SYNC (Host → İzleyici) ──
-(function() {
-  // playerState yolu
-  function wpSetPlayerState(data) {
-    if(!window._WP || !_WP.inRoom || !_WP.isHost || !_WP.roomCode) return;
-    fbSet('/rooms/' + _WP.roomCode + '/playerState', Object.assign({ ts: Date.now(), by: _WP.myNick }, data)).catch(()=>{});
-  }
+// ── SEEK / CLOSE SYNC (Host → İzleyici) ──
+window.wpStartPlayerStateListener = function(code) {
+  let lastTs = 0;
+  let _psEs = null;
+  let _psPoll = null;
 
-  // seekForward wrap
-  const _origSeekFwd = window.seekForward;
-  if(typeof _origSeekFwd === 'function') {
-    window.seekForward = function() {
-      _origSeekFwd.apply(this, arguments);
-      const v = document.getElementById('videoPlayer');
-      if(v) wpSetPlayerState({ action: 'seek', currentTime: v.currentTime });
-    };
-  }
+  function handleState(ps) {
+    if(!WP || !WP.inRoom) return;
+    if(!ps || !ps.ts) return;
+    if(ps.ts <= lastTs) return;
+    if(ps.by === WP.myNick) { lastTs = ps.ts; return; }
+    lastTs = ps.ts;
 
-  // seekBackward wrap
-  const _origSeekBwd = window.seekBackward;
-  if(typeof _origSeekBwd === 'function') {
-    window.seekBackward = function() {
-      _origSeekBwd.apply(this, arguments);
-      const v = document.getElementById('videoPlayer');
-      if(v) wpSetPlayerState({ action: 'seek', currentTime: v.currentTime });
-    };
-  }
-
-  // closePlayer wrap
-  const _origClosePlayer = window.closePlayer;
-  if(typeof _origClosePlayer === 'function') {
-    window.closePlayer = function() {
-      wpSetPlayerState({ action: 'close' });
-      return _origClosePlayer.apply(this, arguments);
-    };
-  }
-
-  // İzleyici: playerState dinle
-  function wpStartPlayerStateListener(code) {
-    let lastTs = 0;
-
-    function handleState(ps) {
-      if(!_WP || !_WP.inRoom) return;
-      if(!ps || !ps.ts) return;
-      if(ps.ts <= lastTs) return;
-      if(ps.by === _WP.myNick) { lastTs = ps.ts; return; }
-      lastTs = ps.ts;
-
-      if(ps.action === 'seek') {
-        setTimeout(() => {
-          const v = document.getElementById('videoPlayer');
-          if(!v || !isFinite(ps.currentTime)) return;
-          const _hls = window.state && window.state.player && window.state.player.hls;
-          v.currentTime = ps.currentTime;
-          if(_hls) { try { _hls.startLoad(ps.currentTime); } catch(e) {} }
-          if(v.paused) v.play().catch(()=>{});
-        }, 300);
-      } else if(ps.action === 'close') {
-        setTimeout(() => {
-          if(typeof closePlayer === 'function') closePlayer();
-        }, 300);
-      }
+    if(ps.action === 'seek') {
+      setTimeout(() => {
+        const v = document.getElementById('videoPlayer');
+        if(!v || !isFinite(ps.currentTime)) return;
+        const _hls = window.state && window.state.player && window.state.player.hls;
+        v.currentTime = ps.currentTime;
+        if(_hls) { try { _hls.startLoad(ps.currentTime); } catch(e) {} }
+        if(v.paused) v.play().catch(()=>{});
+      }, 300);
+    } else if(ps.action === 'close' && !WP.isHost) {
+      setTimeout(() => {
+        if(typeof closePlayer === 'function') closePlayer();
+      }, 300);
     }
-
-    const es = new EventSource(FB_URL + '/rooms/' + code + '/playerState.json');
-    es.addEventListener('put', (e) => {
-      try { handleState(JSON.parse(e.data).data); } catch(err) {}
-    });
-    es.onerror = () => {};
-    _WP.listeners.push(es);
-
-    // Polling yedek
-    _WP._psPollTimer = setInterval(async () => {
-      if(!_WP.inRoom) return;
-      const ps = await fbGet('/rooms/' + code + '/playerState');
-      handleState(ps);
-    }, 2000);
   }
 
-  // wpEnterRoom sonrası otomatik başlat
-  const _origWpEnterRoom = window.wpEnterRoom || null;
-  document.addEventListener('_wp_room_entered', function(e) {
-    if(e.detail && e.detail.code) wpStartPlayerStateListener(e.detail.code);
-  });
+  if(_psEs) { try { _psEs.close(); } catch(e) {} }
+  if(_psPoll) { clearInterval(_psPoll); }
 
-  // wpStartListeners içinde çağrılabilmesi için global'e al
-  window.wpStartPlayerStateListener = wpStartPlayerStateListener;
-})();
+  _psEs = new EventSource(FB_URL + '/rooms/' + code + '/playerState.json');
+  _psEs.addEventListener('put', (e) => {
+    try { handleState(JSON.parse(e.data).data); } catch(err) {}
+  });
+  _psEs.onerror = () => {};
+  WP.listeners.push(_psEs);
+
+  _psPoll = setInterval(async () => {
+    if(!WP.inRoom) return;
+    const ps = await fbGet('/rooms/' + code + '/playerState');
+    handleState(ps);
+  }, 3000);
+  WP._psPollTimer = _psPoll;
+};
 
 // ── VİDEO MODU: player açılınca paneli overlay'e al ──
 function wpDetectVideoMode() {

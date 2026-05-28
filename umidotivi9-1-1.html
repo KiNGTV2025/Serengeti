@@ -11660,6 +11660,9 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <button class="settings-btn danger" id="btnClearContinue" onclick="clearContinueWatching(); closeSettingsModal();">
                 <span class="material-symbols-outlined">history_toggle_off</span> İzleme Ön Belleği Temizle
             </button>
+            <button class="settings-btn secondary" id="btnClearEpgCache" onclick="handleClearEpgCacheBtn();">
+                <span class="material-symbols-outlined">event_busy</span> EPG Önbelleğini Sıfırla
+            </button>
             <button class="settings-btn secondary" id="btnClearTheme" onclick="clearThemeCache(); closeSettingsModal();">
                 <span class="material-symbols-outlined">palette</span> Tema Ön Belleği Temizle
             </button>
@@ -14216,7 +14219,7 @@ Object.defineProperty(window, 'state', {
 
         const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
-        const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
+        const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearEpgCache', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
         const CONTINUE_MODAL_BUTTONS = ['btnWatchLater', 'btnContinueDelete', 'btnStartOver', 'btnContinue'];
         const DELETE_MODAL_BUTTONS = ['btnDeleteCancel', 'btnDeleteConfirm'];
@@ -15388,6 +15391,26 @@ async function clearEPGCache() {
         });
     } catch (error) {
     }
+}
+
+async function handleClearEpgCacheBtn() {
+    const btn = document.getElementById('btnClearEpgCache');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Temizleniyor...';
+    }
+    try {
+        await clearEPGCache();
+        if (typeof state !== 'undefined') state.epgData = {};
+        if (typeof showToast === 'function') showToast('✅ EPG önbelleği sıfırlandı. Yenilediğinizde tekrar yüklenecek.');
+    } catch(e) {
+        if (typeof showToast === 'function') showToast('❌ EPG önbelleği sıfırlanamadı.');
+    }
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">event_busy</span> EPG Önbelleğini Sıfırla';
+    }
+    if (typeof closeSettingsModal === 'function') closeSettingsModal();
 }
 
 async function checkEPGCacheStatus() {
@@ -25283,9 +25306,6 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 const gl = currentItem.group.toLowerCase();
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false; currentItem.isSeries = true;
-                } else if (gl.startsWith('sinema')) {
-                    // Sinema ile başlayan gruplar daima CANLI YAYIN
-                    currentItem.isLive = true;
                 } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.includes('eklen') || gl.includes('yeni') ||
@@ -25323,8 +25343,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
             const durMatch = line.match(/#EXTINF:(-?\d+)/);
             if (durMatch) {
                 const dur = parseInt(durMatch[1]);
-                const _gl = (currentItem.group || '').toLowerCase();
-                if (dur > 0 && !_gl.startsWith('sinema')) currentItem.isLive = false;
+                if (dur > 0) currentItem.isLive = false;
             }
         } else if (line.startsWith('#EXTVLCOPT:') && currentItem) {
             if (line.includes('http-user-agent=')) currentItem.userAgent = line.split('http-user-agent=')[1].trim();
@@ -25662,12 +25681,8 @@ function parseM3UOptimized(text, listIdx) {
                 // VOD/LIVE HIZLI KONTROL
                 const group = currentItem.group;
                 
-                // 0. Sinema ile başlayan gruplar daima CANLI YAYIN
-                if (group.toLowerCase().startsWith('sinema')) {
-                    currentItem.isLive = true;
-                }
                 // 1. Önce tam eşleşme (Set ile çok hızlı)
-                else if (vodGroupSet.has(group) || isVodGroupDynamic(group)) {
+                if (vodGroupSet.has(group) || isVodGroupDynamic(group)) {
                     currentItem.isLive = false;
                     // 😄 ile başlayan grup → dizi bölümü olarak işaretle
                     if (group.startsWith('😄')) currentItem.isSeries = true;
@@ -25738,8 +25753,7 @@ function parseM3UOptimized(text, listIdx) {
             const durationMatch = line.match(/#EXTINF:(-?\d+)/);
             if (durationMatch) {
                 const duration = parseInt(durationMatch[1]);
-                const _isSinema = (currentItem.group || '').toLowerCase().startsWith('sinema');
-                if (duration > 0 && !_isSinema) {
+                if (duration > 0) {
                     currentItem.duration = duration;
                     currentItem.isLive = false; // Pozitif duration = VOD
                 } else if (duration === -1) {
@@ -26570,9 +26584,6 @@ function parseM3U(text, listIdx) {
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false;
                     currentItem.isSeries = true;
-                } else if (gl.startsWith('sinema')) {
-                    // Sinema ile başlayan gruplar daima CANLI YAYIN
-                    currentItem.isLive = true;
                 } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.includes('eklen') || gl.includes('yeni') ||
@@ -29987,7 +29998,7 @@ function addContinueCardStyles() {
             if (modal) modal.style.display = 'none';
             if (state && state.remote && state.remote.zone === 'sortBackupModal') {
                 state.remote.zone = 'settingsModal';
-                state.remote.settingsIndex = 5; // btnExportSort index
+                state.remote.settingsIndex = 6; // btnExportSort index
                 try { updateRemoteFocus(); } catch(e) {}
             }
         }
@@ -30418,7 +30429,7 @@ function addContinueCardStyles() {
                     if (settingsModal) {
                         settingsModal.style.display = 'flex';
                         state.remote.zone = 'settingsModal';
-                        state.remote.settingsIndex = 3; // btnResetApp
+                        state.remote.settingsIndex = 4; // btnResetApp
                         try { updateRemoteFocus(); } catch(e2) {}
                     } else {
                         state.remote.zone = 'channels';

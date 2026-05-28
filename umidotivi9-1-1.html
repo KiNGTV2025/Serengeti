@@ -489,10 +489,10 @@
     outline: 3px solid var(--accent-primary, #FFD700) !important;
     background: rgba(255,215,0,0.20) !important;
 }
-/* Tüm remote-focused transform'ları iptal et */
+/* Tüm remote-focused — geçiş yok ama animasyon (dalga) serbest */
 .remote-focused, .focused {
     transition: none !important;
-    animation: none !important;
+    /* animation: none — kaldırıldı; waveFocus için serbest bırakıldı */
 }
 /* ODAK-FIX: remote-focused KALDIRILINCA outline anında silinsin — TVBox gecikmeli render önle */
 :not(.remote-focused):not(.focused) {
@@ -605,8 +605,7 @@ button,
                 border-color 80ms linear,
                 color 80ms linear,
                 outline 0ms !important;
-    transform: none !important;
-    -webkit-transform: none !important;
+    /* transform: none — kaldırıldı; waveFocus animasyonu için serbest */
     will-change: auto !important;
     -webkit-tap-highlight-color: transparent !important;
     touch-action: manipulation !important;
@@ -723,7 +722,7 @@ img {
     outline: 2px solid var(--accent-primary, #FFD700) !important;
     outline-offset: 1px !important;
     box-shadow: none !important;
-    transform: none !important;
+    /* transform: none — kaldırıldı; waveFocus için serbest */
     transition: none !important;
 }
 
@@ -757,7 +756,7 @@ img {
 .category-list-item.active,
 .category-list-item.remote-focused {
     box-shadow: none !important;
-    transform: none !important;
+    /* transform: none — kaldırıldı; waveFocus için serbest */
     transition: none !important;
 }
 
@@ -803,7 +802,7 @@ img {
 /* ── 17. VOD KART GEÇİŞ ── */
 .vod-episode-card {
     transition: none !important;
-    transform: none !important;
+    /* transform: none — kaldırıldı; waveFocus için serbest */
 }
 .vod-episode-card:hover {
     transition: none !important;
@@ -812,6 +811,95 @@ img {
 .vod-episode-card.focused {
     transition: none !important;
     box-shadow: none !important;
+}
+
+/* ══════════════════════════════════════════════
+   ── 18. MEKSİKA DALGASI ODAK ANİMASYONU ──
+   Kumandada odak geçişinde buton büyüyüp küçülür
+   scale(1.18) → dalga etkisi — TVBox uyumlu
+   ══════════════════════════════════════════════ */
+@keyframes waveFocus {
+    0%   { transform: scale(1);    }
+    35%  { transform: scale(1.18); }
+    65%  { transform: scale(1.13); }
+    100% { transform: scale(1.16); }
+}
+
+/* Tüm odaklanabilir buton/pill/kart türleri */
+.header-btn.remote-focused,
+.player-action-btn.remote-focused,
+.m3u-pill.remote-focused,
+.cat-pill.remote-focused,
+.sidebar-category-pill.remote-focused,
+.category-list-item.remote-focused,
+.vod-season-btn.remote-focused,
+.vod-season-btn.focused,
+.modal-back-btn.remote-focused,
+.cat-hide-footer-btn.remote-focused,
+.season-control-btn.remote-focused,
+.fav-toggle.remote-focused,
+#exitConfirmNo.remote-focused,
+#exitConfirmYes.remote-focused,
+#btnQsnConfirm.remote-focused,
+#btnQsnCancel.remote-focused,
+#btnQsnMinus.remote-focused,
+#btnQsnPlus.remote-focused,
+#btnQsnFirst.remote-focused,
+#btnQsnLast.remote-focused,
+#btnQsnBack.remote-focused,
+#btnSortBackupCancel.remote-focused,
+#btnSortBackupConfirm.remote-focused,
+#btnSortBackupBack.remote-focused,
+#resetConfirmCancel.remote-focused,
+#resetConfirmOk.remote-focused,
+#btnResetConfirmBack.remote-focused,
+#btnCloseEmbed.remote-focused,
+.vod-modal-close.remote-focused,
+.vod-play-btn.remote-focused,
+.vod-continue-btn.remote-focused,
+.vod-trailer-btn.remote-focused,
+.login-btn.dpad-focused,
+.login-btn-secondary.dpad-focused,
+.login-btn.focused,
+.login-btn-secondary.focused {
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
+    transform-origin: center center !important;
+    will-change: transform !important;
+    z-index: 2 !important;
+    position: relative !important;
+}
+
+/* Kanal kartı — biraz daha ölçülü büyüsün (grid kırılmasın) */
+.channel-card.remote-focused,
+.channel-card.focused {
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
+    transform: scale(1.10) !important;
+    transform-origin: center center !important;
+    will-change: transform !important;
+    z-index: 2 !important;
+    position: relative !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
+                0 6px 24px rgba(0,0,0,0.5) !important;
+}
+
+/* VOD episode kart */
+.vod-episode-card.remote-focused,
+.vod-episode-card.focused {
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
+    transform: scale(1.08) !important;
+    transform-origin: center center !important;
+    will-change: transform !important;
+    z-index: 2 !important;
+    position: relative !important;
+    box-shadow: 0 0 0 2px var(--accent-primary, #FFD700) !important;
+}
+
+/* Odak gidince anında sıfırla */
+.channel-card:not(.remote-focused):not(.focused),
+.vod-episode-card:not(.remote-focused):not(.focused) {
+    transform: none !important;
+    will-change: auto !important;
+    z-index: auto !important;
 }
 
 </style>
@@ -11284,6 +11372,22 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 <div id="playerTitle" class="player-title" style="color:white; font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">KANAL YÜKLENİYOR...</div>
                 <div id="playerEpgNow" style="color:#FFD700; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:none; margin-top:1px;"></div>
             </div>
+            <div id="streamStatsBadge" style="display:none; margin-left:auto; margin-right:4px; flex-shrink:0; display:flex; align-items:center; gap:5px;">
+                <div id="bufferBadge" style="
+                    background:rgba(0,0,0,0.55);
+                    border:1px solid rgba(255,255,255,0.15);
+                    border-radius:6px;
+                    padding:2px 7px;
+                    font-size:10px;
+                    color:rgba(255,255,255,0.8);
+                    font-family:monospace;
+                    display:flex; align-items:center; gap:4px;
+                    white-space:nowrap;
+                ">
+                    <span style="width:7px;height:7px;border-radius:50%;background:#888;display:inline-block;" id="bufferDot"></span>
+                    <span id="bufferBadgeText">--</span>
+                </div>
+            </div>
         </div>
 
         <div class="player-controls" id="playerControls">
@@ -11453,6 +11557,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="material-symbols-outlined" id="wpPlayerBtnIcon">chat_bubble</span>
                             <span class="btn-label">WP</span>
                             <span id="wpPlayerUnreadDot" style="display:none;position:absolute;top:4px;right:4px;width:7px;height:7px;background:#e74c3c;border-radius:50%;border:1px solid rgba(0,0,0,0.5);"></span>
+                        </button>
+                        <button class="player-action-btn" id="btnCopyLink" onclick="copyChannelLink()" title="Kanal Linkini Kopyala">
+                            <span class="material-symbols-outlined" id="copyLinkIcon">content_copy</span>
+                            <span class="btn-label" id="copyLinkLabel">Kopyala</span>
                         </button>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
@@ -13995,7 +14103,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnCopyLink', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -14110,7 +14218,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnCopyLink', 'btnClosePlayer'];
         
         
 
@@ -20544,6 +20652,13 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     v.currentTime = newTime;
                     touchStartX = currentX; // reset so delta is relative
                     showModernSeekingOverlay(deltaX > 0 ? 'forward' : 'backward', newTime, Math.abs(Math.round(deltaSeconds)));
+                    // WP: host seek bildir (debounce — her 500ms'de bir)
+                    if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                      clearTimeout(window._wpSwipeSeekTimer);
+                      window._wpSwipeSeekTimer = setTimeout(() => {
+                        window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                      }, 500);
+                    }
                 }
             }
         }
@@ -20671,11 +20786,19 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             v.currentTime = newTime;
                             showModernSeekingOverlay('forward', newTime, SEEK_SEC);
                             showToast(`⏩ +${SEEK_SEC} saniye`);
+                            // WP: host seek bildir
+                            if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                              window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                            }
                         } else {
                             const newTime = Math.max(0, v.currentTime - SEEK_SEC);
                             v.currentTime = newTime;
                             showModernSeekingOverlay('backward', newTime, SEEK_SEC);
                             showToast(`⏪ -${SEEK_SEC} saniye`);
+                            // WP: host seek bildir
+                            if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                              window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                            }
                         }
                     }
                 } else {
@@ -24547,6 +24670,7 @@ function immediateRenderChannels() {
     if (state.activeCat === 'all') {
         requestAnimationFrame(() => {
             renderContinueWatching();
+            renderRecentChannels();
         });
     }
 
@@ -27178,7 +27302,7 @@ function selectM3U(idx) {
         renderChannels();
         updateChannelCount(state.filtered.length);
         document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
-        setTimeout(() => { renderContinueWatching(); }, 200);
+        setTimeout(() => { renderContinueWatching(); renderRecentChannels(); }, 200);
     }
     
     playKeySound('click');
@@ -27973,6 +28097,193 @@ setTimeout(_vhsInit, 1200);
 /* ═══ /VOD HERO SLIDER JS ═══ */
 
 
+
+
+    // ════════════════════════════════════════════════════════
+    // KANAL LİNK KOPYALA
+    // ════════════════════════════════════════════════════════
+    function copyChannelLink() {
+        try {
+            const ch = state.filtered && state.filtered[state.player.index];
+            const url = (ch && ch.url) ? ch.url : (state.player.url || '');
+            if (!url) { showToast('Link bulunamadı'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    _copyLinkFeedback();
+                }).catch(() => { _copyLinkFallback(url); });
+            } else {
+                _copyLinkFallback(url);
+            }
+        } catch(e) { showToast('Kopyalama hatası'); }
+    }
+    function _copyLinkFallback(url) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            _copyLinkFeedback();
+        } catch(e) { showToast('Kopyalama hatası'); }
+    }
+    function _copyLinkFeedback() {
+        const icon = document.getElementById('copyLinkIcon');
+        const lbl  = document.getElementById('copyLinkLabel');
+        if (icon) icon.textContent = 'check_circle';
+        if (lbl)  lbl.textContent  = 'Kopyalandı';
+        showToast('📋 Link kopyalandı');
+        setTimeout(() => {
+            if (icon) icon.textContent = 'content_copy';
+            if (lbl)  lbl.textContent  = 'Kopyala';
+        }, 2000);
+    }
+
+    // ════════════════════════════════════════════════════════
+    // BUFFER / BANT GENİŞLİĞİ BADGE
+    // ════════════════════════════════════════════════════════
+    var _bufBadgeInterval = null;
+    function startBufferBadge() {
+        clearInterval(_bufBadgeInterval);
+        const badge = document.getElementById('streamStatsBadge');
+        const dot   = document.getElementById('bufferDot');
+        const txt   = document.getElementById('bufferBadgeText');
+        if (!badge || !txt) return;
+        badge.style.display = 'flex';
+        _bufBadgeInterval = setInterval(() => {
+            try {
+                const video = document.getElementById('mainVideo');
+                if (!video || video.paused || !state.player.streamStarted) return;
+                // Buffer ahead
+                let bufAhead = 0;
+                if (video.buffered && video.buffered.length > 0) {
+                    for (let i = 0; i < video.buffered.length; i++) {
+                        if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) >= video.currentTime) {
+                            bufAhead = video.buffered.end(i) - video.currentTime;
+                            break;
+                        }
+                    }
+                }
+                // Bant genişliği (HLS.js)
+                let bwText = '';
+                const hlsInst = window._hlsInstance || (window.state && window.state._hlsInstance);
+                if (hlsInst && hlsInst.bandwidthEstimate && hlsInst.bandwidthEstimate > 0) {
+                    const mbps = (hlsInst.bandwidthEstimate / 1000000).toFixed(1);
+                    bwText = ` · ${mbps}M`;
+                }
+                const bufSec = bufAhead.toFixed(1);
+                txt.textContent = `▤ ${bufSec}s${bwText}`;
+                // Renk: yeşil>5s, sarı>2s, kırmızı<2s
+                const color = bufAhead >= 5 ? '#4ade80' : bufAhead >= 2 ? '#FFD700' : '#f87171';
+                if (dot) dot.style.background = color;
+            } catch(e) {}
+        }, 1500);
+    }
+    function stopBufferBadge() {
+        clearInterval(_bufBadgeInterval);
+        _bufBadgeInterval = null;
+        const badge = document.getElementById('streamStatsBadge');
+        if (badge) badge.style.display = 'none';
+    }
+
+    // ════════════════════════════════════════════════════════
+    // SON İZLENEN KANALLAR (canlı + VOD)
+    // ════════════════════════════════════════════════════════
+    var _recentContainer = null;
+    function renderRecentChannels() {
+        // Ana grid görünümündeyken göster
+        const mainGrid = document.getElementById('channelsGrid') || document.getElementById('channelsViewport');
+        if (!mainGrid) return;
+        // Sadece Tümü / all kategorisinde göster
+        if (state.activeCat && state.activeCat !== 'all' && state.activeCat !== 'Tümü') return;
+
+        let container = document.getElementById('recentChannelsContainer');
+        if (!container) {
+            // continueWatchingContainer'ın altına ekle
+            const cwc = document.getElementById('continueWatchingContainer');
+            if (!cwc || !cwc.parentNode) return;
+            container = document.createElement('div');
+            container.id = 'recentChannelsContainer';
+            container.style.cssText = 'padding: 0 0 8px 0;';
+            cwc.parentNode.insertBefore(container, cwc.nextSibling);
+        }
+
+        let recent = [];
+        try { recent = JSON.parse(localStorage.getItem('umittv_recent') || '[]'); } catch(e) {}
+        if (!recent.length) { container.innerHTML = ''; return; }
+
+        const _isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
+            || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
+
+        const cardW = _isTVBox ? '140px' : '100px';
+        const logoSz = _isTVBox ? '40px' : '34px';
+        const titleSz = _isTVBox ? '10px' : '9px';
+        const gap = _isTVBox ? '10px' : '8px';
+
+        const list = recent.slice(0, _isTVBox ? 8 : 10);
+
+        container.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 2px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="material-symbols-outlined" style="color:var(--accent-primary);font-size:${_isTVBox?'16px':'20px'};">history</span>
+                    <span style="font-size:${_isTVBox?'12px':'14px'};font-weight:700;color:var(--accent-primary);">Son İzlenenler</span>
+                </div>
+                <button class="header-btn" onclick="clearRecentChannels()" style="font-size:11px;padding:3px 8px;">
+                    <span class="material-symbols-outlined" style="font-size:12px;">delete_sweep</span> Temizle
+                </button>
+            </div>
+            <div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:${gap};padding:2px 0 10px 0;scrollbar-width:none;">
+                ${list.map((rc, idx) => `
+                    <div onclick="playRecentChannel('${rc.name.replace(/'/g,"\\'")}')"
+                         tabindex="0"
+                         data-recent-idx="${idx}"
+                         style="
+                            flex-shrink:0;
+                            width:${cardW};
+                            background:rgba(255,255,255,0.05);
+                            border:1px solid rgba(255,255,255,0.1);
+                            border-radius:10px;
+                            padding:8px 6px;
+                            cursor:pointer;
+                            display:flex;
+                            flex-direction:column;
+                            align-items:center;
+                            gap:5px;
+                            transition:border-color 120ms;
+                            position:relative;
+                         "
+                         onmouseenter="this.style.borderColor='var(--accent-primary)'"
+                         onmouseleave="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        ${rc.isLive ? `<span style="position:absolute;top:4px;right:5px;background:#e74c3c;color:#fff;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:0.5px;">CANLI</span>` : `<span style="position:absolute;top:4px;right:5px;background:var(--accent-primary);color:#000;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;">VOD</span>`}
+                        ${rc.logo
+                            ? `<img loading="lazy" src="${rc.logo}" style="width:${logoSz};height:${logoSz};object-fit:contain;border-radius:6px;background:rgba(0,0,0,0.3);" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                               <span class="material-symbols-outlined" style="display:none;font-size:24px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
+                            : `<span class="material-symbols-outlined" style="font-size:24px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
+                        }
+                        <div style="font-size:${titleSz};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(255,255,255,0.9);">${rc.name}</div>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    function playRecentChannel(name) {
+        const idx = state.filtered ? state.filtered.findIndex(ch => ch.name === name) : -1;
+        if (idx !== -1) {
+            playChannel(idx, 0);
+        } else {
+            // Filtered'da yoksa allChannels'da ara
+            const allIdx = state.allChannels ? state.allChannels.findIndex(ch => ch.name === name) : -1;
+            if (allIdx !== -1) playChannelByName(name);
+            else showToast('Kanal bulunamadı');
+        }
+    }
+
+    function clearRecentChannels() {
+        try { localStorage.removeItem('umittv_recent'); } catch(e) {}
+        const c = document.getElementById('recentChannelsContainer');
+        if (c) c.innerHTML = '';
+    }
 
    function renderContinueWatching() {
     const container = document.getElementById('continueWatchingContainer');
@@ -31593,6 +31904,28 @@ function resumeChannel(startTime) {
             state.remote.playerBoxIndex = 9; // btnPlayerList — odak hazır
         }
         startResolutionMonitoring();
+        // ── SON İZLENEN KANALLAR ──
+        if (ch && ch.name) {
+            try {
+                const _rc = JSON.parse(localStorage.getItem('umittv_recent') || '[]');
+                const _entry = {
+                    name: ch.name,
+                    logo: ch.logo || '',
+                    group: ch.group || '',
+                    isLive: !!ch.isLive,
+                    url: ch.url || '',
+                    ts: Date.now()
+                };
+                const _idx = _rc.findIndex(x => x.name === ch.name);
+                if (_idx !== -1) _rc.splice(_idx, 1);
+                _rc.unshift(_entry);
+                if (_rc.length > 20) _rc.length = 20;
+                localStorage.setItem('umittv_recent', JSON.stringify(_rc));
+                renderRecentChannels();
+            } catch(e) {}
+        }
+        // ── BUFFER BADGE BAŞLAT ──
+        startBufferBadge();
 
         // EPG butonu: yayın başladığında state'e göre göster/gizle
         const _epgBtnOS = document.getElementById('btnEpg');
@@ -32263,6 +32596,7 @@ function resumeChannel(startTime) {
         clearTimeout(stallTimer);
 
         const hlsInst = new Hls(HLS_CONFIG);
+        window._hlsInstance = hlsInst; // buffer badge için erişim
 
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
@@ -33319,6 +33653,8 @@ function updatePlayerEpgBar(channelName, tvgId) {
 
 // --- KAPATMA ---
 function closePlayer() {
+    // Buffer badge durdur
+    if (typeof stopBufferBadge === 'function') stopBufferBadge();
     // WP: host kapat bildir
     if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
       try {
@@ -33605,6 +33941,10 @@ let virtualScrollSystem = null;
                 _dvrSeekFull(v, _hls, _target);
                 showControls(6000);
                 playKeySound('click');
+                // WP: host seek bildir
+                if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                  window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _target, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                }
                 return;
             }
             // VOD seek
@@ -33613,6 +33953,10 @@ let virtualScrollSystem = null;
                 _dvrSeekFull(v, _hls, t);
                 showControls(5000);
                 playKeySound('click');
+                // WP: host seek bildir
+                if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                  window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: t, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                }
             }
         }
 
@@ -33954,6 +34298,10 @@ let virtualScrollSystem = null;
                                 const _hls = state.player.hls;
                                 _dvrSeekFull(v, _hls, _newTime);
                                 showControls(5000);
+                                // WP: host seek bildir
+                                if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                                  window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                                }
                                 document.removeEventListener('mousemove', moveHandler);
                                 document.removeEventListener('mouseup', endDrag);
                                 document.removeEventListener('touchmove', moveHandler);
@@ -33968,6 +34316,10 @@ let virtualScrollSystem = null;
                         const _hls = state.player && state.player.hls;
                         const _seekTarget = _seekDur * ((parseFloat(handle.style.left)||0)/100);
                         _dvrSeekFull(v, _hls, _seekTarget);
+                        // WP: host seek bildir
+                        if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                          window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _seekTarget, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
+                        }
                     }
                     showControls(5000); 
                     document.removeEventListener('mousemove', moveHandler); 
@@ -49183,11 +49535,13 @@ window.wpStartPlayerStateListener = function(code) {
   let lastTs = 0;
   let _psEs = null;
   let _psPoll = null;
+  const joinTs = Date.now();
 
   function handleState(ps) {
     if(!WP || !WP.inRoom) return;
     if(!ps || !ps.ts) return;
     if(ps.ts <= lastTs) return;
+    // Kendi broadcast'ımızı yok say (host da misafir de)
     if(ps.by === WP.myNick) { lastTs = ps.ts; return; }
     lastTs = ps.ts;
 
@@ -49195,17 +49549,37 @@ window.wpStartPlayerStateListener = function(code) {
     if(ps.action === 'close') { WP._hostPlayerOpen = false; }
     else if(ps.action === 'seek' || ps.action === 'play' || ps.action === 'open') { WP._hostPlayerOpen = true; }
 
+    // Misafir değilse (host) seek/close uygulama
+    if(WP.isHost) return;
+
     if(ps.action === 'seek') {
-      setTimeout(() => {
+      // Çok eski broadcast'ı yok say (odaya yeni girdiyse 10sn önceki seek'leri uygulama)
+      if(ps.ts < joinTs - 5000) return;
+      const newTime = ps.currentTime;
+      if(!isFinite(newTime) || newTime < 0) return;
+      clearTimeout(window._wpGuestSeekTimer);
+      window._wpGuestSeekTimer = setTimeout(() => {
         const v = document.getElementById('videoPlayer');
-        if(!v || !isFinite(ps.currentTime)) return;
+        if(!v) return;
         const _hls = window.state && window.state.player && window.state.player.hls;
-        v.currentTime = ps.currentTime;
-        if(_hls) { try { _hls.startLoad(ps.currentTime); } catch(e) {} }
+        // Eğer video yoksa (henüz yüklenmediyse) kısa bekle
+        if(v.readyState < 1) {
+          const _waitSeek = () => {
+            v.removeEventListener('loadedmetadata', _waitSeek);
+            v.currentTime = newTime;
+            if(_hls) { try { _hls.startLoad(newTime); } catch(e) {} }
+            if(v.paused) v.play().catch(()=>{});
+          };
+          v.addEventListener('loadedmetadata', _waitSeek);
+          return;
+        }
+        v.currentTime = newTime;
+        if(_hls) { try { _hls.stopLoad(); _hls.startLoad(newTime); } catch(e) {} }
         if(v.paused) v.play().catch(()=>{});
-      }, 300);
-    } else if(ps.action === 'close' && !WP.isHost) {
-      setTimeout(() => {
+      }, 200);
+    } else if(ps.action === 'close') {
+      clearTimeout(window._wpGuestCloseTimer);
+      window._wpGuestCloseTimer = setTimeout(() => {
         // Önce açık modalleri kapat
         try {
           const vodModal = document.getElementById('vodModal');
@@ -49220,7 +49594,7 @@ window.wpStartPlayerStateListener = function(code) {
           }
         } catch(e) {}
         if(typeof closePlayer === 'function') closePlayer();
-      }, 300);
+      }, 400);
     }
   }
 
@@ -49229,7 +49603,17 @@ window.wpStartPlayerStateListener = function(code) {
 
   _psEs = new EventSource(FB_URL + '/rooms/' + code + '/playerState.json');
   _psEs.addEventListener('put', (e) => {
-    try { handleState(JSON.parse(e.data).data); } catch(err) {}
+    try {
+      const d = JSON.parse(e.data);
+      // İlk SSE snapshot (path: '/') — yeni katılan misafir için close action'ını uygulama
+      // ama seek action'ını da uygulama (eski pozisyon olabilir)
+      if(d.path === '/') {
+        if(d.data && d.data.action === 'close') { WP._hostPlayerOpen = false; }
+        else if(d.data && (d.data.action === 'seek' || d.data.action === 'open' || d.data.action === 'play')) { WP._hostPlayerOpen = true; }
+        return; // İlk snapshot'ı seekle uygulama
+      }
+      handleState(d.data);
+    } catch(err) {}
   });
   _psEs.onerror = () => {};
   WP.listeners.push(_psEs);

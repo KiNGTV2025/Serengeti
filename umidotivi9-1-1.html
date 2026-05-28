@@ -768,6 +768,18 @@ img {
     transition: outline-color 0ms, background-color 60ms linear !important;
 }
 
+/* Çıkış Modalı butonları remote focus */
+#exitConfirmNo.remote-focused {
+    outline: 2px solid #FFD700 !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.3) !important;
+    background: rgba(255,255,255,0.15) !important;
+}
+#exitConfirmYes.remote-focused {
+    outline: 2px solid #FFD700 !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.5) !important;
+    filter: brightness(1.15);
+}
+
 /* ── 15. TEXT-SHADOW / FILTER — TVBox Yükü Azalt ── */
 /* Kanal isimlerinde text-shadow GPU katmanı oluşturur */
 .channel-title,
@@ -28580,6 +28592,8 @@ function addContinueCardStyles() {
                 document.body.appendChild(modal);
                 document.getElementById('exitConfirmNo').addEventListener('click', () => {
                     modal.style.display = 'none';
+                    document.getElementById('exitConfirmNo').classList.remove('remote-focused');
+                    document.getElementById('exitConfirmYes').classList.remove('remote-focused');
                 });
                 document.getElementById('exitConfirmYes').addEventListener('click', () => {
                     modal.style.display = 'none';
@@ -28588,8 +28602,17 @@ function addContinueCardStyles() {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) modal.style.display = 'none';
                 });
+                // Remote için İptal'e otomatik focus
+                setTimeout(() => {
+                    const noBtn = document.getElementById('exitConfirmNo');
+                    if (noBtn) { noBtn.classList.add('remote-focused'); noBtn.focus(); }
+                }, 50);
             } else {
                 modal.style.display = 'flex';
+                setTimeout(() => {
+                    const noBtn = document.getElementById('exitConfirmNo');
+                    if (noBtn) { noBtn.classList.add('remote-focused'); noBtn.focus(); }
+                }, 50);
             }
         }
 
@@ -33221,7 +33244,10 @@ function updatePlayerEpgBar(channelName, tvgId) {
 function closePlayer() {
     // WP: host kapat bildir
     if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
-      try { window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'close', ts: Date.now(), by: _WP.myNick }); } catch(e) {}
+      try {
+        window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'close', ts: Date.now(), by: _WP.myNick });
+        _WP._hostPlayerOpen = false;
+      } catch(e) {}
     }
     // Kontrol gizleme modunu sıfırla
     window._controlsHidden = false;
@@ -33612,6 +33638,16 @@ let virtualScrollSystem = null;
 
         function setupPlayerEvents() {
             const v = document.getElementById('videoPlayer');
+            // durationchange: loadedmetadata'dan sonra da duration güncellenir — VOD için kritik
+            v.addEventListener('durationchange', () => {
+                if (v.duration && !isNaN(v.duration) && v.duration !== Infinity && v.duration > 0) {
+                    videoDuration = v.duration;
+                    const _td = document.getElementById('totalDuration');
+                    if (_td && !_td.innerText) _td.innerText = `/ ${formatTime(v.duration)}`;
+                    const _pbrDc = document.querySelector('.progress-bar-row');
+                    if (_pbrDc) _pbrDc.style.display = 'flex';
+                }
+            });
             v.addEventListener('loadedmetadata', () => {
                 if (v.duration && !isNaN(v.duration) && v.duration !== Infinity) {
                     videoDuration = v.duration; 
@@ -33815,8 +33851,10 @@ let virtualScrollSystem = null;
                     const ratio = Math.max(0, Math.min(cx - r.left, r.width)) / r.width;
                     const p = ratio * 100;
                     handle.style.left = `${p}%`; 
-                    const _pbDrag = document.getElementById('progressBar'); if (_pbDrag) _pbDrag.style.width = `${p}%`; 
-                    document.getElementById('currentTime').textContent = formatTime(videoDuration * ratio);
+                    const _pbDrag = document.getElementById('progressBar'); if (_pbDrag) _pbDrag.style.width = `${p}%`;
+                    // videoDuration 0 ise (loadedmetadata gecikmesi) v.duration kullan
+                    const _dispDur = videoDuration || (v && v.duration && isFinite(v.duration) ? v.duration : 0);
+                    document.getElementById('currentTime').textContent = formatTime(_dispDur * ratio);
                 };
                 
                 const endDrag = () => {
@@ -33847,7 +33885,13 @@ let virtualScrollSystem = null;
                             }
                         }
                     }
-                    v.currentTime = videoDuration * ((parseFloat(handle.style.left)||0)/100);
+                    // videoDuration 0 ise (loadedmetadata gecikmesi) v.duration kullan
+                    const _seekDur = videoDuration || v.duration || 0;
+                    if (_seekDur > 0) {
+                        const _hls = state.player && state.player.hls;
+                        const _seekTarget = _seekDur * ((parseFloat(handle.style.left)||0)/100);
+                        _dvrSeekFull(v, _hls, _seekTarget);
+                    }
                     showControls(5000); 
                     document.removeEventListener('mousemove', moveHandler); 
                     document.removeEventListener('mouseup', endDrag); 
@@ -37776,6 +37820,24 @@ function handleFavoriteChannelSelect(key) {
     'sortModal': handleSortModalRemote,
     'embedModal': handleEmbedModalRemote
 };
+
+        // ── Watch Party & Çıkış Modalı — class ile açılır, özel kontrol ──
+        const _wpLobby = document.getElementById('wpLobbyModal');
+        const _wpPanel = document.getElementById('wpPanel');
+        const _exitMod  = document.getElementById('exitConfirmModal');
+
+        if (_exitMod && (_exitMod.style.display === 'flex' || _exitMod.style.display === 'block')) {
+            handleExitConfirmModalRemote(e);
+            return;
+        }
+        if (_wpLobby && _wpLobby.classList.contains('wp-open')) {
+            handleWpLobbyRemote(e);
+            return;
+        }
+        if (_wpPanel && _wpPanel.classList.contains('wp-open')) {
+            handleWpPanelRemote(e);
+            return;
+        }
 
         for (let modalId in modalHandlers) {
             const modal = document.getElementById(modalId);
@@ -48706,20 +48768,49 @@ if(typeof _origPlayChannel === 'function') {
         const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
         if(ch && ch.name) {
           WP.contentTitle = ch.name;
-          // Fire-and-forget: player'ı bekletme
-          fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
-            type: 'channel',
-            name: ch.name,
-            url: ch.url || ch.streamUrl || '',
-            channelData: JSON.stringify(ch),
-            ts: Date.now(),
-            startedBy: WP.myNick
-          }).catch(()=>{});
-          fbPush('/rooms/' + WP.roomCode + '/chat', {
-            nick: 'Sistem', color: '#FFD700',
-            text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + ch.name,
-            isSystem: true, ts: Date.now()
-          }).catch(()=>{});
+          // VOD kanallar için openVodModal zaten nowPlaying yazıyor — çift yazma engelle
+          // Sadece isLive:true kanallar için buradan yaz
+          const _isVodCh = !ch.isLive || ch.isVod;
+          if(!_isVodCh) {
+            // Canlı kanal — direkt yaz
+            WP._hostPlayerOpen = true;
+            fbSet('/rooms/' + WP.roomCode + '/playerState', { action: 'open', ts: Date.now(), by: WP.myNick }).catch(()=>{});
+            fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+              type: 'channel',
+              name: ch.name,
+              url: ch.url || ch.streamUrl || '',
+              channelData: JSON.stringify(ch),
+              ts: Date.now(),
+              startedBy: WP.myNick
+            }).catch(()=>{});
+            fbPush('/rooms/' + WP.roomCode + '/chat', {
+              nick: 'Sistem', color: '#FFD700',
+              text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + ch.name,
+              isSystem: true, ts: Date.now()
+            }).catch(()=>{});
+          } else {
+            // VOD/Film — openVodModal henüz çağrılmadıysa (direkt playChannel çağrısı) buradan yaz
+            // openVodModal zaten yazdıysa ts farkı çok küçük olur (<500ms), izleyici lastTs ile reddeder
+            // Bu yüzden burada da yazıyoruz ama 600ms geciktiriyoruz — openVodModal'ın yazısı önce gitsin
+            setTimeout(() => {
+              if(!WP.inRoom || !WP.isHost) return;
+              WP._hostPlayerOpen = true;
+              fbSet('/rooms/' + WP.roomCode + '/playerState', { action: 'open', ts: Date.now(), by: WP.myNick }).catch(()=>{});
+              fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+                type: 'direct',
+                name: ch.name,
+                url: ch.url || ch.streamUrl || '',
+                channelData: JSON.stringify(ch),
+                ts: Date.now(),
+                startedBy: WP.myNick
+              }).catch(()=>{});
+              fbPush('/rooms/' + WP.roomCode + '/chat', {
+                nick: 'Sistem', color: '#FFD700',
+                text: '🎬 ' + WP.myNick + ' izliyor: ' + ch.name,
+                isSystem: true, ts: Date.now()
+              }).catch(()=>{});
+            }, 600);
+          }
         }
       } catch(e) {}
     }
@@ -48765,6 +48856,28 @@ if(typeof _origOpenVod === 'function') {
 // ── nowPlaying dinleyicisi — karşı tarafta içerik aç ──
 function wpStartNowPlayingListener(code) {
   let lastTs = 0;
+  // joinTs: odaya katıldığımız an — bu ts'den ÖNCE yazılmış nowPlaying'i işleme
+  const joinTs = Date.now();
+  // Host'un player'ı şu an açık mı? Odaya katılınca önce kontrol edilir
+  let hostPlayerOpen = false;
+
+  // Odaya katılınca host'un playerState'ini kontrol et
+  fbGet('/rooms/' + code + '/playerState').then(function(ps) {
+    if(ps && ps.action === 'close') {
+      hostPlayerOpen = false;
+      WP._hostPlayerOpen = false;
+    } else if(ps && (ps.action === 'seek' || ps.action === 'play' || ps.action === 'open')) {
+      hostPlayerOpen = true;
+      WP._hostPlayerOpen = true;
+    } else {
+      // playerState yok veya bilinmiyor — eski nowPlaying'i işleme
+      hostPlayerOpen = false;
+      WP._hostPlayerOpen = false;
+    }
+  }).catch(function() {
+    hostPlayerOpen = false;
+    WP._hostPlayerOpen = false;
+  });
 
   // İzleyici tarafında modal AÇMADAN direkt oynatır
   function wpDirectPlay(ch) {
@@ -48796,37 +48909,56 @@ function wpStartNowPlayingListener(code) {
     }
   }
 
-  function wpHandleNowPlaying(np) {
+  function wpHandleNowPlaying(np, isFromPoll) {
     if(!WP.inRoom) return;
     if(!np || !np.ts) return;
     if(np.ts <= lastTs) return;
     if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
+
+    // Odaya katılınca gelen eski nowPlaying'i işleme:
+    // ts joinTs'den önce veya aynı anda ise → eski kayıt, sadece lastTs'i set et
+    if(np.ts <= joinTs) {
+      // Host şu an player açık olsa bile katıldıktan önce yazılmış → yok say
+      lastTs = np.ts;
+      return;
+    }
+
+    // joinTs'den sonra yazılmış ama host player kapalı ise işleme
+    // WP._hostPlayerOpen: playerState listener tarafından anlık güncellenir
+    const _hpo = (typeof hostPlayerOpen !== 'undefined') ? hostPlayerOpen : (WP._hostPlayerOpen !== false);
+    if(!_hpo && np.ts < joinTs + 10000) {
+      lastTs = np.ts;
+      return;
+    }
+
     lastTs = np.ts;
 
     wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
     wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
 
-    if(np.type === 'channel' && np.channelData) {
+    // type:'channel' ama VOD ise de direct gibi işle
+    if((np.type === 'channel' || np.type === 'direct') && np.channelData) {
       try {
         const ch = JSON.parse(np.channelData);
-        setTimeout(() => wpDirectPlay(ch), 500);
-      } catch(err) {}
-    } else if(np.type === 'direct' && np.url) {
-      // Film/dizi — URL var, modal atla, direkt oynat
-      try {
-        const ch = np.channelData ? JSON.parse(np.channelData) : { name: np.name, url: np.url, isLive: false, isVod: true };
-        ch.url = ch.url || np.url;
+        ch.url = ch.url || np.url || '';
+        if(!ch.url && np.url) ch.url = np.url;
         setTimeout(() => wpDirectPlay(ch), 500);
       } catch(err) {
-        const ch = { name: np.name, url: np.url, isLive: false, isVod: true };
-        setTimeout(() => wpDirectPlay(ch), 500);
+        if(np.url) {
+          const ch = { name: np.name, url: np.url, isLive: false, isVod: true };
+          setTimeout(() => wpDirectPlay(ch), 500);
+        }
       }
+    } else if(np.type === 'direct' && np.url && !np.channelData) {
+      const ch = { name: np.name, url: np.url, isLive: false, isVod: true };
+      setTimeout(() => wpDirectPlay(ch), 500);
     } else if(np.type === 'vod' && np.channelData) {
       // URL'siz VOD — channelData içinde url varsa direkt oynat
       try {
         const ch = JSON.parse(np.channelData);
-        const url = ch.url || ch.streamUrl || '';
+        const url = ch.url || ch.streamUrl || np.url || '';
         if(url) {
+          ch.url = ch.url || url;
           setTimeout(() => wpDirectPlay(ch), 500);
         } else if(np.vodData && typeof _origOpenVod === 'function') {
           // URL yoksa son çare modal aç
@@ -48834,15 +48966,27 @@ function wpStartNowPlayingListener(code) {
           setTimeout(() => _origOpenVod(vod), 500);
         }
       } catch(err) {}
+    } else if(np.url) {
+      // Tip belli değil ama URL var — direkt oynat
+      const ch = { name: np.name, url: np.url, isLive: false, isVod: true };
+      setTimeout(() => wpDirectPlay(ch), 500);
     }
   }
 
-  // SSE ile dinle
+  // SSE ile dinle — ilk 'put' (path:'/') geçmiş snapshot, yok say
   const es = new EventSource(FB_URL + '/rooms/' + code + '/nowPlaying.json');
   es.addEventListener('put', (e) => {
     try {
       const d = JSON.parse(e.data);
-      wpHandleNowPlaying(d.data);
+      if(d.path === '/') {
+        // İlk snapshot — SSE bağlanınca Firebase mevcut veriyi gönderir
+        // Bu joinTs'den önce yazılmış olabilir, wpHandleNowPlaying zaten ts kontrolü yapar
+        // Sadece hostPlayerOpen belirlenene kadar bekle (async fbGet tamamlanır)
+        setTimeout(() => wpHandleNowPlaying(d.data, true), 200);
+        return;
+      }
+      // Gerçek yeni event (path !== '/') — anında işle
+      wpHandleNowPlaying(d.data, false);
     } catch(err) {}
   });
   es.onerror = () => {};
@@ -48852,7 +48996,7 @@ function wpStartNowPlayingListener(code) {
   WP._npPollTimer = setInterval(async () => {
     if(!WP.inRoom) return;
     const np = await fbGet('/rooms/' + code + '/nowPlaying');
-    wpHandleNowPlaying(np);
+    wpHandleNowPlaying(np, true);
   }, 3000);
 }
 
@@ -48868,6 +49012,10 @@ window.wpStartPlayerStateListener = function(code) {
     if(ps.ts <= lastTs) return;
     if(ps.by === WP.myNick) { lastTs = ps.ts; return; }
     lastTs = ps.ts;
+
+    // hostPlayerOpen flag'ini güncelle — nowPlaying listener'ı kullanır
+    if(ps.action === 'close') { WP._hostPlayerOpen = false; }
+    else if(ps.action === 'seek' || ps.action === 'play' || ps.action === 'open') { WP._hostPlayerOpen = true; }
 
     if(ps.action === 'seek') {
       setTimeout(() => {
@@ -48946,48 +49094,141 @@ setInterval(() => {
   if(WP.inRoom) wpDetectVideoMode();
 }, 1000);
 
-// ── D-PAD ENTEGRASYONU ──
-// Mevcut keydown listener'a ek: WP panel açıkken wp-remote-focus sınıfı olanlar arasında gezin
-document.addEventListener('keydown', function(e) {
-  const panelOpen = document.getElementById('wpPanel').classList.contains('wp-open');
-  const lobbyOpen = document.getElementById('wpLobbyModal').classList.contains('wp-open');
-  if(!panelOpen && !lobbyOpen) return;
-
-  const active = document.activeElement;
-  const isText = active && (active.classList.contains('wp-text-input') || active.tagName==='INPUT' || active.tagName==='TEXTAREA');
-
-  if(isText) {
-    // Input içindeyken sadece Enter ve Escape yakala
-    if(e.key==='Escape') { active.blur(); e.preventDefault(); }
-    return;
-  }
-
-  const container = panelOpen ? document.getElementById('wpPanel') : document.getElementById('wpLobbyModal');
-  const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el=>{
-    const r=el.getBoundingClientRect(); return r.width>0&&r.height>0;
-  });
-
-  if(!focusables.length) return;
-  const cur = focusables.indexOf(active);
-
-  if(e.key==='ArrowDown'||e.key==='ArrowRight') {
+// ── ÇIKIŞ ONAY MODALI REMOTE HANDLER ──
+function handleExitConfirmModalRemote(e) {
+    const isBack = e.key === 'Backspace' || e.key === 'Escape' || e.key === 'GoBack' || e.key === 'Back' || e.keyCode === 4;
+    const modal = document.getElementById('exitConfirmModal');
+    if (!modal) return;
     e.preventDefault(); e.stopPropagation();
-    const next = cur<focusables.length-1?cur+1:0;
-    focusables[next].focus();
-  } else if(e.key==='ArrowUp'||e.key==='ArrowLeft') {
-    e.preventDefault(); e.stopPropagation();
-    const prev = cur>0?cur-1:focusables.length-1;
-    focusables[prev].focus();
-  } else if(e.key==='Enter'||e.key===' ') {
-    if(active && active.classList.contains('wp-remote-focus') && active.tagName!=='INPUT' && active.tagName!=='TEXTAREA') {
-      e.preventDefault(); active.click();
+
+    const noBtn  = document.getElementById('exitConfirmNo');
+    const yesBtn = document.getElementById('exitConfirmYes');
+    if (!noBtn || !yesBtn) return;
+
+    if (isBack) {
+        modal.style.display = 'none';
+        noBtn.classList.remove('remote-focused');
+        yesBtn.classList.remove('remote-focused');
+        if (typeof playKeySound === 'function') playKeySound('back');
+        return;
     }
-  } else if(e.key==='Escape') {
-    e.preventDefault();
-    if(lobbyOpen) closeWpLobby();
-    else if(panelOpen) closeWpPanel();
-  }
-});
+
+    // Hangisi focuslu?
+    const curFocused = modal.querySelector('.remote-focused') || noBtn;
+    const buttons = [noBtn, yesBtn];
+    let idx = buttons.indexOf(curFocused);
+
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        idx = 0; // İptal
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        idx = 1; // Evet Çık
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
+        curFocused.click();
+        return;
+    }
+
+    buttons.forEach(b => b.classList.remove('remote-focused'));
+    buttons[idx].classList.add('remote-focused');
+    buttons[idx].focus();
+    if (typeof playKeySound === 'function') playKeySound('navigate');
+}
+
+// ── WP LOBBY MODAL REMOTE HANDLER ──
+function handleWpLobbyRemote(e) {
+    const isBack = e.key === 'Backspace' || e.key === 'Escape' || e.key === 'GoBack' || e.key === 'Back' || e.keyCode === 4;
+    const container = document.getElementById('wpLobbyModal');
+    if (!container) return;
+
+    const active = document.activeElement;
+    const isText = active && (active.classList.contains('wp-text-input') || active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+    if (isBack) {
+        e.preventDefault(); e.stopPropagation(); e._backHandled = true;
+        if (typeof closeWpLobby === 'function') closeWpLobby();
+        if (typeof playKeySound === 'function') playKeySound('back');
+        return;
+    }
+
+    if (isText) {
+        // Input içindeyken sadece Escape yakala
+        if (e.key === 'Escape') { active.blur(); e.preventDefault(); }
+        return;
+    }
+
+    const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el => {
+        const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+    });
+    if (!focusables.length) return;
+
+    let cur = focusables.indexOf(active);
+    if (cur === -1) cur = 0;
+
+    e.preventDefault(); e.stopPropagation();
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        const next = cur < focusables.length - 1 ? cur + 1 : 0;
+        focusables[next].focus();
+        focusables[next].classList.add('remote-focused');
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        const prev = cur > 0 ? cur - 1 : focusables.length - 1;
+        focusables[prev].focus();
+        focusables[prev].classList.add('remote-focused');
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
+        if (active && active.classList.contains('wp-remote-focus') && active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
+            active.click();
+        }
+    }
+    if (typeof playKeySound === 'function') playKeySound('navigate');
+}
+
+// ── WP PANEL REMOTE HANDLER ──
+function handleWpPanelRemote(e) {
+    const isBack = e.key === 'Backspace' || e.key === 'Escape' || e.key === 'GoBack' || e.key === 'Back' || e.keyCode === 4;
+    const container = document.getElementById('wpPanel');
+    if (!container) return;
+
+    const active = document.activeElement;
+    const isText = active && (active.classList.contains('wp-text-input') || active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+    if (isBack) {
+        e.preventDefault(); e.stopPropagation(); e._backHandled = true;
+        if (typeof hideWpPanel === 'function') hideWpPanel();
+        if (typeof playKeySound === 'function') playKeySound('back');
+        return;
+    }
+
+    if (isText) {
+        if (e.key === 'Escape') { active.blur(); e.preventDefault(); }
+        return;
+    }
+
+    const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el => {
+        const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+    });
+    if (!focusables.length) return;
+
+    let cur = focusables.indexOf(active);
+    if (cur === -1) cur = 0;
+
+    e.preventDefault(); e.stopPropagation();
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        const next = cur < focusables.length - 1 ? cur + 1 : 0;
+        focusables[next].focus();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        const prev = cur > 0 ? cur - 1 : focusables.length - 1;
+        focusables[prev].focus();
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
+        if (active && active.classList.contains('wp-remote-focus') && active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
+            active.click();
+        }
+    }
+    if (typeof playKeySound === 'function') playKeySound('navigate');
+}
+
+// ── D-PAD ENTEGRASYONU ──
+// WP + Çıkış Modalı artık ana setupRemote() içindeki modalHandlers dispatch tablosunda yönetiliyor.
+// (handleWpLobbyRemote, handleWpPanelRemote, handleExitConfirmModalRemote)
 
 
 // ── PLAYER TOOLBAR — WP CHAT BUTONU ──

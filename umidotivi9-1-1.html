@@ -1186,7 +1186,7 @@ body {
 }
 
  
-.low-performance-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img) {
+.low-performance-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.remote-focused):not(.focused) {
     backdrop-filter: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
@@ -1302,7 +1302,7 @@ body {
 }
 
  
-.fast-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img) {
+.fast-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.remote-focused):not(.focused) {
     backdrop-filter: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
@@ -11558,10 +11558,6 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="btn-label">WP</span>
                             <span id="wpPlayerUnreadDot" style="display:none;position:absolute;top:4px;right:4px;width:7px;height:7px;background:#e74c3c;border-radius:50%;border:1px solid rgba(0,0,0,0.5);"></span>
                         </button>
-                        <button class="player-action-btn" id="btnCopyLink" onclick="copyChannelLink()" title="Kanal Linkini Kopyala">
-                            <span class="material-symbols-outlined" id="copyLinkIcon">content_copy</span>
-                            <span class="btn-label" id="copyLinkLabel">Kopyala</span>
-                        </button>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
                             <span class="btn-label">Kapat</span>
@@ -14103,7 +14099,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnCopyLink', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -14218,7 +14214,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnCopyLink', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'];
         
         
 
@@ -27430,9 +27426,10 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                 const ctrl = new AbortController();
                 const t = setTimeout(() => ctrl.abort(), timeoutMs);
                 try {
-                    const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow' }).catch(() => null);
+                    const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow', mode: 'cors' }).catch(() => null);
                     clearTimeout(t);
-                    return (r && r.ok) ? r : null;
+                    // workers.dev veya 2xx → direkt kabul et (404/500 hariç)
+                    return (r && (r.ok || (r.status >= 200 && r.status < 400))) ? r : null;
                 } catch(e) { clearTimeout(t); return null; }
             };
 
@@ -27458,13 +27455,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     response = await _tryFetchDirect(fetchUrl, 15000);
                 }
             } else if (_isLargeDirectUrl) {
-                // Büyük liste (GitHub vb.) → direkt önce
+                // Büyük liste / workers.dev → SADECE direkt (proxy yok)
                 showInlineLoading(25, `${m3u.name} Direkt İndiriliyor...`);
-                response = await _tryFetchDirect(fetchUrl, 60000); // 😄 180s→60s
-                if (!response) {
-                    showInlineLoading(35, `${m3u.name} Proxy Deneniyor...`);
-                    response = await _tryFetchProxy(fetchUrl, 20000); // 😄 60s→20s
-                }
+                response = await _tryFetchDirect(fetchUrl, 60000);
             } else {
                 if (_isFileProtocol) {
                     // file:// ortamında CORS: proxy önce
@@ -28098,47 +28091,6 @@ setTimeout(_vhsInit, 1200);
 
 
 
-
-    // ════════════════════════════════════════════════════════
-    // KANAL LİNK KOPYALA
-    // ════════════════════════════════════════════════════════
-    function copyChannelLink() {
-        try {
-            const ch = state.filtered && state.filtered[state.player.index];
-            const url = (ch && ch.url) ? ch.url : (state.player.url || '');
-            if (!url) { showToast('Link bulunamadı'); return; }
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    _copyLinkFeedback();
-                }).catch(() => { _copyLinkFallback(url); });
-            } else {
-                _copyLinkFallback(url);
-            }
-        } catch(e) { showToast('Kopyalama hatası'); }
-    }
-    function _copyLinkFallback(url) {
-        try {
-            const ta = document.createElement('textarea');
-            ta.value = url;
-            ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            _copyLinkFeedback();
-        } catch(e) { showToast('Kopyalama hatası'); }
-    }
-    function _copyLinkFeedback() {
-        const icon = document.getElementById('copyLinkIcon');
-        const lbl  = document.getElementById('copyLinkLabel');
-        if (icon) icon.textContent = 'check_circle';
-        if (lbl)  lbl.textContent  = 'Kopyalandı';
-        showToast('📋 Link kopyalandı');
-        setTimeout(() => {
-            if (icon) icon.textContent = 'content_copy';
-            if (lbl)  lbl.textContent  = 'Kopyala';
-        }, 2000);
-    }
 
     // ════════════════════════════════════════════════════════
     // BUFFER / BANT GENİŞLİĞİ BADGE
@@ -33968,6 +33920,7 @@ let virtualScrollSystem = null;
             clearTimeout(window._dvrSeekTimer2);
             clearTimeout(window._dvrSeekTimer3);
             window._seekInProgress = true;
+            window._dvrSeekFull = _dvrSeekFull; // WP guest seek için global erişim
 
             // 1. HLS yuklemeyi durdur
             if (hls) { try { hls.stopLoad(); } catch(e) {} }
@@ -49566,15 +49519,25 @@ window.wpStartPlayerStateListener = function(code) {
         if(v.readyState < 1) {
           const _waitSeek = () => {
             v.removeEventListener('loadedmetadata', _waitSeek);
-            v.currentTime = newTime;
-            if(_hls) { try { _hls.startLoad(newTime); } catch(e) {} }
+            if(typeof _dvrSeekFull === 'function') {
+              _dvrSeekFull(v, _hls, newTime);
+            } else {
+              v.currentTime = newTime;
+              if(_hls) { try { _hls.startLoad(newTime); } catch(e) {} }
+            }
             if(v.paused) v.play().catch(()=>{});
           };
           v.addEventListener('loadedmetadata', _waitSeek);
           return;
         }
-        v.currentTime = newTime;
-        if(_hls) { try { _hls.stopLoad(); _hls.startLoad(newTime); } catch(e) {} }
+        // _dvrSeekFull mevcut ise kullan — HLS.js ile uyumlu tam seek
+        if(typeof _dvrSeekFull === 'function') {
+          _dvrSeekFull(v, _hls, newTime);
+        } else {
+          if(_hls) { try { _hls.stopLoad(); } catch(e) {} }
+          v.currentTime = newTime;
+          if(_hls) { try { _hls.startLoad(newTime); } catch(e) {} }
+        }
         if(v.paused) v.play().catch(()=>{});
       }, 200);
     } else if(ps.action === 'close') {

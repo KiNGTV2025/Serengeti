@@ -47944,6 +47944,13 @@ window.wpLoadRooms = async function wpLoadRooms() {
     el.addEventListener('click', (e) => {
       if(e.target.closest('.wp-del-btn')) return;
       if(isOld) { wpShowToast('⚠ Bu oda süresi dolmuş'); return; }
+      // Host kendi odasına tıklıyorsa direkt host olarak gir
+      if(isMyRoom) {
+        const nick = document.getElementById('wpNickInput').value.trim() || savedNick;
+        if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
+        wpEnterRoom({ nick, code, roomName: r.roomName||'Oda', contentTitle: r.contentTitle||wpGetCurrentContent(), isHost: true });
+        return;
+      }
       document.getElementById('wpJoinCodeInput').value = code;
       if(r.password) {
         const pwInput = document.getElementById('wpJoinPasswordInput');
@@ -48079,7 +48086,7 @@ window.wpJoinRoom = async function() {
     nick, code,
     roomName: room.roomName || 'Oda',
     contentTitle: room.contentTitle || wpGetCurrentContent(),
-    isHost: false
+    isHost: !!(room.hostNick && room.hostNick === nick)
   });
 };
 

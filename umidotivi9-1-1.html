@@ -48677,42 +48677,51 @@ function wpUpdateAvgRating() {
 // Kanal çalındığında party odasına bildir + URL'i de yaz
 const _origPlayChannel = window.playChannel;
 if(typeof _origPlayChannel === 'function') {
-  window.playChannel = async function(channel) {
-    if(WP.inRoom && channel && channel.name) {
-      WP.contentTitle = channel.name;
-      // Kanal objesini Firebase'e yaz — karşı taraf aynı kanalı açar
-      await fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
-        type: 'channel',
-        name: channel.name,
-        url: channel.url || channel.streamUrl || '',
-        channelData: JSON.stringify(channel),
-        ts: Date.now(),
-        startedBy: WP.myNick
-      });
-      await fbPush('/rooms/' + WP.roomCode + '/chat', {
-        nick: 'Sistem', color: '#FFD700',
-        text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + channel.name,
-        isSystem: true, ts: Date.now()
-      });
+  window.playChannel = async function(indexOrCh, startTime) {
+    // Sadece HOST Firebase'e yazar
+    if(WP.inRoom && WP.isHost) {
+      try {
+        const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+        const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
+        if(ch && ch.name) {
+          WP.contentTitle = ch.name;
+          await fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+            type: 'channel',
+            name: ch.name,
+            url: ch.url || ch.streamUrl || '',
+            channelData: JSON.stringify(ch),
+            ts: Date.now(),
+            startedBy: WP.myNick
+          });
+          await fbPush('/rooms/' + WP.roomCode + '/chat', {
+            nick: 'Sistem', color: '#FFD700',
+            text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + ch.name,
+            isSystem: true, ts: Date.now()
+          });
+        }
+      } catch(e) {}
     }
     return _origPlayChannel.apply(this, arguments);
   };
 }
 
-// VOD/film seçildiğinde Firebase'e yaz
+// VOD/film/dizi seçildiğinde Firebase'e yaz (sadece host)
 const _origOpenVod = window.openVodModal;
 if(typeof _origOpenVod === 'function') {
   window.openVodModal = function(vod) {
     const r = _origOpenVod.apply(this, arguments);
-    if(WP.inRoom && vod) {
+    if(WP.inRoom && WP.isHost && vod) {
       setTimeout(async () => {
         const t = document.getElementById('vodModalTitle');
         const title = (t && t.textContent.trim()) ? t.textContent.trim() : (vod.name || vod.title || '');
         if(!title) return;
         WP.contentTitle = title;
+        const vodUrl = vod.url || vod.streamUrl || '';
         await fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
-          type: 'vod',
+          type: vodUrl ? 'direct' : 'vod',
           name: title,
+          url: vodUrl,
+          channelData: JSON.stringify(vod),
           vodData: JSON.stringify(vod),
           ts: Date.now(),
           startedBy: WP.myNick
@@ -48732,6 +48741,21 @@ if(typeof _origOpenVod === 'function') {
 function wpStartNowPlayingListener(code) {
   let lastTs = 0;
 
+  // İzleyici tarafında modal AÇMADAN direkt oynatır
+  function wpDirectPlay(ch) {
+    if(!ch) return;
+    const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+    let idx = list.findIndex(c => c.url === ch.url && c.name === ch.name);
+    if(idx === -1) idx = list.findIndex(c => c.url === ch.url);
+    if(idx === -1) idx = list.findIndex(c => c.name === ch.name);
+    if(idx !== -1) {
+      _origPlayChannel(idx, 0);
+    } else {
+      list.push(ch);
+      _origPlayChannel(list.length - 1, 0);
+    }
+  }
+
   function wpHandleNowPlaying(np) {
     if(!WP.inRoom) return;
     if(!np || !np.ts) return;
@@ -48745,27 +48769,28 @@ function wpStartNowPlayingListener(code) {
     if(np.type === 'channel' && np.channelData) {
       try {
         const ch = JSON.parse(np.channelData);
-        if(typeof _origPlayChannel === 'function') {
-          setTimeout(() => {
-            // playChannel(index, startTime) bekliyor — objeyi index'e çevir
-            const list = (window.state && window.state.filtered) ? window.state.filtered : [];
-            let idx = list.findIndex(c => c.url === ch.url && c.name === ch.name);
-            if(idx === -1) idx = list.findIndex(c => c.url === ch.url);
-            if(idx === -1) idx = list.findIndex(c => c.name === ch.name);
-            if(idx !== -1) {
-              _origPlayChannel(idx, 0);
-            } else {
-              // Listede yoksa geçici ekle
-              list.push(ch);
-              _origPlayChannel(list.length - 1, 0);
-            }
-          }, 500);
-        }
+        setTimeout(() => wpDirectPlay(ch), 500);
       } catch(err) {}
-    } else if(np.type === 'vod' && np.vodData) {
+    } else if(np.type === 'direct' && np.url) {
+      // Film/dizi — URL var, modal atla, direkt oynat
       try {
-        const vod = JSON.parse(np.vodData);
-        if(typeof _origOpenVod === 'function') {
+        const ch = np.channelData ? JSON.parse(np.channelData) : { name: np.name, url: np.url, isLive: false, isVod: true };
+        ch.url = ch.url || np.url;
+        setTimeout(() => wpDirectPlay(ch), 500);
+      } catch(err) {
+        const ch = { name: np.name, url: np.url, isLive: false, isVod: true };
+        setTimeout(() => wpDirectPlay(ch), 500);
+      }
+    } else if(np.type === 'vod' && np.channelData) {
+      // URL'siz VOD — channelData içinde url varsa direkt oynat
+      try {
+        const ch = JSON.parse(np.channelData);
+        const url = ch.url || ch.streamUrl || '';
+        if(url) {
+          setTimeout(() => wpDirectPlay(ch), 500);
+        } else if(np.vodData && typeof _origOpenVod === 'function') {
+          // URL yoksa son çare modal aç
+          const vod = JSON.parse(np.vodData);
           setTimeout(() => _origOpenVod(vod), 500);
         }
       } catch(err) {}

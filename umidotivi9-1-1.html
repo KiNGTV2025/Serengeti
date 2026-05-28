@@ -48719,7 +48719,20 @@ function wpStartNowPlayingListener(code) {
       try {
         const ch = JSON.parse(np.channelData);
         if(typeof _origPlayChannel === 'function') {
-          setTimeout(() => _origPlayChannel(ch), 500);
+          setTimeout(() => {
+            // playChannel(index, startTime) bekliyor — objeyi index'e çevir
+            const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+            let idx = list.findIndex(c => c.url === ch.url && c.name === ch.name);
+            if(idx === -1) idx = list.findIndex(c => c.url === ch.url);
+            if(idx === -1) idx = list.findIndex(c => c.name === ch.name);
+            if(idx !== -1) {
+              _origPlayChannel(idx, 0);
+            } else {
+              // Listede yoksa geçici ekle
+              list.push(ch);
+              _origPlayChannel(list.length - 1, 0);
+            }
+          }, 500);
         }
       } catch(err) {}
     } else if(np.type === 'vod' && np.vodData) {

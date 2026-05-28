@@ -32799,6 +32799,49 @@ function resumeChannel(startTime) {
     }
     const effectiveUrl = (isKoolTo && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🔧 MKV/MP4 DÜZELTMESİ: .mkv uzantılı direkt dosya için NATIVE PLAYER KULLAN
+    // ═══════════════════════════════════════════════════════════════════════
+    const isMkv = rawUrl.endsWith('.mkv') || rawUrl.includes('.mkv?') || rawUrl.toLowerCase().includes('.mkv');
+    const isMp4 = rawUrl.endsWith('.mp4') || rawUrl.includes('.mp4?') || rawUrl.toLowerCase().includes('.mp4');
+    const isDirectVideo = isMkv || isMp4;
+    
+    if (isDirectVideo) {
+        // MKV/MP4 direkt video — HLS.js KULLANMA, video elementine doğrudan yükle
+        state.player.isLiveStream = false;
+        state.player.vodPlaying = true;
+        state.player.url = rawUrl;
+        
+        // Video elementini temizle
+        if (state.player.hls) {
+            state.player.hls.destroy();
+            state.player.hls = null;
+        }
+        
+        // Direkt oynat
+        video.src = rawUrl;
+        video.load();
+        video.play().catch(() => {});
+        
+        // Zapping ekranını gizle (oynatma başlayınca)
+        const _playPromise = video.play();
+        if (_playPromise !== undefined) {
+            _playPromise.then(() => {
+                hideZappingScreen();
+                state.player.streamStarted = true;
+                onPlayStart();
+            }).catch(() => {
+                hideZappingScreen();
+                showToast('⚠️ Video oynatılamadı');
+            });
+        }
+        
+        state.remote.zone = 'player';
+        state.remote.playerBoxIndex = 1; // Play/Pause
+        startContinuousWatchingUpdate();
+        return; // MKV işlemi bitti — fonksiyondan çık
+    }
+
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
         if (!Hls.isSupported()) {

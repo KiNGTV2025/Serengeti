@@ -10598,6 +10598,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/m3u.svg" alt="Add M3U" class="svg-icon">
             </button>
+            <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
+                <span class="material-symbols-outlined">groups</span>
+                <span id="wpActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#ff4757;border-radius:50%;border:1px solid #000;animation:wpDotBlink 1s infinite;"></span>
+            </button>
             <button class="header-btn" id="btnExitHeader" onclick="exitApp()" title="Uygulamayı Kapat" style="color:#ff4444;">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
@@ -10763,6 +10767,250 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     WATCH PARTY SİSTEMİ — UmitTV Entegre
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- LOBBY MODAL -->
+<div id="wpLobbyModal" style="display:none;position:fixed;inset:0;z-index:99000;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div id="wpLobbyBox" style="width:580px;max-width:95vw;max-height:92vh;overflow-y:auto;background:linear-gradient(135deg,#13131e,#1a1a28);border:1px solid rgba(255,215,0,0.25);border-radius:20px;padding:28px;box-shadow:0 40px 100px rgba(0,0,0,0.7);animation:wpModalIn 0.3s cubic-bezier(0.16,1,0.3,1);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+      <div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:#FFD700;letter-spacing:2px;">⬡ WATCH PARTY</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:1px;">Arkadaşlarınla Birlikte İzle</div>
+      </div>
+      <button onclick="closeWpLobby()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.5);width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;" class="wp-remote-focus">✕</button>
+    </div>
+
+    <!-- Kullanıcı adı -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:7px;">Kullanıcı Adın</label>
+      <input id="wpNickInput" placeholder="Adını gir..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.2);border-radius:10px;padding:12px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
+    </div>
+
+    <!-- İki sütun: Oluştur / Katıl -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      
+      <!-- Oda Oluştur -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,215,0,0.12);border-radius:12px;padding:16px;">
+        <div style="font-size:12px;font-weight:700;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">🎬 Oda Oluştur</div>
+        <input id="wpRoomPasswordInput" placeholder="Şifre (opsiyonel)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.15)'" placeholder="🔒 Şifre (opsiyonel)">
+        <button id="wpCreateBtn" onclick="wpCreateRoom()" class="wp-remote-focus" style="width:100%;background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:11px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
+          ✦ ODA AÇ
+        </button>
+      </div>
+
+      <!-- Odaya Katıl -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;">
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🔑 Koda Gir</div>
+        <input id="wpJoinCodeInput" placeholder="ODA KODU..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;outline:none;text-transform:uppercase;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter'){wpJoinRoom()}">
+        <input id="wpJoinPasswordInput" placeholder="🔒 Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" id="wpJoinPasswordInput" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <button id="wpJoinBtn" onclick="wpJoinRoom()" class="wp-remote-focus" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:0.5px;">
+          → KATIL
+        </button>
+      </div>
+    </div>
+
+    <!-- Aktif odalar -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Aktif Odalar</div>
+      <div id="wpRoomsList" style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WATCH PARTY ANA PANEL -->
+<div id="wpPanel" style="display:none;position:fixed;bottom:0;right:0;top:0;z-index:999999;width:320px;background:linear-gradient(180deg,#0f0f18,#13131e);border-left:1px solid rgba(255,215,0,0.18);flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,0.5);">
+  
+  <!-- Panel Başlık -->
+  <div style="padding:12px 14px;border-bottom:1px solid rgba(255,215,0,0.12);flex-shrink:0;background:#0f0f18;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:#FFD700;letter-spacing:2px;">⬡ WATCH PARTY</div>
+      <button onclick="closeWpPanel()" class="wp-remote-focus" style="background:#e74c3c;border:none;border-radius:6px;color:#fff;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;" title="Odadan Çık">✕</button>
+      <button onclick="hideWpPanel()" class="wp-remote-focus" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Paneli Gizle (Odada Kal)">−</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:#fff;letter-spacing:5px;" id="wpPanelCode">——</div>
+      <button onclick="wpCopyCode()" class="wp-remote-focus" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:6px;padding:3px 8px;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:#FFD700;cursor:pointer;">KOPYALA</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;" id="wpPanelMeta">0 üye • Bağlanıyor</div>
+  </div>
+
+  <!-- Tab Satırı -->
+  <div style="display:flex;border-bottom:1px solid rgba(255,215,0,0.12);flex-shrink:0;background:#0f0f18;">
+    <button id="wpTabChat" onclick="wpSwitchTab('chat')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid #FFD700;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:#FFD700;cursor:pointer;letter-spacing:0.5px;">💬 SOHBET</button>
+    <button id="wpTabComments" onclick="wpSwitchTab('comments')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">⭐ YORUMLAR</button>
+    <button id="wpTabMembers" onclick="wpSwitchTab('members')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">👥 ÜYELER</button>
+  </div>
+
+  <!-- SOHBET Tab -->
+  <div id="wpTabContentChat" style="flex:1;min-height:0;display:flex;flex-direction:column;">
+    <!-- Emoji Reaksiyonlar -->
+    <div style="display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0;background:#0f0f18;">
+      <button onclick="wpSendReaction('❤️')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">❤️</button>
+      <button onclick="wpSendReaction('😂')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">😂</button>
+      <button onclick="wpSendReaction('😮')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">😮</button>
+      <button onclick="wpSendReaction('👏')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">👏</button>
+      <button onclick="wpSendReaction('🔥')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">🔥</button>
+    </div>
+    <!-- Mesajlar — flex:1 + overflow-y:auto ile mesajlar kalır -->
+    <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth;"></div>
+    <!-- Giriş -->
+    <div style="padding:8px 10px;border-top:1px solid rgba(255,215,0,0.1);display:flex;gap:7px;flex-shrink:0;background:#0f0f18;">
+      <input id="wpChatInput" placeholder="Mesaj yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wpSendChat()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
+      <button onclick="wpSendChat()" class="wp-remote-focus" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0;">➤</button>
+    </div>
+  </div>
+
+  <!-- YORUMLAR Tab -->
+  <div id="wpTabContentComments" style="flex:1;min-height:0;display:none;flex-direction:column;">
+    <div id="wpCommentsList" style="flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px;"></div>
+    <!-- Puan + Yorum gir -->
+    <div style="padding:10px;border-top:1px solid rgba(255,215,0,0.1);flex-shrink:0;background:#0f0f18;">
+      <div style="display:flex;justify-content:center;gap:6px;margin-bottom:8px;" id="wpStarRow">
+        <span class="wp-star wp-remote-focus" data-val="1" onclick="wpSetStar(1)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
+        <span class="wp-star wp-remote-focus" data-val="2" onclick="wpSetStar(2)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
+        <span class="wp-star wp-remote-focus" data-val="3" onclick="wpSetStar(3)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
+        <span class="wp-star wp-remote-focus" data-val="4" onclick="wpSetStar(4)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
+        <span class="wp-star wp-remote-focus" data-val="5" onclick="wpSetStar(5)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
+      </div>
+      <div style="display:flex;gap:7px;">
+        <input id="wpCommentInput" placeholder="Yorum yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:9px 11px;font-family:'Rajdhani',sans-serif;font-size:13px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();wpSendComment()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.15)'">
+        <button onclick="wpSendComment()" class="wp-remote-focus" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer;flex-shrink:0;">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÜYELER Tab -->
+  <div id="wpTabContentMembers" style="flex:1;min-height:0;display:none;flex-direction:column;">
+    <div id="wpMembersList" style="flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:5px;"></div>
+    <!-- Oda ortalaması -->
+    <div style="padding:10px 12px;border-top:1px solid rgba(255,215,0,0.1);text-align:center;flex-shrink:0;background:#0f0f18;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;">ODA PUANI ORTALAMASI</div>
+      <div style="font-size:22px;font-weight:900;color:#FFD700;font-family:'Orbitron',sans-serif;" id="wpAvgRating">—</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Sağ tarafa kayma için içerik kaydırıcı wrapper -->
+<style>
+/* ── Watch Party Genel Stiller ── */
+@keyframes wpModalIn {
+  from { opacity:0; transform:scale(0.92) translateY(24px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes wpDotBlink {
+  0%,100%{opacity:1} 50%{opacity:0.2}
+}
+@keyframes wpMsgIn {
+  from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)}
+}
+@keyframes wpReactionFloat {
+  0%{transform:translateY(0) scale(1);opacity:1}
+  100%{transform:translateY(-80px) scale(1.4);opacity:0}
+}
+
+/* ── Watch Party panel — her zaman en üstte ── */
+#wpPanel { display:none; }
+#wpPanel.wp-open { display:flex !important; }
+#wpLobbyModal.wp-open { display:flex !important; }
+
+/* Video oynarken panel sağ kenarda şeffaf mini mod */
+body.wp-panel-open #videoPlayer,
+body.wp-panel-open #playerView,
+body.wp-panel-open #playerContainer {
+  right: 320px !important;
+  transition: right 0.25s ease;
+}
+
+/* Panel içindeki contain'ı kır — panel kendi stacking context'inde olsun */
+#wpPanel {
+  contain: none !important;
+  isolation: isolate;
+}
+
+/* Film/video tam ekrandayken panel overlay olarak göster */
+#wpPanel.wp-open.wp-video-mode {
+  width: 280px;
+  background: linear-gradient(180deg, rgba(10,10,20,0.92), rgba(15,15,25,0.92)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-left: 1px solid rgba(255,215,0,0.3);
+}
+
+/* Chat input her zaman etkileşilebilir olsun */
+#wpPanel #wpChatInput,
+#wpPanel #wpCommentInput,
+#wpPanel button,
+#wpPanel input,
+#wpPanel .wp-remote-focus {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1000000;
+}
+
+/* Player toolbar WP Chat butonu — her zaman görünür */
+#btnWPChat {
+  display: flex !important;
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(255,255,255,0.45) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+#btnWPChat.wp-in-room {
+  background: rgba(46,213,115,0.18) !important;
+  border-color: rgba(46,213,115,0.7) !important;
+  color: #2ed573 !important;
+  box-shadow: 0 0 10px rgba(46,213,115,0.25) !important;
+}
+
+/* Tab içerikleri */
+#wpTabContentChat,
+#wpTabContentComments,
+#wpTabContentMembers {
+  overflow: hidden;
+}
+#wpTabContentChat.wp-tab-active { display:flex !important; }
+#wpTabContentComments.wp-tab-active { display:flex !important; }
+#wpTabContentMembers.wp-tab-active { display:flex !important; }
+
+/* Panel açıkken ana içerik — JS ile yönetiliyor */
+body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.3s ease; }
+
+/* wp-remote-focus: mevcut D-Pad sistemiyle uyumlu */
+.wp-remote-focus:focus,
+.wp-remote-focus.remote-focused {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #FFD700, 0 0 12px rgba(255,215,0,0.3) !important;
+  border-color: #FFD700!important;
+}
+
+/* Scrollbar */
+#wpChatMessages::-webkit-scrollbar,
+#wpCommentsList::-webkit-scrollbar,
+#wpMembersList::-webkit-scrollbar { width:3px; }
+#wpChatMessages::-webkit-scrollbar-thumb,
+#wpCommentsList::-webkit-scrollbar-thumb,
+#wpMembersList::-webkit-scrollbar-thumb { background:rgba(255,215,0,0.15);border-radius:2px; }
+
+/* Aktif oda item */
+.wp-room-item {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 13px;background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,215,0,0.1);border-radius:10px;cursor:pointer;
+  transition:all 0.15s;
+}
+.wp-room-item:hover,.wp-room-item.remote-focused {
+  border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);
+}
+
+/* Floating reaksiyon */
+.wp-reaction-float {
+  position:fixed;pointer-events:none;z-index:99999;
+  font-size:32px;animation:wpReactionFloat 1.2s ease forwards;
+}
+</style>
 
     <div class="player-overlay" id="playerView" style="background: none !important;">
 
@@ -11112,6 +11360,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             </button>
                         </div>
                         </div>
+                        <button class="player-action-btn wp-player-btn" id="btnWPChat" onclick="wpToggleFromPlayer()" title="Watch Party Chat" style="position:relative;">
+                            <span class="material-symbols-outlined" id="wpPlayerBtnIcon">chat_bubble</span>
+                            <span class="btn-label">WP</span>
+                            <span id="wpPlayerUnreadDot" style="display:none;position:absolute;top:4px;right:4px;width:7px;height:7px;background:#e74c3c;border-radius:50%;border:1px solid rgba(0,0,0,0.5);"></span>
+                        </button>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
                             <span class="btn-label">Kapat</span>
@@ -13653,7 +13906,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -13768,7 +14021,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'];
         
         
 
@@ -32210,29 +32463,32 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
-        // http:// URL'ler HTTPS sayfasında Mixed Content engeline takılır → proxy üzerinden aç
-        const _directMediaUrl = rawUrl.startsWith('http:') && location.protocol === 'https:'
+        // AppCreator24 WebView (okhttp UA): http:// linklere Mixed Content engeli UYGULANMAZ
+        // → direkt rawUrl kullan, kesinlikle HLS.js'e gönderme (HLS.js MKV/MP4 parse edemez)
+        const _isOkhttp = (navigator.userAgent || '').toLowerCase().includes('okhttp');
+        const _directMediaUrl = (!_isOkhttp && rawUrl.startsWith('http:') && location.protocol === 'https:')
             ? (STREAM_PROXY + encodeURIComponent(rawUrl))
             : rawUrl;
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        if (_directMediaUrl !== rawUrl && (typeof Hls !== 'undefined') && Hls.isSupported()) {
-            // http:// → proxy üzerinden HLS.js ile dene
-            startHls(_directMediaUrl);
-        } else {
-            video.src = _directMediaUrl;
-            video.load();
-            const p = video.play();
-            if (p) p.then(() => {
-                hideZappingScreen();
-                if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
-            }).catch(e => {
-                if (e.name === 'AbortError') return;
-                if (typeof startHls === 'function') startHls(_directMediaUrl);
-            });
-        }
+        // MKV/MP4 için her zaman native video — HLS.js MKV'yi oynatamaz
+        video.src = _directMediaUrl;
+        video.load();
+        const p = video.play();
+        if (p) p.then(() => {
+            hideZappingScreen();
+            if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
+        }).catch(e => {
+            if (e.name === 'AbortError') return;
+            // Yalnızca native play gerçekten hata alırsa ve okhttp değilsek proxy dene
+            if (!_isOkhttp && _directMediaUrl === rawUrl && rawUrl.startsWith('http:')) {
+                video.src = STREAM_PROXY + encodeURIComponent(rawUrl);
+                video.load();
+                video.play().catch(() => {});
+            }
+        });
     }
 
     state.remote.zone = 'player'; 
@@ -47448,15 +47704,1037 @@ window.addEventListener('unhandledrejection', function(e) {
     }
 });
 
-// ── Global hata yakalayıcı: null.style gibi runtime hatalar ──
-window.addEventListener('error', function(e) {
-    var msg = e && e.message ? e.message : '';
-    if (msg.indexOf('null') !== -1 || msg.indexOf('style') !== -1 ||
-        msg.indexOf('Cannot read') !== -1 || msg.indexOf('undefined') !== -1) {
-        e.preventDefault();
-        return false;
+// ══════════════════════════════════════════════════════════════════
+//  ÜMİTTV WATCH PARTY SİSTEMİ — Firebase Realtime Database
+//  - Gerçek kişiler oda açabilir / koda katılabilir
+//  - Canlı sohbet + emoji reaksiyon (gerçek zamanlı)
+//  - İçerik yorumu + 1-5 yıldız puanlama
+//  - D-Pad / Remote control desteği
+// ══════════════════════════════════════════════════════════════════
+(function() {
+'use strict';
+
+// ── FIREBASE CONFIG ──
+const FB_URL = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
+
+// Firebase REST API yardımcıları
+async function fbGet(path) {
+  try {
+    const r = await fetch(FB_URL + path + '.json');
+    if(!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function fbSet(path, data) {
+  try {
+    const r = await fetch(FB_URL + path + '.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+async function fbPush(path, data) {
+  try {
+    const r = await fetch(FB_URL + path + '.json', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) return null;
+    const d = await r.json();
+    return d.name; // Firebase push key
+  } catch(e) { return null; }
+}
+async function fbDelete(path) {
+  try {
+    await fetch(FB_URL + path + '.json', { method: 'DELETE' });
+  } catch(e) {}
+}
+async function fbUpdate(path, data) {
+  try {
+    const r = await fetch(FB_URL + path + '.json', {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+// Firebase SSE (Server-Sent Events) ile gerçek zamanlı dinleme
+function fbListen(path, callback) {
+  const url = FB_URL + path + '.json';
+  const es = new EventSource(url);
+  es.addEventListener('put', (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      callback(d.path, d.data);
+    } catch(err) {}
+  });
+  es.addEventListener('patch', (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      callback(d.path, d.data, true);
+    } catch(err) {}
+  });
+  es.onerror = () => {};
+  return es; // .close() ile durdurulabilir
+}
+
+// ── DURUM ──
+const WP = {
+  inRoom: false,
+  isHost: false,
+  myNick: '',
+  myColor: '',
+  myId: '',       // Firebase'deki kendi üye ID'm
+  roomCode: '',
+  roomName: '',
+  contentTitle: '',
+  members: [],
+  chatMessages: [],
+  comments: [],
+  ratings: [],
+  myStars: 0,
+  currentTab: 'chat',
+  listeners: [],  // EventSource listesi — odadan çıkınca kapatılır
+  lastChatKeys: new Set(),
+  lastCommentKeys: new Set(),
+  presenceTimer: null
+};
+// Global erişim için expose et — player toolbar butonu buna ihtiyaç duyuyor
+window._WP = WP;
+
+const WP_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4'];
+
+// ── YARDIMCI ──
+function wpGenCode() {
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)];
+  return s;
+}
+function wpRandColor() { return WP_COLORS[Math.floor(Math.random()*WP_COLORS.length)]; }
+function wpInitials(n) { return (n||'?')[0].toUpperCase(); }
+function wpNow() { return new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
+
+function wpShowToast(msg) {
+  if(typeof showToast === 'function') { showToast(msg); return; }
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',
+    background:'#1a1a28',border:'1px solid rgba(255,215,0,0.4)',borderRadius:'30px',
+    padding:'9px 22px',fontSize:'14px',fontWeight:'700',color:'#FFD700',
+    zIndex:'999999',pointerEvents:'none',fontFamily:'Rajdhani,sans-serif',
+    boxShadow:'0 8px 30px rgba(0,0,0,0.5)'
+  });
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+// ── AKTİF ODALAR LİSTESİ (Firebase'den) ──
+async function wpLoadRooms() {
+  const list = document.getElementById('wpRoomsList');
+  list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:10px;">Odalar yükleniyor...</div>';
+  const rooms = await fbGet('/rooms');
+  list.innerHTML = '';
+  if(!rooms) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:10px;">Henüz aktif oda yok. İlk odayı sen aç! 🎉</div>';
+    return;
+  }
+  const now = Date.now();
+  const savedNick = (() => { try { return localStorage.getItem('wp_nick') || ''; } catch(e) { return ''; } })();
+  let count = 0;
+  const sorted = Object.entries(rooms).sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
+  sorted.forEach(([code, r]) => {
+    const memberCount = r.members ? Object.values(r.members).filter(m => m && m.online === true && m.lastSeen && (now - m.lastSeen) < 60000).length : 0;
+    const lockIcon = r.password ? ' 🔒' : '';
+    const isOld = r.createdAt && (now - r.createdAt) > 2*60*60*1000;
+    const isMyRoom = savedNick && r.hostNick && r.hostNick === savedNick;
+    const el = document.createElement('div');
+    el.className = 'wp-room-item wp-remote-focus';
+    el.tabIndex = 0;
+    if(isOld) el.style.opacity = '0.4';
+    el.innerHTML = `
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:${isOld?'rgba(255,255,255,0.4)':'#e8e8f0'};">
+          ${r.roomName||'Oda'}${lockIcon}
+          ${isOld ? '<span style="font-size:10px;color:#e74c3c;font-weight:700;margin-left:4px;">ESKİ</span>' : ''}
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);">${r.contentTitle||'Ümit TV'} • ${code}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        ${!isOld ? `<div style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.25);border-radius:14px;padding:3px 10px;font-size:12px;color:#FFD700;font-weight:700;">${memberCount} 👁</div>` : ''}
+        ${isMyRoom ? `<button class="wp-del-btn" data-code="${code}" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.5);border-radius:8px;width:32px;height:32px;color:#e74c3c;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;" title="Odayı Sil">🗑</button>` : ''}
+      </div>
+    `;
+    const delBtn = el.querySelector('.wp-del-btn');
+    if(delBtn) {
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        delBtn.textContent = '⏳';
+        delBtn.disabled = true;
+        const c = delBtn.getAttribute('data-code');
+        await fbDelete('/rooms/' + c);
+        wpShowToast('🗑 Oda silindi: ' + c);
+        wpLoadRooms();
+      });
     }
+    el.addEventListener('click', (e) => {
+      if(e.target.closest('.wp-del-btn')) return;
+      if(isOld) { wpShowToast('⚠ Bu oda süresi dolmuş'); return; }
+      document.getElementById('wpJoinCodeInput').value = code;
+      if(r.password) {
+        const pwInput = document.getElementById('wpJoinPasswordInput');
+        pwInput.style.display = 'block';
+        pwInput.focus();
+        wpShowToast('🔒 Şifreli oda — şifreyi gir ve KATIL\'a bas');
+      } else {
+        wpJoinRoom();
+      }
+    });
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ document.getElementById('wpJoinCodeInput').value=code; wpJoinRoom(); }});
+    list.appendChild(el);
+    count++;
+  });
+  if(count === 0) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:10px;">Henüz aktif oda yok. İlk odayı sen aç! 🎉</div>';
+  }
+}
+
+
+// ── LOBBY ──
+window.openWatchPartyLobby = function() {
+  // Eğer zaten odadaysak (panel gizlendi ama odadan çıkmadık) → paneli yeniden aç
+  if(WP.inRoom && WP.roomCode) {
+    document.getElementById('wpPanel').classList.add('wp-open');
+    document.body.classList.add('wp-panel-open');
+    document.getElementById('wpActiveDot').style.display = 'block';
+    wpShowToast('💬 Panel yeniden açıldı');
+    return;
+  }
+  document.getElementById('wpLobbyModal').classList.add('wp-open');
+  wpLoadRooms();
+  // Kaydedilmiş nick'i otomatik doldur
+  try {
+    const savedNick = localStorage.getItem('wp_nick');
+    if(savedNick) {
+      const nickInput = document.getElementById('wpNickInput');
+      if(nickInput && !nickInput.value) nickInput.value = savedNick;
+    }
+  } catch(e) {}
+  setTimeout(()=>{ document.getElementById('wpNickInput').focus(); }, 100);
+};
+function closeWpLobby_internal() {
+  document.getElementById('wpLobbyModal').classList.remove('wp-open');
+}
+
+function closeWpLobby() {
+  document.getElementById('wpLobbyModal').classList.remove('wp-open');
+}
+window.closeWpLobby = closeWpLobby;
+window.closeWpLobby_internal = closeWpLobby_internal;
+
+// ── ODA OLUŞTUR ──
+window.wpCreateRoom = async function() {
+  const nick = document.getElementById('wpNickInput').value.trim();
+  if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
+  const btn = document.getElementById('wpCreateBtn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Oluşturuluyor...'; }
+
+  const code = wpGenCode();
+  const contentTitle = wpGetCurrentContent();
+  const roomName = nick + "'in Odası";
+  const passwordRaw = (document.getElementById('wpRoomPasswordInput').value || '').trim();
+  const password = passwordRaw || null; // null = şifresiz
+
+  // Firebase'e oda yaz
+  const ok = await fbSet('/rooms/' + code, {
+    roomName,
+    contentTitle,
+    createdAt: Date.now(),
+    hostNick: nick,
+    password: password  // null veya string
+  });
+
+  if(btn) { btn.disabled = false; btn.textContent = '✦ ODA AÇ'; }
+
+  if(!ok) { wpShowToast('⚠ Bağlantı hatası, tekrar dene'); return; }
+
+  // Şifre varsa toast ile göster
+  if(password) wpShowToast('🔒 Şifreli oda: ' + code);
+
+  await wpEnterRoom({ nick, code, roomName, contentTitle, isHost: true });
+};
+
+// ── ODA KATIL ──
+window.wpJoinRoom = async function() {
+  const nick = document.getElementById('wpNickInput').value.trim();
+  // Kodu büyük harfe çevir ve boşlukları temizle
+  const code = (document.getElementById('wpJoinCodeInput').value || '').trim().toUpperCase().replace(/\s/g,'');
+  if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
+  if(code.length < 4) { wpShowToast('⚠ En az 4 haneli oda kodu gir'); return; }
+
+  const btn = document.getElementById('wpJoinBtn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Kontrol ediliyor...'; }
+
+  // Oda var mı kontrol et
+  let room = null;
+  try {
+    room = await fbGet('/rooms/' + code);
+  } catch(e) {}
+
+  if(!room) {
+    if(btn) { btn.disabled = false; btn.textContent = '→ KATIL'; }
+    wpShowToast('❌ Oda bulunamadı: ' + code);
+    return;
+  }
+
+  // Şifre kontrolü
+  if(room.password) {
+    // Şifre alanını göster
+    const pwInput = document.getElementById('wpJoinPasswordInput');
+    pwInput.style.display = 'block';
+    const enteredPw = (pwInput.value || '').trim();
+    if(!enteredPw) {
+      if(btn) { btn.disabled = false; btn.textContent = '→ KATIL'; }
+      pwInput.placeholder = '🔒 Bu oda şifreli! Şifreyi gir';
+      pwInput.style.borderColor = '#e74c3c';
+      pwInput.focus();
+      wpShowToast('🔒 Bu oda şifreli — şifreyi gir ve tekrar KATIL\'a bas');
+      return;
+    }
+    if(enteredPw !== room.password) {
+      if(btn) { btn.disabled = false; btn.textContent = '→ KATIL'; }
+      pwInput.style.borderColor = '#e74c3c';
+      wpShowToast('❌ Şifre yanlış!');
+      return;
+    }
+  }
+
+  if(btn) { btn.disabled = false; btn.textContent = '→ KATIL'; }
+
+  await wpEnterRoom({
+    nick, code,
+    roomName: room.roomName || 'Oda',
+    contentTitle: room.contentTitle || wpGetCurrentContent(),
+    isHost: false
+  });
+};
+
+// Mevcut oynatılan içerik adını al
+function wpGetCurrentContent() {
+  const vodTitle = document.getElementById('vodModalTitle');
+  if(vodTitle && vodTitle.textContent.trim()) return vodTitle.textContent.trim();
+  const activeTitle = document.getElementById('activeCategoryTitle');
+  if(activeTitle && activeTitle.textContent.trim() && activeTitle.textContent !== 'Tüm Kanallar') return activeTitle.textContent.trim();
+  return 'Ümit TV';
+}
+
+// ── ODA GİRİŞİ (Firebase) ──
+async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
+  WP.inRoom = true;
+  WP.isHost = isHost;
+  WP.myNick = nick;
+  WP.myColor = wpRandColor();
+  WP.roomCode = code;
+  WP.roomName = roomName;
+  WP.contentTitle = contentTitle;
+  WP.members = [];
+  WP.chatMessages = [];
+  WP.comments = [];
+  WP.ratings = [];
+  WP.myStars = 0;
+  WP.lastChatKeys = new Set();
+  WP.lastCommentKeys = new Set();
+
+  // Nick'i kaydet — bir dahaki açılışta otomatik doldurulsun
+  try { localStorage.setItem('wp_nick', nick); } catch(e) {}
+  // Oda bilgisini kaydet — "tekrar bağlan" için
+  try { localStorage.setItem('wp_last_room', JSON.stringify({ code, roomName, contentTitle, nick, isHost })); } catch(e) {}
+
+  // Firebase'e kendimi üye olarak yaz
+  const memberId = await fbPush('/rooms/' + code + '/members', {
+    nick,
+    color: WP.myColor,
+    isHost,
+    joinedAt: Date.now(),
+    online: true
+  });
+  WP.myId = memberId;
+
+  // UI güncelle
+  document.getElementById('wpPanelCode').textContent = code;
+  wpUpdateStars(0);
+  wpClearAll();
+  wpAddSystemMsg('🎉 Watch Party başladı! İzleniyor: ' + contentTitle);
+
+  // Panel aç
+  closeWpLobby();
+  document.getElementById('wpPanel').classList.add('wp-open');
+  document.body.classList.add('wp-panel-open');
+  document.getElementById('wpActiveDot').style.display = 'block';
+  wpSwitchTab('chat');
+  setTimeout(()=>{ document.getElementById('wpChatInput').focus(); }, 300);
+
+  // Dinleyicileri başlat
+  wpStartListeners(code);
+
+  // Player toolbar Chat butonunu göster
+  setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 300);
+
+  // Presence (online kalma) — 30sn'de bir güncelle
+  WP.presenceTimer = setInterval(async () => {
+    if(!WP.inRoom || !WP.myId) return;
+    await fbUpdate('/rooms/' + code + '/members/' + WP.myId, { online: true, lastSeen: Date.now() });
+  }, 30000);
+
+  // Sayfadan ayrılınca kendini offline yap
+  window.addEventListener('beforeunload', wpLeaveCleanup);
+
+  // Host ise oda suresi uyarisini baslat
+  if(isHost) {
+    fbGet('/rooms/' + code).then(function(room) {
+      wpStartExpiryWarning(code, (room && room.createdAt) || Date.now());
+    });
+  }
+}
+
+// ── FİREBASE DİNLEYİCİLERİ ──
+function wpStartListeners(code) {
+  // Tüm eski listener'ları kapat
+  WP.listeners.forEach(es => es.close());
+  WP.listeners = [];
+
+  // ── Üyeler dinle ──
+  // Firebase SSE: ilk 'put' path='/' → data = tüm nesne
+  //               sonraki 'put' path='/KEY' → data = tek üye nesnesi
+  const membersEs = new EventSource(FB_URL + '/rooms/' + code + '/members.json');
+  membersEs.addEventListener('put', (e) => {
+    if(!WP.inRoom) return;
+    try {
+      const d = JSON.parse(e.data);
+      const now = Date.now();
+      WP.members = [];
+      document.getElementById('wpMembersList').innerHTML = '';
+      let membersObj = null;
+      if(d.path === '/') {
+        // İlk yükleme — tüm üyeler geldi
+        membersObj = d.data;
+      } else {
+        // Tek üye eklendi: path = '/KEY'
+        const key = d.path.replace('/', '');
+        if(d.data) membersObj = { [key]: d.data };
+      }
+      if(!membersObj) { wpUpdateMeta(); return; }
+      // Önce Firebase'den güncel listeyi çek (PUT bazen eski snapshot verir)
+      fbGet('/rooms/' + code + '/members').then(members => {
+        if(!members) return;
+        WP.members = [];
+        document.getElementById('wpMembersList').innerHTML = '';
+        Object.entries(members).forEach(([id, m]) => {
+          if(!m || !m.nick) return;
+          const isOnline = m.online !== false;
+          if(!isOnline) return;
+          const isMe = id === WP.myId;
+          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe });
+        });
+        wpUpdateMeta();
+      });
+    } catch(err) {}
+  });
+  membersEs.onerror = () => {};
+  WP.listeners.push(membersEs);
+
+  // ── Chat dinle ──
+  const chatEs = new EventSource(FB_URL + '/rooms/' + code + '/chat.json');
+  chatEs.addEventListener('put', (e) => {
+    if(!WP.inRoom) return;
+    try {
+      const d = JSON.parse(e.data);
+      if(d.path === '/') {
+        // İlk yükleme — geçmiş mesajlar (odaya yeni katıldık, atla)
+        if(d.data && typeof d.data === 'object') {
+          Object.keys(d.data).forEach(k => WP.lastChatKeys.add(k));
+        }
+        return;
+      }
+      // Yeni tek mesaj: path = '/KEY'
+      const key = d.path.replace('/', '');
+      if(WP.lastChatKeys.has(key)) return;
+      WP.lastChatKeys.add(key);
+      const msg = d.data;
+      if(!msg || typeof msg !== 'object') return;
+      if(msg.isSystem) {
+        wpAddSystemMsg(msg.text || '');
+      } else {
+        wpAddChatMsg({
+          nick: msg.nick || '?',
+          color: msg.color || '#FFD700',
+          text: msg.text || '',
+          isReaction: !!msg.isReaction
+        });
+      }
+    } catch(err) {}
+  });
+  chatEs.onerror = () => {};
+  WP.listeners.push(chatEs);
+
+  // ── Yorumlar dinle ──
+  const commentsEs = new EventSource(FB_URL + '/rooms/' + code + '/comments.json');
+  commentsEs.addEventListener('put', (e) => {
+    if(!WP.inRoom) return;
+    try {
+      const d = JSON.parse(e.data);
+      if(d.path === '/') {
+        // Geçmiş yorumlar — sadece key'leri işaretle, gösterme
+        if(d.data && typeof d.data === 'object') {
+          Object.keys(d.data).forEach(k => WP.lastCommentKeys.add(k));
+        }
+        return;
+      }
+      const key = d.path.replace('/', '');
+      if(WP.lastCommentKeys.has(key)) return;
+      WP.lastCommentKeys.add(key);
+      const c = d.data;
+      if(!c || typeof c !== 'object') return;
+      wpAddComment({
+        nick: c.nick || '?',
+        color: c.color || '#FFD700',
+        text: c.text || '',
+        stars: c.stars || 0,
+        isSystem: !!c.isSystem
+      });
+      if(c.stars) {
+        WP.ratings.push({ nick: c.nick, stars: c.stars });
+        wpUpdateAvgRating();
+      }
+    } catch(err) {}
+  });
+  commentsEs.onerror = () => {};
+  WP.listeners.push(commentsEs);
+
+  // ── nowPlaying dinleyicisi ──
+  wpStartNowPlayingListener(code);
+}
+
+// ── TEMİZLEME (odadan çıkış) ──
+function wpLeaveCleanup() {
+  if(!WP.myId || !WP.roomCode) return;
+  // Beacon API ile senkron gönder (sayfa kapanırken)
+  const url = FB_URL + '/rooms/' + WP.roomCode + '/members/' + WP.myId + '.json';
+  navigator.sendBeacon(url, JSON.stringify({ online: false, leftAt: Date.now() }));
+}
+
+function wpUpdateMeta() {
+  document.getElementById('wpPanelMeta').textContent = WP.members.length+' üye • ● Bağlı';
+}
+
+// ODA SURESI UZATMA / SILME UYARISI
+function wpStartExpiryWarning(code, createdAt) {
+  if(WP._expiryWarningTimer) clearTimeout(WP._expiryWarningTimer);
+  const TWO_HOURS = 2 * 60 * 60 * 1000;
+  const WARN_BEFORE = 5 * 60 * 1000;
+  const elapsed = Date.now() - createdAt;
+  const remaining = TWO_HOURS - elapsed;
+  if(remaining <= 0) return;
+  const warnDelay = Math.max(0, remaining - WARN_BEFORE);
+  WP._expiryWarningTimer = setTimeout(async () => {
+    if(!WP.inRoom || !WP.isHost) return;
+    const extend = await wpShowExpiryDialog();
+    if(extend) {
+      const newCreatedAt = Date.now();
+      const ok = await fbUpdate('/rooms/' + code, { createdAt: newCreatedAt });
+      if(ok) {
+        wpShowToast('✅ Oda 2 saat uzatıldı!');
+        wpStartExpiryWarning(code, newCreatedAt);
+      } else {
+        wpShowToast('⚠ Uzatma hatası, tekrar dene');
+      }
+    } else {
+      await fbDelete('/rooms/' + code);
+      wpShowToast('🗑 Oda silindi');
+      if(typeof closeWpPanel === 'function') closeWpPanel();
+    }
+  }, warnDelay);
+}
+
+function wpShowExpiryDialog() {
+  return new Promise(function(resolve) {
+    var existing = document.getElementById('wpExpiryDialog');
+    if(existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'wpExpiryDialog';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
+    var html = '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,215,0,0.35);border-radius:18px;padding:28px 28px 22px;max-width:320px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.7);text-align:center;">';
+    html += '<div style="font-size:32px;margin-bottom:10px;">⏰</div>';
+    html += '<div style="font-family:Orbitron,sans-serif;font-size:14px;font-weight:700;color:#FFD700;letter-spacing:1px;margin-bottom:8px;">ODA SÜRESİ DOLUYOR</div>';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:20px;">Odanın 2 saatlik süresi <strong style=\"color:#e74c3c;\">5 dakika içinde</strong> dolacak.<br>Ne yapmak istiyorsun?</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:10px;">';
+    html += '<button id="wpExpExtend" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:10px;padding:12px;font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;color:#000;cursor:pointer;letter-spacing:1px;">⏱ +2 SAAT UZAT</button>';
+    html += '<button id="wpExpDelete" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.5);border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:#e74c3c;cursor:pointer;">🗑 ODAYI SİL</button>';
+    html += '</div></div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById('wpExpExtend').addEventListener('click', function() { overlay.remove(); resolve(true); });
+    document.getElementById('wpExpDelete').addEventListener('click', function() { overlay.remove(); resolve(false); });
+  });
+}
+
+function wpClearAll() {
+  document.getElementById('wpChatMessages').innerHTML = '';
+  document.getElementById('wpCommentsList').innerHTML = '';
+  document.getElementById('wpMembersList').innerHTML = '';
+}
+
+// ── PANEL GİZLE (odada kal, sadece paneli kapat) ──
+window.hideWpPanel = function() {
+  const panel = document.getElementById('wpPanel');
+  panel.classList.remove('wp-open');
+  panel.classList.remove('wp-video-mode');
+  document.body.classList.remove('wp-panel-open');
+  // Aktif nokta KALSIN (hâlâ odadayız)
+  document.getElementById('wpActiveDot').style.display = 'block';
+  const playerView = document.getElementById('playerView');
+  if(playerView) playerView.style.right = '';
+  wpShowToast('💬 Panel gizlendi — hâlâ odasındasın');
+  setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 100);
+};
+
+// ── ODADAN TAM ÇIKIŞ ──
+window.closeWpPanel = function() {
+  const panel = document.getElementById('wpPanel');
+  panel.classList.remove('wp-open');
+  panel.classList.remove('wp-video-mode');
+  document.body.classList.remove('wp-panel-open');
+  document.getElementById('wpActiveDot').style.display = 'none';
+  const playerView = document.getElementById('playerView');
+  if(playerView) playerView.style.right = '';
+  // Firebase listener'ları kapat
+  WP.listeners.forEach(es => es.close());
+  WP.listeners = [];
+  if(WP.presenceTimer) clearInterval(WP.presenceTimer);
+  wpLeaveCleanup();
+  WP.inRoom = false;
+  WP.myId = '';
+  WP.roomCode = '';
+  // localStorage temizle
+  try { localStorage.removeItem('wp_last_room'); } catch(e) {}
+  wpShowToast('👋 Odadan çıkıldı');
+  setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 100);
+};
+
+// ── KOD KOPYALA ──
+window.wpCopyCode = function() {
+  navigator.clipboard.writeText(WP.roomCode).catch(()=>{});
+  wpShowToast('📋 Kod kopyalandı: '+WP.roomCode);
+};
+
+// ── TAB ──
+window.wpSwitchTab = function(tab) {
+  WP.currentTab = tab;
+  ['chat','comments','members'].forEach(t => {
+    const id = 'wpTabContent' + t.charAt(0).toUpperCase() + t.slice(1);
+    const content = document.getElementById(id);
+    const btn = document.getElementById('wpTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if(!content || !btn) return;
+    const isActive = t === tab;
+    // display yerine class kullan — CSS override sorununu önler
+    if(isActive) {
+      content.classList.add('wp-tab-active');
+      content.style.display = 'flex';
+    } else {
+      content.classList.remove('wp-tab-active');
+      content.style.display = 'none';
+    }
+    btn.style.borderBottomColor = isActive ? '#FFD700' : 'transparent';
+    btn.style.color = isActive ? '#FFD700' : 'rgba(255,255,255,0.4)';
+  });
+  // Aktif tab chat ise scroll en alta
+  if(tab === 'chat') {
+    const msgs = document.getElementById('wpChatMessages');
+    if(msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  }
+};
+
+// ── ÜYELER ──
+function wpAddMember({ nick, color, isHost, isMe }) {
+  if(WP.members.find(m=>m.nick===nick)) return;
+  WP.members.push({ nick, color, isHost, isMe });
+  wpRenderMembers();
+}
+
+function wpRenderMembers() {
+  const list = document.getElementById('wpMembersList');
+  list.innerHTML = '';
+  WP.members.forEach(m => {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid transparent;';
+    el.className = 'wp-remote-focus';
+    el.tabIndex = 0;
+    el.innerHTML = `
+      <div style="width:34px;height:34px;border-radius:50%;background:${m.color}22;border:1px solid ${m.color}44;color:${m.color};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">${wpInitials(m.nick)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:${m.isMe?'#a29bfe':m.isHost?'#FFD700':'#e8e8f0'}">${m.nick}${m.isMe?' (Sen)':''}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);">${m.isHost?'Ev Sahibi':'İzleyici'}</div>
+      </div>
+      <div style="width:7px;height:7px;border-radius:50%;background:#2ed573;box-shadow:0 0 5px #2ed573;flex-shrink:0;"></div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── SOHBET ──
+window.wpSendChat = async function() {
+  const input = document.getElementById('wpChatInput');
+  const text = input.value.trim();
+  if(!text||!WP.inRoom) return;
+  input.value = '';
+  // Firebase'e yaz — listener geri getirir
+  await fbPush('/rooms/' + WP.roomCode + '/chat', {
+    nick: WP.myNick,
+    color: WP.myColor,
+    text,
+    isReaction: false,
+    ts: Date.now()
+  });
+};
+
+function wpAddChatMsg({ nick, color, text, isReaction }) {
+  const stream = document.getElementById('wpChatMessages');
+  const el = document.createElement('div');
+  el.style.cssText = 'animation:wpMsgIn 0.2s ease;line-height:1.4;';
+  if(isReaction) {
+    el.style.cssText += 'text-align:center;font-size:22px;';
+    el.textContent = text;
+  } else {
+    el.innerHTML = `<span style="font-size:12px;font-weight:700;color:${color}">${nick}:</span> <span style="font-size:13px;color:#e8e8f0;">${text}</span>`;
+  }
+  stream.appendChild(el);
+  stream.scrollTop = stream.scrollHeight;
+  WP.chatMessages.push({nick,text});
+  // Panel gizliyse player toolbar'da kırmızı nokta göster
+  const panel = document.getElementById('wpPanel');
+  if(!panel || !panel.classList.contains('wp-open')) {
+    const dot = document.getElementById('wpPlayerUnreadDot');
+    if(dot) dot.style.display = 'block';
+  }
+}
+
+function wpAddSystemMsg(text) {
+  const stream = document.getElementById('wpChatMessages');
+  const el = document.createElement('div');
+  el.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.35);text-align:center;padding:2px 0;font-style:italic;';
+  el.textContent = text;
+  stream.appendChild(el);
+  stream.scrollTop = stream.scrollHeight;
+}
+
+// ── REAKSİYON ──
+window.wpSendReaction = async function(emoji) {
+  if(!WP.inRoom) return;
+  // Firebase'e yaz
+  await fbPush('/rooms/' + WP.roomCode + '/chat', {
+    nick: WP.myNick,
+    color: WP.myColor,
+    text: emoji,
+    isReaction: true,
+    ts: Date.now()
+  });
+  // Floating reaksiyon (sadece kendi için anında)
+  const el = document.createElement('div');
+  el.className = 'wp-reaction-float';
+  el.textContent = emoji;
+  const x = 100 + Math.random()*200;
+  const y = window.innerHeight - 100 - Math.random()*100;
+  el.style.left = x+'px';
+  el.style.top = y+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1300);
+};
+
+// ── YORUM + PUANLAMA ──
+window.wpSetStar = function(val) {
+  WP.myStars = val;
+  wpUpdateStars(val);
+};
+
+function wpUpdateStars(val) {
+  document.querySelectorAll('.wp-star').forEach((s,i)=>{
+    s.style.color = i<val ? '#FFD700' : 'rgba(255,255,255,0.2)';
+    s.style.textShadow = i<val ? '0 0 8px rgba(255,215,0,0.5)' : 'none';
+  });
+}
+
+window.wpSendComment = async function() {
+  if(!WP.inRoom) return;
+  const input = document.getElementById('wpCommentInput');
+  const text = input.value.trim();
+  if(!text&&!WP.myStars) { wpShowToast('⚠ Yorum yaz veya yıldız ver'); return; }
+  
+  const commentData = {
+    nick: WP.myNick,
+    color: WP.myColor,
+    text: text || '★'.repeat(WP.myStars),
+    stars: WP.myStars,
+    ts: Date.now()
+  };
+  // Firebase'e yaz
+  await fbPush('/rooms/' + WP.roomCode + '/comments', commentData);
+  if(WP.myStars) {
+    // Chat'e de yaz
+    await fbPush('/rooms/' + WP.roomCode + '/chat', {
+      nick: WP.myNick, color: WP.myColor,
+      text: '⭐'.repeat(WP.myStars) + ' puan verdi',
+      ts: Date.now()
+    });
+  }
+  input.value = '';
+  WP.myStars = 0;
+  wpUpdateStars(0);
+};
+
+function wpAddComment({ nick, color, text, stars, isSystem }) {
+  const list = document.getElementById('wpCommentsList');
+  const el = document.createElement('div');
+  el.style.cssText = 'display:flex;gap:8px;animation:wpMsgIn 0.2s ease;';
+  const starsHtml = stars ? `<div style="color:#FFD700;font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
+  el.innerHTML = `
+    <div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">${wpInitials(nick)}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-size:12px;font-weight:700;color:${isSystem?'#FFD700':color}">${nick}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.25);">${wpNow()}</span>
+      </div>
+      <div style="font-size:13px;color:${isSystem?'rgba(255,255,255,0.5)':'#e8e8f0'};line-height:1.4;${isSystem?'font-style:italic;':''}">${text}</div>
+      ${starsHtml}
+    </div>
+  `;
+  list.appendChild(el);
+  list.scrollTop = list.scrollHeight;
+  WP.comments.push({nick,text,stars});
+}
+
+function wpUpdateAvgRating() {
+  const r = WP.ratings;
+  if(!r.length) { document.getElementById('wpAvgRating').textContent='—'; return; }
+  const avg = (r.reduce((s,x)=>s+x.stars,0)/r.length).toFixed(1);
+  document.getElementById('wpAvgRating').textContent = avg+'/5 ⭐';
+}
+
+// ── MEVCUT OYNATICIYLA ENTEGRASYON ──
+// Kanal çalındığında party odasına bildir + URL'i de yaz
+const _origPlayChannel = window.playChannel;
+if(typeof _origPlayChannel === 'function') {
+  window.playChannel = async function(channel) {
+    if(WP.inRoom && channel && channel.name) {
+      WP.contentTitle = channel.name;
+      // Kanal objesini Firebase'e yaz — karşı taraf aynı kanalı açar
+      await fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+        type: 'channel',
+        name: channel.name,
+        url: channel.url || channel.streamUrl || '',
+        channelData: JSON.stringify(channel),
+        ts: Date.now(),
+        startedBy: WP.myNick
+      });
+      await fbPush('/rooms/' + WP.roomCode + '/chat', {
+        nick: 'Sistem', color: '#FFD700',
+        text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + channel.name,
+        isSystem: true, ts: Date.now()
+      });
+    }
+    return _origPlayChannel.apply(this, arguments);
+  };
+}
+
+// VOD/film seçildiğinde Firebase'e yaz
+const _origOpenVod = window.openVodModal;
+if(typeof _origOpenVod === 'function') {
+  window.openVodModal = function(vod) {
+    const r = _origOpenVod.apply(this, arguments);
+    if(WP.inRoom && vod) {
+      setTimeout(async () => {
+        const t = document.getElementById('vodModalTitle');
+        const title = (t && t.textContent.trim()) ? t.textContent.trim() : (vod.name || vod.title || '');
+        if(!title) return;
+        WP.contentTitle = title;
+        await fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+          type: 'vod',
+          name: title,
+          vodData: JSON.stringify(vod),
+          ts: Date.now(),
+          startedBy: WP.myNick
+        });
+        await fbPush('/rooms/' + WP.roomCode + '/chat', {
+          nick: 'Sistem', color: '#FFD700',
+          text: '🎬 ' + WP.myNick + ' seçti: ' + title,
+          isSystem: true, ts: Date.now()
+        });
+      }, 300);
+    }
+    return r;
+  };
+}
+
+// ── nowPlaying dinleyicisi — karşı tarafta içerik aç ──
+function wpStartNowPlayingListener(code) {
+  const es = new EventSource(FB_URL + '/rooms/' + code + '/nowPlaying.json');
+  let lastTs = 0;
+  es.addEventListener('put', (e) => {
+    if(!WP.inRoom) return;
+    try {
+      const d = JSON.parse(e.data);
+      const np = d.data;
+      if(!np || !np.ts) return;
+      if(np.ts <= lastTs) return;
+      if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
+      lastTs = np.ts;
+
+      wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
+      wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
+
+      if(np.type === 'channel' && np.channelData) {
+        try {
+          const ch = JSON.parse(np.channelData);
+          if(typeof _origPlayChannel === 'function') {
+            setTimeout(() => _origPlayChannel(ch), 500);
+          }
+        } catch(err) {}
+      } else if(np.type === 'vod' && np.vodData) {
+        try {
+          const vod = JSON.parse(np.vodData);
+          if(typeof _origOpenVod === 'function') {
+            setTimeout(() => _origOpenVod(vod), 500);
+          }
+        } catch(err) {}
+      }
+    } catch(err) {}
+  });
+  es.onerror = () => {};
+  WP.listeners.push(es);
+}
+
+// ── VİDEO MODU: player açılınca paneli overlay'e al ──
+function wpDetectVideoMode() {
+  const panel = document.getElementById('wpPanel');
+  if(!panel) return;
+
+  // playerView veya video elemanı görünür mü?
+  const playerView = document.getElementById('playerView');
+  const video = document.getElementById('videoPlayer') || document.querySelector('video');
+  const isVideoVisible = (playerView && playerView.offsetParent !== null && playerView.style.display !== 'none')
+                      || (video && !video.paused && video.readyState > 1);
+
+  if(isVideoVisible) {
+    panel.classList.add('wp-video-mode');
+    // contain:strict olan elemanların üstüne çıkmak için panel'i body'e taşı
+    if(panel.parentElement !== document.body) {
+      document.body.appendChild(panel);
+    }
+    // playerView'ı sağa kaydır
+    if(playerView) playerView.style.right = '320px';
+  } else {
+    panel.classList.remove('wp-video-mode');
+    if(playerView) playerView.style.right = '';
+  }
+}
+
+// Video durumu değişince kontrol et
+setInterval(() => {
+  if(WP.inRoom) wpDetectVideoMode();
+}, 1000);
+
+// ── D-PAD ENTEGRASYONU ──
+// Mevcut keydown listener'a ek: WP panel açıkken wp-remote-focus sınıfı olanlar arasında gezin
+document.addEventListener('keydown', function(e) {
+  const panelOpen = document.getElementById('wpPanel').classList.contains('wp-open');
+  const lobbyOpen = document.getElementById('wpLobbyModal').classList.contains('wp-open');
+  if(!panelOpen && !lobbyOpen) return;
+
+  const active = document.activeElement;
+  const isText = active && (active.classList.contains('wp-text-input') || active.tagName==='INPUT' || active.tagName==='TEXTAREA');
+
+  if(isText) {
+    // Input içindeyken sadece Enter ve Escape yakala
+    if(e.key==='Escape') { active.blur(); e.preventDefault(); }
+    return;
+  }
+
+  const container = panelOpen ? document.getElementById('wpPanel') : document.getElementById('wpLobbyModal');
+  const focusables = [...container.querySelectorAll('.wp-remote-focus:not([disabled])')].filter(el=>{
+    const r=el.getBoundingClientRect(); return r.width>0&&r.height>0;
+  });
+
+  if(!focusables.length) return;
+  const cur = focusables.indexOf(active);
+
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') {
+    e.preventDefault(); e.stopPropagation();
+    const next = cur<focusables.length-1?cur+1:0;
+    focusables[next].focus();
+  } else if(e.key==='ArrowUp'||e.key==='ArrowLeft') {
+    e.preventDefault(); e.stopPropagation();
+    const prev = cur>0?cur-1:focusables.length-1;
+    focusables[prev].focus();
+  } else if(e.key==='Enter'||e.key===' ') {
+    if(active && active.classList.contains('wp-remote-focus') && active.tagName!=='INPUT' && active.tagName!=='TEXTAREA') {
+      e.preventDefault(); active.click();
+    }
+  } else if(e.key==='Escape') {
+    e.preventDefault();
+    if(lobbyOpen) closeWpLobby();
+    else if(panelOpen) closeWpPanel();
+  }
 });
+
+
+// ── PLAYER TOOLBAR — WP CHAT BUTONU ──
+window.wpUpdatePlayerBtn = function() {
+  const WP = window._WP;
+  const btn = document.getElementById('btnWPChat');
+  if(!btn || !WP) return;
+  if(WP.inRoom) {
+    btn.classList.add('wp-in-room');
+    const icon = document.getElementById('wpPlayerBtnIcon');
+    const panel = document.getElementById('wpPanel');
+    if(icon) icon.textContent = (panel && panel.classList.contains('wp-open')) ? 'forum' : 'chat_bubble';
+  } else {
+    btn.classList.remove('wp-in-room');
+    const icon = document.getElementById('wpPlayerBtnIcon');
+    if(icon) icon.textContent = 'chat_bubble';
+    const dot = document.getElementById('wpPlayerUnreadDot');
+    if(dot) dot.style.display = 'none';
+  }
+};
+
+window.wpToggleFromPlayer = function() {
+  const WP = window._WP;
+  const panel = document.getElementById('wpPanel');
+  if(!WP || !WP.inRoom) {
+    if(typeof openWatchPartyLobby === 'function') openWatchPartyLobby();
+    return;
+  }
+  if(panel && panel.classList.contains('wp-open')) {
+    if(typeof hideWpPanel === 'function') hideWpPanel();
+  } else {
+    panel.classList.add('wp-open');
+    document.body.classList.add('wp-panel-open');
+    document.getElementById('wpActiveDot').style.display = 'block';
+    if(typeof wpSwitchTab === 'function') wpSwitchTab('chat');
+    const dot = document.getElementById('wpPlayerUnreadDot');
+    if(dot) dot.style.display = 'none';
+    setTimeout(() => {
+      const input = document.getElementById('wpChatInput');
+      if(input) input.focus();
+    }, 200);
+    window.wpUpdatePlayerBtn();
+  }
+};
+
+})(); // Watch Party IIFE sonu
 </script>
 
 <script id="umittv-vpn-realcheck">

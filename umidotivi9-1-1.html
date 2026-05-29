@@ -676,6 +676,10 @@
     outline-offset: 1px !important;
     box-shadow: none !important;
 }
+.header-btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
 .header-btn.remote-focused {
     background: rgba(255,215,0,0.18) !important;
 }
@@ -10242,12 +10246,19 @@ function dpadFocus(el) {
     document.querySelectorAll('.dpad-focused').forEach(e => e.classList.remove('dpad-focused'));
     if (!el) return;
     el.classList.add('dpad-focused');
-    
 
     try { el.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
-    
 
-    try { el.focus({ preventScroll: true }); } catch(e) {}
+    /* Input/textarea'ya focus() ÇAĞIRMA — klavye açılır.
+       Sadece butonlara gerçek focus ver (erişilebilirlik için). */
+    if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
+        try { el.focus({ preventScroll: true }); } catch(e) {}
+    } else {
+        /* Input odaklanmışsa blur yap — klavyeyi kapat */
+        if (document.activeElement && document.activeElement !== document.body) {
+            try { document.activeElement.blur(); } catch(e) {}
+        }
+    }
 }
 
 function dpadMove(dir) {
@@ -11432,38 +11443,38 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         <div class="header-controls">
             
-            <button class="header-btn search-btn" id="btnSearch" onclick="openSearchModal()" title="Arama">
+            <button class="header-btn search-btn" id="btnSearch" onclick="openSearchModal()" title="Arama" tabindex="-1">
                 <span class="material-symbols-outlined">search</span>
             </button>
             
-            <button class="header-btn sleep-mode-btn" id="btnSleepMode" onclick="openSleepModeModal()">
+            <button class="header-btn sleep-mode-btn" id="btnSleepMode" onclick="openSleepModeModal()" tabindex="-1">
                 <span class="material-symbols-outlined">bedtime</span>
             </button>
             
-            <button class="header-btn grid-scale-btn" id="btnGridCols" onclick="cycleGridCols()" title="Sütun Sayısı Değiştir">
+            <button class="header-btn grid-scale-btn" id="btnGridCols" onclick="cycleGridCols()" title="Sütun Sayısı Değiştir" tabindex="-1">
                 <span class="material-symbols-outlined">grid_view</span>
                 <span id="gridColsLabel" style="font-size:13px;font-weight:700;line-height:1;min-width:14px;text-align:center;">4</span>
             </button>
-            <button class="header-btn theme-btn" id="btnTheme" onclick="openThemeModal()">
+            <button class="header-btn theme-btn" id="btnTheme" onclick="openThemeModal()" tabindex="-1">
                 <span class="material-symbols-outlined">palette</span>
             </button>
-            <button class="header-btn" id="btnSettings" onclick="openSettingsModal()">
+            <button class="header-btn" id="btnSettings" onclick="openSettingsModal()" tabindex="-1">
                 <span class="material-symbols-outlined">settings</span>
             </button>
-            <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()">
+            <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()" tabindex="-1">
                 <span class="material-symbols-outlined">refresh</span>
             </button>
-            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()">
+            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()" tabindex="-1">
                 <span class="material-symbols-outlined">touch_app</span>
             </button>
-            <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)">
+            <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)" tabindex="-1">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/m3u.svg" alt="Add M3U" class="svg-icon">
             </button>
-            <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
+            <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;" tabindex="-1">
                 <span class="material-symbols-outlined">groups</span>
                 <span id="wpActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#ff4757;border-radius:50%;border:1px solid #000;animation:wpDotBlink 1s infinite;"></span>
             </button>
-            <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;">
+            <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;" tabindex="-1">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
 
@@ -26314,39 +26325,27 @@ notificationStyle.textContent = `
 `;
 document.head.appendChild(notificationStyle);
 
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    
-
-    await loadAllChannels();
-    
-    
-
+// refreshBtn listener — loadAllChannels ana init'te (loadConfig→processConfig) çağrılıyor,
+// burada tekrar çağırmak login/config tamamlanmadan boş parse'a yol açıyordu.
+document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('refreshBtn')?.addEventListener('click', async () => {
         showNotification('Kanallar yenileniyor...', 'info');
         await loadAllChannels(true);
         showNotification('Kanallar yenilendi!', 'success');
     });
-    
-    
 
     document.addEventListener('click', (e) => {
         const favBtn = e.target.closest('.favorite-btn');
         if (favBtn) {
             const channelId = favBtn.dataset.channelId;
-            const channel = state.channels.find(c => 
+            const channel = state.channels.find(c =>
                 c.id === channelId || c.url === channelId
             );
-            
             if (channel) {
                 toggleFavorite(channel);
-                
-                
-
-                favBtn.innerHTML = channel.isFavorite ? 
-                    '<i class="fas fa-star"></i>' : 
+                favBtn.innerHTML = channel.isFavorite ?
+                    '<i class="fas fa-star"></i>' :
                     '<i class="far fa-star"></i>';
-                
                 favBtn.classList.toggle('active', channel.isFavorite);
             }
         }

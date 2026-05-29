@@ -12,267 +12,411 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=optional" rel="stylesheet" media="print" onload="this.media='all'">
     <style>
      
+    /* ═══════════════════════════════════════════
+       ÜMİT TV — MODERN TV LOGIN OVERLAY v2.0
+       Tam kumanda navigasyon desteği
+       ═══════════════════════════════════════════ */
+
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800;900&family=Share+Tech+Mono&display=swap');
+
     #loginOverlay {
         position: fixed;
         inset: 0;
         z-index: 999999;
-        background: #0a0a0f;
+        background: #04060d;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: 'Exo 2', 'Rajdhani', sans-serif;
         overflow: hidden;
     }
     #loginOverlay.hidden { display: none !important; }
 
-     
+    /* — Sinematik arka plan — */
     .login-bg {
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(rgba(255,215,0,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px);
-        background-size: 60px 60px;
-        animation: none;  
+            radial-gradient(ellipse 80% 60% at 20% 50%, rgba(255,180,0,0.07) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 80% 30%, rgba(255,100,0,0.05) 0%, transparent 55%),
+            radial-gradient(ellipse 100% 100% at 50% 100%, rgba(255,215,0,0.04) 0%, transparent 50%);
     }
-    
 
-     
-    .login-orb {
+    /* Izgara desen */
+    .login-bg::before {
+        content: '';
         position: absolute;
-        border-radius: 50%;
-        filter: none;  
-        pointer-events: none;
-        display: none;  
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,215,0,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,215,0,0.025) 1px, transparent 1px);
+        background-size: 80px 80px;
+        mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
+        -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
     }
-    .login-orb-1 {
-        width: 500px; height: 500px;
-        background: radial-gradient(circle, rgba(255,215,0,0.12) 0%, transparent 70%);
-        top: -100px; left: -100px;
-        animation: none;  
-    }
-    .login-orb-2 {
-        width: 400px; height: 400px;
-        background: radial-gradient(circle, rgba(255,100,0,0.08) 0%, transparent 70%);
-        bottom: -80px; right: -80px;
-        animation: none;  
-    }
-    
-    
 
-     
+    /* Köşe dekor çizgileri */
+    .login-bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(135deg, rgba(255,215,0,0.06) 0%, transparent 30%),
+            linear-gradient(315deg, rgba(255,140,0,0.04) 0%, transparent 30%);
+    }
+
+    .login-orb { display: none; }
+    .login-orb-1 { display: none; }
+    .login-orb-2 { display: none; }
+
+    /* — Ana kart — */
     .login-card {
         position: relative;
         z-index: 2;
-        width: 480px;
-        max-width: 94vw;
-        background: linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(20,20,28,0.98) 100%);
-        border: 1px solid rgba(255,215,0,0.2);
-        border-radius: 24px;
-        padding: 40px 40px 36px;
+        width: 520px;
+        max-width: 96vw;
+        max-height: 96vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+        background: linear-gradient(160deg,
+            rgba(14,16,26,0.97) 0%,
+            rgba(10,12,20,0.99) 50%,
+            rgba(16,14,24,0.97) 100%);
+        border: 1px solid rgba(255,215,0,0.18);
+        border-top: 1px solid rgba(255,215,0,0.35);
+        border-radius: 20px;
+        padding: 36px 40px 32px;
         box-shadow:
-            0 0 0 1px rgba(255,215,0,0.05),
-            0 30px 80px rgba(0,0,0,0.6),
-            inset 0 1px 0 rgba(255,255,255,0.05);
-        animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
-        touch-action: manipulation;
-        -webkit-overflow-scrolling: touch;
+            0 0 0 1px rgba(255,215,0,0.06),
+            0 0 80px rgba(255,170,0,0.08),
+            0 40px 100px rgba(0,0,0,0.8),
+            inset 0 1px 0 rgba(255,255,255,0.06),
+            inset 0 -1px 0 rgba(255,215,0,0.04);
+        animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
     }
-    @keyframes cardIn {
-        from { opacity:0; transform:translateY(30px) scale(0.96); }
-        to { opacity:1; transform:translateY(0) scale(1); }
+    .login-card::-webkit-scrollbar { display: none; }
+
+    /* Kart üst köşe dekorasyon */
+    .login-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255,215,0,0.6) 30%,
+            rgba(255,200,50,0.9) 50%,
+            rgba(255,215,0,0.6) 70%,
+            transparent 100%);
+        border-radius: 20px 20px 0 0;
     }
 
-     
+    /* Kart iç ışıma */
+    .login-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%; transform: translateX(-50%);
+        width: 60%;
+        height: 150px;
+        background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.06) 0%, transparent 70%);
+        pointer-events: none;
+        border-radius: 0 0 50% 50%;
+    }
+
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(24px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* — Logo alanı — */
     .login-logo-wrap {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 32px;
+        margin-bottom: 28px;
+        position: relative;
     }
-    .login-logo-img {
-        width: 70px;
-        height: 70px;
-        object-fit: contain;
-        filter: none;  
-        animation: none;  
+
+    /* Logo halkası */
+    .login-logo-wrap::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        width: 100px; height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,215,0,0.12) 0%, transparent 70%);
+        animation: logoPulse 3s ease-in-out infinite;
     }
+
     @keyframes logoPulse {
-        0%,100% { filter: drop-shadow(0 0 20px rgba(255,215,0,0.5)); }
-        50% { filter: drop-shadow(0 0 35px rgba(255,215,0,0.9)); }
+        0%,100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.15); opacity: 1; }
     }
+
+    .login-logo-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+        filter: drop-shadow(0 0 16px rgba(255,215,0,0.5));
+    }
+
     .login-title {
         font-family: 'Orbitron', sans-serif;
-        font-size: 22px;
+        font-size: 26px;
         font-weight: 900;
         color: #FFD700;
-        letter-spacing: 3px;
-        margin-top: 12px;
-        text-shadow: 0 0 20px rgba(255,215,0,0.4);
+        letter-spacing: 5px;
+        margin-top: 14px;
+        background: linear-gradient(135deg, #FFE55C 0%, #FFD700 50%, #E8A000 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: drop-shadow(0 2px 8px rgba(255,215,0,0.3));
     }
+
     .login-subtitle {
-        font-size: 13px;
-        color: rgba(255,255,255,0.4);
-        letter-spacing: 1px;
-        margin-top: 4px;
+        font-size: 11px;
+        font-family: 'Share Tech Mono', monospace;
+        color: rgba(255,215,0,0.45);
+        letter-spacing: 2px;
+        margin-top: 6px;
+        text-transform: uppercase;
     }
 
-     
+    /* — Adım göstergesi (progress dots) — */
+    .login-progress-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+    .login-progress-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s;
+    }
+    .login-progress-dot.active {
+        background: #FFD700;
+        border-color: #FFD700;
+        box-shadow: 0 0 8px rgba(255,215,0,0.6);
+        transform: scale(1.3);
+    }
+    .login-progress-dot.done {
+        background: rgba(255,215,0,0.4);
+        border-color: rgba(255,215,0,0.4);
+    }
+
+    /* — Adımlar — */
     .login-step { display: none; }
-    .login-step.active { display: block; animation: stepIn 0.3s ease both; }
+    .login-step.active {
+        display: block;
+        animation: stepIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
+    }
     @keyframes stepIn {
-        from { opacity:0; transform:translateX(10px); }
-        to { opacity:1; transform:translateX(0); }
+        from { opacity: 0; transform: translateX(12px); }
+        to   { opacity: 1; transform: translateX(0); }
     }
 
-     
+    /* — Adım başlık — */
     .step-header {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         margin-bottom: 20px;
     }
     .step-number {
-        width: 28px; height: 28px;
-        background: rgba(255,215,0,0.15);
-        border: 1px solid rgba(255,215,0,0.4);
-        border-radius: 50%;
+        width: 32px; height: 32px;
+        background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,180,0,0.1));
+        border: 1.5px solid rgba(255,215,0,0.5);
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-family: 'Orbitron', sans-serif;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
         color: #FFD700;
         flex-shrink: 0;
+        box-shadow: 0 0 12px rgba(255,215,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
     }
     .step-title-text {
-        font-size: 16px;
-        font-weight: 600;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
         color: #fff;
         letter-spacing: 0.5px;
     }
 
-     
+    /* Ayraç çizgisi */
+    .step-header::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(255,215,0,0.2), transparent);
+    }
+
+    /* — Bilgi kutusu — */
     .login-info-box {
-        background: rgba(255,215,0,0.06);
-        border: 1px solid rgba(255,215,0,0.15);
-        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(255,180,0,0.03) 100%);
+        border: 1px solid rgba(255,215,0,0.14);
+        border-left: 3px solid rgba(255,215,0,0.5);
+        border-radius: 10px;
         padding: 14px 16px;
         margin-bottom: 20px;
         font-size: 13px;
-        color: rgba(255,255,255,0.7);
-        line-height: 1.6;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.7;
     }
-    .login-info-box strong { color: #FFD700; }
+    .login-info-box strong { color: #FFD700; font-weight: 700; }
     .login-info-box code {
-        background: rgba(255,215,0,0.12);
+        background: rgba(255,215,0,0.1);
         color: #FFD700;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-family: monospace;
+        padding: 2px 8px;
+        border-radius: 5px;
+        font-family: 'Share Tech Mono', monospace;
         font-size: 12px;
+        border: 1px solid rgba(255,215,0,0.2);
     }
 
-     
+    /* — Form alanları — */
     .login-field {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
     .login-label {
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        color: rgba(255,255,255,0.5);
-        letter-spacing: 1.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 2px;
         text-transform: uppercase;
         margin-bottom: 8px;
+        font-family: 'Share Tech Mono', monospace;
     }
+    .login-label::before {
+        content: '';
+        width: 3px; height: 3px;
+        background: rgba(255,215,0,0.6);
+        border-radius: 50%;
+    }
+
     .login-input {
         width: 100%;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 14px 16px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 15px 18px;
         font-size: 18px;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: 'Exo 2', 'Rajdhani', sans-serif;
         font-weight: 600;
         color: #fff;
         outline: none;
-        transition: all 0.2s;
+        transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
         box-sizing: border-box;
         -webkit-appearance: none;
         -webkit-user-select: text !important;
         user-select: text !important;
-         
         pointer-events: auto !important;
         touch-action: manipulation;
         -webkit-text-fill-color: #fff;
         caret-color: #FFD700;
+        position: relative;
     }
     .login-input:focus, .login-input.focused {
-        border-color: rgba(255,215,0,0.5);
-        background: rgba(255,215,0,0.08);
-        box-shadow: 0 0 0 3px rgba(255,215,0,0.15), 0 0 20px rgba(255,215,0,0.1);
+        border-color: rgba(255,215,0,0.55);
+        background: rgba(255,215,0,0.05);
+        box-shadow:
+            0 0 0 3px rgba(255,215,0,0.12),
+            0 0 20px rgba(255,215,0,0.08),
+            inset 0 1px 0 rgba(255,255,255,0.05);
         -webkit-text-fill-color: #fff;
     }
-    .login-input::placeholder { color: rgba(255,255,255,0.3); -webkit-text-fill-color: rgba(255,255,255,0.3); }
-    .login-input[type="password"] { letter-spacing: 4px; }
+    .login-input::placeholder {
+        color: rgba(255,255,255,0.2);
+        -webkit-text-fill-color: rgba(255,255,255,0.2);
+        font-weight: 400;
+    }
+    .login-input[type="password"] { letter-spacing: 5px; }
 
-     
+    /* — Ana buton — */
     .login-btn {
         width: 100%;
-        padding: 15px;
-        background: linear-gradient(135deg, #FFD700, #F1A800);
+        padding: 16px;
+        background: linear-gradient(135deg, #FFD700 0%, #F0A800 60%, #E09500 100%);
         border: none;
         border-radius: 12px;
         font-family: 'Orbitron', sans-serif;
         font-size: 13px;
         font-weight: 700;
         color: #000;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         cursor: pointer;
-        transition: background 0.15s, box-shadow 0.15s;
         position: relative;
         overflow: hidden;
-        margin-top: 4px;
-        transform: none !important;
-        -webkit-transform: none !important;
+        margin-top: 6px;
+        box-shadow:
+            0 4px 20px rgba(255,180,0,0.25),
+            0 1px 0 rgba(255,255,255,0.2) inset,
+            0 -2px 0 rgba(0,0,0,0.2) inset;
+        transition: box-shadow 0.15s, filter 0.15s;
     }
+
+    /* Parlama efekti */
+    .login-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.4s;
+    }
+
+    .login-btn:hover::before { left: 150%; }
+
     .login-btn:hover, .login-btn.focused, .login-btn.dpad-focused {
-        transform: none;
-        box-shadow: 0 0 0 3px rgba(255,215,0,0.6), 0 0 20px rgba(255,215,0,0.2);
-        background: linear-gradient(135deg, #ffe033, #FFD700);
+        filter: brightness(1.08);
+        box-shadow:
+            0 0 0 3px rgba(255,215,0,0.5),
+            0 0 30px rgba(255,200,0,0.3),
+            0 4px 20px rgba(255,180,0,0.35);
     }
-    .login-btn:active { transform: none; }
+    .login-btn:active { filter: brightness(0.95); }
     .login-btn:disabled {
-        background: rgba(255,215,0,0.3);
+        background: rgba(255,215,0,0.25);
         color: rgba(0,0,0,0.5);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
     }
+    /* — İkincil buton — */
     .login-btn-secondary {
         width: 100%;
-        padding: 12px;
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 12px;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 14px;
+        padding: 13px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        font-family: 'Exo 2', 'Rajdhani', sans-serif;
+        font-size: 13px;
         font-weight: 600;
-        color: rgba(255,255,255,0.5);
+        color: rgba(255,255,255,0.45);
         cursor: pointer;
         margin-top: 10px;
+        letter-spacing: 0.5px;
         transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s;
-        transform: none !important;
-        -webkit-transform: none !important;
     }
     .login-btn-secondary:hover, .login-btn-secondary.focused, .login-btn-secondary.dpad-focused {
-        border-color: rgba(255,215,0,0.5);
-        color: rgba(255,215,0,0.9);
-        background: rgba(255,215,0,0.08);
-        transform: none;
-        box-shadow: 0 0 0 2px rgba(255,215,0,0.4);
+        border-color: rgba(255,215,0,0.4);
+        color: rgba(255,215,0,0.85);
+        background: rgba(255,215,0,0.06);
+        box-shadow: 0 0 0 2px rgba(255,215,0,0.3);
     }
 
      
@@ -446,14 +590,16 @@
     }
     .ban-link a { color: #FFD700; text-decoration: none; font-weight: 600; }
     .login-focusable.dpad-focused {
-        outline: 3px solid rgba(255,215,0,0.9) !important;
-        outline-offset: 2px;
+        outline: 2.5px solid rgba(255,215,0,0.95) !important;
+        outline-offset: 3px !important;
+        box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 20px rgba(255,215,0,0.12) !important;
     }
      
     input.login-focusable.dpad-focused {
         border-color: rgba(255,215,0,0.7) !important;
-        background: rgba(255,215,0,0.1) !important;
-        box-shadow: 0 0 0 3px rgba(255,215,0,0.2) !important;
+        background: rgba(255,215,0,0.07) !important;
+        box-shadow: 0 0 0 3px rgba(255,215,0,0.18) !important;
+        outline: none !important;
     }
     </style>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -773,12 +919,190 @@ img {
     transition: outline-color 0ms, background-color 60ms linear !important;
 }
 
-/* Son İzlenenler kartları kumanda focus */
+/* ═══ SON İZLENENLER — MODERN TV TASARIMI ═══ */
+
+/* Bölüm başlığı */
+#recentChannelsContainer {
+    margin: 0 0 4px 0;
+    padding: 0;
+}
+
+.recent-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 2px;
+}
+
+.recent-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recent-section-title .recent-title-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, rgba(var(--accent-primary-rgb,255,215,0),0.18), rgba(var(--accent-primary-rgb,255,215,0),0.06));
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.recent-section-title .recent-title-icon .material-symbols-outlined {
+    font-size: 15px;
+    color: var(--accent-primary, #FFD700);
+}
+
+.recent-section-title .recent-title-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-primary, #FFD700);
+    letter-spacing: 0.5px;
+}
+
+.recent-section-title .recent-title-line {
+    width: 32px; height: 2px;
+    background: linear-gradient(90deg, rgba(var(--accent-primary-rgb,255,215,0),0.5), transparent);
+    border-radius: 2px;
+}
+
+/* Temizle butonu */
+#btnClearRecentChannels {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px !important;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: rgba(255,255,255,0.45) !important;
+    cursor: pointer;
+    transition: background 80ms, border-color 80ms, color 80ms, box-shadow 80ms !important;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+#btnClearRecentChannels .material-symbols-outlined {
+    font-size: 13px !important;
+    color: inherit !important;
+}
+#btnClearRecentChannels:hover {
+    background: rgba(231,76,60,0.12) !important;
+    border-color: rgba(231,76,60,0.4) !important;
+    color: #ff7070 !important;
+}
+
+/* Temizle butonu kumanda odağı */
+#btnClearRecentChannels.remote-focused,
+#btnClearRecentChannels:focus {
+    background: rgba(231,76,60,0.15) !important;
+    border-color: rgba(231,76,60,0.7) !important;
+    color: #ff8080 !important;
+    outline: 2px solid rgba(231,76,60,0.8) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(231,76,60,0.15), 0 0 16px rgba(231,76,60,0.2) !important;
+}
+
+/* Kart sarmalayıcı */
+#recentCardsScroll {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 4px 2px 12px 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+#recentCardsScroll::-webkit-scrollbar { display: none; }
+
+/* Kanal kartları */
+.recent-card {
+    flex-shrink: 0;
+    background: linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 8px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    transition: border-color 80ms, background 80ms !important;
+    overflow: hidden;
+}
+
+/* Kart üst parlama şeridi */
+.recent-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    border-radius: 12px 12px 0 0;
+}
+
+.recent-card:hover {
+    border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.05) !important;
+}
+
+/* Kumanda odağı */
 .recent-card.remote-focused {
     border-color: var(--accent-primary, #FFD700) !important;
-    outline: 2px solid rgba(255,215,0,0.4) !important;
-    background: rgba(255,215,0,0.08) !important;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.2) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.08) !important;
+    outline: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5) !important;
+    outline-offset: 2px !important;
+    box-shadow:
+        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),0.12),
+        0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.15) !important;
+}
+
+/* Badge: CANLI / VOD */
+.recent-badge {
+    position: absolute;
+    top: 5px; right: 5px;
+    font-size: 7px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
+.recent-badge.live {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #fff;
+    box-shadow: 0 0 6px rgba(231,76,60,0.4);
+}
+.recent-badge.vod {
+    background: linear-gradient(135deg, var(--accent-primary,#FFD700), #E09500);
+    color: #000;
+    box-shadow: 0 0 6px rgba(255,215,0,0.3);
+}
+
+/* Logo alanı */
+.recent-card-logo {
+    width: 38px; height: 38px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.3);
+}
+
+/* Kanal adı */
+.recent-card-name {
+    font-size: 9px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.3px;
 }
 
 /* Çıkış Modalı butonları remote focus */
@@ -2906,51 +3230,85 @@ body {
          
 .continue-card.remote-focused {
     transform: none !important;
-    border: 2px solid var(--accent-primary) !important;
-    box-shadow: none !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.28), 0 6px 24px rgba(0,0,0,0.55) !important;
     z-index: 100;
 }
 
 .continue-action-btn.remote-focused {
-    background: var(--accent-primary) !important;
+    background: var(--accent-primary, #FFD700) !important;
     color: #000 !important;
     transform: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.4) !important;
 }
 
- 
-#btnClearAllContinue.remote-focused {
-    background: #ff5555 !important;
-    color: white !important;
-    border-color: #fff !important;
+#btnClearAllContinue.remote-focused,
+.cw-clear-btn.remote-focused {
+    background: rgba(220,40,40,0.75) !important;
+    border-color: rgba(255,80,80,0.9) !important;
+    color: #fff !important;
     transform: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px rgba(220,40,40,0.35) !important;
 }
         
          
 .continue-card { 
-    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(241,196,15,0.04)); 
-    border-radius: 12px; 
-    padding: 10px; 
+    background: linear-gradient(
+        145deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.05) 0%,
+        rgba(12,12,20,0.95) 55%,
+        rgba(8,8,16,0.98) 100%
+    );
+    border-radius: 16px; 
+    padding: 0;
     margin-bottom: 0;  
-    border: 2px solid var(--accent-secondary); 
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.14); 
     position: relative; 
     cursor: pointer; 
     transition: none; 
     display: flex; 
     flex-direction: column; 
-    justify-content: space-between; 
-    min-width: 190px;  
-    max-width: 240px;  
-    height: 120px;  
-    max-height: 130px;
+    justify-content: flex-end;
+    min-width: 220px;  
+    max-width: 260px;  
+    height: 145px;  
+    max-height: 155px;
     overflow: hidden;
-    flex-shrink: 0;  
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+}
+.continue-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        var(--accent-primary, #FFD700) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.0) 100%
+    );
+    border-radius: 16px 0 0 16px;
+    opacity: 0.65;
+    z-index: 1;
+}
+.continue-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.35),
+        transparent
+    );
+    z-index: 1;
 }
 .continue-card:hover {
     transform: none;
-    border-color: var(--accent-primary);
-    box-shadow: none;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.38);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0), 0.15);
 }
         
         .continue-card-title { 
@@ -3001,61 +3359,67 @@ body {
         
 
  
-.clear-all-btn {
+.clear-all-btn,
+.cw-clear-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: rgba(220,50,50,0.35);
-    border: 2px solid rgba(255,80,80,0.7);
-    color: #ff7070;
+    gap: 5px;
+    padding: 6px 13px 6px 10px;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.06);
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.18);
+    color: rgba(var(--accent-primary-rgb,255,215,0), 0.7);
     border-radius: 20px;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     cursor: pointer;
+    white-space: nowrap;
     transition: background-color 80ms linear, border-color 80ms linear !important;
     box-shadow: none !important;
 }
 .clear-all-btn:hover,
-.clear-all-btn.remote-focused,
-.clear-all-btn:focus {
-    background: rgba(255,60,60,0.55);
-    border-color: rgba(255,100,100,0.95);
-    color: #fff;
+.cw-clear-btn:hover,
+.clear-all-btn:focus,
+.cw-clear-btn:focus {
+    background: rgba(220,50,50,0.18);
+    border-color: rgba(255,80,80,0.4);
+    color: #ff7070;
     box-shadow: none;
     transform: none !important;
     outline: none;
 }
-.clear-all-btn:active {
+.clear-all-btn:active,
+.cw-clear-btn:active {
+    background: rgba(220,50,50,0.28);
     transform: none;
 }
 .continue-options-btn { 
     position: absolute; 
-    top: 12px; 
-    right: 12px; 
-    color: var(--accent-primary); 
-    font-size: 18px; 
+    top: 10px; 
+    right: 10px; 
+    color: rgba(255,255,255,0.7); 
+    font-size: 14px; 
     cursor: pointer; 
-    background: rgba(0,0,0,0.5); 
+    background: rgba(0,0,0,0.6); 
     border-radius: 50%; 
-    width: 32px; 
-    height: 32px; 
+    width: 26px; 
+    height: 26px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     z-index: 5;
-    border: 1px solid rgba(255,215,0,0.3);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(4px);
 }
 
 .continue-options-btn:hover,
 .continue-options-btn.remote-focused,
 .continue-options-btn:focus {
-    background: rgba(255,80,80,0.35);
-    border-color: rgba(255,100,100,0.7);
-    color: #ff4444;
+    background: rgba(220,50,50,0.75);
+    border-color: rgba(255,80,80,0.9);
+    color: #fff;
     transform: none !important;
-    box-shadow: none;
+    box-shadow: 0 0 0 2px rgba(255,80,80,0.35);
     outline: none;
 }
  
@@ -3076,193 +3440,283 @@ body {
     z-index: 10;
 }
 /* ═══ VOD HERO SLIDER CSS ═══ */
+/* ═══ VOD HERO SLIDER — Modern Netflix/Disney+ Style ═══ */
 #vodHeroSlider {
     user-select:none; -webkit-user-select:none;
     position:relative; width:100%;
-    margin-bottom:12px;
-    border-radius:14px;
+    margin-bottom:16px;
+    border-radius:18px;
     overflow:hidden;
-    background:#0a0a10;
-    box-shadow: none !important;
+    background:#070710;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 2px 0 rgba(255,215,0,0.08);
+}
+#vodHeroSlider.dpad-active {
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.7), 0 8px 40px rgba(0,0,0,0.7);
 }
 #vodHeroTrack {
-    position:relative; width:100%; height:200px; overflow:hidden; border-radius:14px;
+    position:relative; width:100%; height:260px; overflow:hidden;
 }
-@media (max-width:600px) { #vodHeroTrack { height:150px !important; } }
+@media (max-width:700px) { #vodHeroTrack { height:200px !important; } }
+@media (max-width:480px) { #vodHeroTrack { height:170px !important; } }
 
 /* ── Slides ── */
 .vhs-slide {
     position:absolute; inset:0;
     opacity:0;
-    transition: none !important;
+    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1) !important;
     cursor:pointer;
     will-change: opacity;
 }
 .vhs-slide.active { opacity:1; z-index:2; }
 .vhs-slide.prev   { opacity:0; z-index:1; }
+
 .vhs-bg-img {
     width:100%; height:100%;
     object-fit:cover;
     display:block;
-    border-radius:18px;
-    filter: brightness(0.82) !important;
+    filter: brightness(0.72) saturate(1.1);
+    transform: scale(1.04);
+    transition: transform 6s ease-out;
 }
+.vhs-slide.active .vhs-bg-img { transform: scale(1.0); }
 
-/* ── Gradient layers ── */
+/* ── Gradient overlays — sinematik ── */
 .vhs-grad-side {
     position:absolute; inset:0;
-    background:linear-gradient(to right, rgba(6,6,16,0.92) 0%, rgba(6,6,16,0.55) 38%, transparent 65%);
-    pointer-events:none;
+    background:linear-gradient(to right,
+        rgba(4,4,14,0.97) 0%,
+        rgba(4,4,14,0.7) 32%,
+        rgba(4,4,14,0.2) 58%,
+        transparent 80%);
+    pointer-events:none; z-index:3;
 }
 .vhs-grad-bottom {
     position:absolute; inset:0;
-    background:linear-gradient(to top, rgba(6,6,16,0.85) 0%, transparent 50%);
-    pointer-events:none;
+    background:linear-gradient(to top,
+        rgba(4,4,14,1) 0%,
+        rgba(4,4,14,0.6) 30%,
+        transparent 60%);
+    pointer-events:none; z-index:3;
+}
+/* Üst karartma (başlık yazısı için) */
+.vhs-grad-top {
+    position:absolute; top:0; left:0; right:0; height:80px;
+    background:linear-gradient(to bottom, rgba(4,4,14,0.5) 0%, transparent 100%);
+    pointer-events:none; z-index:3;
 }
 
-/* ── Info panel (left side) ── */
+/* ── Info panel ── */
 .vhs-info {
     position:absolute; left:0; top:0; bottom:0;
-    width:55%; display:flex; flex-direction:column;
+    width:62%; display:flex; flex-direction:column;
     justify-content:flex-end;
-    padding:14px 18px 14px 16px;
-    z-index:5; pointer-events:none;
+    padding:20px 20px 22px 20px;
+    z-index:6; pointer-events:none;
 }
-@media (max-width:600px) {
-    .vhs-info { width:80%; padding:8px 10px; }
+@media (max-width:700px) { .vhs-info { width:82%; padding:12px 12px 16px 14px; } }
+@media (max-width:480px) { .vhs-info { width:90%; padding:8px 8px 12px 10px; } }
+
+/* Slide-up animasyonu info için */
+.vhs-slide.active .vhs-info { animation: vhsInfoIn 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes vhsInfoIn {
+    from { transform:translateY(18px); opacity:0; }
+    to   { transform:translateY(0);    opacity:1; }
 }
-.vhs-badge-row { display:flex; align-items:center; gap:6px; margin-bottom:8px; pointer-events:none; }
+
+.vhs-badge-row {
+    display:flex; align-items:center; gap:6px; margin-bottom:10px; pointer-events:none; flex-wrap:wrap;
+}
 .vhs-badge {
-    font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
-    padding:3px 9px; border-radius:5px;
-    background:linear-gradient(135deg,#FFD700,#F1A800);
+    font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
+    padding:3px 10px; border-radius:5px;
+    background:linear-gradient(135deg,#FFD700,#E8A000);
     color:#000;
-    box-shadow: none !important;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.3);
 }
-.vhs-badge.series { background:linear-gradient(135deg,#7c5fe6,#a78bfa); color:#fff; box-shadow: none !important; }
+.vhs-badge.series {
+    background:linear-gradient(135deg,#7c5fe6,#a78bfa);
+    color:#fff;
+    box-shadow: 0 2px 8px rgba(124,95,230,0.3);
+}
 .vhs-rating-badge {
     font-size:9px; font-weight:700;
-    padding:3px 8px; border-radius:5px;
-    background:rgba(255,255,255,0.1);
-    border:1px solid rgba(255,255,255,0.15);
-    color:rgba(255,255,255,0.8);
+    padding:3px 9px; border-radius:5px;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.2);
+    color:rgba(255,255,255,0.9);
     display:flex; align-items:center; gap:3px;
+    backdrop-filter:blur(4px);
 }
+
+/* Kanal numarası / sıra badge */
+.vhs-rank-badge {
+    font-size:9px; font-weight:900; letter-spacing:1px;
+    padding:3px 8px; border-radius:5px;
+    background:rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.1);
+    color:rgba(255,255,255,0.5);
+}
+
 .vhs-title {
-    font-family:'Rajdhani',sans-serif;
-    font-size:16px; font-weight:700; line-height:1.2;
+    font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:22px; font-weight:800; line-height:1.15;
     color:#fff;
-    text-shadow:0 2px 12px rgba(0,0,0,0.7);
-    margin-bottom:4px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.8);
+    margin-bottom:6px;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    letter-spacing:0.3px;
 }
-@media (max-width:600px) { .vhs-title { font-size:13px; } }
+@media (max-width:700px) { .vhs-title { font-size:16px; } }
+@media (max-width:480px) { .vhs-title { font-size:13px; margin-bottom:4px; } }
+
 .vhs-overview {
-    font-size:10px; color:rgba(255,255,255,0.6); line-height:1.4;
+    font-size:11px; color:rgba(255,255,255,0.65); line-height:1.5;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    margin-bottom:8px;
+    margin-bottom:12px;
+    text-shadow:0 1px 4px rgba(0,0,0,0.8);
 }
 @media (max-width:600px) { .vhs-overview { display:none; } }
 
 /* ── Buttons ── */
-.vhs-btns { display:flex; gap:6px; align-items:center; pointer-events:auto; flex-wrap:wrap; }
+.vhs-btns {
+    display:flex; gap:8px; align-items:center; pointer-events:auto; flex-wrap:wrap;
+}
 .vhs-btn-play {
-    display:flex; align-items:center; gap:4px;
-    background:linear-gradient(135deg,#FFD700,#F1A800);
-    color:#000; font-family:'Rajdhani',sans-serif;
-    font-size:11px; font-weight:800; letter-spacing:1px;
-    border:none; border-radius:8px;
-    padding:6px 13px; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+    background:linear-gradient(135deg,#FFD700 0%,#E8A000 100%);
+    color:#000; font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:12px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase;
+    border:none; border-radius:10px;
+    padding:8px 18px; cursor:pointer;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.35);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 }
-.vhs-btn-play:hover { background:linear-gradient(135deg,#ffe033,#FFD700); }
-.vhs-btn-play.remote-focused { outline:3px solid #fff !important; outline-offset:3px; }
-.vhs-btn-info.remote-focused { outline:3px solid #FFD700 !important; outline-offset:3px; background:rgba(255,255,255,0.22); }
-#vodHeroSlider.dpad-active { outline:2px solid rgba(255,215,0,0.5); outline-offset:-2px; border-radius:12px; }
+.vhs-btn-play:hover, .vhs-btn-play:focus {
+    background:linear-gradient(135deg,#ffe550,#FFD700);
+    box-shadow: 0 6px 24px rgba(255,215,0,0.5);
+    transform:translateY(-1px);
+}
+.vhs-btn-play.remote-focused {
+    outline:3px solid #fff !important; outline-offset:3px;
+    box-shadow: 0 0 0 5px rgba(255,255,255,0.25), 0 4px 16px rgba(255,215,0,0.5) !important;
+    transform:scale(1.05);
+}
 .vhs-btn-info {
-    display:flex; align-items:center; gap:4px;
-    background:rgba(255,255,255,0.12);
-    border:1px solid rgba(255,255,255,0.2);
-    color:#fff; font-family:'Rajdhani',sans-serif;
-    font-size:11px; font-weight:700;
-    border-radius:8px; padding:6px 12px; cursor:pointer;
+    display:flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,0.1);
+    border:1.5px solid rgba(255,255,255,0.25);
+    color:#fff; font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:12px; font-weight:700;
+    border-radius:10px; padding:8px 15px; cursor:pointer;
+    backdrop-filter:blur(8px);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
-.vhs-btn-info:hover { background:rgba(255,255,255,0.18); }
+.vhs-btn-info:hover, .vhs-btn-info:focus {
+    background:rgba(255,255,255,0.2);
+    border-color:rgba(255,255,255,0.4);
+    transform:translateY(-1px);
+}
+.vhs-btn-info.remote-focused {
+    outline:3px solid #FFD700 !important; outline-offset:3px;
+    background:rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 5px rgba(255,215,0,0.2) !important;
+    transform:scale(1.05);
+}
+@media (max-width:480px) {
+    .vhs-btn-play, .vhs-btn-info { font-size:10px; padding:6px 12px; border-radius:8px; }
+}
 
 /* ── Thumbnail strip (right) ── */
 .vhs-thumbs {
     position:absolute; right:0; top:0; bottom:0;
-    width:140px; display:flex; flex-direction:column;
-    justify-content:center; gap:4px;
-    padding:10px 10px 10px 0;
-    z-index:5;
+    width:150px; display:flex; flex-direction:column;
+    justify-content:center; gap:5px;
+    padding:12px 12px 12px 0;
+    z-index:6;
 }
-@media (max-width:700px) { .vhs-thumbs { display:none; } }
+@media (max-width:750px) { .vhs-thumbs { display:none; } }
 .vhs-thumb {
-    flex:1; border-radius:7px; overflow:hidden;
+    flex:1; border-radius:8px; overflow:hidden;
     cursor:pointer; position:relative;
     border:2px solid transparent;
-    opacity:0.55;
-    max-height:38px;
+    opacity:0.45;
+    max-height:44px;
+    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
 }
-.vhs-thumb.active { border-color:#FFD700; opacity:1; }
-.vhs-thumb:hover { opacity:0.85; }
+.vhs-thumb.active { border-color:#FFD700; opacity:1; transform:scaleX(1.04); }
+.vhs-thumb:hover  { opacity:0.8; }
 .vhs-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 .vhs-thumb-overlay {
     position:absolute; inset:0;
-    background:linear-gradient(to right,rgba(0,0,0,0.4),transparent);
+    background:linear-gradient(to right,rgba(0,0,0,0.5),transparent 50%);
     pointer-events:none;
+}
+/* Aktif thumb'da altın sol çizgi */
+.vhs-thumb.active::before {
+    content:'';
+    position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:linear-gradient(to bottom,#FFD700,#E8A000);
+    z-index:2;
 }
 
 /* ── Dots ── */
 #vodHeroDots {
-    position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
     display:flex; gap:5px; z-index:20; align-items:center;
 }
 .vhs-dot {
-    height:4px; border-radius:3px;
-    background:rgba(255,255,255,0.3);
+    height:3px; border-radius:3px;
+    background:rgba(255,255,255,0.25);
     cursor:pointer;
-    width:16px;
+    width:14px;
+    transition: background 0.3s, width 0.3s;
 }
-.vhs-dot.active { background:#FFD700; width:32px; }
+.vhs-dot.active { background:#FFD700; width:30px; }
 
 /* ── Nav arrows ── */
 .vhs-nav {
     position:absolute; top:50%; transform:translateY(-50%);
-    z-index:20; background:rgba(0,0,0,0.65);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:50%; width:28px; height:28px;
+    z-index:20;
+    background:rgba(0,0,0,0.55);
+    border:1.5px solid rgba(255,255,255,0.15);
+    border-radius:50%; width:32px; height:32px;
     display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:#fff; font-size:17px; line-height:1;
-    opacity:0.7;
+    cursor:pointer; color:#fff; font-size:20px; line-height:1;
+    opacity:0;
+    transition: opacity 0.2s, background 0.2s;
+    backdrop-filter:blur(6px);
 }
-.vhs-nav:hover { background:rgba(0,0,0,0.85); opacity:1; }
-#vodHeroPrev { left:8px; }
-#vodHeroNext { right:8px; }
-@media (max-width:600px) { .vhs-nav { width:24px; height:24px; font-size:14px; } }
+#vodHeroSlider:hover .vhs-nav { opacity:0.8; }
+.vhs-nav:hover { background:rgba(0,0,0,0.9); opacity:1 !important; }
+#vodHeroPrev { left:10px; }
+#vodHeroNext { right:10px; }
+@media (max-width:600px) {
+    .vhs-nav { width:26px; height:26px; font-size:15px; opacity:0.5 !important; }
+}
 
-/* ── Progress bar (auto timer indicator) ── */
+/* ── Progress bar ── */
 #vodHeroProgress {
     position:absolute; bottom:0; left:0;
     height:3px; width:0%;
-    background:linear-gradient(90deg,#FFD700,#F1A800);
+    background:linear-gradient(90deg,#FFD700,#E8A000);
     z-index:25;
     transition:width 0.1s linear;
-    border-radius:0 3px 3px 0;
+    border-radius:0 2px 2px 0;
+    box-shadow: 0 0 6px rgba(255,215,0,0.4);
 }
 /* ═══ /VOD HERO SLIDER CSS ═══ */
 
 #continueWatchingContainer {
     position: relative;
     z-index: 20;
-    margin-bottom: 12px;
-    background: var(--bg-panel);
-    border-radius: 12px;
-    padding: 10px 14px;
-    border: 1px solid var(--border-color);
-    max-height: 220px;
+    margin-bottom: 14px;
+    background: rgba(10,10,18,0.7);
+    border-radius: 16px;
+    padding: 14px 16px 10px;
+    border: 1px solid rgba(255,215,0,0.1);
+    max-height: 240px;
     overflow: hidden;
-}
+    backdrop-filter: blur(8px);}
 
 #continueWatchingContainer:empty {
     display: none !important;
@@ -3309,32 +3763,23 @@ body {
 
  
 #btnClearAllContinue {
-    background: rgba(255, 100, 100, 0.15);
-    border: 1px solid rgba(255, 100, 100, 0.3);
-    color: #ff5555;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 600;
-    font-size: 12px;
+    /* Stil .cw-clear-btn ve addContinueCardStyles'da yönetiliyor */
     transition: none;
-    white-space: nowrap;
 }
 
 #btnClearAllContinue:hover {
-    background: rgba(255, 100, 100, 0.25);
+    background: rgba(220,50,50,0.18);
+    border-color: rgba(255,80,80,0.4);
+    color: #ff7070;
     transform: none !important;
 }
 
 #btnClearAllContinue.remote-focused {
-    background: #ff5555;
-    color: white;
-    border-color: #ff5555;
+    background: rgba(220,40,40,0.75) !important;
+    border-color: rgba(255,80,80,0.9) !important;
+    color: #fff !important;
     transform: none !important;
-    box-shadow: 0 0 0 3px #ff5555;
+    box-shadow: 0 0 0 2px rgba(220,40,40,0.35) !important;
 }
          
          
@@ -6892,67 +7337,76 @@ body.sidebar-open {
                 width: 99vw;
                 max-width: 100%;
                 box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
             }
             .vod-modal-header {
                 padding: 6px 12px;
             }
             .vod-modal-body {
-                flex-direction: row !important;
-                overflow: hidden;
-                height: calc(98vh - 50px);
+                flex-direction: column !important;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                flex: 1;
+                min-height: 0;
             }
             .vod-poster-container {
-                flex: 0 0 auto;
-                width: 35% !important;
-                max-width: 220px;
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
+                flex-shrink: 0;
+                width: 100% !important;
+                max-width: 100%;
             }
             .vod-poster-wrapper {
                 width: 100% !important;
-                aspect-ratio: unset !important;
-                max-height: unset !important;
-                flex: 1;
-                border-bottom: none !important;
-                border-right: 2px solid var(--accent-primary);
+                aspect-ratio: 16/9 !important;
+                max-height: 160px !important;
+                flex: unset !important;
+                border-bottom: 2px solid var(--accent-primary) !important;
+                border-right: none !important;
             }
             .vod-poster {
+                width: 100% !important;
                 height: 100% !important;
                 object-fit: cover !important;
+                object-position: center top !important;
             }
             .vod-buttons-group {
                 padding: 6px 8px !important;
-                flex-direction: column !important;
+                flex-direction: row !important;
+                gap: 6px !important;
             }
             .vod-play-btn, .vod-continue-btn {
+                flex: 1 !important;
                 padding: 8px 6px !important;
                 font-size: 12px !important;
             }
             .vod-info-container {
-                flex: 1;
-                overflow-y: auto;
-                overflow-x: hidden;
-                padding: 8px 12px;
+                flex-shrink: 0;
+                overflow: visible;
+                padding: 8px 12px 12px;
                 -webkit-overflow-scrolling: touch;
-                min-height: 0;
             }
             .vod-title {
-                font-size: 16px !important;
-                margin-bottom: 6px !important;
+                font-size: 15px !important;
+                margin-bottom: 5px !important;
             }
             .vod-overview {
-                max-height: 80px !important;
-                font-size: 12px !important;
-                margin-bottom: 8px !important;
+                max-height: 60px !important;
+                font-size: 11px !important;
+                overflow-y: auto !important;
+                margin-bottom: 6px !important;
             }
             .vod-meta {
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
                 gap: 4px !important;
             }
             .vod-meta-item {
-                font-size: 11px !important;
+                font-size: 10px !important;
                 padding: 2px 7px !important;
+            }
+            .vod-episodes-container {
+                grid-template-columns: repeat(3, 1fr) !important;
+                max-height: 120px !important;
             }
         }
 
@@ -6965,50 +7419,56 @@ body.sidebar-open {
             }
             .vod-modal-content {
                 max-height: 98vh;
-                width: 99vw;
-                max-width: 100%;
+                width: min(860px, 99vw);
+                max-width: 860px;
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
             }
+            /* BODY: dikey — poster üstte, scroll altta */
             .vod-modal-body {
-                flex-direction: row !important;
-                overflow: hidden;
-                max-height: calc(98vh - 52px);
+                flex-direction: column !important;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
                 flex: 1;
+                min-height: 0;
+                max-height: calc(98vh - 52px);
             }
             .vod-poster-container {
-                flex: 0 0 auto;
-                width: 36% !important;
-                max-width: 300px;
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
+                flex-shrink: 0;
+                width: 100% !important;
+                max-width: 100%;
             }
             .vod-poster-wrapper {
                 width: 100% !important;
-                aspect-ratio: unset !important;
-                max-height: unset !important;
-                flex: 1;
-                border-bottom: none !important;
-                border-right: 2px solid var(--accent-primary);
+                aspect-ratio: 16 / 9 !important;
+                max-height: 280px !important;
+                flex: unset !important;
+                border-bottom: 2px solid var(--accent-primary) !important;
+                border-right: none !important;
             }
             .vod-poster {
+                width: 100% !important;
                 height: 100% !important;
                 object-fit: cover !important;
                 object-position: center top !important;
             }
-            .vod-info-container {
-                flex: 1;
-                overflow-y: auto;
-                padding: 10px 14px;
-                -webkit-overflow-scrolling: touch;
-            }
             .vod-buttons-group {
-                padding: 8px 10px !important;
                 flex-direction: row !important;
                 flex-wrap: wrap;
-                gap: 6px;
+                gap: 8px;
+                padding: 10px 14px !important;
+            }
+            .vod-play-btn, .vod-continue-btn {
+                flex: 1 !important;
+                padding: 12px 8px !important;
+            }
+            .vod-info-container {
+                flex-shrink: 0;
+                overflow: visible;
+                padding: 10px 14px 16px;
+                -webkit-overflow-scrolling: touch;
             }
             .vod-title {
                 font-size: 17px !important;
@@ -7016,13 +7476,12 @@ body.sidebar-open {
             }
             .vod-overview {
                 font-size: 12px !important;
-                max-height: 90px !important;
-                overflow-y: auto;
+                max-height: unset !important;
+                overflow-y: visible !important;
             }
             .vod-meta-item {
                 font-size: 11px !important;
             }
-             
             .cast-grid {
                 grid-template-columns: repeat(4, 1fr) !important;
             }
@@ -7032,7 +7491,6 @@ body.sidebar-open {
             .vod-cast-item {
                 min-width: 60px !important;
             }
-             
             .vod-seasons-container {
                 margin-top: 8px !important;
             }
@@ -7047,7 +7505,7 @@ body.sidebar-open {
             }
             .vod-episodes-container {
                 grid-template-columns: repeat(3, 1fr) !important;
-                max-height: 180px !important;
+                max-height: 220px !important;
                 min-height: 60px !important;
                 height: auto !important;
                 overflow-y: auto !important;
@@ -8930,6 +9388,172 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 }
 </style>
 
+<!-- ═══ ÜMİT TV — MODERN TV LOGIN v2.0 ═══ -->
+<style>
+/* Kumanda odak: altın halka + parlama */
+#loginOverlay .login-focusable.dpad-focused,
+#loginOverlay .login-focusable:focus {
+    outline: 2.5px solid #FFD700 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+}
+#loginOverlay input.login-focusable.dpad-focused,
+#loginOverlay input.login-focusable:focus {
+    border-color: rgba(255,215,0,0.65) !important;
+    background: rgba(255,215,0,0.06) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.18), 0 0 16px rgba(255,215,0,0.1) !important;
+}
+/* Kumanda gezinme ipucu - TV'ye yakışır */
+.tv-nav-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.tv-nav-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    color: rgba(255,255,255,0.22);
+    letter-spacing: 1px;
+}
+.tv-nav-key span {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 2px solid rgba(255,255,255,0.06);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-size: 11px;
+    line-height: 1.6;
+}
+/* Sayaç çubuğu */
+.verify-timer {
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-top: 14px;
+    overflow: hidden;
+    display: none;
+}
+.verify-timer.active { display: block; }
+.verify-timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #F1A800);
+    border-radius: 2px;
+    animation: timerDrain 30s linear forwards;
+}
+@keyframes timerDrain { from { width: 100%; } to { width: 0%; } }
+/* Durum mesajları */
+.login-status {
+    min-height: 36px;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Exo 2', sans-serif;
+}
+.login-status.show { display: flex; }
+.login-status.error {
+    background: rgba(255,50,50,0.08);
+    border: 1px solid rgba(255,50,50,0.22);
+    color: #ff7070;
+}
+.login-status.success {
+    background: rgba(0,200,100,0.08);
+    border: 1px solid rgba(0,200,100,0.22);
+    color: #5de898;
+}
+.login-status.warning {
+    background: rgba(255,180,0,0.08);
+    border: 1px solid rgba(255,180,0,0.22);
+    color: #FFD700;
+}
+.login-status.info {
+    background: rgba(100,150,255,0.08);
+    border: 1px solid rgba(100,150,255,0.22);
+    color: #90b8ff;
+}
+.login-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+/* Ban ekranı */
+#banScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    animation: stepIn 0.4s ease both;
+}
+#banScreen.active { display: flex; }
+.ban-icon { font-size: 64px; margin-bottom: 8px; }
+.ban-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #e74c3c;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(231,76,60,0.5);
+    margin-bottom: 6px;
+}
+.ban-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 16px; text-align: center; }
+.ban-info-box {
+    width: 100%;
+    background: rgba(231,76,60,0.06);
+    border: 1px solid rgba(231,76,60,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+}
+.ban-info-label { font-size: 0.65rem; letter-spacing: 1.5px; color: rgba(231,76,60,0.7); text-transform: uppercase; margin-bottom: 4px; font-family: 'Share Tech Mono', monospace; }
+.ban-info-value { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; color: #e74c3c; }
+.ban-reason-box {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+.ban-reason-label { font-size: 0.65rem; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); text-transform: uppercase; margin-bottom: 4px; font-family: 'Share Tech Mono', monospace; }
+.ban-reason-value { font-size: 0.9rem; color: rgba(255,255,255,0.75); }
+.ban-link { font-size: 0.8rem; color: rgba(255,255,255,0.4); text-align: center; }
+.ban-link a { color: #FFD700; text-decoration: none; font-weight: 700; }
+/* Progress dots */
+.login-progress-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; }
+.login-progress-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.25s;
+}
+.login-progress-dot.active {
+    background: #FFD700;
+    border-color: #FFD700;
+    box-shadow: 0 0 8px rgba(255,215,0,0.5);
+    transform: scale(1.4);
+}
+.login-progress-dot.done {
+    background: rgba(255,215,0,0.35);
+    border-color: rgba(255,215,0,0.35);
+}
+</style>
+
 <div id="loginOverlay">
     <div class="login-bg"></div>
     <div class="login-orb login-orb-1"></div>
@@ -8937,14 +9561,21 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
     <div class="login-card" style="position:relative;">
 
-        
+        <!-- Logo -->
         <div class="login-logo-wrap">
             <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg" class="login-logo-img" alt="Ümit TV">
             <div class="login-title">ÜMİT TV</div>
             <div class="login-subtitle">🜲ÜⲘ𝖎ţ Ⲙ0Ď🜲 · GÜVENLİ GİRİŞ</div>
         </div>
 
-        
+        <!-- İlerleme noktaları -->
+        <div class="login-progress-dots" id="loginProgressDots">
+            <div class="login-progress-dot active" data-step="1"></div>
+            <div class="login-progress-dot" data-step="2"></div>
+            <div class="login-progress-dot" data-step="3"></div>
+        </div>
+
+        <!-- Ban ekranı -->
         <div id="banScreen">
             <div class="ban-icon">🚫</div>
             <div class="ban-title">BANLANDINIZ</div>
@@ -8957,10 +9588,10 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <div class="ban-reason-label">SEBEP</div>
                 <div class="ban-reason-value" id="banReasonText"></div>
             </div>
-            <div class="ban-link">İtiraz için gruba yazabilirsiniz: <a href="https://t.me/umitm0d" target="_blank">t.me/umitm0d</a></div>
+            <div class="ban-link">İtiraz: <a href="https://t.me/umitm0d" target="_blank">t.me/umitm0d</a></div>
         </div>
 
-        
+        <!-- ADIM 1: Telegram ID -->
         <div class="login-step active" id="loginStep1">
             <div class="step-header">
                 <div class="step-number">1</div>
@@ -8970,25 +9601,30 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 Telegram'da <strong>@userinfobot</strong>'a mesaj at ve aldığın <strong>ID numaranı</strong> buraya gir.
             </div>
             <div class="login-field">
-                <label class="login-label" style="color:rgba(255,215,0,0.7); font-size:11px;">🍀 Şans Kodu (varsa)</label>
+                <label class="login-label">🍀 Şans Kodu (varsa)</label>
                 <input type="text" id="inputSansKodStep1" class="login-input login-focusable"
                     placeholder="Şans kodu gir (isteğe bağlı)" autocomplete="off"
                     autocorrect="off" autocapitalize="none" spellcheck="false"
-                    style="font-size:14px; letter-spacing:1px; margin-bottom:0;">
+                    style="font-size:15px; letter-spacing:1px;">
             </div>
             <div class="login-field">
                 <label class="login-label">Telegram ID</label>
                 <input type="tel" id="inputTelegramId" class="login-input login-focusable"
                     placeholder="Örn: 123456789" autocomplete="off"
-                    pattern="[0-9]*">
+                    pattern="[0-9]*" inputmode="numeric">
             </div>
             <button class="login-btn login-focusable" id="btnStep1Next" onclick="handleStep1()">
                 DEVAM ET
             </button>
             <div class="login-status" id="status1"></div>
+            <div class="tv-nav-hint">
+                <span class="tv-nav-key"><span>↑↓</span> Gezinim</span>
+                <span class="tv-nav-key"><span>OK</span> Seç</span>
+                <span class="tv-nav-key"><span>⬅</span> Geri</span>
+            </div>
         </div>
 
-        
+        <!-- ADIM 2: Admin Onayı -->
         <div class="login-step" id="loginStep2">
             <div class="step-header">
                 <div class="step-number">2</div>
@@ -8996,20 +9632,17 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             </div>
             <div class="login-info-box" id="step2InfoBox">
                 Telegram grubuna şu mesajı gönder:<br><br>
-                <code style="font-size:13px;cursor:pointer;user-select:all;background:rgba(255,215,0,0.15);border:1px dashed rgba(255,215,0,0.4);border-radius:5px;padding:3px 8px;transition:background 0.2s;" onclick="(function(el){navigator.clipboard&&navigator.clipboard.writeText(el.textContent).then(function(){var o=el.style.background;el.style.background='rgba(0,200,100,0.3)';setTimeout(function(){el.style.background=o;},900);})})(this)" title="Kopyalamak için tıkla">Ümit şifre belirlemek istiyorum</code> <span style="color:rgba(255,215,0,0.5);font-size:10px;vertical-align:middle;">📋 tıkla</span><br><br>
-                Bot admini onay için uyaracak. Admin onayladıktan sonra gruba bir <strong>token</strong> gelecek — aşağıya gir ve <strong>DOĞRULA</strong>'ya bas.<br><br>
-                <span style="color:rgba(255,215,0,0.6);font-size:11px;">⏱ Admin onayı için 10 dakika süren var.</span>
+                <code style="cursor:pointer;user-select:all;" onclick="(function(el){navigator.clipboard&&navigator.clipboard.writeText(el.textContent).then(function(){var o=el.style.background;el.style.background='rgba(0,200,100,0.3)';setTimeout(function(){el.style.background=o;},900);})})(this)" title="Kopyalamak için tıkla">Ümit şifre belirlemek istiyorum</code> <span style="color:rgba(255,215,0,0.5);font-size:10px;">📋 tıkla</span><br><br>
+                Admin onayladıktan sonra gruba bir <strong>token</strong> gelecek. Aşağıya gir ve <strong>DOĞRULA</strong>'ya bas.<br>
+                <span style="color:rgba(255,215,0,0.5);font-size:11px;">⏱ 10 dakika süren var.</span>
             </div>
             <div class="login-field">
-                <label class="login-label" style="color:rgba(255,215,0,0.9);">🔑 Onay Token'ı</label>
+                <label class="login-label">🔑 Onay Token'ı</label>
                 <input type="text" id="inputApprovalToken" class="login-input login-focusable"
-                    placeholder="UMIT-XXXX-XXXX (admin onayından sonra gelir)"
-                    autocomplete="off"
-                    inputmode="text"
-                    autocorrect="off"
-                    autocapitalize="none"
-                    spellcheck="false"
-                    style="letter-spacing:2px;font-size:15px;font-family:monospace;">
+                    placeholder="UMIT-XXXX-XXXX"
+                    autocomplete="off" inputmode="text"
+                    autocorrect="off" autocapitalize="none" spellcheck="false"
+                    style="letter-spacing:2px;font-size:15px;font-family:'Share Tech Mono',monospace;">
             </div>
             <button class="login-btn login-focusable" id="btnVerify" onclick="handleVerify()">
                 DOĞRULA
@@ -9019,14 +9652,14 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             <div class="login-status" id="status2"></div>
         </div>
 
-        
+        <!-- ADIM 3: Şifre Belirle -->
         <div class="login-step" id="loginStep3">
             <div class="step-header">
                 <div class="step-number">3</div>
                 <div class="step-title-text">Şifre Belirle</div>
             </div>
             <div class="login-info-box">
-                İlk girişin! Kendin için bir <strong>şifre belirle</strong>. Bu şifre sadece sende saklı kalır, Telegram'a gönderilmez.
+                İlk girişin! Kendin için bir <strong>şifre belirle</strong>. Bu şifre sadece sende saklı kalır.
             </div>
             <div class="login-field">
                 <label class="login-label">Yeni Şifre</label>
@@ -9044,7 +9677,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             <div class="login-status" id="status3"></div>
         </div>
 
-        
+        <!-- ADIM 4: Şifre Gir -->
         <div class="login-step" id="loginStep4">
             <div class="step-header">
                 <div class="step-number">3</div>
@@ -9055,12 +9688,12 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <input type="password" id="inputPass" class="login-input login-focusable"
                     placeholder="••••••••" autocomplete="current-password">
             </div>
-            <div class="login-field" style="margin-top:6px;">
-                <label class="login-label" style="color:rgba(255,215,0,0.55); font-size:11px;">veya Şans Kodu</label>
+            <div class="login-field">
+                <label class="login-label">veya Şans Kodu</label>
                 <input type="text" id="inputSansKod" class="login-input login-focusable"
                     placeholder="Şans kodu (varsa)" autocomplete="off"
                     autocorrect="off" autocapitalize="none" spellcheck="false"
-                    style="font-size:14px; letter-spacing:1px;">
+                    style="font-size:15px; letter-spacing:1px;">
             </div>
             <button class="login-btn login-focusable" id="btnLogin" onclick="handleLogin()">
                 GİRİŞ YAP
@@ -9069,9 +9702,14 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 Şifremi Unuttum
             </button>
             <div class="login-status" id="status4"></div>
+            <div class="tv-nav-hint">
+                <span class="tv-nav-key"><span>↑↓</span> Gezinim</span>
+                <span class="tv-nav-key"><span>OK</span> Seç</span>
+                <span class="tv-nav-key"><span>⬅</span> Geri</span>
+            </div>
         </div>
 
-        
+        <!-- ADIM 5: Şifre Değişikliği -->
         <div class="login-step" id="loginStep5">
             <div class="step-header">
                 <div class="step-number">4</div>
@@ -9079,21 +9717,20 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             </div>
             <div class="login-info-box">
                 Telegram grubuna şu mesajı gönder:<br><br>
-                <code style="font-size:13px;cursor:pointer;user-select:all;background:rgba(255,215,0,0.15);border:1px dashed rgba(255,215,0,0.4);border-radius:5px;padding:3px 8px;transition:background 0.2s;" id="changeCmd" onclick="(function(el){navigator.clipboard&&navigator.clipboard.writeText(el.textContent).then(function(){var o=el.style.background;el.style.background='rgba(0,200,100,0.3)';setTimeout(function(){el.style.background=o;},900);})})(this)" title="Kopyalamak için tıkla">şifremi değiştirmek istiyorum Ümit</code> <span style="color:rgba(255,215,0,0.5);font-size:10px;vertical-align:middle;">📋 tıkla</span><br><br>
-                Mesajı gönderdikten sonra <strong>Onayı Bekle</strong> butonuna bas. Admin onayladıktan sonra <strong>otomatik</strong> devam eder — token girmen gerekmez.<br><br>
-                <span style="color:rgba(255,215,0,0.6);font-size:11px;">⏱ Admin onayı için 10 dakika süren var.</span><br><br>
-                <div style="background:rgba(255,100,0,0.12);border:1px solid rgba(255,100,0,0.35);border-radius:8px;padding:10px 12px;margin-top:4px;">
-                    <span style="color:#ff9944;font-size:12px;font-weight:700;">⚠️ ÖNEMLİ:</span>
-                    <span style="color:rgba(255,255,255,0.75);font-size:12px;"> Mesajı gruba yazarken <strong style="color:#FFD700;">anonim admin olarak değil</strong>, kendi hesabınla (normal üye olarak) gönder. Aksi halde kimliğin doğrulanamaz.</span>
+                <code id="changeCmd" style="cursor:pointer;user-select:all;" onclick="(function(el){navigator.clipboard&&navigator.clipboard.writeText(el.textContent).then(function(){var o=el.style.background;el.style.background='rgba(0,200,100,0.3)';setTimeout(function(){el.style.background=o;},900);})})(this)" title="Kopyalamak için tıkla">şifremi değiştirmek istiyorum Ümit</code> <span style="color:rgba(255,215,0,0.5);font-size:10px;">📋 tıkla</span><br><br>
+                <strong>Onayı Bekle</strong> butonuna bas. Admin onayladıktan sonra <strong>otomatik</strong> devam eder.<br>
+                <span style="color:rgba(255,215,0,0.5);font-size:11px;">⏱ 10 dakika süren var.</span><br><br>
+                <div style="background:rgba(255,100,0,0.1);border:1px solid rgba(255,100,0,0.3);border-radius:8px;padding:10px 12px;margin-top:4px;">
+                    <span style="color:#ff9944;font-size:12px;font-weight:700;">⚠️</span>
+                    <span style="color:rgba(255,255,255,0.7);font-size:12px;"> Mesajı <strong style="color:#FFD700;">anonim admin olarak değil</strong>, kendi hesabınla gönder.</span>
                 </div>
-                <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.45);">
-                    Aktif Telegram ID'n: <code id="step5IdDisplay" style="color:#FFD700;font-size:12px;">—</code>
+                <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.4);">
+                    Aktif ID: <code id="step5IdDisplay" style="color:#FFD700;font-size:12px;">—</code>
                 </div>
             </div>
-            
             <div id="changePollingBox" style="display:none;text-align:center;padding:18px 0;">
-                <div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(255,215,0,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px;"></div>
-                <div id="changePollingTick" style="color:rgba(255,215,0,0.7);font-size:13px;margin-top:4px;">Admin onayı bekleniyor...</div>
+                <div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(255,215,0,0.15);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px;"></div>
+                <div id="changePollingTick" style="color:rgba(255,215,0,0.65);font-size:13px;margin-top:4px;">Admin onayı bekleniyor...</div>
             </div>
             <button class="login-btn login-focusable" id="btnConfirmChange" onclick="handleConfirmChange()">
                 ⏳ Onayı Bekle
@@ -9102,7 +9739,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             <div class="login-status" id="status5"></div>
         </div>
 
-        
+        <!-- ADIM 6: Yeni Şifre -->
         <div class="login-step" id="loginStep6">
             <div class="step-header">
                 <div class="step-number">5</div>
@@ -9127,14 +9764,51 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             <div class="login-status" id="status6"></div>
         </div>
 
-        
-        <div class="dpad-hint">
-            <span class="dpad-key">↑↓</span> Gezinim &nbsp;
-            <span class="dpad-key">OK</span> Seç &nbsp;
-            <span class="dpad-key">←</span> Geri
-        </div>
-    </div>
-</div>
+    </div><!-- /login-card -->
+</div><!-- /loginOverlay -->
+
+<script>
+/* ═══ Modern Login - Progress Dots Güncelleme ═══ */
+(function() {
+    var _origGoStep = null;
+    var stepDotMap = { '1':0, '2':1, '3':1, '4':1, '5':2, '6':2 };
+
+    function updateProgressDots(stepNum) {
+        var dots = document.querySelectorAll('.login-progress-dot');
+        var activeIdx = stepDotMap[String(stepNum)] || 0;
+        dots.forEach(function(dot, i) {
+            dot.classList.remove('active', 'done');
+            if (i < activeIdx) dot.classList.add('done');
+            else if (i === activeIdx) dot.classList.add('active');
+        });
+    }
+
+    /* goStep'i wrap et */
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.goStep === 'function') {
+            var orig = window.goStep;
+            window.goStep = function(n) {
+                orig(n);
+                updateProgressDots(n);
+            };
+        }
+        /* İlk yükleme */
+        updateProgressDots(1);
+    });
+
+    /* goStep henüz tanımlı değilse 100ms sonra tekrar dene */
+    setTimeout(function() {
+        if (typeof window.goStep === 'function' && !window._goStepWrapped) {
+            window._goStepWrapped = true;
+            var orig = window.goStep;
+            window.goStep = function(n) {
+                orig(n);
+                updateProgressDots(n);
+            };
+        }
+    }, 200);
+})();
+</script>
 
 <script>
 (function() {
@@ -15195,13 +15869,29 @@ async function loadEPGData() {
 
         if (cachedData && cachedData.timestamp && 
             (now - cachedData.timestamp < CACHE_DURATION)) {
-            state.epgData = cachedData.data;
-            
-            
-
-            const first5 = Object.keys(state.epgData).slice(0, 5);
-            
-            return true;
+            // Cache süresi dolmamış — ama EPG verisi eski günden mi?
+            // Tüm programların son bitiş saati bugünden önceyse (dünün verisi) → yenile
+            let _epgIsStale = false;
+            try {
+                const _sampleKeys = Object.keys(cachedData.data || {}).slice(0, 5);
+                const _todayMidnight = new Date(); _todayMidnight.setHours(0,0,0,0);
+                for (const _k of _sampleKeys) {
+                    const _progs = cachedData.data[_k];
+                    if (!_progs || !_progs.length) continue;
+                    const _lastProg = _progs[_progs.length - 1];
+                    const _lastStop = _lastProg.stop ? new Date(_lastProg.stop.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2}).*/, '$1-$2-$3T$4:$5:$6')) : null;
+                    if (_lastStop && _lastStop < _todayMidnight) { _epgIsStale = true; break; }
+                }
+            } catch(_e) {}
+            if (_epgIsStale) {
+                // Eski veri — cache temizle, yeniden fetch et
+                await clearEPGCache();
+                cachedData = null;
+            } else {
+                state.epgData = cachedData.data;
+                const first5 = Object.keys(state.epgData).slice(0, 5);
+                return true;
+            }
         }
         
         
@@ -15839,6 +16529,20 @@ function processEPGForChannel(channelKey) {
         const allPast = _lastEnd ? (_lastEnd < _todayStart) : false;
         const lastProgramDate = _lastEnd ? _lastEnd.toLocaleDateString('tr-TR') : '';
 
+        // ESKİ VERİ: cache temizle + arka planda yenile
+        if (allPast) {
+            clearEPGCache().then(() => {
+                state.epgData = {};
+                loadEPGData().then(() => {
+                    // Modal hâlâ açıksa güncelle
+                    const _modal = document.getElementById('epgModal');
+                    if (_modal && _modal.style.display !== 'none') {
+                        showChannelEpg(channelName, channelTvgId);
+                    }
+                }).catch(() => {});
+            }).catch(() => {});
+        }
+
         html += `
             <div style="padding:16px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -15847,8 +16551,8 @@ function processEPGForChannel(channelKey) {
                 </div>
                 ${allPast ? `
                     <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
-                        <div style="font-size:11px; color:#ff6400; font-weight:700;">⚠️ EPG VERİSİ ESKİ</div>
-                        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG yüklenene kadar program bilgisi gösterilemiyor.</div>
+                        <div style="font-size:11px; color:#ff6400; font-weight:700;">🔄 EPG YENİLENİYOR</div>
+                        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor, lütfen bekleyin...</div>
                     </div>
                 ` : epgInfo.current ? `
                     <div style="background:rgba(0,255,0,0.1); padding:8px; border-radius:6px; border-left:3px solid #00FF00; margin-top:8px;">
@@ -17965,11 +18669,52 @@ listSeriesChannels();
     
     const vodInfo = state.vodCache[tmdbName] || state.vodCache[channelName] || await fetchVodInfo(tmdbName, _preferTV);
     if (!vodInfo) {
-        // TMDB bulunamadı — direkt oynat
-        const _fbIdx = state.filtered.findIndex(c => c && c.name === channelName);
-        if (_fbIdx !== -1) { playChannel(_fbIdx, 0); return; }
-        const _fbCh = state.channels.find(c => c && c.name === channelName);
-        if (_fbCh) { state.filtered.push(_fbCh); playChannel(state.filtered.length - 1, 0); }
+        // TMDB bulunamadı — yine de modalı aç (poster olmadan)
+        const _fbCh = state.channels.find(c => c && c.name === channelName)
+                   || state.filtered.find(c => c && c.name === channelName);
+        const _fbLogo = _fbCh ? (_fbCh.logo || '') : '';
+        const _noInfoVodInfo = {
+            title: channelName,
+            poster: _fbLogo || null,
+            backdrop: null,
+            overview: 'Bu film/program için bilgi bulunamadı.',
+            year: new Date().getFullYear(),
+            rating: null,
+            runtime: null,
+            genres: [],
+            cast: [],
+            directors: [],
+            trailer: null,
+            media_type: _preferTV ? 'tv' : 'movie'
+        };
+        // Fake vodInfo ile devam et
+        const __noInfoVodInfo = _noInfoVodInfo;
+        // posterSrc: logo varsa kullan, yoksa placeholder
+        const __posterSrc = _fbLogo || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
+        const modal = document.getElementById('vodModal');
+        const posterWrapper = document.getElementById('vodPosterWrapper');
+        if (posterWrapper) {
+            posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${__posterSrc}" alt="${channelName}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+'">`;
+        }
+        if (document.getElementById('vodModalTitle')) document.getElementById('vodModalTitle').textContent = channelName;
+        if (document.getElementById('vodModalMeta')) document.getElementById('vodModalMeta').innerHTML = `<div class="vod-meta-item">${new Date().getFullYear()}</div>`;
+        const _ovEl = document.getElementById('vodModalOverview');
+        if (_ovEl) _ovEl.textContent = 'Bu film/program için bilgi bulunamadı.';
+        const _gcEl = document.getElementById('vodModalGenresContainer');
+        const _ccEl = document.getElementById('vodModalCastContainer');
+        const _dcEl = document.getElementById('vodModalDirectorContainer');
+        if (_gcEl) _gcEl.style.display = 'none';
+        if (_ccEl) _ccEl.style.display = 'none';
+        if (_dcEl) _dcEl.style.display = 'none';
+        const continueBtn = document.getElementById('vodModalContinueBtn');
+        if (continueBtn) continueBtn.style.display = 'none';
+        const playBtn = document.getElementById('vodModalPlayBtn');
+        if (playBtn) playBtn.style.display = '';
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.style.zIndex = '10000';
+            if (typeof setupVodModalRemote === 'function') setupVodModalRemote();
+        }
         return;
     }
     
@@ -27968,6 +28713,7 @@ function _vhsRender() {
             : '<div class="vhs-bg-img" style="background:#0d0d1a;"></div>';
         return '<div class="vhs-slide' + (i === 0 ? ' active' : '') + '" data-vi="' + i + '">'
             + bg
+            + '<div class="vhs-grad-top"></div>'
             + '<div class="vhs-grad-side"></div>'
             + '<div class="vhs-grad-bottom"></div>'
             + '<div class="vhs-info">'
@@ -27975,8 +28721,8 @@ function _vhsRender() {
             +   '<div class="vhs-title">' + _e(item.name) + '</div>'
             +   (item.overview ? '<div class="vhs-overview">' + _e(item.overview) + '</div>' : '')
             +   '<div class="vhs-btns">'
-            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')">▶ ' + btnLabel + '</button>'
-            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')">\u2139 Detay</button>'
+            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')">&#9654; ' + btnLabel + '</button>'
+            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')">&#8505; Detay</button>'
             +   '</div>'
             + '</div>'
             + '</div>';
@@ -28078,10 +28824,23 @@ window._vhsDetail = function(vi) {
         var ch = window.state.channels.find(function(c) { return c && c.name === chName; });
         if (ch) { window.state.filtered.push(ch); idx = window.state.filtered.length - 1; }
     }
-    // NOT: state.player.index burada set edilmiyor — openVodModal async olduğu için
-    // await sırasında index başka bir işlem tarafından değiştirilebilir.
-    // openVodModal kendi içinde data-channel-name attribute'unu set eder.
-    window.state.player.name   = chName;
+
+    /* Hero'dan bilinen poster/backdrop varsa — TMDB beklenmeden modal'a yükle */
+    var _vm = document.getElementById('vodModal');
+    var _pw = document.getElementById('vodPosterWrapper');
+    var _preSrc = item.imgSrc || item.thumbSrc || '';
+    if (_vm && _pw && _preSrc) {
+        _pw.innerHTML = '<img loading="lazy" id="vodModalPoster" class="vod-poster" src="' + _preSrc + '" alt="' + chName.replace(/"/g,'') + '" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+\'">';
+        if (document.getElementById('vodModalTitle')) document.getElementById('vodModalTitle').textContent = chName;
+        if (document.getElementById('vodModalMeta') && item.year) {
+            document.getElementById('vodModalMeta').innerHTML = '<div class="vod-meta-item">' + item.year + '</div>' + (item.rating ? '<div class="vod-meta-item tmdb-rating">&#9733; ' + item.rating + '</div>' : '');
+        }
+        /* Modalı hemen göster — poster görünür */
+        _vm.style.display = 'flex';
+        _vm.style.zIndex = '10000';
+    }
+
+    window.state.player.name = chName;
     window.state.player.isLiveStream = false;
     if (typeof openVodModal === 'function') {
         openVodModal(chName);
@@ -28271,54 +29030,39 @@ setTimeout(_vhsInit, 1200);
         const _isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
             || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 
-        const cardW = _isTVBox ? '140px' : '100px';
-        const logoSz = _isTVBox ? '40px' : '34px';
-        const titleSz = _isTVBox ? '10px' : '9px';
+        const cardW = _isTVBox ? '130px' : '100px';
         const gap = _isTVBox ? '10px' : '8px';
-
         const list = recent.slice(0, _isTVBox ? 8 : 10);
 
         container.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 2px;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span class="material-symbols-outlined" style="color:var(--accent-primary);font-size:${_isTVBox?'16px':'20px'};">history</span>
-                    <span style="font-size:${_isTVBox?'12px':'14px'};font-weight:700;color:var(--accent-primary);">Son İzlenenler</span>
+            <div class="recent-section-header">
+                <div class="recent-section-title">
+                    <div class="recent-title-icon">
+                        <span class="material-symbols-outlined">history</span>
+                    </div>
+                    <span class="recent-title-text">Son İzlenenler</span>
+                    <div class="recent-title-line"></div>
                 </div>
-                <button class="header-btn" id="btnClearRecentChannels" onclick="clearRecentChannels()" style="font-size:11px;padding:3px 8px;">
-                    <span class="material-symbols-outlined" style="font-size:12px;">delete_sweep</span> Temizle
+                <button id="btnClearRecentChannels" onclick="clearRecentChannels()" tabindex="0">
+                    <span class="material-symbols-outlined">delete_sweep</span>
+                    Tümünü Sil
                 </button>
             </div>
-            <div id="recentCardsScroll" style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:${gap};padding:2px 0 10px 0;scrollbar-width:none;">
+            <div id="recentCardsScroll">
                 ${list.map((rc, idx) => `
                     <div class="recent-card"
                          onclick="playRecentChannel('${rc.name.replace(/'/g,"\\'")}')"
                          tabindex="0"
                          data-recent-idx="${idx}"
                          data-recent-name="${rc.name.replace(/"/g,'&quot;')}"
-                         style="
-                            flex-shrink:0;
-                            width:${cardW};
-                            background:rgba(255,255,255,0.05);
-                            border:1px solid rgba(255,255,255,0.1);
-                            border-radius:10px;
-                            padding:8px 6px;
-                            cursor:pointer;
-                            display:flex;
-                            flex-direction:column;
-                            align-items:center;
-                            gap:5px;
-                            transition:border-color 120ms;
-                            position:relative;
-                         "
-                         onmouseenter="this.style.borderColor='var(--accent-primary)'"
-                         onmouseleave="if(!this.classList.contains('remote-focused'))this.style.borderColor='rgba(255,255,255,0.1)'">
-                        ${rc.isLive === true ? `<span style="position:absolute;top:4px;right:5px;background:#e74c3c;color:#fff;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:0.5px;">CANLI</span>` : `<span style="position:absolute;top:4px;right:5px;background:var(--accent-primary);color:#000;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;">VOD</span>`}
+                         style="width:${cardW};">
+                        <span class="recent-badge ${rc.isLive === true ? 'live' : 'vod'}">${rc.isLive === true ? 'CANLI' : 'VOD'}</span>
                         ${rc.logo
-                            ? `<img loading="lazy" src="${rc.logo}" style="width:${logoSz};height:${logoSz};object-fit:contain;border-radius:6px;background:rgba(0,0,0,0.3);" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                               <span class="material-symbols-outlined" style="display:none;font-size:24px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
-                            : `<span class="material-symbols-outlined" style="font-size:24px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
+                            ? `<img loading="lazy" src="${rc.logo}" class="recent-card-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                               <span class="material-symbols-outlined" style="display:none;font-size:26px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
+                            : `<span class="material-symbols-outlined" style="font-size:26px;color:var(--accent-primary);">${rc.isLive?'tv':'movie'}</span>`
                         }
-                        <div style="font-size:${titleSz};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:rgba(255,255,255,0.9);">${rc.name}</div>
+                        <div class="recent-card-name">${rc.name}</div>
                     </div>
                 `).join('')}
             </div>`;
@@ -28374,7 +29118,6 @@ setTimeout(_vhsInit, 1200);
 
             card.addEventListener('blur', function() {
                 this.classList.remove('remote-focused');
-                this.style.borderColor = 'rgba(255,255,255,0.1)';
             });
 
             card.addEventListener('keydown', function(e) {
@@ -28407,7 +29150,6 @@ setTimeout(_vhsInit, 1200);
         // Önceki focus'ları temizle
         document.querySelectorAll('.recent-card').forEach(c => {
             c.classList.remove('remote-focused');
-            c.style.borderColor = 'rgba(255,255,255,0.1)';
         });
         document.querySelectorAll('#btnClearRecentChannels').forEach(b => b.classList.remove('remote-focused'));
 
@@ -28419,7 +29161,6 @@ setTimeout(_vhsInit, 1200);
         const card = rc.cards[idx];
         if (card) {
             card.classList.add('remote-focused');
-            card.style.borderColor = 'var(--accent-primary)';
             card.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' });
             showRemoteHint(card.dataset.recentName || 'Son İzlenen');
         }
@@ -28441,6 +29182,7 @@ setTimeout(_vhsInit, 1200);
                     // En soldayken: Temizle butonuna git
                     const cb = document.getElementById('btnClearRecentChannels');
                     if (cb) {
+                        document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                         cb.classList.add('remote-focused');
                         cb.focus({ preventScroll: true });
                     }
@@ -28465,8 +29207,7 @@ setTimeout(_vhsInit, 1200);
                         if (!state.remote.continueCards) state.remote.continueCards = { selectedCardIndex: 0, selectedButtonIndex: 0, cards: [] };
                         state.remote.continueCards.selectedCardIndex = 0;
                         state.remote.continueCards.selectedButtonIndex = 0;
-                        updateRecentCardsFocus(); // temizle recent focus
-                        document.querySelectorAll('.recent-card').forEach(c => { c.classList.remove('remote-focused'); c.style.borderColor='rgba(255,255,255,0.1)'; });
+                        document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                         if (typeof updateContinueCardsFocus === 'function') updateContinueCardsFocus();
                     } else {
                         state.remote.zone = 'categories';
@@ -28479,7 +29220,7 @@ setTimeout(_vhsInit, 1200);
             case 'ArrowDown':
                 e.preventDefault();
                 // Aşağı → channels grid'e
-                document.querySelectorAll('.recent-card').forEach(c => { c.classList.remove('remote-focused'); c.style.borderColor='rgba(255,255,255,0.1)'; });
+                document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
                 updateRemoteFocus();
@@ -28498,7 +29239,7 @@ setTimeout(_vhsInit, 1200);
             case 'Backspace':
             case 'Escape':
                 e.preventDefault();
-                document.querySelectorAll('.recent-card').forEach(c => { c.classList.remove('remote-focused'); c.style.borderColor='rgba(255,255,255,0.1)'; });
+                document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
                 updateRemoteFocus();
@@ -28537,40 +29278,50 @@ setTimeout(_vhsInit, 1200);
 
     // TVBox'ta max 3 kart göster, küçük boyutlar kullan
     const _displayList = _isTVBox ? continueList.slice(0, 3) : continueList.slice(0, 5);
-    const _cardW = _isTVBox ? '190px' : '240px';
-    const _cardH = _isTVBox ? '85px' : '130px';
-    const _cardPad = _isTVBox ? '8px 10px' : '12px';
-    const _logoSz = _isTVBox ? '28px' : '40px';
-    const _titleSz = _isTVBox ? '11px' : '14px';
-    const _detailSz = _isTVBox ? '10px' : '12px';
-    const _btnPad = _isTVBox ? '3px 7px' : '6px 10px';
-    const _btnFontSz = _isTVBox ? '9px' : '11px';
-    const _headerMb = _isTVBox ? '6px' : '12px';
-    const _minH = _isTVBox ? '85px' : '130px';
-    const _gap = _isTVBox ? '8px' : '12px';
+    const _cardW = _isTVBox ? '200px' : '250px';
+    const _cardH = _isTVBox ? '120px' : '150px';
+    const _cardPad = '0';
+    const _logoSz = _isTVBox ? '28px' : '36px';
+    const _titleSz = _isTVBox ? '11px' : '13px';
+    const _detailSz = _isTVBox ? '10px' : '11px';
+    const _btnPad = _isTVBox ? '5px 8px' : '6px 10px';
+    const _btnFontSz = _isTVBox ? '9px' : '10px';
+    const _headerMb = _isTVBox ? '6px' : '10px';
+    const _minH = _isTVBox ? '120px' : '150px';
+    const _gap = _isTVBox ? '10px' : '12px';
     
     container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:${_headerMb};">
-            <div style="display:flex; align-items:center; gap:6px;">
-                <span class="material-symbols-outlined" style="color:var(--accent-primary); font-size:${_isTVBox ? '16px' : '22px'};">
-                    history
-                </span>
-                <div style="font-size:${_titleSz}; font-weight:700; color:var(--accent-primary);">
-                    Kaldığın Yerden Devam Et
+        <div class="cw-header-row">
+            <div class="cw-header-left">
+                <div class="cw-header-icon">
+                    <span class="material-symbols-outlined">history</span>
                 </div>
+                <span class="cw-header-title">Kaldığın Yerden Devam Et</span>
             </div>
-            <button class="header-btn clear-all-btn" id="btnClearAllContinue" onclick="event.stopPropagation(); clearContinueWatching();" 
+            <button class="cw-clear-btn" id="btnClearAllContinue"
+                    onclick="event.stopPropagation(); clearContinueWatching();"
                     tabindex="0">
-                <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '12px' : '15px'};">delete_sweep</span>
+                <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '12px' : '14px'};">delete_sweep</span>
                 ${_isTVBox ? 'Temizle' : 'Tümünü Temizle'}
             </button>
         </div>
-        <div id="continueCardsContainer" style="display:flex; flex-wrap:nowrap; overflow-x:auto; gap:${_gap}; padding:4px 0 ${_isTVBox ? '8px' : '16px'} 0; min-height:${_minH};"
+        <div id="continueCardsContainer" style="display:flex; flex-wrap:nowrap; overflow-x:auto; gap:${_gap}; padding:4px 0 ${_isTVBox ? '8px' : '12px'} 0; min-height:${_minH};"
              tabindex="0">
             ${_displayList.map((c, idx) => {
                 const ch = state.channels.find(channel => channel.name === c.name);
-                const isVod = ch && ch.isLive === false;
+                // Önce kayıttaki isLive değerine bak, sonra channels'dan kontrol et
+                let isVod;
+                if (c.isLive !== undefined) {
+                    isVod = c.isLive === false;
+                } else if (ch) {
+                    isVod = ch.isLive === false;
+                } else {
+                    isVod = false; // bilinmiyorsa canlı say
+                }
                 const progressPercent = Math.round(c.progress * 100);
+                const logoHtml = ch && ch.logo
+                    ? `<img loading="lazy" src="${ch.logo}" onerror="this.style.display='none'">`
+                    : `<span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,215,0,0.7);">${isVod ? 'movie' : 'tv'}</span>`;
                 
                 return `
                     <div class="continue-card continue-card-index-${idx}" 
@@ -28579,48 +29330,59 @@ setTimeout(_vhsInit, 1200);
                          data-continue-index="${idx}"
                          data-is-vod="${isVod}"
                          tabindex="0"
-                         style="min-width:${_cardW}; max-width:${_cardW}; height:${_cardH}; padding:${_cardPad};">
-                        ${isVod ? `<div class="vod-badge" style="position:absolute;top:6px;left:8px; background:var(--accent-primary); color:#000; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:800;">VOD</div>` : ''}
+                         style="min-width:${_cardW}; max-width:${_cardW}; height:${_cardH}; padding:0;">
+                        
+                        <!-- Arka plan dekor -->
+                        <div class="cw-card-bg"></div>
+                        
+                        <!-- Logo (sol üst) -->
+                        <div class="cw-card-logo-wrap">
+                            ${logoHtml}
+                        </div>
+                        
+                        <!-- VOD / CANLI badge -->
+                        <div class="cw-card-badge ${isVod ? '' : 'live-badge'}">
+                            ${isVod ? 'VOD' : 'CANLI'}
+                        </div>
+                        
+                        <!-- Kapat butonu (sağ üst) -->
                         <button class="continue-options-btn" onclick="event.stopPropagation(); deleteContinueWatchingRecord('${c.name}')"
                                 tabindex="0"
                                 aria-label="Sil">
-                            <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '12px' : '16px'};">close</span>
+                            <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '11px' : '13px'};">close</span>
                         </button>
-                        <div style="display:flex;align-items:center;gap:${_isTVBox ? '8px' : '12px'}; margin-bottom:${_isTVBox ? '6px' : '12px'};">
-                            ${ch && ch.logo ? `<img loading="lazy" src="${ch.logo}" style="width:${_logoSz};height:${_logoSz}; border-radius:6px; object-fit:cover; border:1px solid rgba(255,215,0,0.3);">` : 
-                              (isVod ? `<span class="material-symbols-outlined" style="font-size:${_isTVBox ? '20px' : '32px'}; color:var(--accent-primary);">movie</span>` : 
-                              `<span class="material-symbols-outlined" style="font-size:${_isTVBox ? '20px' : '32px'}; color:var(--accent-primary);">tv</span>`)}
-                            <div style="flex:1; overflow:hidden;">
-                                <div class="continue-channel-name" style="font-size:${_detailSz}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.name}</div>
-                                <div class="continue-details" style="font-size:${_isTVBox ? '9px' : '12px'};">
-                                    <span>${formatTime(c.currentTime)} / ${formatTime(c.duration)}</span>
-                                    <span style="color:var(--accent-primary); font-weight:700;">%${progressPercent}</span>
-                                </div>
+                        
+                        <!-- Alt içerik -->
+                        <div class="cw-card-body">
+                            <div class="cw-card-title">${c.name}</div>
+                            <div class="cw-card-time">
+                                <span>${formatTime(c.currentTime)} / ${formatTime(c.duration)}</span>
+                                <span class="cw-card-pct">%${progressPercent}</span>
                             </div>
-                        </div>
-                        <div class="continue-progress-bar" style="height:${_isTVBox ? '3px' : '6px'};">
-                            <div class="continue-progress" style="width:${progressPercent}%;"></div>
-                        </div>
-                        <div style="display:flex; gap:${_isTVBox ? '6px' : '8px'}; margin-top:${_isTVBox ? '6px' : '12px'};">
-                            <button class="continue-action-btn play-btn" 
-                                    onclick="event.stopPropagation(); playFromContinueCard('${c.name}', ${c.currentTime}, true)"
-                                    data-action="continue"
-                                    data-channel-name="${c.name}"
-                                    data-time="${c.currentTime}"
-                                    tabindex="-1"
-                                    style="padding:${_btnPad}; font-size:${_btnFontSz};">
-                                <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '11px' : '14px'};">play_arrow</span>
-                                ${_isTVBox ? 'Devam' : `Devam Et (%${progressPercent})`}
-                            </button>
-                            <button class="continue-action-btn restart-btn" 
-                                    onclick="event.stopPropagation(); playFromContinueCard('${c.name}', 0, false)"
-                                    data-action="restart"
-                                    data-channel-name="${c.name}"
-                                    tabindex="-1"
-                                    style="padding:${_btnPad}; font-size:${_btnFontSz};">
-                                <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '11px' : '14px'};">replay</span>
-                                ${_isTVBox ? 'Baştan' : 'Baştan İzle'}
-                            </button>
+                            <div class="continue-progress-bar">
+                                <div class="continue-progress" style="width:${progressPercent}%;"></div>
+                            </div>
+                            <div class="cw-card-actions">
+                                <button class="continue-action-btn play-btn" 
+                                        onclick="event.stopPropagation(); playFromContinueCard('${c.name}', ${c.currentTime}, true)"
+                                        data-action="continue"
+                                        data-channel-name="${c.name}"
+                                        data-time="${c.currentTime}"
+                                        tabindex="-1"
+                                        style="font-size:${_btnFontSz}; padding:${_btnPad};">
+                                    <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '11px' : '12px'};">play_arrow</span>
+                                    ${_isTVBox ? 'Devam' : `Devam Et`}
+                                </button>
+                                <button class="continue-action-btn restart-btn" 
+                                        onclick="event.stopPropagation(); playFromContinueCard('${c.name}', 0, false)"
+                                        data-action="restart"
+                                        data-channel-name="${c.name}"
+                                        tabindex="-1"
+                                        style="font-size:${_btnFontSz}; padding:${_btnPad};">
+                                    <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '11px' : '12px'};">replay</span>
+                                    ${_isTVBox ? 'Baştan' : 'Baştan İzle'}
+                                </button>
+                            </div>
                         </div>
                     </div>`;
             }).join('')}
@@ -29034,68 +29796,332 @@ function showRemoteHint(text) {
     
 }
 function addContinueCardStyles() {
-    // Eğer stil daha önce eklenmemişse ekle
     if (document.getElementById('continueCardStyles')) return;
     
     const style = document.createElement('style');
     style.id = 'continueCardStyles';
     style.textContent = `
+        /* ═══ DEVAM ET KART SİSTEMİ ═══ */
+
+        /* Kart arka plan dekor gradient */
+        .cw-card-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                160deg,
+                rgba(var(--accent-primary-rgb,255,215,0), 0.06) 0%,
+                transparent 45%,
+                rgba(0,0,0,0.55) 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Sol üst köşe dekor şerit */
+        .continue-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                var(--accent-primary, #FFD700),
+                rgba(var(--accent-primary-rgb,255,215,0), 0.0)
+            );
+            border-radius: 16px 0 0 16px;
+            opacity: 0.7;
+            z-index: 1;
+        }
+        .continue-card.remote-focused::after {
+            opacity: 1;
+        }
+
+        /* Logo wrap */
+        .cw-card-logo-wrap {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.08);
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .cw-card-logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 7px;
+        }
+
+        /* VOD / CANLI badge */
+        .cw-card-badge {
+            position: absolute;
+            top: 11px;
+            left: 54px;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: var(--accent-primary, #FFD700);
+            color: #000;
+            z-index: 2;
+        }
+        .cw-card-badge.live-badge {
+            background: rgba(220,50,50,0.9);
+            color: #fff;
+            letter-spacing: 0.8px;
+        }
+
+        /* Kapat (×) butonu */
+        .continue-options-btn {
+            position: absolute;
+            top: 9px;
+            right: 9px;
+            color: rgba(255,255,255,0.55);
+            font-size: 13px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .continue-options-btn:hover,
+        .continue-options-btn.remote-focused,
+        .continue-options-btn:focus {
+            background: rgba(220,40,40,0.8);
+            border-color: rgba(255,80,80,0.8);
+            color: #fff;
+            transform: none !important;
+            box-shadow: 0 0 0 2px rgba(220,40,40,0.3);
+            outline: none;
+        }
+
+        /* Alt içerik gövdesi */
+        .cw-card-body {
+            position: relative;
+            padding: 8px 11px 10px 11px;
+            z-index: 2;
+        }
+
+        /* Başlık */
+        .cw-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.92);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+            letter-spacing: 0.15px;
+        }
+
+        /* Süre satırı */
+        .cw-card-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.42);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Yüzde */
+        .cw-card-pct {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent-primary, #FFD700);
+        }
+
+        /* Progress bar */
+        .continue-progress-bar {
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: visible;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .continue-progress {
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(var(--accent-primary-rgb,255,215,0), 0.7),
+                var(--accent-primary, #FFD700)
+            );
+            border-radius: 3px;
+            position: relative;
+            min-width: 6px;
+        }
+        /* İlerleme noktası */
+        .continue-progress::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 7px;
+            height: 7px;
+            background: var(--accent-primary, #FFD700);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.85);
+        }
+
+        /* Aksiyon buton satırı */
+        .cw-card-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Ortak buton stili */
         .continue-action-btn {
             flex: 1;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 6px 8px;
+            border-radius: 8px;
             border: none;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            transition: all 0.2s;
+            gap: 3px;
             white-space: nowrap;
+            letter-spacing: 0.15px;
+            transition: none;
         }
-        
+        .continue-action-btn .material-symbols-outlined {
+            font-size: 13px;
+        }
+
+        /* Devam Et — tema accent rengi */
         .continue-action-btn.play-btn {
-            background: var(--accent-primary);
+            background: var(--accent-primary, #FFD700);
             color: #000;
+            font-weight: 800;
         }
-        
         .continue-action-btn.play-btn:hover {
-            background: var(--accent-secondary);
+            filter: brightness(1.12);
             transform: none !important;
         }
-        
+
+        /* Baştan İzle — şeffaf, accent border */
         .continue-action-btn.restart-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.07);
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
         }
-        
         .continue-action-btn.restart-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.14);
+            color: var(--accent-primary, #FFD700);
+            border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.45);
             transform: none !important;
         }
-        
+
+        /* Remote odak — butonlar */
+        .continue-action-btn.remote-focused {
+            background: var(--accent-primary, #FFD700) !important;
+            color: #000 !important;
+            border-color: transparent !important;
+            transform: none !important;
+            box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.45) !important;
+        }
+
+        /* Kart boyutları */
         .continue-card {
-            min-width: 280px;
-            max-width: 280px;
-            height: 160px;
             cursor: pointer;
-            transition: transform 0.2s;
         }
-        
-        .continue-card:hover {
-            transform: none !important;
-            box-shadow: none !important;
-        }
-        
         .continue-card.remote-focused {
             transform: none !important;
-            box-shadow: 0 0 0 3px var(--accent-primary) !important;
+        }
+
+        /* ═══ HEADER: Tümünü Temizle ═══ */
+        .cw-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 2px;
+        }
+        .cw-header-left {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .cw-header-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.12);
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
+        }
+        .cw-header-icon .material-symbols-outlined {
+            font-size: 15px;
+            color: var(--accent-primary, #FFD700);
+        }
+        .cw-header-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+        /* Tümünü Temizle butonu — tam tema uyumlu */
+        #btnClearAllContinue.cw-clear-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px 6px 10px;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.06);
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.18);
+            color: rgba(var(--accent-primary-rgb,255,215,0), 0.7);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: none;
+        }
+        #btnClearAllContinue.cw-clear-btn .material-symbols-outlined {
+            font-size: 14px;
+        }
+        #btnClearAllContinue.cw-clear-btn:hover {
+            background: rgba(220,50,50,0.18);
+            border-color: rgba(255,80,80,0.4);
+            color: #ff7070;
+            transform: none !important;
+            box-shadow: none;
+        }
+        #btnClearAllContinue.cw-clear-btn:active {
+            background: rgba(220,50,50,0.28);
+        }
+        #btnClearAllContinue.cw-clear-btn.remote-focused {
+            background: rgba(220,40,40,0.75) !important;
+            border-color: rgba(255,80,80,0.9) !important;
+            color: #fff !important;
+            box-shadow: 0 0 0 2px rgba(220,40,40,0.35) !important;
+            transform: none !important;
         }
     `;
-    
     document.head.appendChild(style);
 }
         
@@ -34528,12 +35554,14 @@ let virtualScrollSystem = null;
     if (v.duration && !isNaN(v.duration) && v.currentTime > 0) {
         const progress = v.currentTime / v.duration;
         if (progress > MIN_WATCH_PERCENT && progress < MAX_WATCH_PERCENT) {
+            const _cwCh = state.channels.find(ch => ch.name === state.player.name);
             state.continueWatching[state.player.name] = { 
                 name: state.player.name, 
                 currentTime: v.currentTime, 
                 duration: v.duration, 
                 progress: progress, 
-                timestamp: Date.now() 
+                timestamp: Date.now(),
+                isLive: _cwCh ? (_cwCh.isLive !== false) : state.player.isLiveStream
             };
             
             // LocalStorage'a kaydet
@@ -40472,82 +41500,83 @@ if (typeof window.fetchM3UChannels === 'undefined') {
             }
         }
 
-        /* ── YATAY (landscape >600px): Sol poster, sağ scroll ── */
+        /* ── YATAY (landscape >600px): Poster ÜSTTE, altta scroll ── */
         @media (min-width: 601px) {
             .vod-modal-content {
                 max-height: 98vh !important;
-                width: 99vw !important;
-                max-width: 100% !important;
+                width: min(860px, 99vw) !important;
+                max-width: 860px !important;
                 overflow: hidden !important;
                 display: flex !important;
                 flex-direction: column !important;
             }
+            /* BODY: dikey sıralama — poster üstte, içerik altta scroll */
             .vod-modal-body {
                 display: flex !important;
-                flex-direction: row !important;
-                overflow: hidden !important;
+                flex-direction: column !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
                 flex: 1 !important;
                 min-height: 0 !important;
-                max-height: calc(98vh - 52px) !important;
             }
+            /* POSTER CONTAINER: tam genişlik, üstte */
             .vod-poster-container {
-                flex: 0 0 38% !important;
-                max-width: 280px !important;
+                flex-shrink: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
                 display: flex !important;
                 flex-direction: column !important;
                 background: #000 !important;
-                overflow: hidden !important;
             }
+            /* POSTER WRAPPER: yatayda daha büyük — 16/9 ama max-height artırıldı */
             .vod-poster-wrapper {
                 width: 100% !important;
-                aspect-ratio: unset !important;
-                flex: 1 !important;
-                max-height: none !important;
-                border-bottom: none !important;
-                border-right: 2px solid var(--accent-primary) !important;
+                aspect-ratio: 16 / 9 !important;
+                max-height: 300px !important;
+                flex: unset !important;
+                border-right: none !important;
+                border-bottom: 2px solid var(--accent-primary) !important;
             }
             .vod-poster {
                 width: 100% !important;
                 height: 100% !important;
-                object-fit: contain !important;
-                object-position: center center !important;
+                object-fit: cover !important;
+                object-position: center top !important;
                 background: #000 !important;
             }
+            /* OYNAT BUTONU: tam genişlik, yatay */
             .vod-buttons-group {
                 flex-shrink: 0 !important;
-                padding: 10px 12px !important;
-                gap: 8px !important;
-                flex-direction: column !important;
+                padding: 10px 14px !important;
+                gap: 10px !important;
+                flex-direction: row !important;
                 background: var(--bg-panel) !important;
             }
             .vod-play-btn, .vod-continue-btn {
-                width: 100% !important;
+                flex: 1 !important;
                 padding: 12px 8px !important;
                 font-size: 14px !important;
             }
-            /* SAĞ TARAF — scroll eder, tüm içerik (türler dahil) görünür */
+            /* INFO: flex-shrink 0 — body scroll eder */
             .vod-info-container {
-                flex: 1 !important;
-                min-width: 0 !important;
-                overflow-y: auto !important;
-                overflow-x: hidden !important;
-                -webkit-overflow-scrolling: touch !important;
-                padding: 10px 14px 20px !important;
+                flex-shrink: 0 !important;
+                overflow: visible !important;
+                padding: 12px 16px 20px !important;
                 background: var(--bg-panel) !important;
-                min-height: 0 !important;
             }
             .vod-info-scroll {
                 overflow: visible !important;
                 height: auto !important;
             }
             .vod-title {
-                font-size: 17px !important;
+                font-size: 18px !important;
                 margin-bottom: 6px !important;
             }
             .vod-overview {
                 font-size: 12px !important;
-                max-height: 72px !important;
-                overflow-y: auto !important;
+                max-height: unset !important;
+                overflow-y: visible !important;
                 margin-bottom: 10px !important;
             }
             .vod-meta-item {
@@ -40569,11 +41598,11 @@ if (typeof window.fetchM3UChannels === 'undefined') {
                 padding: 6px 14px !important;
                 font-size: 12px !important;
             }
-            /* Bölümler — kendi scroll eder */
+            /* Bölümler — 3 sütun grid */
             .vod-episodes-container {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
-                max-height: 200px !important;
+                max-height: 280px !important;
                 min-height: 60px !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
@@ -40596,7 +41625,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
             .vod-episode-desc {
                 display: none !important;
             }
-            /* Türler ve oyuncular yatayda da görünür */
+            /* Türler ve oyuncular görünür */
             .vod-genres, .vod-cast {
                 display: block !important;
                 margin-top: 10px !important;
@@ -47856,7 +48885,7 @@ window.channelNumbering = {
     }
 }
 
-/* ══ YATAY MOD (landscape) ══ */
+/* ══ YATAY MOD (landscape) — Poster ÜSTTE, ekrana sığdır ══ */
 @media (orientation: landscape) {
     #vodModal {
         padding: 0 !important;
@@ -47871,108 +48900,124 @@ window.channelNumbering = {
         border: none !important;
         border-top: 2px solid var(--accent-primary, #FFD700) !important;
         border-bottom: 2px solid var(--accent-primary, #FFD700) !important;
-    }
-    .vod-modal-header {
-        padding: 8px 14px !important;
-        flex-shrink: 0 !important;
-    }
-    #vodModalBody {
-        display: flex !important;
-        flex-direction: row !important;
-        flex: 1 1 0 !important;
-        min-height: 0 !important;
-        overflow: hidden !important;
-    }
-    /* Sol: poster + butonlar */
-    #vodPosterContainer {
-        flex: 0 0 220px !important;
-        width: 220px !important;
-        max-width: 220px !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
-        border-right: 2px solid var(--accent-primary, #FFD700) !important;
+    }
+    /* Header: kompakt */
+    .vod-modal-header {
+        padding: 6px 12px !important;
+        flex-shrink: 0 !important;
+        min-height: 0 !important;
+    }
+    .vod-modal-title {
+        font-size: 14px !important;
+    }
+    .vod-modal-close {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    /* BODY: tam yüksekliği doldur, scroll eder */
+    #vodModalBody {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    /* Poster: landscape'te küçük — ekranın max %32'si */
+    #vodPosterContainer {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-right: none !important;
     }
     #vodPosterWrapper {
-        flex: 1 1 0 !important;
         width: 100% !important;
-        max-height: none !important;
+        height: 32vw !important;
+        max-height: 32vw !important;
         aspect-ratio: unset !important;
-        border-bottom: none !important;
+        flex: unset !important;
         border-right: none !important;
+        border-bottom: 2px solid var(--accent-primary, #FFD700) !important;
         overflow: hidden !important;
     }
     #vodPosterWrapper .vod-poster {
         width: 100% !important;
         height: 100% !important;
-        object-fit: contain !important;
-        object-position: center center !important;
+        object-fit: cover !important;
+        object-position: center 20% !important;
         background: #000 !important;
     }
+    /* Butonlar: küçük, yan yana */
     #vodPosterContainer .vod-buttons-group {
-        flex: 0 0 auto !important;
-        flex-direction: column !important;
-        padding: 8px 10px !important;
+        flex-direction: row !important;
+        padding: 6px 10px !important;
         gap: 6px !important;
         background: var(--bg-panel, #1a1a1a) !important;
     }
     #vodPosterContainer .vod-play-btn,
     #vodPosterContainer .vod-continue-btn {
-        width: 100% !important;
-        padding: 10px 6px !important;
-        font-size: 13px !important;
+        flex: 1 !important;
+        padding: 8px 6px !important;
+        font-size: 12px !important;
     }
-    /* Sağ: info scroll eder */
+    /* Info: flex-shrink 0, body scroll eder */
     #vodInfoContainer {
-        flex: 1 1 0 !important;
-        min-width: 0 !important;
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+        padding: 8px 12px 16px !important;
         min-height: 0 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 10px 14px 20px !important;
     }
     #vodInfoScroll {
         overflow: visible !important;
         height: auto !important;
     }
     .vod-title {
-        font-size: 16px !important;
-        margin-bottom: 6px !important;
+        font-size: 15px !important;
+        margin-bottom: 4px !important;
+    }
+    .vod-meta {
+        gap: 4px !important;
+        margin-bottom: 8px !important;
+    }
+    .vod-meta-item {
+        font-size: 10px !important;
+        padding: 2px 7px !important;
     }
     .vod-overview {
-        font-size: 12px !important;
-        max-height: 70px !important;
-        overflow-y: auto !important;
-        margin-bottom: 10px !important;
+        font-size: 11px !important;
+        max-height: 48px !important;
+        overflow: hidden !important;
+        margin-bottom: 8px !important;
     }
     /* Bölümler: 3 sütun, kendi scroll eder */
     #vodEpisodesContainer {
         display: grid !important;
         grid-template-columns: 1fr 1fr 1fr !important;
-        max-height: 185px !important;
-        min-height: 50px !important;
+        max-height: 160px !important;
+        min-height: 40px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         scrollbar-width: thin !important;
         scrollbar-color: rgba(255,215,0,0.4) transparent !important;
-        gap: 6px !important;
+        gap: 5px !important;
     }
     .vod-episode-card {
-        padding: 8px 10px !important;
-        font-size: 12px !important;
+        padding: 7px 8px !important;
+        font-size: 11px !important;
     }
     .vod-episode-desc { display: none !important; }
-    /* Türler info scroll ile görünür */
     #vodModalGenresContainer,
     #vodModalCastContainer,
     #vodModalDirectorContainer {
         display: block !important;
     }
-    .vod-meta-item { font-size: 11px !important; }
-    .vod-section-title { font-size: 13px !important; margin-bottom: 5px !important; }
-    .vod-season-btn { padding: 5px 12px !important; font-size: 11px !important; }
+    .vod-section-title { font-size: 12px !important; margin-bottom: 4px !important; }
+    .vod-season-btn { padding: 4px 10px !important; font-size: 10px !important; }
 }
 </style>
 
@@ -50411,6 +51456,431 @@ document.addEventListener('visibilitychange', function() {
 window.addEventListener('online', function() {
     if (_watching && !_blocked) setTimeout(_doCheck, 2000);
 });
+
+})();
+</script>
+
+
+<script>
+(function(){
+    document.addEventListener('touchstart', function(e){
+        var t = e.touches[0]; if(!t) return;
+        var rgb = (getComputedStyle(document.documentElement).getPropertyValue('--accent-primary-rgb')||'255,215,0').trim();
+        var sz = Math.max(window.innerWidth, window.innerHeight);
+        var d = document.createElement('div');
+        d.style.cssText = [
+            'position:fixed',
+            'left:'+t.clientX+'px',
+            'top:'+t.clientY+'px',
+            'width:'+sz+'px',
+            'height:'+sz+'px',
+            'margin-left:'+(-sz/2)+'px',
+            'margin-top:'+(-sz/2)+'px',
+            'border-radius:50%',
+            'background:radial-gradient(circle,rgba('+rgb+',0.5) 0%,rgba('+rgb+',0) 60%)',
+            'pointer-events:none',
+            'z-index:2147483647',
+            'opacity:1'
+        ].join(';');
+        document.body.appendChild(d);
+        /* opacity 1→0 animate */
+        d.animate([{opacity:1,transform:'scale(0.1)'},{opacity:0,transform:'scale(0.6)'}],
+                  {duration:600,easing:'ease-out',fill:'forwards'})
+         .onfinish = function(){ d.remove(); };
+    },{passive:true,capture:true});
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ÜMİT TV — 10 KASIM ATATÜRK ANMA EKRANI
+     Her yıl 10 Kasım'da 1 dakika siren + siluet + anı mesajı
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+#ataturk-memorial {
+    position: fixed;
+    inset: 0;
+    z-index: 9999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0);
+    transition: background 3s ease;
+    pointer-events: none;
+}
+#ataturk-memorial.active {
+    display: flex;
+    pointer-events: all;
+}
+#ataturk-memorial.fade-in {
+    background: rgba(0,0,0,0.88);
+}
+
+/* Siluet SVG kapsayıcı */
+#ataturk-silhouette-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 4s ease, transform 4s ease;
+}
+#ataturk-silhouette-wrap.appear {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Siluet SVG */
+#ataturk-svg {
+    width: min(260px, 55vw);
+    height: auto;
+    filter:
+        drop-shadow(0 0 30px rgba(255,215,0,0.25))
+        drop-shadow(0 0 60px rgba(255,215,0,0.1));
+}
+
+/* Alt mesaj — el yazısı */
+#ataturk-text-wrap {
+    margin-top: 28px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 3s ease 0.5s;
+}
+#ataturk-text-wrap.appear {
+    opacity: 1;
+}
+
+#ataturk-quote {
+    font-family: 'Dancing Script', 'Brush Script MT', 'Segoe Script', cursive;
+    font-size: clamp(18px, 4vw, 30px);
+    font-weight: 700;
+    color: rgba(255,255,255,0.92);
+    line-height: 1.5;
+    text-shadow:
+        0 0 20px rgba(255,215,0,0.3),
+        0 2px 4px rgba(0,0,0,0.8);
+    letter-spacing: 0.5px;
+}
+
+#ataturk-signature {
+    font-family: 'Dancing Script', 'Brush Script MT', 'Segoe Script', cursive;
+    font-size: clamp(13px, 2.5vw, 18px);
+    color: rgba(255,215,0,0.75);
+    margin-top: 10px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(255,215,0,0.3);
+}
+
+/* Üst kırmızı şerit — yas */
+#ataturk-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, #e74c3c 20%, #c0392b 50%, #e74c3c 80%, transparent);
+    opacity: 0;
+    transition: opacity 2s ease 1s;
+}
+#ataturk-top-bar.appear { opacity: 1; }
+
+/* Saat göstergesi */
+#ataturk-clock {
+    position: absolute;
+    bottom: 36px;
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(12px, 3vw, 16px);
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 3px;
+    opacity: 0;
+    transition: opacity 2s ease 2s;
+}
+#ataturk-clock.appear { opacity: 1; }
+
+/* Sayaç çubuğu */
+#ataturk-progress {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+}
+#ataturk-progress-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+    transform-origin: left center;
+    transform: scaleX(1);
+    transition: transform 60s linear;
+}
+#ataturk-progress-bar.running {
+    transform: scaleX(0);
+}
+</style>
+
+<!-- El yazısı fontu -->
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+
+<div id="ataturk-memorial">
+    <div id="ataturk-top-bar"></div>
+
+    <div id="ataturk-silhouette-wrap">
+        <!-- Atatürk silueti — SVG path -->
+        <svg id="ataturk-svg" viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <!-- Siluet: baş, boyun, omuzlar, gövde — stilize profil -->
+            <path d="
+                M150 20
+                C138 20 126 26 120 36
+                C112 48 112 60 116 72
+                C110 76 106 84 108 94
+                C110 102 116 108 122 110
+                C124 120 128 130 134 136
+                C128 142 122 152 118 162
+                C112 174 108 188 106 202
+                C102 218 100 234 100 250
+                C96 256 88 260 82 266
+                C72 276 64 288 60 302
+                C56 314 56 326 58 338
+                L242 338
+                C244 326 244 314 240 302
+                C236 288 228 276 218 266
+                C212 260 204 256 200 250
+                C200 234 198 218 194 202
+                C192 188 188 174 182 162
+                C178 152 172 142 166 136
+                C172 130 176 120 178 110
+                C184 108 190 102 192 94
+                C194 84 190 76 184 72
+                C188 60 188 48 180 36
+                C174 26 162 20 150 20Z
+                M58 338 L58 380 C58 392 68 400 80 400 L220 400 C232 400 242 392 242 380 L242 338Z
+            " fill="rgba(255,255,255,0.85)"/>
+            <!-- Yaka / ceket detayı -->
+            <path d="
+                M150 338 L130 360 L120 400 L150 390 L180 400 L170 360 Z
+            " fill="rgba(0,0,0,0.3)"/>
+            <!-- Omuz epaulette sol -->
+            <path d="M100 250 C92 252 82 258 76 268 L90 270 Z" fill="rgba(255,255,255,0.6)"/>
+            <!-- Omuz epaulette sağ -->
+            <path d="M200 250 C208 252 218 258 224 268 L210 270 Z" fill="rgba(255,255,255,0.6)"/>
+        </svg>
+
+        <div id="ataturk-text-wrap">
+            <div id="ataturk-quote">
+                Atamızı saygı ve hasretle anıyoruz
+            </div>
+            <div id="ataturk-signature">— Ümitm0d</div>
+        </div>
+    </div>
+
+    <div id="ataturk-clock">09 : 05</div>
+    <div id="ataturk-progress"><div id="ataturk-progress-bar"></div></div>
+</div>
+
+<script>
+/* ═══ 10 KASIM ATATÜRK ANMA SİSTEMİ ═══ */
+(function() {
+'use strict';
+
+var DURATION_MS = 60000; // 1 dakika
+var _memorialActive = false;
+var _memorialTimer  = null;
+var _sirenCtx       = null;
+
+function is10Kasim() {
+    var now = new Date();
+    return now.getMonth() === 10 && now.getDate() === 10; // Ay 0-indexed: 10 = Kasım
+}
+
+/* Web Audio API ile siren sesi üret */
+function createSiren(ctx) {
+    var duration = DURATION_MS / 1000; // saniye
+
+    /* Ana siren — uzun legato dalga */
+    function makeSirenLayer(baseFreq, modFreq, modDepth, gainVal, startTime) {
+        var osc      = ctx.createOscillator();
+        var modOsc   = ctx.createOscillator();
+        var modGain  = ctx.createGain();
+        var mainGain = ctx.createGain();
+        var filter   = ctx.createBiquadFilter();
+
+        osc.type       = 'sawtooth';
+        osc.frequency.value = baseFreq;
+
+        modOsc.type    = 'sine';
+        modOsc.frequency.value = modFreq;
+        modGain.gain.value     = modDepth;
+        modOsc.connect(modGain);
+        modGain.connect(osc.frequency);
+
+        filter.type            = 'lowpass';
+        filter.frequency.value = 1800;
+        filter.Q.value         = 0.8;
+
+        mainGain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+        mainGain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + startTime + 2.5);
+        mainGain.gain.setValueAtTime(gainVal, ctx.currentTime + startTime + duration - 5);
+        mainGain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration - 0.5);
+
+        osc.connect(filter);
+        filter.connect(mainGain);
+        mainGain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration);
+        modOsc.start(ctx.currentTime + startTime);
+        modOsc.stop(ctx.currentTime + startTime + duration);
+    }
+
+    /* Periyodik frekans salınımı — siren efekti */
+    function makePulsingLayer(baseFreq, highFreq, period, gainVal, startTime) {
+        var osc   = ctx.createOscillator();
+        var gain  = ctx.createGain();
+        var lfo   = ctx.createOscillator();
+        var lfoG  = ctx.createGain();
+
+        osc.type = 'sine';
+        lfo.type = 'sine';
+        lfo.frequency.value = 1 / period;
+
+        var spread = (highFreq - baseFreq) / 2;
+        lfoG.gain.value = spread;
+        osc.frequency.value = baseFreq + spread;
+
+        lfo.connect(lfoG);
+        lfoG.connect(osc.frequency);
+
+        gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+        gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + startTime + 3);
+        gain.gain.setValueAtTime(gainVal, ctx.currentTime + startTime + duration - 4);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration - 0.3);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration);
+        lfo.start(ctx.currentTime + startTime);
+        lfo.stop(ctx.currentTime + startTime + duration);
+    }
+
+    /* Katmanlar */
+    makePulsingLayer(420, 780, 4.5, 0.22, 0);
+    makePulsingLayer(380, 720, 5.2, 0.16, 0.1);
+    makeSirenLayer(560, 0.18, 140, 0.12, 0.3);
+    makePulsingLayer(200, 400, 6,   0.08, 0.5);
+}
+
+/* Son saniye: yazı belir */
+function showFinalText() {
+    var wrap = document.getElementById('ataturk-text-wrap');
+    if (wrap) wrap.classList.add('appear');
+}
+
+/* Anma ekranını başlat */
+function startMemorial() {
+    if (_memorialActive) return;
+    _memorialActive = true;
+
+    var el = document.getElementById('ataturk-memorial');
+    if (!el) return;
+
+    /* Göster */
+    el.style.display = 'flex';
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            el.classList.add('active', 'fade-in');
+
+            /* Üst bar */
+            var bar = document.getElementById('ataturk-top-bar');
+            if (bar) setTimeout(function(){ bar.classList.add('appear'); }, 500);
+
+            /* Siluet */
+            var wrap = document.getElementById('ataturk-silhouette-wrap');
+            if (wrap) setTimeout(function(){ wrap.classList.add('appear'); }, 1200);
+
+            /* Saat */
+            var clk = document.getElementById('ataturk-clock');
+            if (clk) setTimeout(function(){ clk.classList.add('appear'); }, 1800);
+
+            /* İlerleme çubuğu */
+            var pb = document.getElementById('ataturk-progress-bar');
+            if (pb) setTimeout(function(){ pb.classList.add('running'); }, 200);
+
+            /* Son 3 saniyede yazı */
+            setTimeout(showFinalText, DURATION_MS - 3000);
+
+            /* Siren */
+            try {
+                var AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    _sirenCtx = new AudioCtx();
+                    createSiren(_sirenCtx);
+                }
+            } catch(e) {}
+
+            /* 1 dakika sonra kapat */
+            _memorialTimer = setTimeout(endMemorial, DURATION_MS);
+        });
+    });
+
+    /* Tıklama / tuş ile kapatma YOK — tam süre beklemeli */
+}
+
+/* Anma ekranını kapat */
+function endMemorial() {
+    _memorialActive = false;
+    if (_memorialTimer) { clearTimeout(_memorialTimer); _memorialTimer = null; }
+
+    var el = document.getElementById('ataturk-memorial');
+    if (!el) return;
+
+    el.classList.remove('fade-in');
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.style.display = 'none';
+
+        /* Siluet ve yazıyı sıfırla (sonraki sefer için) */
+        var wrap = document.getElementById('ataturk-silhouette-wrap');
+        var txt  = document.getElementById('ataturk-text-wrap');
+        var bar  = document.getElementById('ataturk-top-bar');
+        var clk  = document.getElementById('ataturk-clock');
+        var pb   = document.getElementById('ataturk-progress-bar');
+        if (wrap) wrap.classList.remove('appear');
+        if (txt)  txt.classList.remove('appear');
+        if (bar)  bar.classList.remove('appear');
+        if (clk)  clk.classList.remove('appear');
+        if (pb)   { pb.classList.remove('running'); pb.style.transform = 'scaleX(1)'; }
+
+        /* Audio context kapat */
+        try { if (_sirenCtx) { _sirenCtx.close(); _sirenCtx = null; } } catch(e) {}
+    }, 1200);
+}
+
+/* 10 Kasım kontrolü */
+function check10Kasim() {
+    if (!is10Kasim()) return;
+
+    /* Bugün zaten gösterildi mi? */
+    var key = 'umittv_10kasim_' + new Date().getFullYear();
+    try {
+        if (sessionStorage.getItem(key)) return; /* Aynı oturumda bir kere */
+        sessionStorage.setItem(key, '1');
+    } catch(e) {}
+
+    /* Sayfa açıldıktan 2 saniye sonra başlat */
+    setTimeout(startMemorial, 2000);
+}
+
+/* DOMContentLoaded sonrası başlat */
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', check10Kasim);
+} else {
+    setTimeout(check10Kasim, 500);
+}
+
+/* Global: test için açık bırak */
+window._testAtaturkMemorial = startMemorial;
+window._endAtaturkMemorial  = endMemorial;
 
 })();
 </script>

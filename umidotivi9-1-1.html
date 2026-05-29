@@ -676,10 +676,7 @@
     outline-offset: 1px !important;
     box-shadow: none !important;
 }
-.header-btn:focus {
-    outline: none !important;
-    box-shadow: none !important;
-}
+.header-btn:focus { outline: none !important; box-shadow: none !important; }
 .header-btn.remote-focused {
     background: rgba(255,215,0,0.18) !important;
 }
@@ -10246,15 +10243,10 @@ function dpadFocus(el) {
     document.querySelectorAll('.dpad-focused').forEach(e => e.classList.remove('dpad-focused'));
     if (!el) return;
     el.classList.add('dpad-focused');
-
     try { el.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
-
-    /* Input/textarea'ya focus() ÇAĞIRMA — klavye açılır.
-       Sadece butonlara gerçek focus ver (erişilebilirlik için). */
     if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
         try { el.focus({ preventScroll: true }); } catch(e) {}
     } else {
-        /* Input odaklanmışsa blur yap — klavyeyi kapat */
         if (document.activeElement && document.activeElement !== document.body) {
             try { document.activeElement.blur(); } catch(e) {}
         }
@@ -10925,26 +10917,36 @@ function doLogin() {
         });
         
 
-        (function _focusSearchBtn() {
-            const btn = document.getElementById('btnSearch');
-            if (!btn) return;
-            
-
+        (function _waitChannelsAfterLogin() {
             if (!window.state || !window.state.remote) {
-                setTimeout(_focusSearchBtn, 100);
-                return;
+                setTimeout(_waitChannelsAfterLogin, 100); return;
             }
             document.querySelectorAll('.dpad-focused, .remote-focused').forEach(el => {
                 el.classList.remove('dpad-focused', 'remote-focused');
             });
             state.remote.active = true;
-            state.remote.zone = 'header';
-            const _hb = state.remote.headerButtons || ['btnSearch'];
-            state.remote.headerIndex = _hb.indexOf('btnSearch');
-            if (state.remote.headerIndex < 0) state.remote.headerIndex = 0;
-            btn.classList.add('remote-focused');
-            try { btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
-            try { btn.focus({ preventScroll: true }); } catch(e) {}
+            state.remote.zone = 'channels';
+            state.remote.index = 0;
+            const firstCard = document.querySelector('#channelsGrid .channel-card, #channelsGrid .vod-card-wrap');
+            if (firstCard) {
+                firstCard.classList.add('remote-focused');
+                try { firstCard.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
+            } else {
+                document.addEventListener('umittv_channels_ready', function _lf() {
+                    document.removeEventListener('umittv_channels_ready', _lf);
+                    setTimeout(function() {
+                        const card = document.querySelector('#channelsGrid .channel-card, #channelsGrid .vod-card-wrap');
+                        if (card && window.state && window.state.remote) {
+                            document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+                            state.remote.active = true;
+                            state.remote.zone = 'channels';
+                            state.remote.index = 0;
+                            card.classList.add('remote-focused');
+                            try { card.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
+                        }
+                    }, 200);
+                });
+            }
         })();
     }, 400);
 }
@@ -11244,17 +11246,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     
 
                     const hashToSend = saved.password_hash || await sha256('');
-                    const r = await fetch(WORKER + '/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            telegram_id:  currentTelegramId,
-                            password:     hashToSend,
-                            device_id:    device_id,
-                            device_name:  device_name
-                        })
-                    });
-                    const res = await r.json();
+                    // ── 8 saniye timeout: Worker yavaşsa sonsuza bekleme, cached auth ile devam et ──
+                    const _loginCtrl = new AbortController();
+                    const _loginTimeout = setTimeout(() => _loginCtrl.abort(), 8000);
+                    let r, res;
+                    try {
+                        r = await fetch(WORKER + '/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            signal: _loginCtrl.signal,
+                            body: JSON.stringify({
+                                telegram_id:  currentTelegramId,
+                                password:     hashToSend,
+                                device_id:    device_id,
+                                device_name:  device_name
+                            })
+                        });
+                        res = await r.json();
+                        clearTimeout(_loginTimeout);
+                    } catch(_fetchErr) {
+                        // Timeout veya ağ hatası: cached auth ile offline devam
+                        clearTimeout(_loginTimeout);
+                        if (overlay) overlay.classList.add('hidden');
+                        document.dispatchEvent(new Event('umittv_login_ok'));
+                        return;
+                    }
                     if (!res.success) {
                         
 
@@ -11289,7 +11305,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         return;
                     }
-                } catch(e) {   }
+                } catch(e) {
+                    // Beklenmedik hata — overlay gizle, devam et
+                    if (overlay) overlay.classList.add('hidden');
+                    document.dispatchEvent(new Event('umittv_login_ok'));
+                    return;
+                }
                 
 
                 if (overlay) overlay.classList.add('hidden');
@@ -11447,30 +11468,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="material-symbols-outlined">search</span>
             </button>
             
-            <button class="header-btn sleep-mode-btn" id="btnSleepMode" onclick="openSleepModeModal()" tabindex="-1">
+            <button class="header-btn sleep-mode-btn" id="btnSleepMode" onclick="openSleepModeModal()">
                 <span class="material-symbols-outlined">bedtime</span>
             </button>
             
-            <button class="header-btn grid-scale-btn" id="btnGridCols" onclick="cycleGridCols()" title="Sütun Sayısı Değiştir" tabindex="-1">
+            <button class="header-btn grid-scale-btn" id="btnGridCols" onclick="cycleGridCols()" title="Sütun Sayısı Değiştir">
                 <span class="material-symbols-outlined">grid_view</span>
                 <span id="gridColsLabel" style="font-size:13px;font-weight:700;line-height:1;min-width:14px;text-align:center;">4</span>
             </button>
-            <button class="header-btn theme-btn" id="btnTheme" onclick="openThemeModal()" tabindex="-1">
+            <button class="header-btn theme-btn" id="btnTheme" onclick="openThemeModal()">
                 <span class="material-symbols-outlined">palette</span>
             </button>
-            <button class="header-btn" id="btnSettings" onclick="openSettingsModal()" tabindex="-1">
+            <button class="header-btn" id="btnSettings" onclick="openSettingsModal()">
                 <span class="material-symbols-outlined">settings</span>
             </button>
-            <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()" tabindex="-1">
+            <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()">
                 <span class="material-symbols-outlined">refresh</span>
             </button>
-            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()" tabindex="-1">
+            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()">
                 <span class="material-symbols-outlined">touch_app</span>
             </button>
-            <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)" tabindex="-1">
+            <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/m3u.svg" alt="Add M3U" class="svg-icon">
             </button>
-            <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;" tabindex="-1">
+            <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
                 <span class="material-symbols-outlined">groups</span>
                 <span id="wpActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#ff4757;border-radius:50%;border:1px solid #000;animation:wpDotBlink 1s infinite;"></span>
             </button>
@@ -24857,13 +24878,20 @@ function showNoConfigUI() {
             // Config başarılı yüklenince backup'a kaydet (offline fallback için)
             try { localStorage.setItem('app_config_backup', JSON.stringify(conf)); } catch(e) {}
 
-            // ── TÜM M3U LİSTELERİNİ OTOMATİK YÜKLE ──
-            // selectedM3U = 'all' → loadAllChannels tüm listeleri zaten birleştiriyor
-            state.selectedM3U = 'all';
+            // ── M3U SEÇİMİ: önce cache'den restore, yoksa 'all' ile başla ──
+            // selectedM3U zaten cache'den restore edilmişse üzerine yazma
+            if (state.selectedM3U === undefined || state.selectedM3U === null) {
+                state.selectedM3U = 'all';
+            }
+            // 0 değeri falsy ama geçerli index — 'all' string'i daha güvenli başlangıç
+            // İlk açılışta (cache yok) 'all' ile başla → tüm kanallar gelir, filtre sorunu olmaz
+            if (state.selectedM3U === 0 && !localStorage.getItem('quick_channels_cache_v2')) {
+                state.selectedM3U = 'all';
+            }
             try { localStorage.setItem('quick_channels_cache_v2',
                 JSON.stringify(Object.assign(
                     JSON.parse(localStorage.getItem('quick_channels_cache_v2') || '{}'),
-                    { selectedM3U: 'all' }
+                    { selectedM3U: state.selectedM3U }
                 ))
             ); } catch(e) {}
             renderM3USelector();
@@ -24993,18 +25021,19 @@ async function loadAllChannels(forceRefresh = false) {
                 if (idbChannels.length > 0) {
                     const unique = removeDuplicateChannels(idbChannels);
                     state.channels = unique; fixChannelNames(state.channels);
-                    
 
-                    const catSet = new Set(['Favoriler', 'Devam Et']);
-                    unique.forEach(c => { if (c.group) catSet.add(c.group); });
-                    const radioName = window.RADIO_CATEGORY_NAME || 'Radyo';
-                    state.cats = ['Tümü', ...Array.from(catSet)].filter(c => c !== radioName);
-                    if (Array.from(catSet).includes(radioName)) state.cats.push(radioName);
+                    state.selectedM3U = 'all';
                     state.activeCat = 'all';
                     state.sidebar.currentCategory = 'all';
-                    state.filtered = unique; fixChannelNames(state.filtered);
-                    immediateRenderChannels();
+                    state.filtered = state.channels.filter(c => c.listIdx !== undefined);
+                    if (state.filtered.length === 0) state.filtered = [...state.channels];
+                    if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
+                    else if (typeof updateCategories === 'function') updateCategories();
                     renderCats();
+                    renderChannels();
+                    updateChannelCount(state.filtered.length);
+                    document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
+                    renderM3USelector();
                     loadQuickUserData();
                     
                     // Kanallar cache'den hazır — auto-play dinleyicilerini tetikle
@@ -25069,16 +25098,19 @@ async function loadAllChannels(forceRefresh = false) {
                     
                     
 
-                    immediateRenderChannels();
+                    state.selectedM3U = state.selectedM3U === undefined ? 'all' : state.selectedM3U;
+                    state.activeCat = 'all';
+                    state.filtered = state.channels.filter(c => c.listIdx !== undefined);
+                    if (state.filtered.length === 0) state.filtered = [...state.channels];
+                    if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
+                    else if (typeof updateCategories === 'function') updateCategories();
                     renderCats();
-                    
-                    
-
+                    renderChannels();
+                    updateChannelCount(state.filtered.length);
+                    document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
+                    renderM3USelector();
                     loadQuickUserData();
-                    
-                    // Kanallar cache'den hazır — auto-play dinleyicilerini tetikle
                     try { document.dispatchEvent(new Event('umittv_channels_ready')); } catch(e) {}
-                    
 
                     setTimeout(() => loadFreshChannelsInBackground(forceRefresh), 5000);
                     
@@ -25504,16 +25536,17 @@ function immediateRenderChannels() {
     
 
     if (state.selectedM3U === 'all') {
-        
-
-        
-
+        // Tüm kanalları göster
+        if (state.channels && state.channels.length > 0) {
+            state.filtered = [...state.channels];
+        }
     } else {
-        
-
         const listChannels = state.channels.filter(c => c.listIdx == state.selectedM3U);
         if (listChannels.length > 0) {
             state.filtered = listChannels;
+        } else if (state.channels && state.channels.length > 0) {
+            // listIdx filtresi boş dönüyorsa tüm kanalları göster
+            state.filtered = [...state.channels];
         }
     }
     
@@ -25741,17 +25774,22 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
         if (quickChannels.length > 0) {
             const uniqueChannels = removeDuplicateChannels(quickChannels);
             state.channels = uniqueChannels; fixChannelNames(state.channels);
-            
-            
 
-            immediateRenderChannels();
-            
-            
+            // ── selectM3U('all') ile aynı render mantığı — en güvenilir yol ──
+            state.selectedM3U = 'all';
+            state.activeCat = 'all';
+            state.filtered = state.channels.filter(c => c.listIdx !== undefined);
+            if (state.filtered.length === 0) state.filtered = [...state.channels];
+            if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
+            else if (typeof updateCategories === 'function') updateCategories();
+            if (typeof renderCats === 'function') renderCats();
+            renderChannels();
+            updateChannelCount(state.filtered.length);
+            document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
+            renderM3USelector();
 
             loadFavoritesFromStorage();
-            // Kanallar fetch'ten hazır — auto-play tetikle
             try { document.dispatchEvent(new Event('umittv_channels_ready')); } catch(e) {}
-            
         }
         
         
@@ -26325,15 +26363,12 @@ notificationStyle.textContent = `
 `;
 document.head.appendChild(notificationStyle);
 
-// refreshBtn listener — loadAllChannels ana init'te (loadConfig→processConfig) çağrılıyor,
-// burada tekrar çağırmak login/config tamamlanmadan boş parse'a yol açıyordu.
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('refreshBtn')?.addEventListener('click', async () => {
         showNotification('Kanallar yenileniyor...', 'info');
         await loadAllChannels(true);
         showNotification('Kanallar yenilendi!', 'success');
     });
-
     document.addEventListener('click', (e) => {
         const favBtn = e.target.closest('.favorite-btn');
         if (favBtn) {
@@ -38517,9 +38552,12 @@ function cleanupDeleteContinueModalRemote() {
             state.remote.zone = 'continueCards';
             state.remote.continueCards.selectedCardIndex = 0;
             state.remote.continueCards.selectedButtonIndex = 0;
-            // tabindex garantile
             document.querySelectorAll('.continue-card').forEach(c => { if (!c.getAttribute('tabindex')) c.setAttribute('tabindex', '0'); });
             updateContinueCardsFocus();
+        } else {
+            state.remote.zone = 'categories';
+            state.remote.catIndex = 0;
+            updateRemoteFocus();
         }
         return;
     }
@@ -40131,9 +40169,10 @@ function waitForAppReady() {
             if (!state.channels || state.channels.length === 0) {
                 loadAllChannels(false);
             }
-        } else if (tries >= 10) {
+        } else if (tries >= 30) {
+            // 15 saniye beklendi (30 x 500ms) — m3uList hâlâ boş, config gelmedi
+            // loadAllChannels çağırma — boş m3uList ile çağırmak işe yaramaz
             clearInterval(checkInterval);
-            if (typeof loadAllChannels === 'function') loadAllChannels(false);
         }
     }, 500);
     setTimeout(function() { clearInterval(checkInterval); }, 15000);

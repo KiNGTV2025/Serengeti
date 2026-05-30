@@ -14041,32 +14041,42 @@ const UmitSecurityManager = (function () {
           </div>`;
 
         function _forceClose() {
-            // AppCreator24 / Android WebView kapatma yöntemleri
+            // TVBox / Android WebView kapatma denemeleri
             try { window.close(); } catch(e) {}
             try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
             try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
             try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
             try { if (window.JSBridge && window.JSBridge.exitApp) window.JSBridge.exitApp(); } catch(e) {}
-            // AppCreator24 özel scheme denemeleri
-            try { window.location.href = 'android:close'; } catch(e) {}
-            try { window.location.href = 'app:close'; } catch(e) {}
-            try { history.go(-(history.length + 10)); } catch(e) {}
-            try { window.location.replace('about:blank'); } catch(e) {}
-            // DOM'u komple yok et
-            setTimeout(function() {
-                try {
-                    document.documentElement.innerHTML =
-                        '<html><body style="background:#000;margin:0"></body></html>';
-                } catch(e) {}
-                // video/ses durdur
-                try {
-                    document.querySelectorAll('video,audio').forEach(function(v) {
-                        v.pause(); v.src = ''; v.load();
-                    });
-                } catch(e) {}
-                // Script'leri durdur
-                try { window.stop && window.stop(); } catch(e) {}
-            }, 100);
+            // Telefondan açılıyorsa (bridge çalışmadıysa) — login sayfasına yönlendir
+            // Overlay'i kaldır, sayfayı sıfırla
+            try {
+                var _ov = document.getElementById('__umit_sec_overlay');
+                if (_ov) _ov.remove();
+                document.body.removeAttribute('inert');
+                document.body.style.pointerEvents = '';
+                document.body.style.filter = '';
+            } catch(e) {}
+            // Login sayfasına yönlendir — VPN'i kapat uyarısı ile
+            try {
+                var _loginOv = document.getElementById('loginOverlay');
+                if (_loginOv) {
+                    _loginOv.classList.remove('hidden');
+                    _loginOv.style.opacity = '1';
+                }
+                // Tüm login adımlarını kapat, ilk adımı göster
+                document.querySelectorAll('.login-step').forEach(function(s) { s.classList.remove('active'); });
+                var _firstStep = document.querySelector('.login-step');
+                if (_firstStep) _firstStep.classList.add('active');
+                // Uyarı mesajı göster (status1 = loginStep1'deki hata kutusu)
+                var _vpnMsg = document.getElementById('status1');
+                if (_vpnMsg) {
+                    _vpnMsg.className = 'login-status error';
+                    _vpnMsg.innerHTML = '⚠️ VPN / Proxy tespit edildi.<br>Lütfen VPN'i kapatıp tekrar deneyin.';
+                }
+            } catch(e) {
+                // Login overlay bulunamazsa sayfayı yenile
+                try { location.reload(); } catch(e2) {}
+            }
         }
 
         // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar

@@ -13945,8 +13945,14 @@ const UmitSecurityManager = (function () {
 
         // ── Tüm klavye / kumanda / remote olaylarını yakala ve durdur ──
         const _blockEvent = function(e) {
-            // Kapatma butonuna tıklamayı bloklamıyoruz
-            if (e.target && e.target.id === '__umit_close_btn') return;
+            // Kapatma butonuna tıklamayı bloklamıyoruz (target veya closest ile)
+            try {
+                var _t = e.target;
+                while (_t) {
+                    if (_t.id === '__umit_close_btn') return;
+                    _t = _t.parentElement;
+                }
+            } catch(_) {}
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
@@ -14041,42 +14047,13 @@ const UmitSecurityManager = (function () {
           </div>`;
 
         function _forceClose() {
-            // TVBox / Android WebView kapatma denemeleri
+            // http://action_exit — AppCreator24 uygulamayı kapatır
+            try { window.location.href = 'http://action_exit'; } catch(e) {}
+            // Fallback: diğer bridge yöntemleri
             try { window.close(); } catch(e) {}
             try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
             try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
             try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
-            try { if (window.JSBridge && window.JSBridge.exitApp) window.JSBridge.exitApp(); } catch(e) {}
-            // Telefondan açılıyorsa (bridge çalışmadıysa) — login sayfasına yönlendir
-            // Overlay'i kaldır, sayfayı sıfırla
-            try {
-                var _ov = document.getElementById('__umit_sec_overlay');
-                if (_ov) _ov.remove();
-                document.body.removeAttribute('inert');
-                document.body.style.pointerEvents = '';
-                document.body.style.filter = '';
-            } catch(e) {}
-            // Login sayfasına yönlendir — VPN'i kapat uyarısı ile
-            try {
-                var _loginOv = document.getElementById('loginOverlay');
-                if (_loginOv) {
-                    _loginOv.classList.remove('hidden');
-                    _loginOv.style.opacity = '1';
-                }
-                // Tüm login adımlarını kapat, ilk adımı göster
-                document.querySelectorAll('.login-step').forEach(function(s) { s.classList.remove('active'); });
-                var _firstStep = document.querySelector('.login-step');
-                if (_firstStep) _firstStep.classList.add('active');
-                // Uyarı mesajı göster (status1 = loginStep1'deki hata kutusu)
-                var _vpnMsg = document.getElementById('status1');
-                if (_vpnMsg) {
-                    _vpnMsg.className = 'login-status error';
-                    _vpnMsg.innerHTML = "⚠️ VPN / Proxy tespit edildi.<br>Lütfen VPN'i kapatıp tekrar deneyin.";
-                }
-            } catch(e) {
-                // Login overlay bulunamazsa sayfayı yenile
-                try { location.reload(); } catch(e2) {}
-            }
         }
 
         // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
@@ -14095,9 +14072,9 @@ const UmitSecurityManager = (function () {
                 _closeBtn.focus();
             }
 
-            // Geri sayım timer — 10 saniye sonra _forceClose çağır
+            // Geri sayım timer — 5 saniye sonra _forceClose çağır
             var _cdEl = document.getElementById('__umit_countdown');
-            var _cdSec = 10;
+            var _cdSec = 5;
             function _updateCd() {
                 if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye içinde kapatılıyor...';
             }

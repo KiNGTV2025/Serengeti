@@ -14047,48 +14047,45 @@ const UmitSecurityManager = (function () {
           </div>`;
 
         function _forceClose() {
-            // http://action_exit — AppCreator24 uygulamayı kapatır
-            try { window.location.href = 'http://action_exit'; } catch(e) {}
-            // Fallback: diğer bridge yöntemleri
-            try { window.close(); } catch(e) {}
-            try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
-            try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
-            try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
+            // Mevcut çalışan closeAppSafely() fonksiyonunu kullan
+            if (typeof closeAppSafely === 'function') {
+                closeAppSafely();
+            } else {
+                try { window.location.href = 'http://action_exit'; } catch(e) {}
+                setTimeout(function() { try { location.href = 'about:blank'; } catch(e) {} }, 500);
+            }
         }
 
-        // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
-        (document.documentElement || document.body).appendChild(overlay);
+        // body'e ekle
+        (document.body || document.documentElement).appendChild(overlay);
 
-        // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
-        setTimeout(function() {
-            // getElementById yerine overlay.querySelector — documentElement append sonrası güvenli
-            var _closeBtn = overlay.querySelector('#__umit_close_btn');
-            if (_closeBtn) {
-                _closeBtn.addEventListener('click', function() { _forceClose(); });
-                _closeBtn.addEventListener('touchend', function(e) { e.preventDefault(); _forceClose(); });
-                // TVBox D-pad için Enter/OK
-                _closeBtn.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
-                });
-                _closeBtn.focus();
-            }
+        // Buton + countdown — setTimeout yok, doğrudan overlay üzerinden
+        var _closeBtn = overlay.querySelector('#__umit_close_btn');
+        var _cdEl     = overlay.querySelector('#__umit_countdown');
 
-            // Geri sayım timer — 5 saniye sonra _forceClose çağır
-            var _cdEl = overlay.querySelector('#__umit_countdown');
-            var _cdSec = 5;
-            function _updateCd() {
-                if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye icinde kapatiliyor...';
-            }
+        if (_closeBtn) {
+            _closeBtn.onclick    = function() { _forceClose(); };
+            _closeBtn.ontouchend = function(e) { e.preventDefault(); _forceClose(); };
+            _closeBtn.onkeydown  = function(e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
+            };
+            try { _closeBtn.focus(); } catch(e) {}
+        }
+
+        // Geri sayım — 5 saniye
+        var _cdSec = 5;
+        function _updateCd() {
+            if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye icinde kapatiliyor...';
+        }
+        _updateCd();
+        var _cdTimer = setInterval(function() {
+            _cdSec--;
             _updateCd();
-            var _cdTimer = setInterval(function() {
-                _cdSec--;
-                _updateCd();
-                if (_cdSec <= 0) {
-                    clearInterval(_cdTimer);
-                    _forceClose();
-                }
-            }, 1000);
-        }, 50);
+            if (_cdSec <= 0) {
+                clearInterval(_cdTimer);
+                _forceClose();
+            }
+        }, 1000);
 
         // Overlay'e focus ver — kumanda odağı burada kalsın
         try { overlay.focus(); } catch(e) {}

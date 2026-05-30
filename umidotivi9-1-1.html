@@ -14034,6 +14034,7 @@ const UmitSecurityManager = (function () {
                 color:#fff;letter-spacing:2px;cursor:pointer;
                 box-shadow:0 0 20px rgba(255,0,0,0.4);
                 text-transform:uppercase;
+                pointer-events:auto;position:relative;z-index:2147483647;
             ">✖ KAPAT</button>
             <div style="font-size:10px;color:rgba(255,80,80,0.4);letter-spacing:2px;text-transform:uppercase;">
               ÜMİT TV SECURITY SYSTEM v2
@@ -14118,8 +14119,9 @@ const UmitSecurityManager = (function () {
                     } catch(e) {}
                 }
                 document.body.style.filter = 'none';
-                document.body.style.pointerEvents = 'none';
-                document.body.setAttribute('inert', '');
+                // NOT: pointer events body üzerinde kapatılmıyor — KAPAT butonu çalışabilsin
+                // document.body.style.pointerEvents = 'none';
+                // document.body.setAttribute('inert', '');
             }).observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['inert','style'] });
         } catch(e) {}
 

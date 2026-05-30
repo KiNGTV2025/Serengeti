@@ -13945,22 +13945,16 @@ const UmitSecurityManager = (function () {
 
         // ── Tüm klavye / kumanda / remote olaylarını yakala ve durdur ──
         const _blockEvent = function(e) {
-            // Kapatma overlay'indeki tüm elementlere izin ver
-            try {
-                var _t = e.target;
-                while (_t) {
-                    if (_t.id === '__umit_sec_overlay') return;
-                    _t = _t.parentElement;
-                }
-            } catch(_) {}
+            // Kapatma butonuna tıklamayı bloklamıyoruz
+            if (e.target && e.target.id === '__umit_close_btn') return;
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
         };
         ['keydown','keyup','keypress',
-         'click','mousedown','mouseup',
-         'touchstart','touchend',
-         'pointerdown','pointerup'
+         'click','mousedown','mouseup','mousemove',
+         'touchstart','touchend','touchmove',
+         'wheel','scroll','pointerdown','pointerup','pointermove'
         ].forEach(function(ev) {
             window.addEventListener(ev, _blockEvent, { capture: true, passive: false });
             document.addEventListener(ev, _blockEvent, { capture: true, passive: false });
@@ -14047,39 +14041,71 @@ const UmitSecurityManager = (function () {
           </div>`;
 
         function _forceClose() {
-            // http://action_exit — AppCreator24 uygulamayı kapatır
-            try { window.location.href = 'http://action_exit'; } catch(e) {}
-            // Fallback: diğer bridge yöntemleri
+            // closeAppSafely — zaten çalışan App24 kapatma fonksiyonu
+            try { if (typeof closeAppSafely === 'function') { closeAppSafely(); } } catch(e) {}
+            // AppCreator24 / Android WebView kapatma yöntemleri
             try { window.close(); } catch(e) {}
             try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
             try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
             try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
+            try { if (window.JSBridge && window.JSBridge.exitApp) window.JSBridge.exitApp(); } catch(e) {}
+            // AppCreator24 özel scheme denemeleri
+            try { window.location.href = 'android:close'; } catch(e) {}
+            try { window.location.href = 'app:close'; } catch(e) {}
+            try { history.go(-(history.length + 10)); } catch(e) {}
+            try { window.location.replace('about:blank'); } catch(e) {}
+            // DOM'u komple yok et
+            setTimeout(function() {
+                try {
+                    document.documentElement.innerHTML =
+                        '<html><body style="background:#000;margin:0"></body></html>';
+                } catch(e) {}
+                // video/ses durdur
+                try {
+                    document.querySelectorAll('video,audio').forEach(function(v) {
+                        v.pause(); v.src = ''; v.load();
+                    });
+                } catch(e) {}
+                // Script'leri durdur
+                try { window.stop && window.stop(); } catch(e) {}
+            }, 100);
         }
 
-        // body'e ekle
-        (document.body || document.documentElement).appendChild(overlay);
+        // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
+        (document.documentElement || document.body).appendChild(overlay);
 
-        // Buton — overlay üzerinden direkt bağla (event blocker bypass için overlay içinden geliyor)
-        var _closeBtn = overlay.querySelector('#__umit_close_btn');
-        var _cdEl     = overlay.querySelector('#__umit_countdown');
+        // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
+        setTimeout(function() {
+            var _closeBtn = document.getElementById('__umit_close_btn');
+            if (_closeBtn) {
+                _closeBtn.addEventListener('click', function() { _forceClose(); });
+                _closeBtn.addEventListener('touchend', function(e) { e.preventDefault(); _forceClose(); });
+                // TVBox D-pad için Enter/OK
+                _closeBtn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
+                });
+                _closeBtn.focus();
+            }
 
-        if (_closeBtn) {
-            _closeBtn.onclick    = function() { _forceClose(); };
-            _closeBtn.ontouchend = function(e) { e.stopPropagation(); e.preventDefault(); _forceClose(); };
-            _closeBtn.onkeydown  = function(e) {
-                if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
-            };
-        }
+            // Geri sayım timer — 10 saniye sonra _forceClose çağır
+            var _cdEl = document.getElementById('__umit_countdown');
+            var _cdSec = 5;
+            function _updateCd() {
+                if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye içinde kapatılıyor...';
+            }
+            _updateCd();
+            var _cdTimer = setInterval(function() {
+                _cdSec--;
+                _updateCd();
+                if (_cdSec <= 0) {
+                    clearInterval(_cdTimer);
+                    _forceClose();
+                }
+            }, 1000);
+        }, 50);
 
-        // Geri sayım — recursive setTimeout (donmaz)
-        var _cdSec = 5;
-        function _cdUpdateAndTick() {
-            if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye icinde kapatiliyor...';
-            if (_cdSec <= 0) { _forceClose(); return; }
-            _cdSec--;
-            setTimeout(_cdUpdateAndTick, 1000);
-        }
-        _cdUpdateAndTick();
+        // Overlay'e focus ver — kumanda odağı burada kalsın
+        try { overlay.focus(); } catch(e) {}
 
         // Overlay veya inert kaldırılmaya çalışılırsa geri al
         try {

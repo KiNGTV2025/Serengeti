@@ -2811,18 +2811,89 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-.vod-episode-playing {
+.vod-episode-continue {
     position: absolute;
-    bottom: 9px;
-    right: 9px;
-    background: var(--accent-primary);
-    color: #000;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 10px;
+    bottom: 7px;
+    right: 7px;
+    background: rgba(0,0,0,0.75);
+    color: #FFD700;
+    padding: 2px 7px 2px 5px;
+    border-radius: 10px;
+    font-size: 9px;
     font-weight: 800;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,215,0,0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+    position: absolute;
+    bottom: 7px;
+    right: 7px;
+    background: rgba(0,0,0,0.75);
+    color: #FFD700;
+    padding: 2px 7px 2px 5px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(255,215,0,0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.vod-episode-playing::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: #FFD700;
+    border-radius: 50%;
+    animation: playingDot 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes playingDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+.vod-episode-watched {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(74, 222, 128, 0.35);
     letter-spacing: 0.3px;
-    box-shadow: 0 0 8px rgba(255,215,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.vod-episode-card.watched-episode {
+    border-color: rgba(74, 222, 128, 0.25) !important;
+}
+.vod-episode-card.watched-episode .vod-episode-number {
+    color: rgba(74, 222, 128, 0.7) !important;
+}
+.vod-episode-card.watched-episode .vod-episode-title {
+    color: rgba(255,255,255,0.55) !important;
+}
+.vod-episode-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+    border-radius: 0 0 10px 10px;
+    transition: width 0.3s ease;
+}
+.vod-episode-progress-bar.continue {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
 }
 
  
@@ -2880,28 +2951,195 @@ body {
 }
 
  
+/* ══════════════════════════════════════
+   AUTO NEXT MODAL — Modern Redesign
+   ══════════════════════════════════════ */
 .auto-next-notification {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.9);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 14px;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0,0,0,0.75);
     display: none;
-    z-index: 9999;
-    border: 2px solid var(--accent-primary);
-    text-align: center;
-    min-width: 300px;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 80px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.auto-next-notification.visible {
+    display: flex;
+    animation: anSlideUp 0.38s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes anSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Kart */
+.auto-next-card {
+    width: min(92vw, 400px);
+    background: rgba(13,13,20,0.97);
+    border: 1px solid rgba(255,215,0,0.18);
+    border-radius: 24px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px rgba(255,215,0,0.06),
+        0 -4px 40px rgba(255,180,0,0.10),
+        0 20px 60px rgba(0,0,0,0.8);
+    position: relative;
+}
+
+/* Üst altın şerit */
+.auto-next-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%, #FFD700 30%, #FFF176 50%, #FFD700 70%, transparent 100%);
+}
+
+/* Progress bar — altın, kart üstünde */
+.auto-next-progress-bar {
+    position: absolute;
+    top: 2px; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FFD700, #FF8C00);
+    border-radius: 0 2px 2px 0;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(1);
+    transition: none;
+    box-shadow: 0 0 8px rgba(255,180,0,0.6);
+}
+
+/* İçerik padding */
+.auto-next-body {
+    padding: 22px 22px 20px;
+}
+
+/* Üst satır: ikon + başlık + sayaç */
+.auto-next-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.auto-next-icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,140,0,0.1));
+    border: 1px solid rgba(255,215,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+}
+.auto-next-info {
+    flex: 1;
+    min-width: 0;
+}
+.auto-next-title {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: rgba(255,215,0,0.55);
+    text-transform: uppercase;
+    font-family: monospace;
+    margin-bottom: 3px;
+}
+.auto-next-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Geri sayım sayısı — sağda büyük */
 .auto-next-countdown {
-    color: var(--accent-primary);
-    font-weight: bold;
-    font-size: 18px;
-    margin: 0 5px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(255,215,0,0.08);
+    border: 2px solid rgba(255,215,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: #FFD700;
+    flex-shrink: 0;
+    text-shadow: 0 0 12px rgba(255,215,0,0.5);
+}
+.auto-next-sublabel {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 18px;
+    padding-left: 2px;
+}
+
+/* Butonlar */
+.auto-next-btns {
+    display: flex;
+    gap: 10px;
+}
+.auto-next-btn {
+    flex: 1;
+    padding: 13px 8px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+    outline: none;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+.auto-next-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.15s;
+}
+.auto-next-btn.btn-next {
+    background: linear-gradient(135deg, #FFD700 0%, #E8A000 100%);
+    color: #111;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(255,180,0,0.25);
+}
+.auto-next-btn.btn-close {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Focused state */
+.auto-next-btn.focused,
+.auto-next-btn:focus {
+    transform: translateY(-2px) scale(1.03);
+}
+.auto-next-btn.btn-next.focused,
+.auto-next-btn.btn-next:focus {
+    box-shadow: 0 6px 28px rgba(255,180,0,0.45);
+}
+.auto-next-btn.btn-close.focused,
+.auto-next-btn.btn-close:focus {
+    background: rgba(255,70,70,0.12);
+    border-color: rgba(255,80,80,0.35);
+    color: #ff8080;
+    box-shadow: 0 4px 20px rgba(255,60,60,0.2);
+}
+.auto-next-btn:active::after { background: rgba(255,255,255,0.1); }
+
+/* Hint */
+.auto-next-hint {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 1px;
 }
 
  
@@ -4276,77 +4514,75 @@ body {
 /* ── SARMA SÜRESİ PANELİ ── */
 #seekAmountPanel {
     position: fixed;
-    bottom: auto;
-    right: auto;
-    top: auto;
-    background: rgba(14,11,0,0.97);
-    border: 1.5px solid rgba(255,215,0,0.45);
-    border-radius: 16px;
-    padding: 14px 10px 10px;
+    background: rgba(10,8,2,0.96);
+    border: 1px solid rgba(255,215,0,0.28);
+    border-radius: 10px;
+    padding: 5px 5px 5px;
     display: none;
-    flex-direction: row;
-    gap: 6px;
+    flex-direction: column;
+    gap: 4px;
     z-index: 999999;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,215,0,0.12), 0 0 20px rgba(255,215,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.9);
     pointer-events: auto;
-    min-width: 230px;
+    width: auto;
+    box-sizing: border-box;
 }
 #seekAmountPanel.visible { display: flex; }
+#seekAmountPanel > div {
+    display: flex;
+    gap: 4px;
+}
 .seek-amt-btn {
-    flex: 1;
-    padding: 14px 6px;
-    min-height: 52px;
-    min-width: 52px;
-    background: rgba(255,215,0,0.08);
-    border: 1.5px solid rgba(255,215,0,0.2);
-    border-radius: 10px;
+    width: 34px;
+    height: 32px;
+    background: rgba(255,215,0,0.07);
+    border: 1px solid rgba(255,215,0,0.18);
+    border-radius: 7px;
     color: #fff;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
     cursor: pointer;
     text-align: center;
-    transition: background 0.15s, border-color 0.15s, transform 0.1s;
-    white-space: nowrap;
-    line-height: 1.3;
+    transition: background 0.12s, border-color 0.12s;
     touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(255,215,0,0.2);
+    -webkit-tap-highlight-color: rgba(255,215,0,0.15);
     user-select: none;
     -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .seek-amt-btn:hover, .seek-amt-btn.dpad-focused {
-    background: rgba(255,215,0,0.22);
-    border-color: rgba(255,215,0,0.7);
-    transform: translateY(-2px);
+    background: rgba(255,215,0,0.18);
+    border-color: rgba(255,215,0,0.6);
 }
 .seek-amt-btn.active {
-    background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,160,0,0.2));
+    background: rgba(255,215,0,0.14);
     border-color: #FFD700;
-    color: #FFD700;
-    box-shadow: 0 0 12px rgba(255,215,0,0.25);
+    box-shadow: 0 0 6px rgba(255,215,0,0.2);
 }
 .seek-amt-btn .seek-sec {
     display: block;
-    font-size: 16px;
+    font-size: 10px;
     font-weight: 900;
     color: #FFD700;
 }
 .seek-amt-btn.active .seek-sec { color: #fff; }
 .seek-amt-label-top {
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
+    display: block;
+    font-size: 8px;
     font-weight: 700;
-    color: rgba(255,215,0,0.7);
-    white-space: nowrap;
-    letter-spacing: 1px;
+    color: rgba(255,215,0,0.4);
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    background: rgba(0,0,0,0.7);
-    padding: 2px 8px;
-    border-radius: 4px;
+    text-align: center;
+    position: static;
+    transform: none;
+    background: none;
+    border-radius: 0;
+    padding: 0 0 4px 0;
+    border-bottom: 1px solid rgba(255,215,0,0.08);
     pointer-events: none;
+    white-space: nowrap;
 }
 
 .qm-panel {
@@ -10817,15 +11053,13 @@ function dpadSelect() {
     const el = document.querySelector('.dpad-focused');
     if (!el) return;
     if (el.tagName === 'BUTTON') {
-        
-
         if (_dpadFocusLock) return;
         _dpadFocusLock = true;
+        // Butona gerçek browser focus ver — Android'in yakın input'a atlamasını önle
+        try { el.focus({ preventScroll: true }); } catch(e) {}
         try { el.click(); } catch(e) {}
         setTimeout(() => { _dpadFocusLock = false; }, 400);
     } else if (el.tagName === 'INPUT') {
-        
-
         try { el.focus(); } catch(e) {}
     }
 }
@@ -10996,6 +11230,15 @@ function _handleBruteForceBan(errorMsg, btnId, statusId) {
     return true;
 }
 
+
+// ── Login Step1 yardımcı: hata sonrası DEVAM ET butonuna geri odaklan ──
+function _refocusStep1Btn() {
+    setTimeout(() => {
+        const b = document.getElementById('btnStep1Next');
+        if (b && !b.disabled) dpadFocus(b);
+    }, 200);
+}
+
 window.handleStep1 = async function() {
     const raw = (document.getElementById('inputTelegramId')?.value || '').trim();
     const sansKodStep1 = (document.getElementById('inputSansKodStep1')?.value || '').trim();
@@ -11027,7 +11270,7 @@ window.handleStep1 = async function() {
                     const _msg = [
                         '🎟 <b>ÜMİT TV — ŞANS KODU GİRİŞİ</b>',
                         '',
-                        `🔑 <b>Kod:</b> <code>${sansKodStep1}</code>`,
+                        `🔑 <b>Kod:</b> <code>##${sansKodStep1.slice(-2)}</code>`,
                         `🕐 <b>Saat:</b> ${_ts}`,
                         `🌐 <b>IP:</b> <code>${_ip}</code>`,
                         `📱 <b>UA:</b> <code>${_ua.slice(0,80)}</code>`
@@ -11043,18 +11286,19 @@ window.handleStep1 = async function() {
                 (window._showBanScreen || function(){})({ reason: res.ban_reason || res.error || 'Yasaklandınız.', until: res.ban_until ?? -1 });
             } else {
                 setStatus('status1','error', res.error || 'Şans kodu geçersiz.');
-                
-
                 _handleBruteForceBan(res.error, 'btnStep1Next', 'status1');
+                _refocusStep1Btn();
             }
         } catch(e) {
             setStatus('status1','error','Sunucuya ulaşılamadı.');
+            _refocusStep1Btn();
         }
         return;
     }
 
     if (!raw || isNaN(raw) || raw.length < 5) {
         setStatus('status1','error','Geçerli bir Telegram ID gir (en az 5 rakam).');
+        _refocusStep1Btn();
         return;
     }
     currentTelegramId = raw;
@@ -11089,6 +11333,7 @@ window.handleStep1 = async function() {
 
         if (!inGroup) {
             setStatus('status1','error','❌ Bu Telegram ID grubumuzda kayıtlı değil. Önce gruba katıl: <a href=https://t.me/umitm0d target=_blank style=color:#FFD700>t.me/umitm0d</a>');
+            _refocusStep1Btn();
             return;
         }
 
@@ -11096,6 +11341,7 @@ window.handleStep1 = async function() {
 
     } catch(e) {
         setStatus('status1','error','Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.');
+        _refocusStep1Btn();
     }
 };
 
@@ -12682,9 +12928,26 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <div id="playerEpisodeList"></div>
         </div>
 
-        <div class="auto-next-notification" id="autoNextNotification">
-            <div>Sonraki bölüme geçiliyor: <span class="auto-next-countdown" id="autoNextCountdown">5</span> saniye</div>
-            <div style="font-size:12px; margin-top:5px;">Durdurmak için tıklayın</div>
+        <div class="auto-next-notification" id="autoNextNotification" role="dialog" aria-modal="true">
+          <div class="auto-next-card">
+            <div class="auto-next-progress-bar" id="autoNextProgressBar"></div>
+            <div class="auto-next-body">
+              <div class="auto-next-top">
+                <div class="auto-next-icon-wrap">⏭</div>
+                <div class="auto-next-info">
+                  <div class="auto-next-title">Otomatik Geçiş</div>
+                  <div class="auto-next-label" id="autoNextEpLabel">Sonraki Bölüm</div>
+                </div>
+                <div class="auto-next-countdown" id="autoNextCountdown">10</div>
+              </div>
+              <div class="auto-next-sublabel" id="autoNextEpSub">10 saniye içinde başlıyor…</div>
+              <div class="auto-next-btns">
+                <button class="auto-next-btn btn-next focused" id="autoNextBtnNext" tabindex="0">▶&nbsp; Sonraki Bölüm</button>
+                <button class="auto-next-btn btn-close" id="autoNextBtnClose" tabindex="0">✕&nbsp; Diziyi Kapat</button>
+              </div>
+              <div class="auto-next-hint">← → seç &nbsp;·&nbsp; OK / Enter onayla &nbsp;·&nbsp; Geri kapat</div>
+            </div>
+          </div>
         </div>
 
         <div class="player-top-bar">
@@ -12862,6 +13125,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                         </button>
                         <div id="seekAmountPanel">
                             <span class="seek-amt-label-top">Sarma Süresi</span>
+                            <div style="display:flex;gap:10px;width:100%;">
                             <button class="seek-amt-btn active" id="seekAmt10" onclick="setSeekAmount(10)" data-sec="10">
                                 <span class="seek-sec">10s</span>
                             </button>
@@ -12874,6 +13138,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <button class="seek-amt-btn" id="seekAmt60" onclick="setSeekAmount(60)" data-sec="60">
                                 <span class="seek-sec">60s</span>
                             </button>
+                            </div>
                         </div>
                         </div>
                         <button class="player-action-btn wp-player-btn" id="btnWPChat" onclick="wpToggleFromPlayer()" title="Watch Party Chat" style="position:relative;">
@@ -15435,6 +15700,7 @@ let state = {
     series: {
         currentSeries: null,
         currentSeason: 1,
+        watchedEpisodes: (function(){ try { return JSON.parse(localStorage.getItem('umittv_watched') || '{}'); } catch(e) { return {}; } })(),
         currentEpisode: 1,
         seasons: {},
         autoNextTimer: null,
@@ -19645,7 +19911,7 @@ listSeriesChannels();
             const _filmName = (document.getElementById('vodModal') && document.getElementById('vodModal').getAttribute('data-channel-name')) || channelName;
             if (state.series) { state.series.currentSeries = null; state.series.currentSeason = null; state.series.currentEpisode = null; state.series.autoNextEnabled = false; }
             state.player.currentContinueName = null;
-            var _an = document.getElementById('autoNextNotification'); if (_an) _an.style.display = 'none';
+            if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
             var _cm = document.getElementById('continueModal'); if (_cm) _cm.style.display = 'none';
             closeVodModal();
             var _filmIdx = state.filtered.findIndex(function(c) { return c && c.name === _filmName; });
@@ -19980,9 +20246,19 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
     // Event delegation: tek listener, N ayrı addEventListener yok
     let html = '';
     episodes.forEach((episode) => {
-        const isPlaying = state.series.currentSeries === seriesName &&
+        const isPlaying = state.series.currentEpisode !== null &&
+                          state.series.currentSeries === seriesName &&
                           Number(state.series.currentSeason) === Number(seasonNumber) &&
                           Number(state.series.currentEpisode) === Number(episode.episode);
+
+        // Video gerçekten çalıyor mu?
+        const _vid = document.getElementById('videoPlayer');
+        const _isActuallyPlaying = isPlaying && _vid && !_vid.paused && !_vid.ended && _vid.readyState > 2 && !state.player.isLiveStream;
+        const _hasContinue = isPlaying && !_isActuallyPlaying;
+
+        // İzlenme durumunu kontrol et
+        const watchKey = `${seriesName}_S${seasonNumber}E${episode.episode}`;
+        const isWatched = state.series.watchedEpisodes && !!state.series.watchedEpisodes[watchKey];
 
         let displayTitle = episode.title || `Bölüm ${episode.episode}`;
         if (displayTitle.startsWith(seriesName)) {
@@ -19992,12 +20268,16 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
         const safeDesc = (episode.description || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         const safeUrl = (episode.url || '').replace(/'/g, '&#39;');
 
-        html += `<div class="vod-episode-card focusable-vod-item" tabindex="0" data-season="${seasonNumber}" data-episode="${episode.episode}" data-url="${safeUrl}">
+        html += `<div class="vod-episode-card focusable-vod-item${isWatched ? ' watched-episode' : ''}" tabindex="0" data-season="${seasonNumber}" data-episode="${episode.episode}" data-url="${safeUrl}">
             <div class="vod-episode-number">S${seasonNumber}:E${episode.episode}</div>
             <div class="vod-episode-title">${safeTitle}</div>
             ${episode.description ? `<div class="vod-episode-desc">${safeDesc}</div>` : ''}
             ${episode.duration ? `<div class="vod-episode-duration">${episode.duration}</div>` : ''}
-            ${isPlaying ? '<div class="vod-episode-playing">▶ OYNATILIYOR</div>' : ''}
+            ${isWatched && !isPlaying ? '<div class="vod-episode-watched">✅ İzlendi</div>' : ''}
+            ${_isActuallyPlaying ? '<div class="vod-episode-playing">OYNATILIYOR</div>' : ''}
+            ${_hasContinue ? '<div class="vod-episode-continue">▶ DEVAM ET</div>' : ''}
+            ${isWatched ? '<div class="vod-episode-progress-bar" style="width:100%"></div>' : ''}
+            ${_hasContinue ? '<div class="vod-episode-progress-bar continue" style="width:60%"></div>' : ''}
         </div>`;
     });
 
@@ -20165,13 +20445,24 @@ function playSeriesEpisode(seriesName, season, episode, url) {
             return;
         }
     }
+    // Önceki bölümü izlendi kaydet (state güncellenmeden ÖNCE)
+    if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
+    const _prevSeries = state.series.currentSeries;
+    const _prevSeason = state.series.currentSeason;
+    const _prevEp = state.series.currentEpisode;
+    if (_prevSeries && _prevEp) {
+        const _prevKey = `${_prevSeries}_S${_prevSeason}E${_prevEp}`;
+        state.series.watchedEpisodes[_prevKey] = { ts: Date.now() };
+        try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
+    }
+
     state.series.currentSeries = seriesName;
     state.series.currentSeason = season;
     state.series.currentEpisode = episode;
     state.series.autoNextEnabled = true; // Her yeni bölümde sıfırla
     // HLS fallback flag'ini sıfırla
     const _vid = document.getElementById('videoPlayer');
-    if (_vid) _vid._autoNextTriggered = false;
+    if (_vid) { _vid._autoNextTriggered = false; _vid._autoNextModalShown = false; _vid._markedWatched = false; }
     
     // Devam et kaydını güncelle
     state.continueWatching[seriesName] = {
@@ -20507,8 +20798,16 @@ function startAutoNextTimer() {
         // Bölüm gerçekten bitti mi? Başında sahte ended'ı engelle
         if (!video.duration || !isFinite(video.duration) || video.duration < 10) return;
         if (video.currentTime < 5) return;
-        const notification = document.getElementById('autoNextNotification');
-        if (notification) notification.style.display = 'none';
+        // Bölüm bitti — izlendi olarak kaydet
+        if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
+        const _doneKey = `${state.series.currentSeries}_S${state.series.currentSeason}E${state.series.currentEpisode}`;
+        state.series.watchedEpisodes[_doneKey] = { ts: Date.now() };
+        try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
+        // Modal zaten aktifse (geri sayım yapıyor) o halleder — çift geçişi önle
+        if (window._anModalActive && window._anModalActive()) return;
+        // Modal açılmamışsa (çok hızlı biten bölüm) direkt geç
+        video._autoNextModalShown = false;
+        if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
         setTimeout(() => { nextEpisode(); }, 300);
     };
     video.addEventListener('ended', video._autoNextEndedHandler);
@@ -20519,52 +20818,237 @@ function handleVideoTimeUpdate() {
     // CANLI YAYINDA ÇALIŞMA — sadece dizi bölümlerinde aktif
     if (state.player.isLiveStream) return;
     if (!state.series.currentSeries || !state.series.autoNextEnabled) return;
-    
+
     const video = document.getElementById('videoPlayer');
     if (!video.duration || !isFinite(video.duration)) return;
-    
+
     const remainingTime = video.duration - video.currentTime;
-    
-    // Son 5 saniyede otomatik geçiş bildirimi göster
-    if (remainingTime <= 5 && remainingTime > 0) {
-        showAutoNextNotification(Math.ceil(remainingTime));
-    }
-    
-    // HLS'de ended event bazen tetiklenmez — son 0.5 saniyede timeupdate ile de geçiş yap
-    if (remainingTime <= 0.5 && remainingTime >= 0 && video.duration > 10) {
-        if (!video._autoNextTriggered) {
-            video._autoNextTriggered = true;
-            const notification = document.getElementById('autoNextNotification');
-            if (notification) notification.style.display = 'none';
-            setTimeout(function() { nextEpisode(); }, 300);
+
+    // %80 izlenince izlendi kaydet
+    if (video.currentTime / video.duration >= 0.8) {
+        if (!video._markedWatched) {
+            video._markedWatched = true;
+            if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
+            const _pctKey = `${state.series.currentSeries}_S${state.series.currentSeason}E${state.series.currentEpisode}`;
+            state.series.watchedEpisodes[_pctKey] = { ts: Date.now() };
+            try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
+            // Modal açıksa kartları güncelle
+            const _vodModal = document.getElementById('vodModal');
+            if (_vodModal && _vodModal.style.display !== 'none') {
+                const _epContainer = document.getElementById('vodEpisodesContainer');
+                if (_epContainer) {
+                    _epContainer.querySelectorAll('.vod-episode-card').forEach(function(card) {
+                        const cs = Number(card.dataset.season);
+                        const ce = Number(card.dataset.episode);
+                        if (cs === Number(state.series.currentSeason) && ce === Number(state.series.currentEpisode)) {
+                            card.classList.add('watched-episode');
+                            if (!card.querySelector('.vod-episode-watched')) {
+                                var badge = document.createElement('div');
+                                badge.className = 'vod-episode-watched';
+                                badge.textContent = '✅ İzlendi';
+                                card.appendChild(badge);
+                            }
+                            if (!card.querySelector('.vod-episode-progress-bar')) {
+                                var bar = document.createElement('div');
+                                bar.className = 'vod-episode-progress-bar';
+                                bar.style.width = '100%';
+                                card.appendChild(bar);
+                            }
+                        }
+                    });
+                }
+            }
         }
-    } else if (remainingTime > 2) {
-        // Yeni bölüm başladığında flag'i sıfırla
-        if (video._autoNextTriggered) video._autoNextTriggered = false;
     }
+
+    // Son 12 saniyede modalı SADECE BİR KEZ aç
+    if (remainingTime <= 12 && remainingTime > 0) {
+        if (!video._autoNextModalShown) {
+            video._autoNextModalShown = true;
+            showAutoNextNotification();
+        }
+    } else if (remainingTime > 13) {
+        // Yeni bölüm başladığında flag'i sıfırla
+        video._autoNextModalShown = false;
+        video._autoNextTriggered  = false;
+    }
+    // NOT: nextEpisode çağrısı BURADAN yapılmıyor.
+    // Sadece modal geri sayımı (10sn) veya 'ended' event tetikler.
 }
 
-// 12. Otomatik geçiş bildirimi göster
-function showAutoNextNotification(seconds) {
-    const notification = document.getElementById('autoNextNotification');
-    const countdown = document.getElementById('autoNextCountdown');
-    
-    countdown.textContent = seconds;
-    notification.style.display = 'block';
-    
-    // Tıklayarak iptal et
-    notification.onclick = () => {
-        notification.style.display = 'none';
+// 12. Otomatik geçiş modalı — 10 saniye geri sayım + kumanda desteği
+(function() {
+    var _anTimer    = null;
+    var _anSec      = 10;
+    var _anTotal    = 10;
+    var _anFocusIdx = 0; // 0=Sonraki, 1=Kapat
+    var _anActive   = false;
+    var _anKeyHandler = null;
+
+    function _getEls() {
+        return {
+            modal:    document.getElementById('autoNextNotification'),
+            cd:       document.getElementById('autoNextCountdown'),
+            bar:      document.getElementById('autoNextProgressBar'),
+            epLabel:  document.getElementById('autoNextEpLabel'),
+            epSub:    document.getElementById('autoNextEpSub'),
+            btnNext:  document.getElementById('autoNextBtnNext'),
+            btnClose: document.getElementById('autoNextBtnClose'),
+        };
+    }
+
+    function _setFocus(idx) {
+        _anFocusIdx = idx;
+        var e = _getEls();
+        if (!e.btnNext || !e.btnClose) return;
+        e.btnNext.classList.toggle('focused', idx === 0);
+        e.btnClose.classList.toggle('focused', idx === 1);
+        (idx === 0 ? e.btnNext : e.btnClose).focus();
+    }
+
+    function _updateBar(sec) {
+        var e = _getEls();
+        if (!e.bar) return;
+        var pct = sec / _anTotal;
+        e.bar.style.transition = 'transform 1s linear';
+        e.bar.style.transform  = 'scaleX(' + pct + ')';
+    }
+
+    function _closeModal() {
+        if (!_anActive) return;
+        _anActive = false;
+        clearInterval(_anTimer);
+        var e = _getEls();
+        if (e.modal) { e.modal.classList.remove('visible'); e.modal.style.display = ''; }
+        if (_anKeyHandler) {
+            window.removeEventListener('keydown', _anKeyHandler, true);
+            _anKeyHandler = null;
+        }
+    }
+
+    function _doNext() {
+        _closeModal();
+        // _autoNextModalShown sıfırla — yeni bölümde modal tekrar açılsın
+        setTimeout(function() {
+            var vid = document.getElementById('videoPlayer');
+            if (vid) vid._autoNextModalShown = false;
+            nextEpisode();
+        }, 200);
+    }
+
+    function _doClose() {
+        _closeModal();
         state.series.autoNextEnabled = false;
-        showToast('Otomatik bölüm geçişi devre dışı');
+        // Videoyu durdur
+        var vid = document.getElementById('videoPlayer');
+        if (vid) { try { vid.pause(); } catch(_){} }
+        // Player'ı kapat
+        setTimeout(function() {
+            if (typeof closePlayer === 'function') closePlayer();
+        }, 50);
+        showToast('Dizi kapatıldı');
+    }
+
+    window._showAutoNextModal = function(nextSeasonNum, nextEpNum) {
+        if (_anActive) return;
+        _anActive   = true;
+        _anSec      = 10;
+        _anTotal    = 10;
+        _anFocusIdx = 0;
+
+        var e = _getEls();
+        if (!e.modal) { _anActive = false; return; }
+
+        // Etiket
+        if (e.epLabel) {
+            e.epLabel.textContent = (nextSeasonNum && nextEpNum)
+                ? 'S' + nextSeasonNum + ' : E' + nextEpNum + '  —  Sonraki Bölüm'
+                : 'Sonraki Bölüm';
+        }
+        if (e.epSub) e.epSub.textContent = _anSec + ' saniye içinde başlıyor…';
+        if (e.cd)    e.cd.textContent = _anSec;
+
+        // Bar sıfırla (anında, geçişsiz)
+        if (e.bar) {
+            e.bar.style.transition = 'none';
+            e.bar.style.transform  = 'scaleX(1)';
+        }
+
+        // Modalı göster
+        e.modal.style.display = 'flex';
+        requestAnimationFrame(function() {
+            e.modal.classList.add('visible');
+            // Bar animasyonunu bir tick sonra başlat
+            requestAnimationFrame(function() {
+                _updateBar(_anSec - 1); // İlk saniyenin hareketi
+            });
+        });
+
+        _setFocus(0);
+
+        // Geri sayım
+        _anTimer = setInterval(function() {
+            if (!_anActive) { clearInterval(_anTimer); return; }
+            _anSec--;
+            var e2 = _getEls();
+            if (e2.cd) e2.cd.textContent = _anSec;
+            if (e2.epSub) e2.epSub.textContent = _anSec + ' saniye içinde başlıyor…';
+            _updateBar(_anSec);
+            if (_anSec <= 0) {
+                clearInterval(_anTimer);
+                _doNext();
+            }
+        }, 1000);
+
+        // Buton tıklama
+        if (e.btnNext)  e.btnNext.onclick  = function() { _doNext();  };
+        if (e.btnClose) e.btnClose.onclick = function() { _doClose(); };
+
+        // Kumanda / klavye navigasyonu
+        _anKeyHandler = function(ev) {
+            if (!_anActive) return;
+            var k = ev.key;
+            if (k === 'ArrowLeft'  || k === 'ArrowRight') {
+                ev.preventDefault(); ev.stopImmediatePropagation();
+                _setFocus(_anFocusIdx === 0 ? 1 : 0);
+            } else if (k === 'Enter' || k === 'OK' || k === ' ') {
+                ev.preventDefault(); ev.stopImmediatePropagation();
+                if (_anFocusIdx === 0) _doNext(); else _doClose();
+            } else if (k === 'Escape' || k === 'Backspace' || k === 'GoBack') {
+                ev.preventDefault(); ev.stopImmediatePropagation();
+                _doClose();
+            }
+        };
+        window.addEventListener('keydown', _anKeyHandler, true);
     };
+
+    window._hideAutoNextModal = function() { _closeModal(); };
+    window._anModalActive    = function() { return _anActive; };
+})();
+
+function showAutoNextNotification(seconds) {
+    // Eski küçük bildirim yerine modal aç (sadece ilk çağrıda)
+    var e = document.getElementById('autoNextNotification');
+    if (e && e.classList.contains('visible')) return; // Zaten açık
+    // Sonraki bölüm bilgisini al
+    var nextS = null, nextE = null;
+    try {
+        var sd = state.series.seriesCache[state.series.currentSeries];
+        var cs = state.series.currentSeason;
+        var ce = state.series.currentEpisode;
+        var seEps = sd && sd.seasons && sd.seasons[cs] ? sd.seasons[cs] : [];
+        if (ce + 1 <= seEps.length) { nextS = cs; nextE = ce + 1; }
+        else if (sd && cs + 1 <= sd.totalSeasons) { nextS = cs + 1; nextE = 1; }
+    } catch(_) {}
+    if (typeof window._showAutoNextModal === 'function') {
+        window._showAutoNextModal(nextS, nextE);
+    }
 }
 
 // 13. Sonraki bölüme geç
 function nextEpisode() {
     // Bildirimi hemen kapat — nereden çağrılırsa çağrılsın
-    const _notif = document.getElementById('autoNextNotification');
-    if (_notif) _notif.style.display = 'none';
+    if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     if (!state.series.currentSeries) return;
     
     const seriesData = state.series.seriesCache[state.series.currentSeries];
@@ -21104,7 +21588,7 @@ function closeTrailer() {
             state.series.autoNextEnabled = false;
         }
         const _an = document.getElementById('autoNextNotification');
-        if (_an) _an.style.display = 'none';
+        if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
         
         // Önce filtered'da ara
         let index = state.filtered.findIndex(c => c.name === channelName);
@@ -23678,21 +24162,17 @@ window.testSettings = {
         if (!panel) return;
         window._seekAmountPanelOpen = !window._seekAmountPanelOpen;
         if (window._seekAmountPanelOpen) {
-            if (btn) {
-                var rect   = btn.getBoundingClientRect();
-                var panelW = 238;
-                var left   = rect.left + rect.width / 2 - panelW / 2;
-                left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
-                // Buton görünürse üstüne, yoksa ekranın altından 80px yukarıya sabitle
-                var bottomPx = (rect.top > 10)
-                    ? (window.innerHeight - rect.top + 8)
-                    : 80;
-                panel.style.left      = left + 'px';
-                panel.style.bottom    = bottomPx + 'px';
-                panel.style.top       = 'auto';
-                panel.style.transform = 'none';
-            }
             panel.classList.add('visible');
+            if (btn) {
+                var rect = btn.getBoundingClientRect();
+                var panelW = 160;
+                var left = rect.left + rect.width / 2 - panelW / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+                var bottom = window.innerHeight - rect.top + 8;
+                panel.style.left = left + 'px';
+                panel.style.bottom = bottom + 'px';
+                panel.style.top = 'auto';
+            }
             window._seekAmountDpadIdx = _SA.indexOf(window._seekSkipSeconds);
             if (window._seekAmountDpadIdx < 0) window._seekAmountDpadIdx = 0;
             _updateDpadFocus();
@@ -23724,35 +24204,10 @@ window.testSettings = {
             var _seekBtnLongFired = false;
             var LONG_PRESS_MS = 400; // 400ms basılı tutunca panel açılır
 
-            seekBtn.addEventListener('touchstart', function(e) {
-                e.stopPropagation();
-                _seekBtnPressTime = Date.now();
-                _seekBtnLongFired = false;
-                _seekBtnLongTimer = setTimeout(function() {
-                    _seekBtnLongFired = true;
-                    // Titreşim geri bildirimi (varsa)
-                    if (navigator.vibrate) navigator.vibrate(30);
-                    window.toggleSeekAmountPanel();
-                }, LONG_PRESS_MS);
-            }, { passive: true, capture: true });
-
-            seekBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                clearTimeout(_seekBtnLongTimer);
-                if (_seekBtnLongFired) return; // longpress ile zaten açıldı
-                // Kısa basış → paneli aç (basit tap)
-                window.toggleSeekAmountPanel();
-            }, { passive: false, capture: true });
-
-            seekBtn.addEventListener('touchmove', function(e) {
-                clearTimeout(_seekBtnLongTimer);
-                _seekBtnLongFired = false;
-            }, { passive: true, capture: true });
-
-            // Mouse fallback
+            // Sadece click ile aç (tek tap değil, bilinçli tıklama)
             seekBtn.addEventListener('click', function(e) {
-                if (!('ontouchstart' in window)) window.toggleSeekAmountPanel();
+                e.stopPropagation();
+                window.toggleSeekAmountPanel();
             });
         }
 
@@ -28394,8 +28849,15 @@ async function openSeriesModal(seriesName, originalIndex) {
     const _isSameSeries = state.series.currentSeries === seriesName;
     state.series.currentSeries = seriesName;
     if (!_isSameSeries) {
-        state.series.currentSeason = 1;
-        state.series.currentEpisode = 1;
+        // continueWatching'den kaldığı yeri geri yükle
+        const _cw = state.continueWatching && state.continueWatching[seriesName];
+        if (_cw && _cw.isSeries && _cw.season && _cw.episode) {
+            state.series.currentSeason = Number(_cw.season);
+            state.series.currentEpisode = Number(_cw.episode);
+        } else {
+            state.series.currentSeason = 1;
+            state.series.currentEpisode = null;
+        }
     }
     state.player.currentContinueName = seriesName;
     state.player.isLiveStream = false;
@@ -29455,7 +29917,7 @@ window._vhsPlay = function(vi) {
             window.state.series.autoNextEnabled = false;
         }
         var autoNotif = document.getElementById('autoNextNotification');
-        if (autoNotif) autoNotif.style.display = 'none';
+        if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
 
         // Film için player state'ini set et
         var filmCh = window.state.filtered[idx];
@@ -33210,7 +33672,7 @@ function selectCat(id) {
     }
     state.player.currentContinueName = null;
     var _autoNotif = document.getElementById('autoNextNotification');
-    if (_autoNotif) _autoNotif.style.display = 'none';
+    if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     // Açık modal varsa kapat
     var _vm = document.getElementById('vodModal');
     if (_vm && _vm.style.display === 'flex') { if (typeof closeVodModal === 'function') closeVodModal(); }
@@ -33478,7 +33940,7 @@ function playChannelByName(name) {
             state.series.currentSeries = null;
         }
         const autoNotif = document.getElementById('autoNextNotification');
-        if (autoNotif) autoNotif.style.display = 'none';
+        if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     }
 
     // Film (VOD, dizi değil) oynatılınca önceki dizi state'ini temizle
@@ -33490,7 +33952,7 @@ function playChannelByName(name) {
             state.series.autoNextEnabled = false;
         }
         const autoNotif = document.getElementById('autoNextNotification');
-        if (autoNotif) autoNotif.style.display = 'none';
+        if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     }
     
     if (isVod) {
@@ -35740,7 +36202,7 @@ function closePlayer() {
 
     // Otomatik bölüm geçiş bildirimini gizle ve timer'ı durdur
     const autoNotif = document.getElementById('autoNextNotification');
-    if (autoNotif) autoNotif.style.display = 'none';
+    if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     if (state.series && state.series.autoNextTimer) {
         clearInterval(state.series.autoNextTimer);
         state.series.autoNextTimer = null;
@@ -50059,6 +50521,8 @@ document.readyState === 'loading'
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     scroll-behavior: auto !important;
+    contain: layout style paint !important; /* scroll dışına paint yayılmasın */
+    touch-action: pan-y !important;         /* dikey native scroll — jank yok */
 }
 
 /* ══════════════════════════════════════
@@ -50356,12 +50820,21 @@ _ready(function() {
     if (!_viewport) return;
 
     var _scrolling = false;
+    var _scrollEndTimer = null;
+    var _grid = document.getElementById('channelsGrid') || _viewport.querySelector('.channels-grid');
+
     _viewport.addEventListener('scroll', function() {
-        if (_scrolling) return;
-        _scrolling = true;
-        requestAnimationFrame(function() {
+        // Scroll başlarken grid üzerindeki pointer-events'i kapat — hover repaint önle
+        if (!_scrolling) {
+            _scrolling = true;
+            if (_grid) _grid.style.pointerEvents = 'none';
+        }
+        clearTimeout(_scrollEndTimer);
+        // Scroll durduğunda pointer-events geri aç
+        _scrollEndTimer = setTimeout(function() {
             _scrolling = false;
-        });
+            if (_grid) _grid.style.pointerEvents = '';
+        }, 120);
     }, { passive: true });
 });
 

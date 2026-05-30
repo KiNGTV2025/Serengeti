@@ -13945,11 +13945,11 @@ const UmitSecurityManager = (function () {
 
         // ── Tüm klavye / kumanda / remote olaylarını yakala ve durdur ──
         const _blockEvent = function(e) {
-            // Kapatma butonuna tıklamayı bloklamıyoruz (target veya closest ile)
+            // Kapatma overlay'indeki tüm elementlere izin ver
             try {
                 var _t = e.target;
                 while (_t) {
-                    if (_t.id === '__umit_close_btn') return;
+                    if (_t.id === '__umit_sec_overlay') return;
                     _t = _t.parentElement;
                 }
             } catch(_) {}
@@ -13958,9 +13958,9 @@ const UmitSecurityManager = (function () {
             e.preventDefault();
         };
         ['keydown','keyup','keypress',
-         'click','mousedown','mouseup','mousemove',
-         'touchstart','touchend','touchmove',
-         'wheel','scroll','pointerdown','pointerup','pointermove'
+         'click','mousedown','mouseup',
+         'touchstart','touchend',
+         'pointerdown','pointerup'
         ].forEach(function(ev) {
             window.addEventListener(ev, _blockEvent, { capture: true, passive: false });
             document.addEventListener(ev, _blockEvent, { capture: true, passive: false });
@@ -14047,48 +14047,39 @@ const UmitSecurityManager = (function () {
           </div>`;
 
         function _forceClose() {
-            // Mevcut çalışan closeAppSafely() fonksiyonunu kullan
-            if (typeof closeAppSafely === 'function') {
-                closeAppSafely();
-            } else {
-                try { window.location.href = 'http://action_exit'; } catch(e) {}
-                setTimeout(function() { try { location.href = 'about:blank'; } catch(e) {} }, 500);
-            }
+            // http://action_exit — AppCreator24 uygulamayı kapatır
+            try { window.location.href = 'http://action_exit'; } catch(e) {}
+            // Fallback: diğer bridge yöntemleri
+            try { window.close(); } catch(e) {}
+            try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
+            try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
+            try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
         }
 
         // body'e ekle
         (document.body || document.documentElement).appendChild(overlay);
 
-        // Buton + countdown — setTimeout yok, doğrudan overlay üzerinden
+        // Buton — overlay üzerinden direkt bağla (event blocker bypass için overlay içinden geliyor)
         var _closeBtn = overlay.querySelector('#__umit_close_btn');
         var _cdEl     = overlay.querySelector('#__umit_countdown');
 
         if (_closeBtn) {
             _closeBtn.onclick    = function() { _forceClose(); };
-            _closeBtn.ontouchend = function(e) { e.preventDefault(); _forceClose(); };
+            _closeBtn.ontouchend = function(e) { e.stopPropagation(); e.preventDefault(); _forceClose(); };
             _closeBtn.onkeydown  = function(e) {
                 if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
             };
-            try { _closeBtn.focus(); } catch(e) {}
         }
 
-        // Geri sayım — 5 saniye
+        // Geri sayım — recursive setTimeout (donmaz)
         var _cdSec = 5;
-        function _updateCd() {
+        function _cdUpdateAndTick() {
             if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye icinde kapatiliyor...';
-        }
-        _updateCd();
-        var _cdTimer = setInterval(function() {
+            if (_cdSec <= 0) { _forceClose(); return; }
             _cdSec--;
-            _updateCd();
-            if (_cdSec <= 0) {
-                clearInterval(_cdTimer);
-                _forceClose();
-            }
-        }, 1000);
-
-        // Overlay'e focus ver — kumanda odağı burada kalsın
-        try { overlay.focus(); } catch(e) {}
+            setTimeout(_cdUpdateAndTick, 1000);
+        }
+        _cdUpdateAndTick();
 
         // Overlay veya inert kaldırılmaya çalışılırsa geri al
         try {

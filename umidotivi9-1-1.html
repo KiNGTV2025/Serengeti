@@ -13886,11 +13886,17 @@ const UmitSecurityManager = (function () {
         if (window.__umit_vpn_detected === true) return true;
         // WebRTC local IP kontrolü (ek katman)
         const ips = Array.from(_localIPs);
-        return ips.some(ip =>
-            (ip.startsWith('10.') && !ip.startsWith('10.0.')) ||
-            (ip.startsWith('172.') && parseInt(ip.split('.')[1]) >= 16 && parseInt(ip.split('.')[1]) <= 31) ||
-            ip.startsWith('100.')
-        );
+        return ips.some(ip => {
+            if (ip.startsWith('10.')) {
+                var n = parseInt(ip.split('.')[1]);
+                return n >= 6 && n <= 9; // Tipik tun0/OpenVPN aralığı
+            }
+            if (ip.startsWith('172.')) {
+                var n2 = parseInt(ip.split('.')[1]);
+                return n2 >= 16 && n2 <= 31;
+            }
+            return ip.startsWith('100.');
+        });
     }
 
     // ════════════════════════════════════════════════════
@@ -13946,7 +13952,15 @@ const UmitSecurityManager = (function () {
         // ── Tüm klavye / kumanda / remote olaylarını yakala ve durdur ──
         const _blockEvent = function(e) {
             // Kapatma butonuna tıklamayı bloklamıyoruz
-            if (e.target && e.target.id === '__umit_close_btn') return;
+            // closest() ile parent kontrolü — Android WebView'da target text node olabilir
+            try {
+                var _t = e.target;
+                if (_t) {
+                    if (_t.id === '__umit_close_btn') return;
+                    if (typeof _t.closest === 'function' && _t.closest('#__umit_close_btn')) return;
+                    if (_t.parentElement && _t.parentElement.id === '__umit_close_btn') return;
+                }
+            } catch(_) {}
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
@@ -13965,9 +13979,8 @@ const UmitSecurityManager = (function () {
 
         try {
             document.body.style.filter = 'none';
-            document.body.style.pointerEvents = 'none';
+            // pointer-events ve inert kaldırıldı — KAPAT butonu çalışabilsin
             document.body.style.userSelect = 'none';
-            document.body.setAttribute('inert', '');
             document.body.setAttribute('aria-hidden', 'true');
         } catch(e) {}
 
@@ -14207,6 +14220,7 @@ const UmitSecurityManager = (function () {
         },
 
         check:           (cb)    => checkAndBlock(cb),
+        showVpnBlock:    ()      => { _blocked = false; _showBlockDialog(MSG.proxy, _opts.onBlock); },
         startWatch:      (ms,cb) => startPeriodicCheck(ms, cb),
         stopWatch:       ()      => { if (_checkInterval) clearInterval(_checkInterval); },
         isBlocked:       ()      => _blocked,
@@ -14260,11 +14274,12 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
                 const m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g);
                 if (m) m.forEach(function(ip) {
                     // VPN IP aralıkları
-                    if (
-                        (ip.startsWith('10.') && !ip.startsWith('10.0.')) ||
-                        (ip.startsWith('172.') && parseInt(ip.split('.')[1]) >= 16 && parseInt(ip.split('.')[1]) <= 31) ||
-                        ip.startsWith('100.') // Wireguard/Tailscale
-                    ) {
+                    var _ipParts = ip.split('.');
+                    var _isVpn = false;
+                    if (ip.startsWith('10.')) { var _n = parseInt(_ipParts[1]); _isVpn = _n >= 6 && _n <= 9; }
+                    else if (ip.startsWith('172.')) { var _n2 = parseInt(_ipParts[1]); _isVpn = _n2 >= 16 && _n2 <= 31; }
+                    else if (ip.startsWith('100.')) { _isVpn = true; }
+                    if (_isVpn) {
                         pc.close();
                         UmitSecurityManager.check();
                     }
@@ -14301,7 +14316,12 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
     var _vpnBlocked     = false;
 
     var VPN_RANGES = [
-        function(ip) { return ip.startsWith('10.') && !ip.startsWith('10.0.'); },
+        function(ip) {
+            // Sadece tipik VPN subnet'leri — 10.0.x, 10.1.x, 10.2.x normal LAN
+            if (!ip.startsWith('10.')) return false;
+            var n = parseInt(ip.split('.')[1]);
+            return n >= 6 && n <= 9; // 10.6-10.9 tipik OpenVPN/tun aralığı
+        },
         function(ip) {
             if (!ip.startsWith('172.')) return false;
             var n = parseInt(ip.split('.')[1]);
@@ -14357,7 +14377,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
                 _vpnBlocked = true;
 
                 // SecurityManager block dialog'u göster
-                if (window.UmitSecurityManager && UmitSecurityManager.check) {
+                window.__umit_vpn_detected = true;
+                if (window.UmitSecurityManager && UmitSecurityManager.showVpnBlock) {
+                    UmitSecurityManager.showVpnBlock();
+                } else if (window.UmitSecurityManager && UmitSecurityManager.check) {
                     UmitSecurityManager.check();
                 }
 
@@ -14387,7 +14410,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
             setTimeout(function() { _checkVpnNow(function(ip) {
                 if (_vpnBlocked) return;
                 _vpnBlocked = true;
-                if (window.UmitSecurityManager) UmitSecurityManager.check();
+                if (window.UmitSecurityManager) {
+                    window.__umit_vpn_detected = true;
+                    UmitSecurityManager.showVpnBlock ? UmitSecurityManager.showVpnBlock() : UmitSecurityManager.check();
+                }
                 if (window.UmitSecurityExtras) UmitSecurityExtras.sendSecurityAlert('VPN tespit - uygulama öne geldi. IP: ' + ip);
                 clearInterval(_vpnWatchTimer);
             }); }, 800);
@@ -14400,7 +14426,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
             setTimeout(function() { _checkVpnNow(function(ip) {
                 if (_vpnBlocked) return;
                 _vpnBlocked = true;
-                if (window.UmitSecurityManager) UmitSecurityManager.check();
+                if (window.UmitSecurityManager) {
+                    window.__umit_vpn_detected = true;
+                    UmitSecurityManager.showVpnBlock ? UmitSecurityManager.showVpnBlock() : UmitSecurityManager.check();
+                }
                 clearInterval(_vpnWatchTimer);
             }); }, 1500);
         }

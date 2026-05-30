@@ -1106,16 +1106,256 @@ img {
     letter-spacing: 0.3px;
 }
 
-/* Çıkış Modalı butonları remote focus */
+/* ═══════════════════════════════════════════
+   ÇIKIŞ ONAY MODALI — MODERN v3 (Tema Rengi)
+   ═══════════════════════════════════════════ */
+#exitConfirmModal {
+    position: fixed;
+    inset: 0;
+    z-index: 999998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    /* Backdrop blur + koyu overlay */
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: exitModalBgIn 0.25s ease both;
+}
+@keyframes exitModalBgIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* — Kart — */
+#exitConfirmModal .exit-card {
+    position: relative;
+    width: 340px;
+    max-width: 92vw;
+    background: var(--modal-card-bg, linear-gradient(160deg,rgb(36,30,10) 0%,rgb(10,10,20) 50%,rgb(26,20,10) 100%));
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.30);
+    border-top: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.70);
+    border-radius: 22px;
+    padding: 36px 28px 28px;
+    text-align: center;
+    box-shadow:
+        0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),0.08),
+        0 0 80px rgba(var(--accent-primary-rgb,255,215,0),0.22),
+        0 32px 80px rgba(0,0,0,0.85),
+        inset 0 0 80px rgba(var(--accent-primary-rgb,255,215,0),0.06),
+        inset 0 1px 0 rgba(255,255,255,0.07);
+    animation: exitCardIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+    overflow: hidden;
+}
+@keyframes exitCardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Üst tema çizgisi */
+#exitConfirmModal .exit-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.6) 25%,
+        var(--accent-primary,#FFD700) 50%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.6) 75%,
+        transparent 100%);
+    border-radius: 22px 22px 0 0;
+}
+
+/* İç ışıma */
+#exitConfirmModal .exit-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 70%; height: 120px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(var(--accent-primary-rgb,255,215,0),0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* — Logo wrap — */
+#exitConfirmModal .exit-icon-wrap {
+    position: relative;
+    width: 80px; height: 80px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#exitConfirmModal .exit-icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);
+    box-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.20), inset 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.08);
+    animation: exitRingPulse 2.4s ease-in-out infinite;
+}
+#exitConfirmModal .exit-icon-ring-outer {
+    position: absolute;
+    inset: -9px;
+    border-radius: 50%;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.18);
+    animation: exitRingPulse 2.4s ease-in-out infinite 0.6s;
+}
+@keyframes exitRingPulse {
+    0%,100% { opacity: 0.45; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.07); }
+}
+
+/* Logo img */
+#exitConfirmModal .exit-logo-img {
+    width: 76px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.08);
+    filter:
+        drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.5))
+        drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.25));
+    animation: exitLogoFloat 3s ease-in-out infinite;
+}
+@keyframes exitLogoFloat {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+}
+
+/* — Başlık — */
+#exitConfirmModal .exit-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent-primary, #FFD700);
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px rgba(var(--accent-primary-rgb,255,215,0),0.35));
+}
+
+/* — Açıklama metni — */
+#exitConfirmModal .exit-desc {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.58);
+    margin-bottom: 26px;
+    line-height: 1.65;
+    letter-spacing: 0.2px;
+}
+
+/* — Ayraç — */
+#exitConfirmModal .exit-divider {
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(var(--accent-primary-rgb,255,215,0),0.18),
+        transparent);
+    margin-bottom: 20px;
+}
+
+/* — Buton grubu — */
+#exitConfirmModal .exit-btn-row {
+    display: flex;
+    gap: 12px;
+}
+
+/* — İptal butonu — */
+#exitConfirmNo {
+    flex: 1;
+    padding: 13px 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.82);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+#exitConfirmNo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+    border-radius: 12px;
+    pointer-events: none;
+}
+#exitConfirmNo:hover {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.22);
+}
+
+/* — Evet Çık butonu — tema rengi — */
+#exitConfirmYes {
+    flex: 1;
+    padding: 13px 10px;
+    background: linear-gradient(135deg,
+        var(--accent-primary, #FFD700) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.72) 100%);
+    border: none;
+    border-radius: 12px;
+    color: rgba(0,0,0,0.88);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10.5px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: filter 0.18s, transform 0.15s, box-shadow 0.18s;
+    box-shadow: 0 4px 20px rgba(var(--accent-primary-rgb,255,215,0),0.28);
+    position: relative;
+    overflow: hidden;
+}
+#exitConfirmYes::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 42%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+#exitConfirmYes:hover {
+    filter: brightness(1.12);
+    box-shadow: 0 6px 28px rgba(var(--accent-primary-rgb,255,215,0),0.45);
+}
+
+/* — Remote focus — */
 #exitConfirmNo.remote-focused {
-    outline: 2px solid #FFD700 !important;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.3) !important;
-    background: rgba(255,255,255,0.15) !important;
+    outline: none !important;
+    background: rgba(255,255,255,0.11) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    box-shadow:
+        0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.3),
+        0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.1) !important;
+    transform: scale(1.05);
+    color: #fff !important;
 }
 #exitConfirmYes.remote-focused {
-    outline: 2px solid #FFD700 !important;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.5) !important;
+    outline: none !important;
     filter: brightness(1.15);
+    box-shadow:
+        0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7),
+        0 6px 32px rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
+    transform: scale(1.05);
+}
+
+/* — Kısayol ipucu — */
+#exitConfirmModal .exit-hint {
+    margin-top: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
 
 /* ── 15. TEXT-SHADOW / FILTER — TVBox Yükü Azalt ── */
@@ -1177,8 +1417,6 @@ img {
 .cat-hide-footer-btn.remote-focused,
 .season-control-btn.remote-focused,
 .fav-toggle.remote-focused,
-#exitConfirmNo.remote-focused,
-#exitConfirmYes.remote-focused,
 #btnQsnConfirm.remote-focused,
 #btnQsnCancel.remote-focused,
 #btnQsnMinus.remote-focused,
@@ -1455,6 +1693,7 @@ img {
             --accent-primary: #FFD700;
             --accent-secondary: #F1C40F;
             --accent-primary-rgb: 255,215,0;
+            --modal-card-bg: linear-gradient(160deg,rgb(36,30,10) 0%,rgb(10,10,20) 50%,rgb(26,20,10) 100%);
              
             --accent-bar-bg: rgba(255,215,0,0.15);
             --accent-bar-border: rgba(255,215,0,0.22);
@@ -5942,18 +6181,7 @@ select.sort-dpad-focused {
     background-color: rgba(255, 0, 0, 0.1) !important;
 }
 
- 
-#passwordInput.remote-focused {
-    background-color: #FFF0F0 !important;
-    border-color: #FF0000 !important;
-}
-
- 
-#passwordModal button.remote-focused {
-    background-color: #FF0000 !important;
-    color: white !important;
-    font-weight: bold;
-}
+/* passwordModal remote-focused stiller ana CSS bloğuna taşındı */
 .channel-card.remote-focused {
     outline: none !important;
     outline-offset: 0 !important;
@@ -6655,37 +6883,358 @@ select.sort-dpad-focused {
 }
 
  
+/* ═══════════════════════════════════════════
+   ŞİFRE MODALI — MODERN v2 (Tema Rengi)
+   ═══════════════════════════════════════════ */
 #passwordModal {
     align-items: center !important;
     justify-content: center !important;
     padding: 0 !important;
-    background: rgba(0, 0, 0, 0.97) !important;
+    background: rgba(0,0,0,0.65) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    z-index: 99999 !important;
 }
+
+/* Kart — tam ekran değil, merkezi yüzen kart */
 #passwordModal .modal-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: 100vh !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    border: none !important;
+    width: 360px !important;
+    max-width: 94vw !important;
+    min-height: unset !important;
+    height: auto !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.30) !important;
+    border-top: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.70) !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     align-items: stretch !important;
-    padding: 40px 28px !important;
+    padding: 36px 28px 28px !important;
     box-sizing: border-box !important;
-    background: var(--bg-main) !important;
-    box-shadow: none !important;
-    animation: none !important;
+    background: var(--modal-card-bg, linear-gradient(160deg,rgb(36,30,10) 0%,rgb(10,10,20) 50%,rgb(26,20,10) 100%)) !important;
+    box-shadow:
+        0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),0.12),
+        0 0 80px rgba(var(--accent-primary-rgb,255,215,0),0.22),
+        0 32px 80px rgba(0,0,0,0.9),
+        inset 0 0 60px rgba(var(--accent-primary-rgb,255,215,0),0.05) !important;
+    animation: pwCardIn 0.35s cubic-bezier(0.16,1,0.3,1) both !important;
+    overflow: hidden !important;
+    position: relative !important;
 }
-#passwordModal .m3u-modal-header { margin-bottom: 24px; }
-#passwordModal h3 { font-size: 26px !important; }
-#passwordModal #passwordModalText { font-size: 16px !important; margin-bottom: 28px !important; }
-#passwordModal .input-group { margin-bottom: 16px; }
-#passwordModal .password-input { font-size: 18px !important; padding: 16px !important; border-radius: 12px !important; }
-#passwordModal .remember-password { margin-bottom: 32px; }
-#passwordModal .modal-btns { margin-top: 12px !important; gap: 16px !important; }
-#passwordModal .continue-modal-btn { padding: 16px !important; font-size: 17px !important; border-radius: 12px !important; flex: 1 !important; }
+
+@keyframes pwCardIn {
+    from { opacity:0; transform:translateY(20px) scale(0.95); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* Üst tema çizgisi */
+#passwordModal .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.6) 25%,
+        var(--accent-primary,#FFD700) 50%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.6) 75%,
+        transparent 100%);
+    border-radius: 22px 22px 0 0;
+}
+
+/* İç ışıma */
+#passwordModal .modal-content::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 70%; height: 100px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(var(--accent-primary-rgb,255,215,0),0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Header */
+#passwordModal .m3u-modal-header {
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+}
+#passwordModal h3 {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    letter-spacing: 3px !important;
+    color: var(--accent-primary, #FFD700) !important;
+    filter: drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.35));
+    text-transform: uppercase;
+}
+
+/* Kapat butonu */
+#passwordModal .icon-btn {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+    color: rgba(255,255,255,0.55) !important;
+    transition: background 0.18s, color 0.18s !important;
+}
+#passwordModal .icon-btn:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+
+/* İkon alanı */
+#passwordModal .pw-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0 20px;
+    position: relative;
+    z-index: 1;
+}
+#passwordModal .pw-icon-ring {
+    position: absolute;
+    width: 66px; height: 66px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);
+    box-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.20), inset 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.08);
+    animation: pwRingPulse 2.5s ease-in-out infinite;
+}
+#passwordModal .pw-icon-ring-outer {
+    position: absolute;
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.18);
+    animation: pwRingPulse 2.5s ease-in-out infinite 0.7s;
+}
+@keyframes pwRingPulse {
+    0%,100% { opacity:0.4; transform:scale(1); }
+    50%      { opacity:1;   transform:scale(1.05); }
+}
+#passwordModal .pw-logo-img {
+    width: 62px; height: 62px;
+    object-fit: cover;
+    border-radius: 50%;
+    position: relative; z-index: 1;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.08);
+    filter:
+        drop-shadow(0 0 7px rgba(var(--accent-primary-rgb,255,215,0),0.5))
+        drop-shadow(0 0 14px rgba(var(--accent-primary-rgb,255,215,0),0.22));
+}
+#passwordModal .pw-icon-emoji {
+    font-size: 36px;
+    position: relative; z-index: 1;
+    filter: drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.4));
+}
+
+/* Açıklama */
+#passwordModal #passwordModalText {
+    font-size: 13px !important;
+    color: rgba(255,255,255,0.5) !important;
+    text-align: center !important;
+    margin-bottom: 22px !important;
+    line-height: 1.6 !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* Input grup */
+#passwordModal .input-group {
+    margin-bottom: 14px !important;
+    position: relative;
+    z-index: 1;
+}
+#passwordModal .input-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(var(--accent-primary-rgb,255,215,0),0.65);
+    margin-bottom: 8px;
+    display: block;
+}
+#passwordModal .password-input {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: #fff !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    letter-spacing: 2px !important;
+}
+#passwordModal .password-input:focus,
+#passwordModal #passwordInput.remote-focused {
+    border-color: var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.2),
+                0 0 16px rgba(var(--accent-primary-rgb,255,215,0),0.1) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.04) !important;
+}
+
+/* Şifreyi hatırla */
+#passwordModal .remember-password {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 22px !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+#passwordModal .remember-password label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.3px;
+    cursor: pointer;
+}
+#passwordModal #rememberPassword {
+    width: 18px; height: 18px;
+    accent-color: var(--accent-primary, #FFD700);
+    cursor: pointer;
+}
+#passwordModal #rememberPassword.remote-focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 10px rgba(var(--accent-primary-rgb,255,215,0),0.3) !important;
+}
+
+/* Ayraç */
+#passwordModal .pw-divider {
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(var(--accent-primary-rgb,255,215,0),0.15),
+        transparent);
+    margin-bottom: 18px;
+    position: relative; z-index: 1;
+}
+
+/* Buton satırı */
+#passwordModal .modal-btns {
+    margin-top: 0 !important;
+    gap: 12px !important;
+    display: flex !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* İptal butonu */
+#passwordModal #btnPasswordCancel {
+    flex: 1 !important;
+    padding: 13px !important;
+    font-size: 14px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: rgba(255,255,255,0.75) !important;
+    cursor: pointer !important;
+    transition: background 0.18s, border-color 0.18s !important;
+}
+#passwordModal #btnPasswordCancel:hover {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: rgba(255,255,255,0.22) !important;
+}
+#passwordModal #btnPasswordCancel.remote-focused {
+    background: rgba(255,255,255,0.11) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.28) !important;
+    color: #fff !important;
+    transform: scale(1.04);
+}
+
+/* Onayla butonu */
+#passwordModal #btnPasswordConfirm {
+    flex: 1 !important;
+    padding: 13px !important;
+    font-size: 13px !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 900 !important;
+    letter-spacing: 1.5px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg,
+        var(--accent-primary, #FFD700) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0),0.72) 100%) !important;
+    border: none !important;
+    color: rgba(0,0,0,0.88) !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 18px rgba(var(--accent-primary-rgb,255,215,0),0.28) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: filter 0.18s, box-shadow 0.18s !important;
+}
+#passwordModal #btnPasswordConfirm::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 42%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+#passwordModal #btnPasswordConfirm:hover {
+    filter: brightness(1.1) !important;
+    box-shadow: 0 6px 26px rgba(var(--accent-primary-rgb,255,215,0),0.42) !important;
+}
+#passwordModal #btnPasswordConfirm.remote-focused {
+    filter: brightness(1.14) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7),
+                0 6px 28px rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
+    transform: scale(1.04);
+}
+
+/* Geri butonu */
+#passwordModal .modal-back-btn,
+#passwordModal #btnPasswordBack {
+    margin-top: 14px !important;
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255,255,255,0.3) !important;
+    font-size: 13px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    transition: color 0.18s, background 0.18s !important;
+    position: relative; z-index: 1;
+}
+#passwordModal .modal-back-btn:hover,
+#passwordModal #btnPasswordBack:hover {
+    color: rgba(255,255,255,0.6) !important;
+    background: rgba(255,255,255,0.05) !important;
+}
+#passwordModal #btnPasswordBack.remote-focused {
+    color: var(--accent-primary, #FFD700) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.08) !important;
+    outline: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.3) !important;
+}
+
+/* Kumanda ipucu */
+#passwordModal .pw-hint {
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    position: relative; z-index: 1;
+}
 
  
 .lock-neon {
@@ -9578,7 +10127,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
         <!-- Ban ekranı -->
         <div id="banScreen">
-            <div class="ban-icon">🚫</div>
+            <div class="ban-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
             <div class="ban-title">BANLANDINIZ</div>
             <div class="ban-subtitle" id="banSubtitle">Ümit tarafından banlandınız.</div>
             <div class="ban-info-box" id="banTimerBox" style="display:none;">
@@ -9602,7 +10151,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 Telegram'da <strong>@userinfobot</strong>'a mesaj at ve aldığın <strong>ID numaranı</strong> buraya gir.
             </div>
             <div class="login-field">
-                <label class="login-label">🍀 Şans Kodu (varsa)</label>
+                <label class="login-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;opacity:0.7"><circle cx="12" cy="8" r="3"/><circle cx="16" cy="12" r="3"/><circle cx="8" cy="12" r="3"/><circle cx="12" cy="16" r="3"/><line x1="12" y1="11" x2="12" y2="13"/></svg>Şans Kodu (varsa)</label>
                 <input type="text" id="inputSansKodStep1" class="login-input login-focusable"
                     placeholder="Şans kodu gir (isteğe bağlı)" autocomplete="off"
                     autocorrect="off" autocapitalize="none" spellcheck="false"
@@ -9638,7 +10187,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <span style="color:rgba(255,215,0,0.5);font-size:11px;">⏱ 10 dakika süren var.</span>
             </div>
             <div class="login-field">
-                <label class="login-label">🔑 Onay Token'ı</label>
+                <label class="login-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;opacity:0.7"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>Onay Token'ı</label>
                 <input type="text" id="inputApprovalToken" class="login-input login-focusable"
                     placeholder="UMIT-XXXX-XXXX"
                     autocomplete="off" inputmode="text"
@@ -11019,7 +11568,7 @@ function doLogin() {
                 document.documentElement.innerHTML =
                     '<html><body style="margin:0;background:#0a0a0f;display:flex;align-items:center;' +
                     'justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;">' +
-                    '<div style="font-size:4em;">🚫</div>' +
+                    '<div style="margin-bottom:8px;"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>' +
                     '<div style="color:#FFD700;font-size:1.5em;font-weight:bold;margin-top:16px;">BANLANDINIZ</div>' +
                     '<div style="color:#888;margin-top:8px;font-size:0.9em;">Uygulamayı kapatabilirsiniz.</div>' +
                     '</body></html></html>';
@@ -11687,8 +12236,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       <!-- Oda Oluştur -->
       <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:12px;padding:16px;">
-        <div style="font-size:12px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">🎬 Oda Oluştur</div>
-        <input id="wpRoomPasswordInput" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'" placeholder="🔒 Şifre (opsiyonel)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>Oda Oluştur</div>
+        <input id="wpRoomPasswordInput" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'" placeholder="Şifre (opsiyonel)">
         <button id="wpCreateBtn" onclick="wpCreateRoom()" class="wp-remote-focus" style="width:100%;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:8px;padding:11px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
           ✦ ODA AÇ
         </button>
@@ -11696,9 +12245,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- Odaya Katıl -->
       <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;">
-        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🔑 Koda Gir</div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;opacity:0.7"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>Koda Gir</div>
         <input id="wpJoinCodeInput" placeholder="ODA KODU..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;outline:none;text-transform:uppercase;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter'){wpJoinRoom()}">
-        <input id="wpJoinPasswordInput" placeholder="🔒 Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <input id="wpJoinPasswordInput" placeholder="Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
         <button id="wpJoinBtn" onclick="wpJoinRoom()" class="wp-remote-focus" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:0.5px;">
           → KATIL
         </button>
@@ -11708,12 +12257,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- Aktif odalar -->
     <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;opacity:0.8;">📡 Aktif Odalar</div>
-        <button onclick="wpLoadRooms()" class="wp-remote-focus" style="background:rgba(var(--accent-primary-rgb,255,215,0),0.08);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:6px;color:var(--accent-primary,#FFD700);font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;padding:4px 10px;cursor:pointer;letter-spacing:0.5px;">🔄 YENILE</button>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;opacity:0.8;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M1.5 8.5a13 13 0 0121 0"/><path d="M5 12a9 9 0 0114 0"/><path d="M8.5 15.5a5 5 0 017 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>Aktif Odalar</div>
+        <button onclick="wpLoadRooms()" class="wp-remote-focus" style="background:rgba(var(--accent-primary-rgb,255,215,0),0.08);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:6px;color:var(--accent-primary,#FFD700);font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;padding:4px 10px;cursor:pointer;letter-spacing:0.5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> YENİLE</button>
       </div>
       <!-- Şifre giriş alanı (oda kartına tıklandığında gösterilir) -->
       <div id="wpRoomPasswordPrompt" style="display:none;background:rgba(var(--accent-primary-rgb,255,215,0),0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.3);border-radius:10px;padding:12px 14px;margin-bottom:10px;animation:wpModalIn 0.2s ease;">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1px;margin-bottom:8px;">🔒 Şifreli Oda — Şifreyi Gir</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1px;margin-bottom:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;opacity:0.7"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Şifreli Oda — Şifreyi Gir</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <input id="wpRoomPwPromptInput" type="password" placeholder="Oda şifresi..." maxlength="20"
             style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;"
@@ -11757,8 +12306,8 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- Tab Satırı -->
   <div style="display:flex;border-bottom:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.12);flex-shrink:0;background:var(--bg-main,#0f0f18);">
     <button id="wpTabChat" onclick="wpSwitchTab('chat')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid var(--accent-primary,#FFD700);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:var(--accent-primary,#FFD700);cursor:pointer;letter-spacing:0.5px;">💬 SOHBET</button>
-    <button id="wpTabComments" onclick="wpSwitchTab('comments')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">⭐ YORUMLAR</button>
-    <button id="wpTabMembers" onclick="wpSwitchTab('members')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">👥 ÜYELER</button>
+    <button id="wpTabComments" onclick="wpSwitchTab('comments')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>YORUMLAR</button>
+    <button id="wpTabMembers" onclick="wpSwitchTab('members')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>ÜYELER</button>
   </div>
 
   <!-- SOHBET Tab -->
@@ -12316,11 +12865,11 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <button class="seek-amt-btn active" id="seekAmt10" onclick="setSeekAmount(10)" data-sec="10">
                                 <span class="seek-sec">10s</span>
                             </button>
-                            <button class="seek-amt-btn" id="seekAmt30" onclick="setSeekAmount(30)" data-sec="30">
-                                <span class="seek-sec">30s</span>
+                            <button class="seek-amt-btn" id="seekAmt20" onclick="setSeekAmount(20)" data-sec="20">
+                                <span class="seek-sec">20s</span>
                             </button>
-                            <button class="seek-amt-btn" id="seekAmt45" onclick="setSeekAmount(45)" data-sec="45">
-                                <span class="seek-sec">45s</span>
+                            <button class="seek-amt-btn" id="seekAmt40" onclick="setSeekAmount(40)" data-sec="40">
+                                <span class="seek-sec">40s</span>
                             </button>
                             <button class="seek-amt-btn" id="seekAmt60" onclick="setSeekAmount(60)" data-sec="60">
                                 <span class="seek-sec">60s</span>
@@ -12472,14 +13021,14 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     border-radius:8px;font-size:13px;cursor:pointer;
                     outline:none;
                 ">
-                    <option value="all">🌐 Tüm Kanallar</option>
+                    <option value="all">Tüm Kanallar</option>
                 </select>
                 <span id="sortCatCount" style="font-size:11px;color:var(--text-muted);flex-shrink:0;white-space:nowrap;"></span>
             </div>
 
             
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-align:center;background:rgba(255,255,255,0.03);border-radius:6px;padding:5px 8px;">
-                📱 Sürükle &amp; Bırak &nbsp;|&nbsp; 🎮 ↑↓ Seç → OK: Al/Bırak &nbsp;|&nbsp; 🎮 ↑↓ Liste Başı/Sonu → Kategori/Araçlar
+                Sürükle &amp; Bırak &nbsp;|&nbsp; ↑↓ Seç → OK: Al/Bırak &nbsp;|&nbsp; ↑↓ Liste Başı/Sonu → Kategori/Araçlar
             </div>
 
             
@@ -12791,31 +13340,49 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="modal-bg" id="passwordModal" onclick="if(event.target.id==='passwordModal') closePasswordModal()">
         <div class="modal-content">
             <div class="m3u-modal-header">
-                <h3 style="color:var(--accent-primary); font-size:20px;">Şifre Gerekli</h3>
-                <button class="icon-btn" onclick="closePasswordModal()" style="width:32px; height:32px;">
+                <h3>Şifre Gerekli</h3>
+                <button class="icon-btn" onclick="closePasswordModal()" style="width:32px;height:32px;">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            
-            <p id="passwordModalText" style="margin-bottom: 15px; text-align: center; font-size:15px; line-height:1.5;"></p>
-            
-            <div class="input-group">
-                <label class="input-label">Şifre</label>
-                <input type="password" id="passwordInput" class="password-input" placeholder="Şifreyi girin" autocomplete="current-password" onclick="this.focus();" ontouchstart="this.focus();">
+
+            <!-- Logo / İkon -->
+            <div class="pw-icon-wrap">
+                <div class="pw-icon-ring-outer"></div>
+                <div class="pw-icon-ring"></div>
+                <img class="pw-logo-img"
+                     src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg"
+                     alt="ÜmitM0d"
+                     onerror="this.outerHTML='<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'11\' width=\'18\' height=\'11\' rx=\'2\' ry=\'2\'/><path d=\'M7 11V7a5 5 0 0110 0v4\'/></svg>'">
             </div>
-            
+
+            <p id="passwordModalText"></p>
+
+            <div class="input-group">
+                <label class="input-label" for="passwordInput">Şifre</label>
+                <input type="password" id="passwordInput" class="password-input"
+                       placeholder="Şifreyi girin"
+                       autocomplete="current-password"
+                       onclick="this.focus();" ontouchstart="this.focus();">
+            </div>
+
             <div class="remember-password">
                 <input type="checkbox" id="rememberPassword">
-                <label for="rememberPassword" style="font-size:14px;">Şifreyi hatırla</label>
+                <label for="rememberPassword">Şifreyi hatırla</label>
             </div>
-            
-            <div class="modal-btns" style="margin-top: 20px;">
+
+            <div class="pw-divider"></div>
+
+            <div class="modal-btns">
                 <button class="continue-modal-btn cancel" id="btnPasswordCancel" onclick="closePasswordModal()">İptal</button>
-                <button class="continue-modal-btn continue" id="btnPasswordConfirm" onclick="checkPassword()">Onayla</button>
+                <button class="continue-modal-btn continue" id="btnPasswordConfirm" onclick="checkPassword()">ONAYLA</button>
             </div>
+
             <button class="modal-back-btn" tabindex="0" id="btnPasswordBack" onclick="closePasswordModal()">
-                <span class="material-symbols-outlined">arrow_back</span> Geri
+                <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span> Geri
             </button>
+
+            <div class="pw-hint">▲▼ Seç &nbsp;·&nbsp; OK Onayla &nbsp;·&nbsp; Geri İptal</div>
         </div>
     </div>   
  
@@ -13440,7 +14007,7 @@ const UmitSecurityManager = (function () {
           <div style="max-width:440px;width:100%;background:linear-gradient(135deg,rgba(28,8,8,0.99),rgba(18,8,8,1));
                border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;
                box-shadow:0 0 80px rgba(255,0,0,0.18),inset 0 1px 0 rgba(255,255,255,0.04);text-align:center;">
-            <div style="font-size:56px;margin-bottom:14px;line-height:1;">🔒</div>
+            <div style="margin-bottom:14px;line-height:1;"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary,#FFD700)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
             <div style="font-family:Orbitron,sans-serif;font-size:17px;font-weight:900;
                  color:#ff3333;letter-spacing:2.5px;margin-bottom:8px;text-transform:uppercase;">
               ${MSG.title}
@@ -14178,7 +14745,7 @@ const UmitSessionGuard = (function() {
               <div style="max-width:400px;width:100%;background:linear-gradient(135deg,rgba(10,20,35,0.99),rgba(8,16,28,1));
                    border:1.5px solid rgba(80,140,255,0.4);border-radius:20px;padding:36px 28px;text-align:center;
                    box-shadow:0 0 60px rgba(50,100,255,0.12);">
-                <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+                <div style="margin-bottom:12px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary,#FFD700)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
                 <div style="font-family:Orbitron,sans-serif;font-size:16px;font-weight:900;
                      color:#4488ff;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;">
                   Oturum Süresi Doldu
@@ -14202,7 +14769,7 @@ const UmitSessionGuard = (function() {
         try {
             const warn = document.createElement('div');
             warn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,60,140,0.95);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-family:Rajdhani,sans-serif;z-index:2147483640;text-align:center;border:1px solid rgba(80,140,255,0.4);';
-            warn.innerHTML = `⏰ Oturumunuz <b>${minutesLeft} dakika</b> içinde sona erecek.`;
+            warn.innerHTML = `Oturumunuz <b>${minutesLeft} dakika</b> içinde sona erecek.`;
             document.body.appendChild(warn);
             setTimeout(() => { try { warn.remove(); } catch(e) {} }, 10000);
         } catch(e) {}
@@ -16506,7 +17073,7 @@ function processEPGForChannel(channelKey) {
                 <div style="font-size:12px;color:var(--text-muted);">3 farklı sunucu deneniyor</div>
             </div>`;
         }
-        showToast("📡 EPG yükleniyor...");
+        showToast("EPG yükleniyor...");
         try {
             await loadEPGData();
         } catch(e) {
@@ -16583,7 +17150,7 @@ function processEPGForChannel(channelKey) {
                 </div>
                 ${allPast ? `
                     <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
-                        <div style="font-size:11px; color:#ff6400; font-weight:700;">🔄 EPG YENİLENİYOR</div>
+                        <div style="font-size:11px; color:#ff6400; font-weight:700;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:3px;animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>EPG YENİLENİYOR</div>
                         <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor, lütfen bekleyin...</div>
                     </div>
                 ` : epgInfo.current ? `
@@ -16697,11 +17264,11 @@ function processEPGForChannel(channelKey) {
                                 }
 
                                 if (typeof closeEpgModal === 'function') closeEpgModal();
-                                showToast('⏮ ' + title.trim() + ' programına gidiliyor...');
+                                showToast(title.trim() + ' programına gidiliyor...');
                                 return;
                             }
                             // DVR window yok — bilgi ver
-                            showToast('⚠️ Bu yayın gerçek zamanlı — DVR desteklenmiyor');
+                            showToast('Bu yayın gerçek zamanlı — DVR desteklenmez');
                             return;
                         }
                     }
@@ -17065,7 +17632,7 @@ function setInitialRemoteFocus() {
     // Ekranda görünür kanal adını toast ile bildir
     const nameEl = firstCard.querySelector('.channel-name, .vod-title, .channel-title');
     if (nameEl) {
-        showToast('🎯 ' + (nameEl.textContent || '').trim().substring(0, 40));
+        showToast( (nameEl.textContent || '').trim().substring(0, 40));
     }
 }
 
@@ -17460,12 +18027,33 @@ function applyTVBoxOptimizations() {
             if (existing) existing.remove();
             const t = document.createElement('div');
             t.className = 'toast-message';
-            t.textContent = msg;
+            // SVG ikon haritası
+            const _svgIcons = {
+                success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>',
+                error:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                info:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+                play:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-primary,#FFD700)" style="flex-shrink:0"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                load:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>',
+            };
+            // Anahtar kelimelere göre otomatik tip belirle
+            var _autoType = type;
+            if (!_autoType) {
+                var _m = msg || '';
+                if (/yüklendi|başarılı|bulundu|oynatılıyor|aktif|kaydedildi|sıfırlandı|altyazı aktif/i.test(_m)) _autoType = 'success';
+                else if (/hata|okunamadı|açılamadı|bulunamadı|indirilemedi|başlatılamadı|yükleme hatası|boş|kilitlend/i.test(_m)) _autoType = 'error';
+                else if (/uyarı|bekleyin|kısmi|gerçek zamanlı|desteklenmez|boş veya/i.test(_m)) _autoType = 'warning';
+                else if (/aranıyor|yenileniyor|bağlanıyor|çözümleniyor|yükleniyor|deneniyor|gidiliyor/i.test(_m)) _autoType = 'load';
+                else if (/oynat|fragman|stream|kanal|sezon|bölüm|film|dizi/i.test(_m)) _autoType = 'play';
+                else _autoType = 'info';
+            }
+            var _icon = _svgIcons[_autoType] || _svgIcons['info'];
+            t.innerHTML = '<div style="display:flex;align-items:center;gap:10px;justify-content:center">' + _icon + '<span style="line-height:1.3">' + msg + '</span></div>';
             t.style.cssText = 'position:fixed;top:50px;left:50%;transform:translateX(-50%);' +
-                'background:#1a1a1a;border:2px solid var(--accent-primary,#FFD700);color:#fff;' +
-                'padding:12px 22px;border-radius:8px;font-size:15px;font-weight:700;' +
-                'text-align:center;z-index:999999;max-width:80%;word-wrap:break-word;' +
-                'animation:none;opacity:1;';
+                'background:#1a1a1a;border:1px solid rgba(255,215,0,0.3);color:#fff;' +
+                'padding:11px 20px;border-radius:10px;font-size:14px;font-weight:600;' +
+                'text-align:center;z-index:999999;max-width:82%;word-wrap:break-word;' +
+                'animation:none;opacity:1;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
             document.body.appendChild(t);
             setTimeout(function(){ if(t.parentNode) t.remove(); }, 2500);
         };
@@ -18839,7 +19427,7 @@ listSeriesChannels();
         ${vodInfo.year ? `<div class="vod-meta-item">${vodInfo.year}</div>` : ''}
         ${vodInfo.rating ? `<div class="vod-meta-item tmdb-rating"><span class="material-symbols-outlined">star</span>${vodInfo.rating.toFixed(1)}</div>` : ''}
         ${vodInfo.runtime ? `<div class="vod-meta-item">${Math.floor(vodInfo.runtime / 60)}s ${vodInfo.runtime % 60}d</div>` : ''}
-        ${vodInfo.media_type === 'tv' ? `<div class="vod-meta-item">Dizi</div>` : ''}
+        ${vodInfo.media_type === 'tv' ? `<div class="vod-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>Dizi</div>` : ''}
         ${vodInfo.popularity ? `<div class="vod-meta-item">⭐ ${vodInfo.popularity.toFixed(1)}</div>` : ''}
         ${getVodLangBadgeHTML(state.player.currentContinueName || '')}
     `;
@@ -19520,7 +20108,7 @@ function playSeriesEpisode(seriesName, season, episode, url) {
             if (found) url = found.url;
         }
         if (!url) {
-            showToast('⚠️ Bölüm URL bulunamadı');
+            showToast('Bölüm URL bulunamadı');
             return;
         }
     }
@@ -20104,7 +20692,7 @@ function playTrailer(youtubeId, title) {
 
     window.trailerPlayer = { youtubeId: youtubeId, isMuted: false, volume: 70, player: null };
 
-    showToast('🎬 ' + title + ' fragmanı oynatılıyor');
+    showToast(title + ' fragmanı oynatılıyor');
     playKeySound('click');
 
     state.player.isTrailerPlaying = true;
@@ -20441,11 +21029,11 @@ function closeTrailer() {
                     closeVodModal();
                     playChannelByUrl(channel.url, channel.name);
                 } else {
-                    showToast('❌ Bölüm URL bulunamadı');
+                    showToast('Bölüm URL bulunamadı');
                 }
             }
         } else {
-            showToast('❌ Bölüm bulunamadı');
+            showToast('Bölüm bulunamadı');
         }
         return;
     }
@@ -20476,7 +21064,7 @@ function closeTrailer() {
         // playChannel ile oynat — tüm state'i doğru set eder ve resumeChannel'ı çağırır
         playChannel(index, 0);
     } else {
-        showToast('❌ Kanal bulunamadı: ' + channelName);
+        showToast('Kanal bulunamadı: ' + channelName);
     }
 }
 function continueVodFromModal() {
@@ -21290,8 +21878,8 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         }
         
         const progressBarRect = progressBar.getBoundingClientRect();
-        // Progress bar'ın 5 parmak (yaklaşık 100px) üstünde güvenli bölge
-        const SAFE_ZONE_HEIGHT = 100; // 5 parmak yaklaşık 100px
+        // Sadece progress bar'ın kendisi ve 30px üstü — daha geniş alan istem dışı seek yapıyor
+        const SAFE_ZONE_HEIGHT = 30;
         const safeZoneTop = progressBarRect.top - SAFE_ZONE_HEIGHT;
         
         if (y >= safeZoneTop && y <= progressBarRect.bottom &&
@@ -21406,12 +21994,8 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             // isBrightnessAdjusting / isVolumeAdjusting = false kalır
         } else if (currentTouchZone === 'progress') {
             lastProgressBarTouchTime = now;
-            const rect = progressBar.getBoundingClientRect();
-            const ratio = (touchStartX - rect.left) / rect.width;
-            if (video.duration && isFinite(video.duration)) {
-                safeSetCurrentTime(video, video.duration * ratio);
-                showControls(3000);
-            }
+            // Dokunmada seek YOK — sadece sürükleyerek seek yapılır (touchmove)
+            showControls(3000);
         }
         
         const now2 = Date.now();
@@ -21594,7 +22178,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
                     showControls(5000);
-                    showToast('👁 Kontroller Açıldı');
+                    showToast('Kontroller Açıldı');
                 } else {
                     // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
                     window._hiddenLastTapTime = _nowHid;
@@ -21639,7 +22223,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             const newTime = Math.min(v.duration, v.currentTime + SEEK_SEC);
                             v.currentTime = newTime;
                             showModernSeekingOverlay('forward', newTime, SEEK_SEC);
-                            showToast(`⏩ +${SEEK_SEC} saniye`);
+                            showToast(`+${SEEK_SEC} sn`);
                             // WP: host seek bildir
                             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -21648,7 +22232,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             const newTime = Math.max(0, v.currentTime - SEEK_SEC);
                             v.currentTime = newTime;
                             showModernSeekingOverlay('backward', newTime, SEEK_SEC);
-                            showToast(`⏪ -${SEEK_SEC} saniye`);
+                            showToast(`-${SEEK_SEC} sn`);
                             // WP: host seek bildir
                             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -22064,7 +22648,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1500);
         
     } catch (error) {
-        showToast("❌ Sistem başlatılamadı, lütfen sayfayı yenileyin");
+        showToast("Sistem başlatılamadı, lütfen sayfayı yenileyin");
         
         // Hata durumunda bile continue watching göster
         setTimeout(() => {
@@ -22087,13 +22671,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1️⃣5️⃣ AĞ DURUMU İZLEME
     window.addEventListener('online', () => {
         if (window._goNavPending || window._navAbort) return;
-        showToast("🌐 İnternet bağlantısı sağlandı");
+        showToast("İnternet bağlantısı sağlandı");
         // EPG verilerini yeniden yükle
         loadEPGData();
     });
     
     window.addEventListener('offline', () => {
-        showToast("⚠️ İnternet bağlantısı kesildi");
+        showToast("İnternet bağlantısı kesildi");
     });
 });
 // Loading overlay progres bar animasyonu
@@ -22192,7 +22776,7 @@ function hideLoadingOverlay() {
         // 400ms sonra tamamen gizle
         setTimeout(() => {
             overlay.style.display = 'none';
-            showToast("🎬 Ümit TV  Player Hazır! İyi seyirler...");
+            showToast("Ümit TV Player Hazır! İyi seyirler...");
         }, 400);
     }, 800);
 }
@@ -22564,11 +23148,11 @@ function saveControlSettings() {
         // ✅ Modalı kapat
         closeControlSettingsModal();
 
-        showToast("✅ Ayarlar kaydedildi");
+        showToast("Ayarlar kaydedildi");
         playKeySound('confirm');
 
     } catch (err) {
-        showToast("❌ Ayarlar kaydedilemedi");
+        showToast("Ayarlar kaydedilemedi");
     }
 }
 function closeControlSettingsModal() {
@@ -22667,7 +23251,7 @@ function resetToDefaultSettings() {
     applyAllSettingsImmediately();
     updateSettingsUI();
     
-    showToast("⚙️ Varsayılan ayarlara dönüldü");
+    showToast("Varsayılan ayarlara dönüldü");
 }
 
 // YENİ: Debug fonksiyonu
@@ -22779,7 +23363,7 @@ window.testSettings = {
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
                     showControls(5000);
-                    showToast('👁 Kontroller Açıldı');
+                    showToast('Kontroller Açıldı');
                     return;
                 }
 
@@ -22883,7 +23467,7 @@ window.testSettings = {
             
             showControls(5000);
             
-            showToast("🎮 Kumanda Modu Aktif");
+            showToast("Kumanda Modu Aktif");
             playKeySound('confirm');
         }
 
@@ -22974,7 +23558,7 @@ window.testSettings = {
                 state.remote.playerControlsVisible = false;
                 if (icon)  icon.textContent  = 'visibility';
                 if (label) label.textContent = 'Göster';
-                showToast('🙈 Kontroller gizlendi — Dokunmatik: 2x Dokun | Kumanda: OK tuşu');
+                showToast('Kontroller gizlendi — Dokunmatik: 2x Dokun | Kumanda: OK tuşu');
                 playKeySound('click');
             } else {
                 // Göster
@@ -22991,7 +23575,7 @@ window.testSettings = {
                 }
                 state.remote.zone = 'player';
                 updateRemoteFocus();
-                showToast('👁 Kontroller görünür');
+                showToast('Kontroller görünür');
                 playKeySound('confirm');
                 // 3sn sonra oto-gizle
                 _scheduleHide();
@@ -23000,7 +23584,7 @@ window.testSettings = {
 
 // ── SARMA SÜRESİ PANELİ (global) ────────────────────────────────
 (function() {
-    var _SA = [10, 30, 45, 60];
+    var _SA = [10, 20, 40, 60];
     window._seekSkipSeconds    = parseInt(localStorage.getItem('seekSkipSeconds') || '10', 10) || 10;
     window._seekAmountPanelOpen = false;
     window._seekAmountDpadIdx   = 0;
@@ -23082,15 +23666,40 @@ window.testSettings = {
 
         var seekBtn = document.getElementById('btnSeekAmount');
         if (seekBtn) {
-            // Touch: doğrudan touchend'de tetikle, başka hiçbir handler karışmasın
+            var _seekBtnPressTime = 0;
+            var _seekBtnLongTimer = null;
+            var _seekBtnLongFired = false;
+            var LONG_PRESS_MS = 400; // 400ms basılı tutunca panel açılır
+
+            seekBtn.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                _seekBtnPressTime = Date.now();
+                _seekBtnLongFired = false;
+                _seekBtnLongTimer = setTimeout(function() {
+                    _seekBtnLongFired = true;
+                    // Titreşim geri bildirimi (varsa)
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    window.toggleSeekAmountPanel();
+                }, LONG_PRESS_MS);
+            }, { passive: true, capture: true });
+
             seekBtn.addEventListener('touchend', function(e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+                clearTimeout(_seekBtnLongTimer);
+                if (_seekBtnLongFired) return; // longpress ile zaten açıldı
+                // Kısa basış → paneli aç (basit tap)
                 window.toggleSeekAmountPanel();
             }, { passive: false, capture: true });
+
+            seekBtn.addEventListener('touchmove', function(e) {
+                clearTimeout(_seekBtnLongTimer);
+                _seekBtnLongFired = false;
+            }, { passive: true, capture: true });
+
             // Mouse fallback
             seekBtn.addEventListener('click', function(e) {
-                window.toggleSeekAmountPanel();
+                if (!('ontouchstart' in window)) window.toggleSeekAmountPanel();
             });
         }
 
@@ -23186,13 +23795,13 @@ function openSidebar() {
             epgStatusEl.style.background = 'rgba(0,200,100,0.15)';
             epgStatusEl.style.border = '1px solid rgba(0,200,100,0.4)';
             epgStatusEl.style.color = '#4dbb7a';
-            epgStatusEl.innerHTML = '📡 EPG: ' + cnt + ' kanal';
+            epgStatusEl.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><path d="M1.5 8.5a13 13 0 0121 0"/><path d="M5 12a9 9 0 0114 0"/><path d="M8.5 15.5a5 5 0 017 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg> EPG: ' + cnt + ' kanal';
         } else {
             epgStatusEl.style.display = 'flex';
             epgStatusEl.style.background = 'rgba(255,180,0,0.12)';
             epgStatusEl.style.border = '1px solid rgba(255,180,0,0.35)';
             epgStatusEl.style.color = 'var(--accent-primary)';
-            epgStatusEl.innerHTML = '⏳ EPG yükleniyor...';
+            epgStatusEl.innerHTML = 'EPG yükleniyor...';
         }
     }
 
@@ -24163,7 +24772,7 @@ function playDirectChannel(channel) {
                 setTimeout(() => loadFreshChannelsInBackground(true), 300);
                 
             } catch (error) {
-                showToast("❌ Hata: " + (error.message || 'Bilinmeyen hata'));
+                showToast("Hata: " + (error.message || 'Bilinmeyen hata'));
                 playKeySound('back');
             }
         }
@@ -24256,38 +24865,41 @@ function isKeyboardOpen() {
 }
 
 function closePasswordModal() {
-    
     try {
-        
-
         enableBackgroundControls();
-        
+
         const modal = document.getElementById('passwordModal');
         if (modal) {
-            modal.style.display = 'none';
+            /* Kapanış animasyonu */
+            const card = modal.querySelector('.modal-content');
+            if (card) {
+                card.style.animation = 'pwCardOut 0.22s cubic-bezier(0.4,0,1,1) both';
+                /* keyframe yoksa ekle */
+                if (!document.getElementById('_pwCardOutKf')) {
+                    const s = document.createElement('style');
+                    s.id = '_pwCardOutKf';
+                    s.textContent = '@keyframes pwCardOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(12px) scale(0.94)}}';
+                    document.head.appendChild(s);
+                }
+            }
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (card) card.style.animation = '';
+            }, 230);
         }
-        
+
         state.passwordManager.currentM3UIndex = null;
-        
-        
 
-        if(state.remote && state.remote.active) { 
-            state.remote.zone = 'm3u'; 
-            
-            
-
+        if (state.remote && state.remote.active) {
+            state.remote.zone = 'm3u';
             setTimeout(() => {
                 const selectedCard = document.querySelector('.m3u-card.selected');
-                if (selectedCard) {
-                    selectedCard.focus();
-                }
-            }, 100);
+                if (selectedCard) selectedCard.focus();
+            }, 280);
         }
-        
+
         playKeySound('back');
-        
-    } catch (error) {
-    }
+    } catch (error) {}
 }
 
 function checkPassword() {
@@ -24368,7 +24980,7 @@ function checkPassword() {
             }
         }, 200);
         
-        showToast("✅ Giriş başarılı");
+        showToast("Giriş başarılı");
         playKeySound('confirm');
         
     } else {
@@ -24479,14 +25091,14 @@ function checkPassword() {
         if (window.UmitSecurityExtras) {
             const rl = UmitSecurityExtras.recordFailedAttempt();
             if (rl.blocked) {
-                showToast("🚫 Çok fazla hatalı giriş! " + rl.minutesLeft + " dakika bekleyin.");
+                showToast("Çok fazla hatalı giriş! " + rl.minutesLeft + " dakika bekleyin.");
                 return;
             } else {
                 const kalan = (3 - (rl.tries || 1));
-                showToast("❌ Hatalı Şifre! " + (kalan > 0 ? kalan + " hakkınız kaldı." : "Son hakkınız!"));
+                showToast("Hatalı Şifre! " + (kalan > 0 ? kalan + " hakkınız kaldı." : "Son hakkınız!"));
             }
         } else {
-            showToast("❌ Hatalı Şifre! Lütfen tekrar deneyin.");
+            showToast("Hatalı Şifre! Lütfen tekrar deneyin.");
         }
     }
 }
@@ -24626,6 +25238,13 @@ function openPasswordModal(m3uIndex, m3uName) {
         if (modal) {
             modal.style.display = 'flex';
             modal.style.zIndex = '99999';
+            /* Açılış animasyonunu sıfırla */
+            const card = modal.querySelector('.modal-content');
+            if (card) {
+                card.style.animation = 'none';
+                void card.offsetWidth;
+                card.style.animation = 'pwCardIn 0.35s cubic-bezier(0.16,1,0.3,1) both';
+            }
         } else {
             return;
         }
@@ -24664,51 +25283,7 @@ function openPasswordModal(m3uIndex, m3uName) {
     }
 }
 
-const navigationStyle = document.createElement('style');
-navigationStyle.textContent = `
-    /* Modal gezintisi için daha belirgin odak */
-    #passwordModal .remote-focused {
-        outline: 3px solid var(--accent-primary) !important;
-        box-shadow: 0 0 8px rgba(255, 0, 0, 0.5) !important;
-        border-radius: 4px;
-        animation: none; /* TVBox perf: pulse kapatıldı */
-        position: relative;
-        z-index: 10000 !important;
-    }
-    
-    @keyframes pulse {
-        0% { box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
-        50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.9); }
-        100% { box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
-    }
-    
-    #passwordInput.remote-focused {
-        background-color: var(--accent-primary) !important;
-        border: 2px solid #FF0000 !important;
-        padding: 10px !important;
-    }
-    
-    #rememberPassword.remote-focused {
-        width: 20px !important;
-        height: 20px !important;
-        border-radius: 4px !important;
-    }
-    
-    #btnPasswordCancel.remote-focused,
-    #btnPasswordConfirm.remote-focused {
-        background: var(--accent-primary) !important;
-        color: white !important;
-        font-weight: bold !important;
-        border: 2px solid white !important;
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important;
-    }
-    
-    /* Modal açıkken arka plan */
-    #passwordModal[style*="display: flex"] {
-        background-color: rgba(0, 0, 0, 0.9) !important;
-    }
-`;
-document.head.appendChild(navigationStyle);
+/* navigationStyle kaldırıldı — stiller artık ana CSS bloğunda */
         
 
         async function loadConfig() {
@@ -26792,10 +27367,10 @@ function handleEpgModalRemote(e) {
                                 closeEpgModal();
                                 const titleEl = el.querySelector('[class*="program-title"]') || el.querySelector('div');
                                 const title = titleEl ? titleEl.textContent.trim() : '';
-                                if (typeof showToast === 'function') showToast('⏮ ' + (title || 'Program') + ' programına gidiliyor...');
+                                if (typeof showToast === 'function') showToast((title || 'Program') + ' programına gidiliyor...');
                                 return;
                             }
-                            if (typeof showToast === 'function') showToast('⚠️ Bu yayın gerçek zamanlı — DVR desteklenmiyor');
+                            if (typeof showToast === 'function') showToast('Bu yayın gerçek zamanlı — DVR desteklenmez');
                             return;
                         }
                     }
@@ -26878,7 +27453,7 @@ function showTvBoxHelp() {
     // TV Box kullanıcısına kısayolları göster
     const helpText = `
         <div class="tvbox-help">
-            <h3>📺 TV Box Kumanda Kullanımı</h3>
+            <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>TV Box Kumanda Kullanımı</h3>
             <ul>
                 <li><strong>↑↓</strong> : Programlar arasında gezin</li>
                 <li><strong>OK/Enter</strong> : Program seç / X butonuna bas</li>
@@ -26941,7 +27516,7 @@ function createTvBoxEpgModal() {
                 </button>
                 
                 <div class="tvbox-modal-header">
-                    <h2>📺 PROGRAM REHBERİ</h2>
+                    <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>PROGRAM REHBERİ</h2>
                     <p class="tvbox-instruction">OK tuşu ile seçin, Back tuşu ile kapatın</p>
                 </div>
                 
@@ -27039,7 +27614,7 @@ async function parseM3UAsync(text, listIdx) {
                 // Sadece 20MB+ listeler için refresh butonu göster
                 const showRefresh = isCached && cachedSizeMB >= 20;
                 const refreshBtn = showRefresh
-                    ? `<button class="m3u-refresh-btn" tabindex="0" title="${m.name} Yenile (${cachedSizeMB.toFixed(0)}MB)" aria-label="Yenile" data-m3u-idx="${i}">🔄</button>`
+                    ? `<button class="m3u-refresh-btn" tabindex="0" title="${m.name} Yenile (${cachedSizeMB.toFixed(0)}MB)" aria-label="Yenile" data-m3u-idx="${i}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>`
                     : '';
                 html += `<div class="m3u-pill-wrap" style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0" data-has-refresh="${showRefresh}">` +
                     `<div class="m3u-pill ${state.selectedM3U==i?'active':''}" onclick="selectM3U(${i})" oncontextmenu="event.preventDefault(); openAddM3UModal(true, ${i});">${lockIcon} ${m.name}${memInfo}</div>` +
@@ -27887,7 +28462,7 @@ async function openSeriesModal(seriesName, originalIndex) {
     const _metaHtml = `
         ${seriesData.year ? `<div class="vod-meta-item">${seriesData.year}</div>` : ''}
         ${seriesData.rating ? `<div class="vod-meta-item tmdb-rating"><span class="material-symbols-outlined">star</span>${seriesData.rating.toFixed(1)}</div>` : ''}
-        <div class="vod-meta-item">📺 Dizi</div>
+        <div class="vod-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>Dizi</div>
         <div class="vod-meta-item">${totalSeasons} Sezon</div>
         <div class="vod-meta-item">${totalEpisodes} Bölüm</div>
     `;
@@ -28139,7 +28714,7 @@ function selectM3U(idx) {
     if (idx !== 'all') {
         isInitialLoadComplete = false;
         const m3u = state.m3uList[idx];
-        showToast(`📥 ${m3u.name} yükleniyor...`);
+        showToast(`${m3u.name} yükleniyor...`);
         loadSingleM3U(idx, m3u);
     } else {
         // Tüm listeler için - tüm kategorileri birleştir
@@ -28227,7 +28802,7 @@ async function refreshSingleM3U(idx) {
             .delete(m3u.url);
     }
 
-    showToast(`🔄 ${m3u.name} yenileniyor...`, 'info', 2000);
+    showToast(`${m3u.name} yenileniyor...`, 'info', 2000);
 
     // Seçili liste bu mu?
     if (state.selectedM3U === idx) {
@@ -28360,7 +28935,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             }
 
             if (!response) {
-                showToast('❌ Liste indirilemedi');
+                showToast('Liste indirilemedi');
                 hideInlineLoading();
                 return;
             }
@@ -28413,7 +28988,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     const _finalChannels = state.channels.filter(c => c.listIdx == idx);
 
                     if (_finalChannels.length === 0) {
-                        showToast('⚠️ Liste boş veya parse hatası');
+                        showToast('Liste boş veya parse hatası');
                         hideInlineLoading();
                         return;
                     }
@@ -28429,7 +29004,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     const _titleEl = document.getElementById('activeCategoryTitle');
                     if (_titleEl) _titleEl.innerText = 'Tüm Kanallar';
                     try { renderChannels(); } catch(e2) {}
-                    showToast(`✅ ${_finalChannels.length.toLocaleString()} içerik yüklendi!`);
+                    showToast(`${_finalChannels.length.toLocaleString()} içerik yüklendi`);
                     hideInlineLoading();
                     // Cache: sadece küçük listeler JSON'a yazılır (90MB yazılamaz zaten)
                     try {
@@ -28452,9 +29027,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                         state.filtered = _existing;
                         try { updateCategoriesFromFiltered(); renderCats(); renderChannels(); } catch(e2) {}
                         updateChannelCount(_existing.length);
-                        showToast(`⚠️ ${_existing.length.toLocaleString()} kanal yüklendi (kısmi)`);
+                        showToast(`${_existing.length.toLocaleString()} kanal yüklendi (kısmi)`);
                     } else {
-                        showToast('❌ Streaming parse hatası');
+                        showToast('Streaming parse hatası');
                     }
                     hideInlineLoading();
                 }
@@ -28465,7 +29040,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             try {
                 m3uContent = await response.text();
             } catch(e) {
-                showToast('❌ Liste okunamadı');
+                showToast('Liste okunamadı');
                 hideInlineLoading();
                 return;
             }
@@ -28475,7 +29050,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
 
             if (sizeBytes >= MB20) {
                 state.m3uMemoryCache.set(m3u.url, { content: m3uContent, timestamp: Date.now(), sizeMB });
-                showToast(`📦 ${sizeMB.toFixed(0)} MB liste bellekte tutuldu`, 'info', 2500);
+                showToast(`${sizeMB.toFixed(0)} MB liste bellekte`, 'info', 2500);
             } else {
                 if (state.useIndexedDB && state.db.isReady()) {
                     state.db.put(state.db.stores.M3U_CACHE, {
@@ -28486,7 +29061,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         }
 
         if (!m3uContent) {
-            showToast('❌ Liste boş');
+            showToast('Liste boş');
             hideInlineLoading();
             return;
         }
@@ -28525,7 +29100,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             if (fixedContent) {
                 m3uContent = fixedContent;
             } else {
-                showToast(`❌ ${m3u.name}: Liste okunamadı (URL veya şifre hatalı olabilir)`);
+                showToast(`${m3u.name}: Liste okunamadı`);
                 hideInlineLoading();
                 return;
             }
@@ -28542,7 +29117,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         });
 
         if (parsed.length === 0) {
-            showToast('⚠️ Liste boş');
+            showToast('Liste boş');
             state.filtered = [];
             renderChannels();
             hideInlineLoading();
@@ -28582,7 +29157,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             localStorage.setItem('quick_channels_cache_v2', JSON.stringify(quickCache));
         } catch(e) {}
         
-        showToast(`✅ ${parsed.length.toLocaleString()} içerik yüklendi!`);
+        showToast(`${parsed.length.toLocaleString()} içerik yüklendi`);
         hideInlineLoading();
         
         if (state.remote.active) {
@@ -28600,9 +29175,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             state.filtered = [..._existingForIdx];
             try { updateCategoriesFromFiltered(); renderCats(); renderChannels(); } catch(e2) {}
             updateChannelCount(_existingForIdx.length);
-            showToast(`⚠️ Kısmi yükleme: ${_existingForIdx.length.toLocaleString()} kanal`);
+            showToast(`Kısmi yükleme: ${_existingForIdx.length.toLocaleString()} kanal`);
         } else {
-            showToast('❌ Yükleme hatası');
+            showToast('Yükleme hatası');
             state.filtered = [];
             try { renderChannels(); } catch(e2) {}
         }
@@ -30248,48 +30823,100 @@ function addContinueCardStyles() {
             playKeySound('confirm'); 
         }
         
-        /* ── ÇIKIŞ ONAY MODALI ── */
+        /* ── ÇIKIŞ ONAY MODALI — MODERN v2 ── */
+        function _closeExitModal() {
+            const modal = document.getElementById('exitConfirmModal');
+            if (!modal) return;
+            /* Kapanış animasyonu */
+            const card = modal.querySelector('.exit-card');
+            if (card) {
+                card.style.animation = 'exitCardOut 0.22s cubic-bezier(0.4,0,1,1) both';
+            }
+            modal.style.animation = 'exitModalBgOut 0.25s ease both';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+                if (card) card.style.animation = '';
+                const noBtn  = document.getElementById('exitConfirmNo');
+                const yesBtn = document.getElementById('exitConfirmYes');
+                if (noBtn)  noBtn.classList.remove('remote-focused');
+                if (yesBtn) yesBtn.classList.remove('remote-focused');
+            }, 260);
+        }
+
         function showExitConfirmModal() {
             let modal = document.getElementById('exitConfirmModal');
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'exitConfirmModal';
-                modal.style.cssText = 'position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
                 modal.innerHTML = `
-                  <div style="background:linear-gradient(135deg,#1a1a1a,#141428);border:1px solid rgba(255,215,0,0.25);border-radius:18px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.7);">
-                    <div style="font-size:2.5em;margin-bottom:12px;">📺</div>
-                    <div style="font-family:Orbitron,sans-serif;font-size:15px;font-weight:700;color:#FFD700;letter-spacing:1px;margin-bottom:8px;">ÇIKIŞ</div>
-                    <div style="font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:24px;line-height:1.5;">Uygulamadan çıkmak istiyor musunuz?</div>
-                    <div style="display:flex;gap:12px;justify-content:center;">
-                      <button id="exitConfirmNo" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-family:Rajdhani,sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">İptal</button>
-                      <button id="exitConfirmYes" style="flex:1;padding:12px;background:linear-gradient(135deg,#FFD700,#F1A800);border:none;border-radius:10px;color:#000;font-family:Orbitron,sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;">EVET, ÇIK</button>
+                  <div class="exit-card">
+                    <div class="exit-icon-wrap">
+                      <div class="exit-icon-ring-outer"></div>
+                      <div class="exit-icon-ring"></div>
+                      <img class="exit-logo-img"
+                           src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg"
+                           alt="ÜmitM0d"
+                           onerror="this.outerHTML='<div class=\'exit-icon-bg\'><svg width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\'><rect x=\'2\' y=\'3\' width=\'20\' height=\'14\' rx=\'2\'/><line x1=\'8\' y1=\'21\' x2=\'16\' y2=\'21\'/><line x1=\'12\' y1=\'17\' x2=\'12\' y2=\'21\'/></svg></div>'">
                     </div>
+                    <div class="exit-title">ÇIKIŞ</div>
+                    <div class="exit-desc">Uygulamadan çıkmak<br>istiyor musunuz?</div>
+                    <div class="exit-divider"></div>
+                    <div class="exit-btn-row">
+                      <button id="exitConfirmNo">İptal</button>
+                      <button id="exitConfirmYes">EVET, ÇIK</button>
+                    </div>
+                    <div class="exit-hint">◀ ▶ Seç &nbsp;·&nbsp; OK Onayla &nbsp;·&nbsp; Geri İptal</div>
                   </div>`;
                 document.body.appendChild(modal);
+
+                /* Kapanış animasyonu keyframe ekle (tek seferlik) */
+                if (!document.getElementById('exitModalOutKeyframes')) {
+                    const st = document.createElement('style');
+                    st.id = 'exitModalOutKeyframes';
+                    st.textContent = `
+                        @keyframes exitCardOut {
+                            from { opacity:1; transform:translateY(0) scale(1); }
+                            to   { opacity:0; transform:translateY(12px) scale(0.94); }
+                        }
+                        @keyframes exitModalBgOut {
+                            from { opacity:1; }
+                            to   { opacity:0; }
+                        }`;
+                    document.head.appendChild(st);
+                }
+
                 document.getElementById('exitConfirmNo').addEventListener('click', () => {
-                    modal.style.display = 'none';
-                    document.getElementById('exitConfirmNo').classList.remove('remote-focused');
-                    document.getElementById('exitConfirmYes').classList.remove('remote-focused');
+                    _closeExitModal();
+                    if (typeof playKeySound === 'function') playKeySound('back');
                 });
                 document.getElementById('exitConfirmYes').addEventListener('click', () => {
-                    modal.style.display = 'none';
-                    exitApp();
+                    _closeExitModal();
+                    setTimeout(() => exitApp(), 200);
                 });
                 modal.addEventListener('click', (e) => {
-                    if (e.target === modal) modal.style.display = 'none';
+                    if (e.target === modal) {
+                        _closeExitModal();
+                        if (typeof playKeySound === 'function') playKeySound('back');
+                    }
                 });
-                // Remote için İptal'e otomatik focus
-                setTimeout(() => {
-                    const noBtn = document.getElementById('exitConfirmNo');
-                    if (noBtn) { noBtn.classList.add('remote-focused'); noBtn.focus(); }
-                }, 50);
-            } else {
-                modal.style.display = 'flex';
-                setTimeout(() => {
-                    const noBtn = document.getElementById('exitConfirmNo');
-                    if (noBtn) { noBtn.classList.add('remote-focused'); noBtn.focus(); }
-                }, 50);
             }
+
+            /* Her açılışta animasyonu sıfırla */
+            modal.style.display = 'flex';
+            modal.style.animation = '';
+            const card = modal.querySelector('.exit-card');
+            if (card) {
+                card.style.animation = '';
+                void card.offsetWidth; /* reflow */
+                card.style.animation = 'exitCardIn 0.35s cubic-bezier(0.16,1,0.3,1) both';
+            }
+
+            /* Remote için İptal'e otomatik focus */
+            setTimeout(() => {
+                const noBtn = document.getElementById('exitConfirmNo');
+                if (noBtn) { noBtn.classList.add('remote-focused'); noBtn.focus(); }
+            }, 50);
         }
 
         function exitApp() {
@@ -30317,7 +30944,7 @@ function addContinueCardStyles() {
             // Overlay metnini kapatma mesajına çevir
             const overlayText = overlay.querySelector('.sleep-countdown-text');
             const origText = overlayText ? overlayText.innerHTML : '';
-            if (overlayText) overlayText.innerHTML = 'ÜmitTV Kapatılıyor<br>Hoşçakal Birtanem 💙';
+            if (overlayText) overlayText.innerHTML = 'ÜmitTV Kapatılıyor<br>Hoşçakal Birtanem';
 
             sleepCanceled = false;
             clearInterval(sleepCountdownInterval);
@@ -31565,7 +32192,7 @@ function addContinueCardStyles() {
         function resetAppData() {
             try { closeSettingsModal(); } catch(e) {}
             playKeySound('back');
-            showToast('🗑️ Sıfırlanıyor...');
+            showToast('Sıfırlanıyor...');
 
             // ── 1) Player kapat ──────────────────────────────────────────
             try {
@@ -31689,7 +32316,7 @@ function addContinueCardStyles() {
                         loginOverlay.style.opacity = '1';
                     }));
                 }
-                showToast('✅ Sıfırlandı — Lütfen tekrar giriş yapın');
+                showToast('Sıfırlandı — Lütfen tekrar giriş yapın');
             }, 300);
 
             // ── 6) Login sonrası: config + kanallar yükle (setup fonksiyonları tekrar çağrılmaz) ──
@@ -31783,7 +32410,7 @@ function addContinueCardStyles() {
                         // Kilitlenmeyi önle
                         document.body.style.pointerEvents = '';
                         document.body.style.overflow = '';
-                        showToast('⚠️ Hata — Uygulamayı yeniden açın');
+                        showToast('Hata — Uygulamayı yeniden açın');
                     }
                 }, 400);
             });
@@ -32986,7 +33613,7 @@ function resumeChannel(startTime) {
                 // 30sn kaldığında ve hâlâ açılmadıysa proxy ile yeniden dene
                 if (remaining === 30 && !state.player.streamStarted && !window._proxyFallbackTriggered) {
                     window._proxyFallbackTriggered = true;
-                    showToast('😄 Proxy ile yeniden deneniyor...');
+                    showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
                     const _isKool = _fb && (_fb.includes('kool.to') || _fb.includes('vavoo.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
@@ -33298,7 +33925,7 @@ function resumeChannel(startTime) {
                             );
                             if (_trIdx >= 0) {
                                 _hls2.subtitleTrack = _trIdx;
-                                showToast('✅ Gömülü altyazı aktif edildi');
+                                showToast('Altyazı aktif edildi');
                             }
                         }
                     } catch(e) {}
@@ -33542,7 +34169,7 @@ function resumeChannel(startTime) {
 
     // 4. HLS Konfigürasyonu
     if (!ch.url) {
-        showToast('⚠️ Yayın URL bulunamadı');
+        showToast('Yayın URL bulunamadı');
         hideZappingScreen();
         return;
     }
@@ -33561,7 +34188,7 @@ function resumeChannel(startTime) {
 
     // ── FİLMMODU ÖZEL: /test= JSON endpoint (worker değişikliği gerektirmez) ──
     if (_isFilmmoduUrl) {
-        showToast('🎬 Film stream aranıyor...');
+        showToast('Film stream aranıyor...');
         state.remote.zone = 'player';
 
         (async () => {
@@ -33586,7 +34213,7 @@ function resumeChannel(startTime) {
 
                 if (!streamUrl) throw new Error('URL bulunamadı');
 
-                showToast('✅ Film bulundu, oynatılıyor...');
+                showToast('Film bulundu, oynatılıyor...');
                 state.player.url = streamUrl;
                 state.player.isLiveStream = false;
                 state.player.vodPlaying = true;
@@ -33609,7 +34236,7 @@ function resumeChannel(startTime) {
                 }
             } catch(e) {
                 hideZappingScreen();
-                showToast('❌ Film açılamadı: ' + (e.message || 'Bilinmeyen hata'));
+                showToast('Film açılamadı: ' + (e.message || 'Bilinmeyen hata'));
             }
         })();
 
@@ -33617,7 +34244,7 @@ function resumeChannel(startTime) {
     }
 
     if (_isWebEmbedUrl) {
-        showToast('🎬 Film stream aranıyor...');
+        showToast('Film stream aranıyor...');
         state.remote.zone = 'player';
 
         (async () => {
@@ -33691,7 +34318,7 @@ function resumeChannel(startTime) {
                 }
 
                 if (streamUrl) {
-                    showToast('✅ Film bulundu, oynatılıyor...');
+                    showToast('Film bulundu, oynatılıyor...');
                     state.player.url = streamUrl;
                     state.player.isLiveStream = false;
                     state.player.vodPlaying = true;
@@ -33713,15 +34340,15 @@ function resumeChannel(startTime) {
                     }
                 } else {
                     hideZappingScreen();
-                    showToast('❌ Stream URL bulunamadı');
+                    showToast('Stream URL bulunamadı');
                     if (typeof startHls === 'function' && typeof STREAM_PROXY !== 'undefined') {
-                        showToast('🔄 Proxy ile deneniyor...');
+                        showToast('Proxy bağlantısı deneniyor...');
                         startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
                     }
                 }
             } catch(e) {
                 hideZappingScreen();
-                showToast('❌ Film açılamadı: ' + (e.message || ''));
+                showToast('Film açılamadı: ' + (e.message || ''));
             }
         })();
 
@@ -33733,7 +34360,7 @@ function resumeChannel(startTime) {
     // Cloudflare Worker resolver ile gerçek stream URL'sini çek, HLS.js ile aç.
     if (rawUrl && (rawUrl.includes('vidmody.com') || rawUrl.includes('/vs/tt'))) {
         hideZappingScreen();
-        showToast('🎬 Dizi stream aranıyor...');
+        showToast('Dizi stream aranıyor...');
 
         (async () => {
             try {
@@ -33762,7 +34389,7 @@ function resumeChannel(startTime) {
 
                 if (streamUrl) {
                     // Gerçek stream bulundu → HLS.js ile aç
-                    showToast('✅ Stream bulundu, oynatılıyor...');
+                    showToast('Stream bulundu, oynatılıyor...');
                     // State'i güncelle
                     state.player.url = streamUrl;
                     state.player.isLiveStream = false;
@@ -33792,7 +34419,7 @@ function resumeChannel(startTime) {
                     }
                 } else {
                     // Resolver çalışmıyorsa → embedModal iframe fallback
-                    showToast('⚠️ Worker bulunamadı, embed player açılıyor...');
+                    showToast('Embed player açılıyor...');
                     const _em = document.getElementById('embedModal');
                     const _ei = document.getElementById('embedIframe');
                     const _et = document.getElementById('embedModalTitle');
@@ -33805,7 +34432,7 @@ function resumeChannel(startTime) {
                 }
             } catch (e) {
                 console.error('Vidmody oynatma hatası:', e);
-                showToast('❌ Stream açılamadı');
+                showToast('Stream açılamadı');
             }
         })();
 
@@ -34093,19 +34720,19 @@ function resumeChannel(startTime) {
             state.player.hls = null;
 
             if (isKoolTo && streamUrl === effectiveUrl) {
-                showToast('😄 Yedek bağlantı deneniyor...');
+                showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
                 startHls(koolFallback);
             } else if (isKoolTo) {
-                showToast('⚠️ Direkt bağlantı deneniyor...');
+                showToast('Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
-                showToast('🔄 Yedek bağlantı deneniyor...');
+                showToast('Yedek bağlantı deneniyor...');
                 startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
             } else if (rawUrl.startsWith('http:') && !streamUrl.includes('proxy')) {
                 // http:// mixed content — proxy ile yeniden dene
-                showToast('🔄 Proxy üzerinden bağlanıyor...');
+                showToast('Proxy üzerinden bağlanıyor...');
                 startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else {
                 // Son çare: native ile dene
@@ -34126,7 +34753,7 @@ function resumeChannel(startTime) {
                           (rawUrl.includes('action=redirect') && rawUrl.includes('format=4'));
 
     if (isRedirectUrl) {
-        showToast('🔗 Yayın bağlantısı çözümleniyor...');
+        showToast('Yayın bağlantısı çözümleniyor...');
         state.remote.zone = 'player';
         state.remote.playerBoxIndex = 9;
         startContinuousWatchingUpdate();
@@ -34199,7 +34826,7 @@ function resumeChannel(startTime) {
                         const _koolFb = (state.player.hls && state.player.hls.url && state.player.hls.url.includes('onrender'))
                             ? KOOL_PROXY_2 + encodeURIComponent(rawUrl)
                             : effectiveUrl;
-                        showToast('🔄 Yayın yenileniyor...');
+                        showToast('Yayın yenileniyor...');
                         startHls(_koolFb);
                     }
                 } else {
@@ -34217,7 +34844,7 @@ function resumeChannel(startTime) {
             // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
             (async function _resolveRedirectM3u8(origUrl) {
                 try {
-                    showToast('🔍 Yayın adresi çözümleniyor...');
+                    showToast('Yayın adresi çözümleniyor...');
                     // STREAM_PROXY üzerinden fetch → CORS engeli aşılır
                     const proxyFetch = STREAM_PROXY + encodeURIComponent(origUrl);
                     let resp;
@@ -34316,7 +34943,7 @@ function resumeChannel(startTime) {
                 if (e.name === 'AbortError') return;
                 if (fallbacks && fallbacks.length > 0) {
                     const next = fallbacks.shift();
-                    showToast('🔄 Alternatif proxy deneniyor...');
+                    showToast('Alternatif proxy deneniyor...');
                     _tryPlayMkv(next, fallbacks);
                 }
             });
@@ -34326,7 +34953,7 @@ function resumeChannel(startTime) {
                 video.removeEventListener('error', _errHandler);
                 if (fallbacks && fallbacks.length > 0) {
                     const next = fallbacks.shift();
-                    showToast('🔄 Alternatif proxy deneniyor...');
+                    showToast('Alternatif proxy deneniyor...');
                     _tryPlayMkv(next, fallbacks);
                 } else if (url !== rawUrl && !_isMixedContent) {
                     // Tüm proxy'ler başarısız → direkt dene
@@ -35629,7 +36256,7 @@ let virtualScrollSystem = null;
                     const _skLen = _sk && _sk.length > 0;
                     const _dvrWindow = _skLen ? (_sk.end(_sk.length - 1) - _sk.start(0)) : 0;
                     if (!(_dvrWindow > 30)) {
-                        if (typeof showToast === 'function') showToast('⏮️ Bu yayın gerçek zamanlı — sarma desteklenmiyor');
+                        if (typeof showToast === 'function') showToast('Bu yayın gerçek zamanlı — sarma desteklenmez');
                         showControls(3000);
                         return;
                     }
@@ -36002,6 +36629,17 @@ function updateSidebarFavIcons(channelName) {
                 r.style.setProperty('--focus-card-bg',   focusBg || t.secondary || '#111');
                 r.style.setProperty('--focus-card-text', focusText || t.primary || '#FFD700');
                 r.style.setProperty('--focus-card-glow', `0 0 0 3px ${t.primary || '#FFD700'}, 0 0 18px rgba(${(t.primary && t.primary.startsWith('#')) ? hexToRgb(t.primary) : '255,215,0'},0.5)`);
+                // Modal kart arkaplanı — tema rengiyle hafif tintli, tam opak
+                try {
+                    const rgb2 = hexToRgb(t.primary);
+                    const [rv,gv,bv] = rgb2.split(',').map(Number);
+                    const mix = (a,b,f) => Math.round(a*(1-f)+b*f);
+                    const mr=mix(10,rv,0.12), mg=mix(10,gv,0.12), mb=mix(20,bv,0.12);
+                    const mr2=mix(10,rv,0.07), mg2=mix(10,gv,0.07), mb2=mix(20,bv,0.07);
+                    r.style.setProperty('--modal-card-bg', `linear-gradient(160deg,rgb(${mr},${mg},${mb}) 0%,rgb(10,10,20) 50%,rgb(${mr2},${mg2},${mb2}) 100%)`);
+                } catch(e2) {
+                    r.style.setProperty('--modal-card-bg', 'rgb(10,10,20)');
+                }
             } catch(e) {}
             
             const playerBg = darkenColor(t.bg, 0.8);
@@ -36692,9 +37330,29 @@ function deleteContinueWatchingRecord(name) {
     playKeySound('confirm');
 }
         
-        function showToast(msg) { 
-            const t = document.getElementById('toast'); 
-            t.innerText = msg; 
+        function showToast(msg, type) { 
+            const t = document.getElementById('toast');
+            // SVG ikon haritası
+            const _svgIcons = {
+                success: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:middle"><polyline points="20 6 9 17 4 12"/></svg>',
+                error:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:middle"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                warning: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:middle"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                info:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:middle"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+                play:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="var(--accent-primary,#FFD700)" style="flex-shrink:0;vertical-align:middle"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                load:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;vertical-align:middle"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>',
+            };
+            var _autoType = type;
+            if (!_autoType) {
+                var _m = msg || '';
+                if (/yüklendi|başarılı|bulundu|oynatılıyor|aktif|kaydedildi|sıfırlandı/i.test(_m)) _autoType = 'success';
+                else if (/hata|okunamadı|açılamadı|bulunamadı|indirilemedi|başlatılamadı|kilitlend/i.test(_m)) _autoType = 'error';
+                else if (/bekleyin|kısmi|gerçek zamanlı|desteklenmez|hatalı şifre/i.test(_m)) _autoType = 'warning';
+                else if (/aranıyor|yenileniyor|bağlanıyor|çözümleniyor|yükleniyor|deneniyor/i.test(_m)) _autoType = 'load';
+                else if (/oynat|fragman|stream|kanal|sezon|bölüm|film|dizi/i.test(_m)) _autoType = 'play';
+                else _autoType = 'info';
+            }
+            var _icon = _svgIcons[_autoType] || '';
+            t.innerHTML = '<div style="display:flex;align-items:center;gap:8px;justify-content:center">' + _icon + '<span>' + msg + '</span></div>';
             t.style.display = 'block'; 
             setTimeout(()=>t.style.display='none', 2000); 
         }
@@ -36751,7 +37409,7 @@ function deleteContinueWatchingRecord(name) {
                     state.remote.playerControlsVisible = true;
                     showControls(5000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
-                    showToast('👁 Kontroller Açıldı');
+                    showToast('Kontroller Açıldı');
                     return;
                 }
                 // Yön tuşları — içerik türüne göre
@@ -37892,7 +38550,7 @@ function handlePlayerRemote(e) {
             e.preventDefault();
             const _v = document.getElementById('videoPlayer');
             _v.muted = !_v.muted;
-            showToast(_v.muted ? '🔇 Ses Kapalı' : '🔊 Ses Açık');
+            showToast(_v.muted ? 'Ses Kapalı' : 'Ses Açık');
             return;
         }
         return;
@@ -39298,9 +39956,9 @@ function commitChNum() {
             state.remote.zone = 'channels';
             playChannel(idx);
         }
-        showToast(`📺 ${num}. Kanal: ${channels[idx].name}`);
+        showToast(`${num}. Kanal: ${channels[idx].name}`);
     } else {
-        showToast(`❌ ${num}. kanal bulunamadı (Toplam: ${channels.length})`);
+        showToast(`${num}. kanal bulunamadı`);
     }
 }
 
@@ -39770,7 +40428,7 @@ function handleFavoriteChannelSelect(key) {
                     state.remote.playerControlsVisible = true;
                     showControls(5000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
-                    showToast('👁 Kontroller Açıldı');
+                    showToast('Kontroller Açıldı');
                     return;
                 }
                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
@@ -40941,7 +41599,7 @@ function optimizeVideoPlayer() {
             // Toast
             if (typeof showToast === 'function') {
                 setTimeout(() => {
-                    showToast("✅ Tüm düzeltmeler aktif!");
+                    showToast("Tüm düzeltmeler aktif");
                 }, 2000);
             }
             
@@ -42092,7 +42750,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
                 
 
                 if (typeof showToast === 'function') {
-                    showToast('🔒 ' + (m3u.name || 'Liste') + ' kilitlendi! Şifre değişti.');
+                    showToast((m3u.name || 'Liste') + ' kilitlendi.');
                 }
                 
 
@@ -42101,7 +42759,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
                 }
             } else {
                 if (typeof showToast === 'function') {
-                    showToast('🔒 ' + (m3u.name || 'Liste') + ' şifresi değişti, kilitleniyor.');
+                    showToast((m3u.name || 'Liste') + ' şifresi değişti, kilitleniyor.');
                 }
                 if (typeof renderM3USelector === 'function') renderM3USelector();
             }
@@ -42356,7 +43014,7 @@ window.setQualityLevel = function(level) {
             }
         }
         if (typeof showToast === 'function') {
-            showToast(lvlInt === -1 ? '🎛️ Otomatik kalite' : '🎛️ ' + (hls.levels[lvlInt]?.height || '?') + 'p seçildi');
+            showToast(lvlInt === -1 ? 'Otomatik kalite' : (hls.levels[lvlInt]?.height || '?') + 'p seçildi');
         }
     }
     buildQualityItems();
@@ -42558,7 +43216,7 @@ function buildSubtitleItems() {
         <div style="display:flex;gap:4px;flex-shrink:0">
             <button class="sub-adj-btn" onclick="adjustSubOffset(-0.5)" title="-0.5s">-</button>
             <button class="sub-adj-btn" onclick="adjustSubOffset(0.5)" title="+0.5s">+</button>
-            <button class="sub-adj-btn sub-adj-reset" onclick="adjustSubOffset(null)" title="Sıfırla">↺</button>
+            <button class="sub-adj-btn sub-adj-reset" onclick="adjustSubOffset(null)" title="Sıfırla"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
         </div>
     </div>`;
 
@@ -42569,7 +43227,7 @@ function buildSubtitleItems() {
         <div style="display:flex;gap:4px;flex-shrink:0">
             <button class="sub-adj-btn" onclick="adjustSubSize(-10)">A-</button>
             <button class="sub-adj-btn" onclick="adjustSubSize(10)">A+</button>
-            <button class="sub-adj-btn sub-adj-reset" onclick="adjustSubSize(null)">↺</button>
+            <button class="sub-adj-btn sub-adj-reset" onclick="adjustSubSize(null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
         </div>
     </div>`;
 
@@ -42596,7 +43254,7 @@ window.setSubtitleTrack = function(type, index) {
         _stopCustomSubLoop();
         window._subCues = [];
         window._loadedSubFile = null;
-        if (typeof showToast === 'function') showToast('💬 Altyazı kapatıldı');
+        if (typeof showToast === 'function') showToast('Altyazı kapatıldı');
         document.getElementById('btnSubtitle')?.classList.remove('btn-active');
     } else if (type === 'hls') {
         if (hls) {
@@ -42612,7 +43270,7 @@ window.setSubtitleTrack = function(type, index) {
             }, 300);
         }
         const name = hls?.subtitleTracks?.[index]?.name || 'Altyazı';
-        if (typeof showToast === 'function') showToast('💬 ' + name + ' seçildi');
+        if (typeof showToast === 'function') showToast(name + ' seçildi');
         document.getElementById('btnSubtitle')?.classList.add('btn-active');
     } else if (type === 'native') {
         if (video) {
@@ -42621,7 +43279,7 @@ window.setSubtitleTrack = function(type, index) {
             });
         }
         const name = video?.textTracks?.[index]?.label || 'Altyazı';
-        if (typeof showToast === 'function') showToast('💬 ' + name + ' seçildi');
+        if (typeof showToast === 'function') showToast(name + ' seçildi');
         document.getElementById('btnSubtitle')?.classList.add('btn-active');
     }
     buildSubtitleItems();
@@ -42633,7 +43291,7 @@ window.setAudioTrack = function(index) {
     if (hls) {
         hls.audioTrack = index;
         const name = hls.audioTracks?.[index]?.name || 'Ses';
-        if (typeof showToast === 'function') showToast('🔊 ' + name + ' seçildi');
+        if (typeof showToast === 'function') showToast(name + ' ses parçası seçildi');
     }
     buildSubtitleItems();
     setTimeout(closeSubtitleModal, 350);
@@ -42675,7 +43333,7 @@ window.handleSubtitleFile = function(input) {
                 cues = parseSRT(text);
             }
             if (!cues.length) {
-                showToast('⚠️ Altyazı okunamadı ya da boş');
+                showToast('Altyazı okunamadı ya da boş');
                 return;
             }
             window._subCues      = cues;
@@ -42690,11 +43348,11 @@ window.handleSubtitleFile = function(input) {
             _startCustomSubLoop();
 
             document.getElementById('btnSubtitle')?.classList.add('btn-active');
-            showToast('✅ ' + window._loadedSubFile + ' yüklendi');
+            showToast(window._loadedSubFile + ' yüklendi');
             buildSubtitleItems();
             closeSubtitleModal();
         } catch(err) {
-            showToast('❌ Altyazı okuma hatası: ' + err.message);
+            showToast('Altyazı okuma hatası: ' + err.message);
         }
     };
     // Encoding tespiti — BOM varsa UTF-8, yoksa UTF-8 dene, başarısız → Windows-1254
@@ -42720,7 +43378,7 @@ window.handleSubtitleFile = function(input) {
         else if (ext === 'vtt') cues = parseVTT(text);
         else cues = parseSRT(text);
 
-        if (!cues.length) { showToast('⚠️ Altyazı okunamadı ya da boş'); return; }
+        if (!cues.length) { showToast('Altyazı okunamadı ya da boş'); return; }
         window._subCues = cues;
         window._subOffset = 0;
         window._loadedSubFile = file.name.length > 35 ? file.name.substring(0,33) + '…' : file.name;
@@ -42728,7 +43386,7 @@ window.handleSubtitleFile = function(input) {
         _clearNativeSubtitles();
         _startCustomSubLoop();
         document.getElementById('btnSubtitle')?.classList.add('btn-active');
-        showToast('✅ ' + window._loadedSubFile + ' yüklendi');
+        showToast(window._loadedSubFile + ' yüklendi');
         buildSubtitleItems();
         closeSubtitleModal();
     };
@@ -42936,7 +43594,7 @@ window.adjustSubOffset = function(delta) {
         window._subOffset = Math.round((window._subOffset + delta) * 10) / 10;
     }
     buildSubtitleItems();
-    showToast('⏱ Gecikme: ' + (window._subOffset >= 0 ? '+' : '') + window._subOffset + ' sn');
+    showToast('Gecikme: ' + (window._subOffset >= 0 ? '+' : '') + window._subOffset + ' sn');
 };
 
 window.adjustSubSize = function(delta) {
@@ -42947,7 +43605,7 @@ window.adjustSubSize = function(delta) {
     }
     _applySubStyles();
     buildSubtitleItems();
-    showToast('🔡 Yazı boyutu: ' + window._subFontSize + '%');
+    showToast('Yazı boyutu: ' + window._subFontSize + '%');
 };
 
 window.toggleSubPosition = function() {
@@ -44579,7 +45237,7 @@ function _doSeek(step) {
             
 
             if (typeof window.showToast === 'function') {
-                window.showToast('⏮️ Bu yayın gerçek zamanlı — sarma desteklenmiyor');
+                window.showToast('Bu yayın gerçek zamanlı — sarma desteklenmez');
             }
             var _lsBtn = document.getElementById('btnLiveSync');
             if (_lsBtn) _lsBtn.style.display = 'flex';
@@ -44876,7 +45534,7 @@ _ready(function() {
         if (window.state && window.state.player && window.state.player.isLiveStream) {
             var _isDvr = dur && isFinite(dur) && dur > 0;
             if (!_isDvr) {
-                if (typeof window.showToast === 'function') window.showToast('⏮️ Bu yayın gerçek zamanlı — sarma desteklenmiyor');
+                if (typeof window.showToast === 'function') window.showToast('Bu yayın gerçek zamanlı — sarma desteklenmez');
                 if (typeof window.showControls === 'function') window.showControls(3000);
                 return;
             }
@@ -49909,33 +50567,45 @@ window.wpLoadRooms = async function wpLoadRooms() {
     return;
   }
   const now = Date.now();
+  const STALE_MS = 2 * 60 * 60 * 1000; // 2 saat
   const savedNick = (() => { try { return localStorage.getItem('wp_nick') || ''; } catch(e) { return ''; } })();
+
+  // ── ESKİ ODALARI OTOMATİK SİL ──
+  const staleEntries = Object.entries(rooms).filter(([code, r]) =>
+    r.createdAt && (now - r.createdAt) > STALE_MS
+  );
+  if (staleEntries.length > 0) {
+    // Paralel sil (bekleme yok — UI'yi bloklamaz)
+    staleEntries.forEach(([code]) => {
+      fbDelete('/rooms/' + code).catch(() => {});
+    });
+    // Silinen odaları rooms nesnesinden çıkar
+    staleEntries.forEach(([code]) => delete rooms[code]);
+  }
+
   let count = 0;
   const sorted = Object.entries(rooms).sort((a,b) => (b[1].createdAt||0) - (a[1].createdAt||0));
   sorted.forEach(([code, r]) => {
     const memberCount = r.members ? Object.values(r.members).filter(m => m && m.online === true && m.lastSeen && (now - m.lastSeen) < 90000).length : 0;
     const hasLock = !!r.password;
-    const isOld = r.createdAt && (now - r.createdAt) > 2*60*60*1000;
     const isMyRoom = savedNick && r.hostNick && r.hostNick === savedNick;
     const el = document.createElement('div');
     el.className = 'wp-room-item wp-remote-focus';
     el.tabIndex = 0;
     el.dataset.code = code;
     el.dataset.hasPassword = hasLock ? '1' : '0';
-    if(isOld) el.style.opacity = '0.4';
     el.innerHTML = `
       <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:${isOld?'rgba(255,255,255,0.4)':'#e8e8f0'};display:flex;align-items:center;gap:6px;">
+        <div style="font-size:14px;font-weight:700;color:#e8e8f0;display:flex;align-items:center;gap:6px;">
           ${hasLock ? '<span style="color:var(--accent-primary,#FFD700);font-size:13px;">🔒</span>' : '<span style="color:#2ed573;font-size:13px;">🔓</span>'}
           <span>${r.roomName||'Oda'}</span>
-          ${isOld ? '<span style="font-size:10px;background:#e74c3c;color:#fff;padding:1px 5px;border-radius:4px;font-weight:700;">ESKİ</span>' : ''}
           ${isMyRoom ? '<span style="font-size:10px;background:rgba(var(--accent-primary-rgb,255,215,0),0.2);color:var(--accent-primary,#FFD700);padding:1px 6px;border-radius:4px;font-weight:700;border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);">SAHİBİ</span>' : ''}
         </div>
         <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">${(r.contentTitle && !r.contentTitle.toLowerCase().includes('yükleniyor') ? r.contentTitle : 'Ümit TV')} <span style="color:rgba(255,255,255,0.2);">•</span> <span style="font-family:'Orbitron',sans-serif;letter-spacing:2px;">${code}</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:8px;">
-        ${!isOld ? `<div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:12px;padding:3px 10px;font-size:12px;color:var(--accent-primary,#FFD700);font-weight:700;">${memberCount} 👁</div>` : ''}
-        ${!isOld ? `<button class="wp-room-enter-btn wp-remote-focus" data-enter="${code}">▶ GİR</button>` : ''}
+        <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:12px;padding:3px 10px;font-size:12px;color:var(--accent-primary,#FFD700);font-weight:700;">${memberCount} 👁</div>
+        <button class="wp-room-enter-btn wp-remote-focus" data-enter="${code}">▶ GİR</button>
         ${isMyRoom ? `<button class="wp-del-btn wp-remote-focus" data-code="${code}" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.5);border-radius:8px;width:32px;height:32px;color:#e74c3c;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;" title="Odayı Sil">🗑</button>` : ''}
       </div>
     `;
@@ -49963,13 +50633,11 @@ window.wpLoadRooms = async function wpLoadRooms() {
     // Karta tıklama (satır tıklaması = odaya gir mantığı)
     el.addEventListener('click', (e) => {
       if(e.target.closest('.wp-del-btn') || e.target.closest('.wp-room-enter-btn')) return;
-      if(isOld) { wpShowToast('⚠ Bu oda süresi dolmuş'); return; }
       wpTryEnterRoom(code, r, isMyRoom);
     });
     el.addEventListener('keydown', e => {
       if(e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if(isOld) { wpShowToast('⚠ Bu oda süresi dolmuş'); return; }
         wpTryEnterRoom(code, r, isMyRoom);
       }
     });
@@ -51183,9 +51851,8 @@ function handleExitConfirmModalRemote(e) {
     if (!noBtn || !yesBtn) return;
 
     if (isBack) {
-        modal.style.display = 'none';
-        noBtn.classList.remove('remote-focused');
-        yesBtn.classList.remove('remote-focused');
+        if (typeof _closeExitModal === 'function') _closeExitModal();
+        else modal.style.display = 'none';
         if (typeof playKeySound === 'function') playKeySound('back');
         return;
     }
@@ -51571,12 +52238,16 @@ window.addEventListener('online', function() {
 }
 
 /* Siluet SVG */
-#ataturk-svg {
-    width: min(260px, 55vw);
-    height: auto;
-    filter:
-        drop-shadow(0 0 30px rgba(255,215,0,0.25))
-        drop-shadow(0 0 60px rgba(255,215,0,0.1));
+#ataturk-photo {
+    width: min(200px, 45vw);
+    height: min(280px, 60vw);
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 6px;
+    filter: grayscale(100%) contrast(1.08) brightness(0.88)
+            drop-shadow(0 0 30px rgba(255,215,0,0.2))
+            drop-shadow(0 0 60px rgba(255,215,0,0.08));
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* Alt mesaj — el yazısı */
@@ -51662,45 +52333,9 @@ window.addEventListener('online', function() {
     <div id="ataturk-top-bar"></div>
 
     <div id="ataturk-silhouette-wrap">
-        <!-- Atatürk silueti — SVG path -->
-        <svg id="ataturk-svg" viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <!-- Siluet: baş, boyun, omuzlar, gövde — stilize profil -->
-            <path d="
-                M150 20
-                C138 20 126 26 120 36
-                C112 48 112 60 116 72
-                C110 76 106 84 108 94
-                C110 102 116 108 122 110
-                C124 120 128 130 134 136
-                C128 142 122 152 118 162
-                C112 174 108 188 106 202
-                C102 218 100 234 100 250
-                C96 256 88 260 82 266
-                C72 276 64 288 60 302
-                C56 314 56 326 58 338
-                L242 338
-                C244 326 244 314 240 302
-                C236 288 228 276 218 266
-                C212 260 204 256 200 250
-                C200 234 198 218 194 202
-                C192 188 188 174 182 162
-                C178 152 172 142 166 136
-                C172 130 176 120 178 110
-                C184 108 190 102 192 94
-                C194 84 190 76 184 72
-                C188 60 188 48 180 36
-                C174 26 162 20 150 20Z
-                M58 338 L58 380 C58 392 68 400 80 400 L220 400 C232 400 242 392 242 380 L242 338Z
-            " fill="rgba(255,255,255,0.85)"/>
-            <!-- Yaka / ceket detayı -->
-            <path d="
-                M150 338 L130 360 L120 400 L150 390 L180 400 L170 360 Z
-            " fill="rgba(0,0,0,0.3)"/>
-            <!-- Omuz epaulette sol -->
-            <path d="M100 250 C92 252 82 258 76 268 L90 270 Z" fill="rgba(255,255,255,0.6)"/>
-            <!-- Omuz epaulette sağ -->
-            <path d="M200 250 C208 252 218 258 224 268 L210 270 Z" fill="rgba(255,255,255,0.6)"/>
-        </svg>
+        <img id="ataturk-photo"
+             src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/images.jpeg"
+             alt="Mustafa Kemal Atatürk">
 
         <div id="ataturk-text-wrap">
             <div id="ataturk-quote">

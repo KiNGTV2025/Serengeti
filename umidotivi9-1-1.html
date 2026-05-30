@@ -14044,8 +14044,12 @@ const UmitSecurityManager = (function () {
             // AppCreator24 / Android WebView kapatma yöntemleri
             try { window.close(); } catch(e) {}
             try { if (window.Android && window.Android.closeApp) window.Android.closeApp(); } catch(e) {}
+            try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(e) {}
             try { if (window.AppInterface && window.AppInterface.exitApp) window.AppInterface.exitApp(); } catch(e) {}
             try { if (window.JSBridge && window.JSBridge.exitApp) window.JSBridge.exitApp(); } catch(e) {}
+            // AppCreator24 özel scheme denemeleri
+            try { window.location.href = 'android:close'; } catch(e) {}
+            try { window.location.href = 'app:close'; } catch(e) {}
             try { history.go(-(history.length + 10)); } catch(e) {}
             try { window.location.replace('about:blank'); } catch(e) {}
             // DOM'u komple yok et
@@ -14068,7 +14072,7 @@ const UmitSecurityManager = (function () {
         // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
         (document.documentElement || document.body).appendChild(overlay);
 
-        // Overlay DOM'a eklendikten SONRA buton event'ini bağla
+        // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
         setTimeout(function() {
             var _closeBtn = document.getElementById('__umit_close_btn');
             if (_closeBtn) {
@@ -14080,6 +14084,22 @@ const UmitSecurityManager = (function () {
                 });
                 _closeBtn.focus();
             }
+
+            // Geri sayım timer — 10 saniye sonra _forceClose çağır
+            var _cdEl = document.getElementById('__umit_countdown');
+            var _cdSec = 10;
+            function _updateCd() {
+                if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye içinde kapatılıyor...';
+            }
+            _updateCd();
+            var _cdTimer = setInterval(function() {
+                _cdSec--;
+                _updateCd();
+                if (_cdSec <= 0) {
+                    clearInterval(_cdTimer);
+                    _forceClose();
+                }
+            }, 1000);
         }, 50);
 
         // Overlay'e focus ver — kumanda odağı burada kalsın

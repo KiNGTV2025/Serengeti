@@ -14061,7 +14061,8 @@ const UmitSecurityManager = (function () {
 
         // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
         setTimeout(function() {
-            var _closeBtn = document.getElementById('__umit_close_btn');
+            // getElementById yerine overlay.querySelector — documentElement append sonrası güvenli
+            var _closeBtn = overlay.querySelector('#__umit_close_btn');
             if (_closeBtn) {
                 _closeBtn.addEventListener('click', function() { _forceClose(); });
                 _closeBtn.addEventListener('touchend', function(e) { e.preventDefault(); _forceClose(); });
@@ -14073,10 +14074,10 @@ const UmitSecurityManager = (function () {
             }
 
             // Geri sayım timer — 5 saniye sonra _forceClose çağır
-            var _cdEl = document.getElementById('__umit_countdown');
+            var _cdEl = overlay.querySelector('#__umit_countdown');
             var _cdSec = 5;
             function _updateCd() {
-                if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye içinde kapatılıyor...';
+                if (_cdEl) _cdEl.textContent = 'Uygulama ' + _cdSec + ' saniye icinde kapatiliyor...';
             }
             _updateCd();
             var _cdTimer = setInterval(function() {

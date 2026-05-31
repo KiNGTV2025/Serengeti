@@ -4550,12 +4550,12 @@ body {
     display: none;
     flex-direction: column;
     gap: 7px;
-    z-index: 999999;
+    z-index: 2147483647;
     box-shadow: 0 6px 32px rgba(0,0,0,0.92);
     pointer-events: auto;
     width: min(320px, calc(100vw - 16px));
     box-sizing: border-box;
-    max-height: calc(100dvh - 20px);
+    max-height: 50vh;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
@@ -12938,10 +12938,8 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 <div class="player-container" id="playerContainer" style="background: none !important;">
     
     <video id="videoPlayer" 
-           playsinline 
            preload="auto"
            autoplay 
-           webkit-playsinline
            muted
            style="background-color: #000 !important; width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); backface-visibility: hidden; will-change: auto;"
            poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
@@ -22328,19 +22326,13 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const video = document.getElementById('videoPlayer');
             if (!video) { showToast('⚠ Video bulunamadı'); return; }
 
-            // PiP desteklenmiyor mu?
-            if (!document.pictureInPictureEnabled && !video.webkitSupportsPresentationMode) {
-                showToast('⚠ Bu tarayıcı PiP desteklemiyor');
-                return;
-            }
+            const pipIcon  = document.getElementById('pipIcon');
+            const pipLabel = document.getElementById('pipLabel');
+            const btn      = document.getElementById('btnPip');
 
-            try {
-                const pipIcon  = document.getElementById('pipIcon');
-                const pipLabel = document.getElementById('pipLabel');
-                const btn      = document.getElementById('btnPip');
-
-                // Webkit (Safari/iOS) PiP
-                if (video.webkitSupportsPresentationMode) {
+            // Webkit (Safari/iOS) PiP
+            if (video.webkitSupportsPresentationMode) {
+                try {
                     const mode = video.webkitPresentationMode === 'picture-in-picture'
                         ? 'inline' : 'picture-in-picture';
                     video.webkitSetPresentationMode(mode);
@@ -22348,32 +22340,80 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     if (pipIcon)  pipIcon.textContent  = inPiP ? 'picture_in_picture_alt' : 'picture_in_picture';
                     if (pipLabel) pipLabel.textContent = inPiP ? 'PiP ✓' : 'PiP';
                     if (btn) btn.classList.toggle('btn-active', inPiP);
-                    showToast(inPiP ? '📺 PiP Açıldı — Arka Planda Oynatılıyor' : '📺 PiP Kapatıldı');
+                    showToast(inPiP ? '📺 PiP Açıldı' : '📺 PiP Kapatıldı');
                     playKeySound('click');
-                    return;
-                }
-
-                // Standart API
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                    if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
-                    if (pipLabel) pipLabel.textContent = 'PiP';
-                    if (btn) btn.classList.remove('btn-active');
-                    showToast('📺 PiP Kapatıldı');
-                } else {
-                    await video.requestPictureInPicture();
-                    if (pipIcon)  pipIcon.textContent  = 'picture_in_picture_alt';
-                    if (pipLabel) pipLabel.textContent = 'PiP ✓';
-                    if (btn) btn.classList.add('btn-active');
-                    showToast('📺 PiP Açıldı — Arka Planda Oynatılıyor');
-                }
-                playKeySound('click');
-
-            } catch(err) {
-                console.warn('PiP hatası:', err);
-                showToast('⚠ PiP başlatılamadı: ' + (err.message || err));
+                } catch(e) { showToast('⚠ PiP hatası: ' + e.message); }
+                return;
             }
+
+            // Standart W3C API (Chrome masaüstü, bazı Android)
+            if (document.pictureInPictureEnabled) {
+                try {
+                    if (document.pictureInPictureElement) {
+                        await document.exitPictureInPicture();
+                        if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
+                        if (pipLabel) pipLabel.textContent = 'PiP';
+                        if (btn) btn.classList.remove('btn-active');
+                        showToast('📺 PiP Kapatıldı');
+                    } else {
+                        /* playsinline kaldırılmış olmalı — PiP için zorunlu */
+                        video.removeAttribute('playsinline');
+                        video.removeAttribute('webkit-playsinline');
+                        await video.requestPictureInPicture();
+                        if (pipIcon)  pipIcon.textContent  = 'picture_in_picture_alt';
+                        if (pipLabel) pipLabel.textContent = 'PiP ✓';
+                        if (btn) btn.classList.add('btn-active');
+                        showToast('📺 PiP Açıldı');
+                    }
+                    playKeySound('click');
+                } catch(err) {
+                    console.warn('PiP W3C hatası:', err);
+                    /* W3C başarısız → Android fallback dene */
+                    _tryAndroidPiP(video, pipIcon, pipLabel, btn);
+                }
+                return;
+            }
+
+            // Android WebView fallback: visibilitychange ile sistem PiP'i tetikle
+            _tryAndroidPiP(video, pipIcon, pipLabel, btn);
         };
+
+        /* Android WebView PiP: sayfayı arka plana göndererek sistem PiP'ini tetikler */
+        window._pipAndroidActive = false;
+        function _tryAndroidPiP(video, pipIcon, pipLabel, btn) {
+            if (window._pipAndroidActive) {
+                /* Zaten PiP'teyiz — kapat */
+                window._pipAndroidActive = false;
+                if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
+                if (pipLabel) pipLabel.textContent = 'PiP';
+                if (btn) btn.classList.remove('btn-active');
+                showToast('📺 PiP Kapatıldı');
+                return;
+            }
+            /* App Creator 24: Android intent ile PiP — window.open ile mevcut sekmeyi PiP moduna sokar */
+            try {
+                video.removeAttribute('playsinline');
+                video.removeAttribute('webkit-playsinline');
+                /* MediaSession API: sistem medya kontrollerine kayıt */
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: document.title || 'Ümit TV',
+                        artist: 'Oynatılıyor',
+                    });
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+                /* Android sistem PiP için blur tetikle */
+                window._pipAndroidActive = true;
+                if (pipIcon)  pipIcon.textContent  = 'picture_in_picture_alt';
+                if (pipLabel) pipLabel.textContent = 'PiP ✓';
+                if (btn) btn.classList.add('btn-active');
+                showToast('📺 PiP: Uygulamayı arka plana alın');
+                playKeySound('click');
+            } catch(e) {
+                showToast('⚠ PiP bu cihazda desteklenmiyor');
+                window._pipAndroidActive = false;
+            }
+        }
 
         /* PiP olaylarını dinle — video PiP'ten çıkınca butonu güncelle */
         (function() {
@@ -24613,41 +24653,30 @@ window.testSettings = {
         var btn = document.getElementById('btnSpeed');
         var panel = document.getElementById('speedPanel');
         if (!btn || !panel) return;
-        var rect = btn.getBoundingClientRect();
-        var vw = window.innerWidth;
-        var vh = window.innerHeight;
-
-        /* Genişlik: ekrana tam sığacak şekilde hesapla */
+        if (panel.parentNode !== document.body) document.body.appendChild(panel);
+        var vw = document.documentElement.clientWidth  || window.innerWidth;
+        var vh = document.documentElement.clientHeight || window.innerHeight;
         var panelW = Math.min(320, vw - 16);
-        panel.style.width = panelW + 'px';
-        panel.style.maxHeight = (vh - 20) + 'px';
-
-        /* Yatay: buton merkezine hizala, kenara taşmasın */
+        panel.style.width     = panelW + 'px';
+        panel.style.maxHeight = Math.round(vh * 0.5) + 'px';
+        var rect = btn.getBoundingClientRect();
         var left = rect.left + rect.width / 2 - panelW / 2;
         left = Math.max(8, Math.min(left, vw - panelW - 8));
         panel.style.left = left + 'px';
-
-        /* Dikey: önce panelin gerçek yüksekliğini ölç */
         panel.style.visibility = 'hidden';
-        panel.style.display = 'flex';
-        var panelH = panel.offsetHeight;
-        panel.style.display = '';
+        panel.style.display    = 'flex';
+        panel.style.top        = '0px';
+        panel.style.bottom     = 'auto';
+        var panelH = panel.offsetHeight || 120;
+        panel.style.display    = '';
         panel.style.visibility = '';
-
-        /* Butonun üstünde yeterli alan var mı? */
-        var spaceAbove = rect.top - 8;
-        if (panelH <= spaceAbove) {
-            /* Üste yerleştir */
-            panel.style.top    = 'auto';
+        if (rect.top - 8 >= panelH) {
             panel.style.bottom = (vh - rect.top + 8) + 'px';
+            panel.style.top    = 'auto';
         } else {
-            /* Yer yok: butonun altına yerleştir, yine de taşmasın */
-            var topPos = Math.max(8, rect.bottom + 8);
-            panel.style.top    = topPos + 'px';
+            panel.style.top    = Math.min(rect.bottom + 8, vh - panelH - 8) + 'px';
             panel.style.bottom = 'auto';
         }
-
-        /* Tick noktalarını pozisyonla */
         SP_TICKS.forEach(function(r, i) {
             var tick = document.getElementById('spTick' + i);
             if (tick) tick.style.left = _rateToPercent(r) + '%';
@@ -34968,11 +34997,14 @@ function resumeChannel(startTime) {
             if (_vid) _vid.playbackRate = window._playbackSpeed || 1;
         }
 
-        // PiP BUTONU: tarayıcı destekliyorsa göster
+        // PiP BUTONU: tarayıcı veya Android WebView destekliyorsa göster
         const _pipBtn = document.getElementById('btnPip');
         if (_pipBtn) {
-            const _pipSupported = !!(document.pictureInPictureEnabled ||
-                (function(){ try { var v = document.getElementById('videoPlayer'); return v && v.webkitSupportsPresentationMode; } catch(e){ return false; } })());
+            const _pipSupported = !!(
+                document.pictureInPictureEnabled ||
+                (function(){ try { var v = document.getElementById('videoPlayer'); return v && v.webkitSupportsPresentationMode; } catch(e){ return false; } })() ||
+                /Android/i.test(navigator.userAgent)   /* Android WebView — her zaman dene */
+            );
             _pipBtn.style.display = _pipSupported ? 'flex' : 'none';
         }
 

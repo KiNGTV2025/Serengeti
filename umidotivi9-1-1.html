@@ -20641,25 +20641,44 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
                 el.style.boxShadow = '';
             });
 
-            // Önce oynatılan bölüm kartına odaklan, yoksa 1. bölüme
+            // Aktif sezon butonuna odaklan (daha güvenli: state.series.currentEpisode stale olabilir)
+            // Gerçek oynayan bölümü bulmak için DOM'daki OYNATILIYOR badge'ini kontrol et
             const episodeCards = els.filter(el => el.classList.contains('vod-episode-card'));
             let targetEl = null;
             let targetIdx = -1;
 
             if (episodeCards.length > 0) {
-                // Oynatılan bölümü bul
-                const playingCard = episodeCards.find(card =>
-                    Number(card.getAttribute('data-episode')) === Number(state.series.currentEpisode) &&
-                    Number(card.getAttribute('data-season')) === Number(seasonNumber)
+                // 1. DOM'da OYNATILIYOR badge'i olan kart → gerçek oynayan bölüm
+                const domPlayingCard = episodeCards.find(card =>
+                    card.querySelector('.vod-episode-playing')
                 );
-                targetEl = playingCard || episodeCards[0];
-                targetIdx = els.indexOf(targetEl);
-            } else {
-                // Bölüm yoksa aktif sezon butonuna odaklan
-                const activeSeasonIdx = els.findIndex(el =>
-                    el.classList.contains('vod-season-btn') && el.classList.contains('active')
-                );
-                if (activeSeasonIdx >= 0) targetIdx = activeSeasonIdx;
+                // 2. State'e göre oynayan bölüm (yalnızca dizi/sezon eşleşiyorsa güven)
+                const statePlayingCard = (state.series.currentSeries === seriesName &&
+                    Number(state.series.currentSeason) === Number(seasonNumber) &&
+                    state.series.currentEpisode != null)
+                    ? episodeCards.find(card =>
+                        Number(card.getAttribute('data-episode')) === Number(state.series.currentEpisode) &&
+                        Number(card.getAttribute('data-season')) === Number(seasonNumber)
+                      )
+                    : null;
+
+                // DOM badge öncelikli (gerçek durum), sonra state, yoksa aktif sezon butonu
+                const playingCard = domPlayingCard || statePlayingCard;
+
+                if (playingCard) {
+                    targetEl = playingCard;
+                    targetIdx = els.indexOf(targetEl);
+                    // Oynayan kartı görünür yap ama odağı sezon butonuna ver
+                    playingCard.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+                }
+            }
+
+            // Odağı aktif sezon butonuna ver (kullanıcı episode'a aşağı okla inebilir)
+            const activeSeasonIdx = els.findIndex(el =>
+                el.classList.contains('vod-season-btn') && el.classList.contains('active')
+            );
+            if (activeSeasonIdx >= 0) {
+                targetIdx = activeSeasonIdx;
             }
 
             if (targetIdx >= 0 && els[targetIdx]) {
@@ -39113,6 +39132,24 @@ function deleteContinueWatchingRecord(name) {
                         state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
                     }
                 }
+            } else if (currentEl && currentEl.id === 'vodInfoScroll') {
+                // vodInfoScroll'dayken: scroll alanını yukarı kaydır
+                const sc = currentEl;
+                const atTop = sc.scrollTop <= 4;
+                if (atTop) {
+                    // Zaten tepedeyiz — oynat butonuna çık
+                    state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
+                } else {
+                    sc.scrollTop -= 80;
+                }
+            } else if (currentEl && currentEl.classList.contains('vod-review-star')) {
+                // Yorum yıldızından yukarı → vodInfoScroll'a dön
+                const infoScrollIdx = elements.findIndex(el => el.id === 'vodInfoScroll');
+                if (infoScrollIdx >= 0) {
+                    state.remote.vodModalIndex = infoScrollIdx;
+                } else {
+                    state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
+                }
             } else {
                 state.remote.vodModalIndex = (currentIdx - 1 + elements.length) % elements.length;
             }
@@ -39134,8 +39171,27 @@ function deleteContinueWatchingRecord(name) {
                     // Son satır tek eleman — o elemana git
                     _focusEpCard(episodeCards[episodeCards.length - 1]);
                 } else {
-                    // Zaten son karttayız — scrollIntoView ile görünür yap
-                    episodeCards[epIdx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    // Zaten son karttayız — vodInfoScroll'a geç (yorumlar orada)
+                    const infoScrollIdx = elements.findIndex(el => el.id === 'vodInfoScroll');
+                    if (infoScrollIdx >= 0) {
+                        state.remote.vodModalIndex = infoScrollIdx;
+                    } else {
+                        state.remote.vodModalIndex = Math.min(elements.length - 1, currentIdx + 1);
+                    }
+                }
+            } else if (currentEl && currentEl.id === 'vodInfoScroll') {
+                // vodInfoScroll'dayken: scroll alanını aşağı kaydır
+                // En alta gelince yorum yıldızlarına geç
+                const sc = currentEl;
+                const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 4;
+                if (atBottom) {
+                    // Yorum yıldızı varsa ona git
+                    const firstStar = elements.find(el => el.classList.contains('vod-review-star'));
+                    if (firstStar) {
+                        state.remote.vodModalIndex = elements.indexOf(firstStar);
+                    }
+                } else {
+                    sc.scrollTop += 80;
                 }
             } else {
                 state.remote.vodModalIndex = Math.min(elements.length - 1, currentIdx + 1);
@@ -39164,6 +39220,14 @@ function deleteContinueWatchingRecord(name) {
                     // Sol sütun baş — yukarı çık
                     state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
                 }
+            } else if (currentEl && currentEl.classList.contains('vod-review-star')) {
+                // Yıldız navigasyonu: sola → bir önceki yıldıza
+                const stars = elements.filter(el => el.classList.contains('vod-review-star'));
+                const sIdx = stars.indexOf(currentEl);
+                if (sIdx > 0) {
+                    state.remote.vodModalIndex = elements.indexOf(stars[sIdx - 1]);
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(sIdx); // sIdx=1-based
+                }
             } else {
                 state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
             }
@@ -39189,6 +39253,14 @@ function deleteContinueWatchingRecord(name) {
                     _focusEpCard(episodeCards[epIdx + 1]);
                 }
                 // Sağ sütunda veya sağda kart yok → hareket etme
+            } else if (currentEl && currentEl.classList.contains('vod-review-star')) {
+                // Yıldız navigasyonu: sağa → bir sonraki yıldıza
+                const stars = elements.filter(el => el.classList.contains('vod-review-star'));
+                const sIdx = stars.indexOf(currentEl);
+                if (sIdx < stars.length - 1) {
+                    state.remote.vodModalIndex = elements.indexOf(stars[sIdx + 1]);
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(sIdx + 2); // sIdx+2 = next star value
+                }
             } else {
                 state.remote.vodModalIndex = Math.min(elements.length - 1, currentIdx + 1);
             }
@@ -39236,7 +39308,10 @@ function deleteContinueWatchingRecord(name) {
         newEl.style.outline = '4px solid #FFD700';
         newEl.style.boxShadow = '0 0 20px #FFD700';
         newEl.focus({ preventScroll: false });
-        newEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+        // vodInfoScroll'a odaklanırken scrollIntoView yapma (zaten scroll alanının içi kayıyor)
+        if (newEl.id !== 'vodInfoScroll') {
+            newEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+        }
     }
     
     updateRemoteFocus();
@@ -39254,14 +39329,21 @@ function _rebuildVodModalElements() {
     // Episode kartları (bireysel)
     const episodeCards = Array.from(document.querySelectorAll('#vodEpisodesContainer .vod-episode-card'));
 
-    // Info scroll
+    // Info scroll alanı (film/dizi bilgileri + yorumlar buraya dahil)
     const infoScroll = document.getElementById('vodInfoScroll');
+
+    // Yorum yıldızları (vodReviewsSection görünürse kumandayla ulaşılabilsin)
+    const reviewSection = document.getElementById('vodReviewsSection');
+    const reviewStars = (reviewSection && reviewSection.style.display !== 'none')
+        ? Array.from(reviewSection.querySelectorAll('.vod-review-star'))
+        : [];
 
     const newElements = [
         ...sabitEls,
         ...seasonBtns,
         ...episodeCards,
-        ...(infoScroll ? [infoScroll] : [])
+        ...(infoScroll ? [infoScroll] : []),
+        ...reviewStars
     ];
 
     if (!state.remote) state.remote = {};
@@ -51998,6 +52080,27 @@ window.vodOpenReviews = async function(contentTitle) {
 
   // Yorumları yükle
   await vodLoadReviews();
+
+  // Kumanda listesini yenile: yıldızlar artık görünür, elements'e eklensin
+  setTimeout(() => {
+    if (typeof _rebuildVodModalElements === 'function' &&
+        window.state && window.state.remote && window.state.remote.zone === 'vodModal') {
+      _rebuildVodModalElements();
+      // vodInfoScroll'a konumlan (kullanıcı oradan aşağı oka basarak yıldızlara iner)
+      const els = window.state.remote.vodModalElements;
+      if (els) {
+        const infoIdx = els.findIndex(el => el && el.id === 'vodInfoScroll');
+        if (infoIdx >= 0) {
+          window.state.remote.vodModalIndex = infoIdx;
+          const el = els[infoIdx];
+          el.classList.add('remote-focused', 'tv-focused');
+          el.style.outline = '4px solid #FFD700';
+          el.style.boxShadow = '0 0 20px #FFD700';
+          el.focus({ preventScroll: true });
+        }
+      }
+    }
+  }, 150);
 };
 
 // ── Yorumları Firebase'den yükle ──

@@ -10553,10 +10553,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     </div><!-- /login-card -->
 </div><!-- /loginOverlay -->
 
-<!-- ═══════════════════════════════════════════════════════════
-     ÜMİT TV — ÖĞRETICI OVERLAY (Tutorial / Onboarding)
-     İlk açılışta gösterilir. localStorage ile bir kez gösterilir.
-     ═══════════════════════════════════════════════════════════ -->
+<!-- ═══ ÜmitTV Öğretici Overlay — kaynak: umidotivi9-1-1.html ═══ -->
 <style>
 /* ── Tutorial Overlay ── */
 #tutorialOverlay {
@@ -11363,6 +11360,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 })();
 </script>
 
+
 <script>
 /* ═══ Modern Login - Progress Dots Güncelleme ═══ */
 (function() {
@@ -11422,73 +11420,36 @@ async function sha256(text) {
 }
 
 async function apiCheckUser(telegramId) {
+    // device_id gönder — Worker'daki rate limiting çalışsın
+    if (window._deviceIdReady) await window._deviceIdReady;
+    const did = getDeviceId();
     const r = await fetch(`${WORKER}/check-user`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ telegram_id: String(telegramId) })
+        body: JSON.stringify({ telegram_id: String(telegramId), device_id: did })
     });
     return r.json(); // { exists: bool }
 }
 
-const TG_BOT = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
-const TG_GROUP = '-1003873863119';
-
 async function apiVerifyTelegram(telegramId, keyword) {
-    
-
+    // Sadece Worker üzerinden doğrulama — doğrudan Telegram API çağrısı kaldırıldı.
+    // Sebep: Bot token HTML'de açık olurdu, Worker'daki rate limiting bypass edilirdi.
+    if (window._deviceIdReady) await window._deviceIdReady;
+    const did = getDeviceId();
     try {
         const r = await fetch(`${WORKER}/verify-telegram`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ telegram_id: String(telegramId), keyword })
+            body: JSON.stringify({ telegram_id: String(telegramId), keyword, device_id: did })
         });
-        const d = await r.json();
-        if (d.verified) return d;
-    } catch(e) {}
-
-    
-
-    
-
-    try {
-        const r = await fetch(
-            `https://api.telegram.org/bot${TG_BOT}/getUpdates?limit=100&timeout=0`,
-            { method: 'GET' }
-        );
-        const d = await r.json();
-        if (!d.ok) return { verified: false };
-
-        const now = Math.floor(Date.now() / 1000);
-        const tid = String(telegramId);
-        const kw  = keyword.toLowerCase().trim();
-        const groupNorm = TG_GROUP.replace('-100','');
-
-        for (const upd of d.result) {
-            const msg = upd.message;
-            if (!msg) continue;
-            const fromId = String(msg.from?.id || '');
-            const chatId = String(msg.chat?.id || '');
-            const text   = (msg.text || '').toLowerCase().trim();
-            const age    = now - (msg.date || 0);
-            if (fromId !== tid) continue;
-            if (chatId !== TG_GROUP && chatId !== groupNorm) continue;
-            if (age > 120) continue; // son 2 dakika
-            if (text.includes(kw)) return { verified: true };
-        }
-    } catch(e) {}
-
-    return { verified: false };
+        return await r.json();
+    } catch(e) {
+        return { verified: false };
+    }
 }
 
-async function apiRegister(telegramId, password) {
-    const hash = await sha256(password);
-    const r = await fetch(`${WORKER}/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ telegram_id: String(telegramId), password_hash: hash })
-    });
-    return r.json(); // { success: bool, error? }
-}
+// apiRegister() kaldırıldı — eski /register endpoint'i kapalı.
+// Kayıt işlemi: /verify-approval + /register-new akışı kullanılıyor.
 
 let _deviceIdCache = null;
 
@@ -11542,45 +11503,60 @@ function _saveDeviceIdToCookie(id) {
 }
 
 function _buildDeviceFingerprint() {
-    // Sadece veri temizlese de değişmeyen DONANIM değerleri kullanılıyor.
-    // Canvas fingerprint KASITLI olarak çıkarıldı — WebView güncellemesi veya
-    // veri temizleme sonrası canvas çıktısı değişiyor ve aynı cihazı
-    // farklı cihaz olarak algılatıyordu.
     const parts = [];
 
-    // 1) UserAgent — cihaz modeli + Android sürümü, donanıma bağlı, değişmez
-    parts.push(navigator.userAgent.slice(0, 150));
+    
 
-    // 2) Ekran çözünürlüğü — fiziksel ekrana bağlı, hiç değişmez
-    //    devicePixelRatio ve colorDepth ÇIKARILDI (WebView reset sonrası değişebilir)
-    parts.push(screen.width + 'x' + screen.height);
+    try {
+        const c   = document.createElement('canvas');
+        c.width   = 280; c.height = 60;
+        const ctx = c.getContext('2d');
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle    = '#f60';
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle    = '#069';
+        ctx.font         = '11pt "Arial"';
+        ctx.fillText('UmitTV🎯', 2, 15);
+        ctx.fillStyle    = 'rgba(102,204,0,0.7)';
+        ctx.font         = '18pt "Arial"';
+        ctx.fillText('UmitTV🎯', 4, 45);
+        parts.push(c.toDataURL().slice(-80));
+    } catch(e) { parts.push('cvs_err'); }
 
-    // 3) CPU çekirdek sayısı — donanıma bağlı, değişmez
-    parts.push(String(navigator.hardwareConcurrency || 0));
+    
 
-    // 4) Dokunmatik nokta sayısı — donanıma bağlı (TV=0, telefon=5-10)
-    parts.push(String(navigator.maxTouchPoints || 0));
+    parts.push([
+        screen.width, screen.height,
+        screen.colorDepth,
+        window.devicePixelRatio || 1,
+    ].join('x'));
 
-    // 5) GPU renderer — en stabil fingerprint kaynağı, donanıma doğrudan bağlı
+    
+
+    parts.push(navigator.userAgent.slice(0, 120));
+    parts.push(navigator.language || '');
+    parts.push(navigator.hardwareConcurrency || 0);
+    parts.push(navigator.maxTouchPoints || 0);
+
+    
+
+    try { parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch(e) {}
+
+    
+
     try {
         const gl  = document.createElement('canvas').getContext('webgl');
         if (gl) {
             const dbg = gl.getExtension('WEBGL_debug_renderer_info');
             if (dbg) {
-                parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).slice(0, 80));
+                parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).slice(0, 60));
                 parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL).slice(0, 40));
-            } else {
-                // Fallback: standart GL parametreler
-                parts.push(gl.getParameter(gl.RENDERER) || '');
-                parts.push(gl.getParameter(gl.VENDOR)   || '');
             }
         }
-    } catch(e) { parts.push('gl_err'); }
+    } catch(e) {}
 
-    // 6) Zaman dilimi — cihaz bölgesine bağlı, veri temizlemeyle değişmez
-    try { parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch(e) {}
+    
 
-    // FNV-1a 64-bit (2×32) hash
     const raw = parts.join('||');
     let h1 = 0x811c9dc5, h2 = 0x9dc5a6f;
     for (let i = 0; i < raw.length; i++) {
@@ -11599,13 +11575,15 @@ function _persistDeviceId(id) {
 }
 
 function getDeviceId() {
-    // Cache kontrolü — sadece fp_ prefix'li stabil ID'ler geçerli
-    if (_deviceIdCache && _deviceIdCache.startsWith('fp_') && _deviceIdCache.length >= 16) return _deviceIdCache;
+    
 
-    // localStorage kontrolü — sadece fp_ prefix'li kabul et
+    if (_deviceIdCache && _deviceIdCache.length >= 16) return _deviceIdCache;
+
+    
+
     try {
         const ls = localStorage.getItem('__umittv_did');
-        if (ls && ls.startsWith('fp_') && ls.length >= 16) {
+        if (ls && ls.length >= 16) {
             _deviceIdCache = ls;
             _saveDeviceIdToCookie(ls);
             _saveDeviceIdToIDB(ls);
@@ -11613,36 +11591,38 @@ function getDeviceId() {
         }
     } catch(e) {}
 
-    // Cookie kontrolü — sadece fp_ prefix'li kabul et
+    
+
     const ck = _getDeviceIdFromCookie();
-    if (ck && ck.startsWith('fp_') && ck.length >= 16) {
+    if (ck && ck.length >= 16) {
         _deviceIdCache = ck;
         try { localStorage.setItem('__umittv_did', ck); } catch(e) {}
         _saveDeviceIdToIDB(ck);
         return ck;
     }
 
-    // Hiçbir storage'da stabil ID yok: donanım parmak izinden üret.
-    // Bu fonksiyon aynı cihazda her zaman aynı değeri döndürür —
-    // veri temizleme sonrasında da aynı ID elde edilir.
-    const uid = _buildDeviceFingerprint();
+    
+
+    
+
+    const fp  = _buildDeviceFingerprint();
+    const rnd = 'r' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    
+
+    const uid = 'fp_' + fp.slice(3, 11) + rnd;
     _persistDeviceId(uid);
     return uid;
 }
 
 window._deviceIdReady = new Promise(resolve => {
     _getDeviceIdFromIDB().then(idbId => {
-        // Sadece donanim parmak izine dayali (fp_ prefix'li) ID'leri kabul et.
-        // Eski canvas-based veya bozuk ID'ler reddedilir; yeni fp_ uretilir.
-        const isStableFp = idbId && idbId.startsWith('fp_') && idbId.length >= 16;
-        if (isStableFp) {
+        if (idbId && idbId.length >= 16) {
             if (!_deviceIdCache) {
                 _deviceIdCache = idbId;
                 try { localStorage.setItem('__umittv_did', idbId); } catch(e) {}
                 _saveDeviceIdToCookie(idbId);
             }
         } else {
-            // Eski/gecersiz ID: yeni donanim parmak izi uret ve her yere kaydet
             const existing = getDeviceId();
             _saveDeviceIdToIDB(existing);
         }
@@ -13855,7 +13835,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <div class="player-action-group">
                         <button class="player-action-btn" id="btnObjectFit" onclick="toggleObjectFit()" title="Ekran Modu">
                             <span class="material-symbols-outlined">fit_screen</span>
-                            <span class="btn-label">Ekran</span>
+                            <span class="btn-label">Boyut</span>
                         </button>
                         <button class="player-action-btn" id="btnPlayerFav" onclick="toggleFavPlayer()" title="Favorilere Ekle/Kaldır">
                             <span class="material-symbols-outlined" id="favIconPlayer">star_border</span>
@@ -14690,15 +14670,28 @@ const UmitSecurityManager = (function () {
     }
 
     // ════════════════════════════════════════════════════
-    // KATMAN 7 — CİHAZ PARMAK İZİ (Sadece stabil donanım değerleri)
-    // Canvas ve ses parmak izi KASITLI çıkarıldı — veri temizleme
-    // veya WebView güncellemesi sonrası değişiyor ve şifre çözme
-    // başarısız oluyor, bu da yanlış device_id gönderilmesine yol açıyor.
+    // KATMAN 7 — CİHAZ PARMAK İZİ (Canvas + WebGL + Ses)
     // ════════════════════════════════════════════════════
     async function _buildFingerprint() {
         const parts = [];
 
-        // WebGL renderer — donanıma bağlı, en stabil kaynak
+        // Canvas parmak izi
+        try {
+            const cv = document.createElement('canvas');
+            cv.width = 200; cv.height = 50;
+            const ctx = cv.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('UmitTV🔒', 2, 15);
+            ctx.fillStyle = 'rgba(102,204,0,0.7)';
+            ctx.fillText('UmitTV🔒', 4, 17);
+            parts.push(cv.toDataURL().slice(-50));
+        } catch(e) { parts.push('cv_err'); }
+
+        // WebGL renderer
         try {
             const gl = document.createElement('canvas').getContext('webgl');
             if (gl) {
@@ -14706,27 +14699,38 @@ const UmitSecurityManager = (function () {
                 if (dbg) {
                     parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL));
                     parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL));
-                } else {
-                    parts.push(gl.getParameter(gl.VENDOR) || '');
-                    parts.push(gl.getParameter(gl.RENDERER) || '');
                 }
             }
         } catch(e) { parts.push('webgl_err'); }
 
-        // Ekran çözünürlüğü — fiziksel donanım, değişmez
+        // Ekran + dil + saat dilimi
         parts.push(screen.width + 'x' + screen.height);
-
-        // CPU çekirdek sayısı — donanım
+        parts.push(navigator.language || '');
+        parts.push(String(new Date().getTimezoneOffset()));
         parts.push(String(navigator.hardwareConcurrency || 0));
+        parts.push(String(navigator.deviceMemory || 0));
 
-        // Dokunmatik nokta sayısı — donanım (TV=0, telefon=5-10)
-        parts.push(String(navigator.maxTouchPoints || 0));
-
-        // UserAgent — cihaz modeli + Android sürümü
-        parts.push((navigator.userAgent || '').slice(0, 150));
-
-        // Saat dilimi — sistem ayarı, veri temizlemeden etkilenmez
-        parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+        // Ses kartı parmak izi
+        try {
+            const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (AudioCtx) {
+                const ctx = new AudioCtx(1, 44100, 44100);
+                const osc = ctx.createOscillator();
+                const cmp = ctx.createDynamicsCompressor();
+                osc.connect(cmp); cmp.connect(ctx.destination);
+                osc.start(0); ctx.startRendering();
+                await new Promise(res => {
+                    ctx.oncomplete = e => {
+                        const buf = e.renderedBuffer.getChannelData(0);
+                        let sum = 0;
+                        for (let i = 0; i < buf.length; i += 100) sum += Math.abs(buf[i]);
+                        parts.push(sum.toFixed(6));
+                        res();
+                    };
+                    setTimeout(res, 300); // timeout guard
+                });
+            }
+        } catch(e) { parts.push('audio_err'); }
 
         const raw = parts.join('||');
         const enc = new TextEncoder().encode(raw);
@@ -15956,7 +15960,7 @@ const EPG_MULTI_SOURCES = [
     {
         urls: [
             'https://raw.githubusercontent.com/umitm0d/Liveinlive/refs/heads/main/epg.xml',
-            'https://kabloepg.umitmodpremiumtr.workers.dev/',
+            'https://kabloepgtv.umitmodpremiumtr.workers.dev/',
         ],
         label: 'EPG-1'
     },
@@ -16064,11 +16068,11 @@ const HLS_CONFIG = {
 
     // ── BUFFER: Canlı/VOD dinamik — startHls içinde override edilir ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 8,                  // 10→8sn: daha hızlı ilk kare — 8sn yeterli
-    maxMaxBufferLength: 40,              // 30→40sn: bant genişse buffer büyüsün = donma olmaz
-    maxBufferSize: 60 * 1024 * 1024,    // 30MB→60MB: yüksek kalite segment = daha büyük buffer gerek
-    maxBufferHole: 0.3,                  // 0.5→0.3: delik toleransı azaltıldı = daha akıcı oynatım
-    maxLoadingDelay: 3,                  // 4→3sn: daha hızlı tepki
+    maxBufferLength: 10,                 // 12→10sn: TVBox RAM tasarrufu — canlı için yeterli
+    maxMaxBufferLength: 30,              // 60→30sn: TVBox'ta 60sn buffer RAM'i doldurur, kasma yapar
+    maxBufferSize: 30 * 1024 * 1024,    // 60MB→30MB: TVBox düşük RAM — dolup taşma = UI donması önlenir
+    maxBufferHole: 0.5,                  // 0.8→0.5: çok geniş delik toleransı kare atlamaya yol açar
+    maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
     fragLoadingMaxRetry: 6,              // 12→6: çok fazla retry = açılmayan kanalda uzun bekleme
@@ -16083,18 +16087,17 @@ const HLS_CONFIG = {
     nudgeOffset: 0.2,                    // 0.1→0.2: daha belirgin ilerleme — takılı kalan buffer kırılır
     maxFragLookUpTolerance: 0.3,         // 0.5→0.3: segment arama hassasiyeti artar = atlama azalır
 
-    // ── ABR: İnternete göre en yüksek kaliteye hızlı ulaş ──
-    abrEwmaDefaultEstimate: 8000000,     // 8Mbps: yüksek başlangıç tahmini → ABR hemen iyi kaliteden başlar
-    abrEwmaFastLive: 3,                  // 3: bant düşüşüne hızlı tepki → donmadan kaliteyi indir
-    abrEwmaSlowLive: 9,                  // 9: bant artınca kaliteyi kararlı şekilde yükselt
-    abrBandWidthFactor: 0.92,            // %92 bant kullan → yüksek kalite + güvenlik payı
-    abrBandWidthUpFactor: 0.85,          // kalite yükseltmede %85 → agresif ama stabil
-    abrEwmaDefaultEstimateMax: 50000000, // Üst sınır yok — fiber/güçlü bağlantıda 4K'ya kadar çık
+    // ── ABR: Yüksek kalitede hızlı başla, kararlı kal ──
+    abrEwmaDefaultEstimate: 5000000,     // 1.5→5Mbps: 1080p için gerçekçi başlangıç tahmini = HD'den başla
+    abrEwmaFastLive: 4,                  // 3→4: ani bant düşüşüne daha sakin tepki = kalite titremesi azalır
+    abrEwmaSlowLive: 12,                 // 9→12: kalite artışı daha ölçülü = istikrar öncelikli
+    abrBandWidthFactor: 0.85,            // 0.70→0.85: mevcut bant genişliğinin %85'i = güvenli yüksek kalite
+    abrBandWidthUpFactor: 0.70,          // 0.50→0.70: kalite artışına daha güvenli yaklaş = donma olmaz
 
-    startLevel: -1,                      // ABR otomatik — ilk ölçüme göre hemen en uygun kaliteyi seç
+    startLevel: -1,                      // ABR: otomatik en uygun kalite
     autoStartLoad: true,
-    startFragPrefetch: true,             // false→true: oynatmadan önce 1 segment önceden yükle = hızlı başlangıç
-    capLevelToPlayerSize: false,         // Ekran boyutuna göre kısıtlama YOK — her zaman en yüksek istenir
+    startFragPrefetch: false,            // true→false: ilk segment yüklenmeden prefetch = gecikme kaynağı
+    capLevelToPlayerSize: false,
     appendErrorMaxRetry: 15,             // 10→15: VOD'da codec/parse hatalarında daha fazla retry — kare atlama önler
     enableSoftwareAES: true,
 
@@ -17674,10 +17677,10 @@ async function loadEPGData() {
                 };
                 if (!result[channel]) result[channel] = [];
                 result[channel].push(entry);
-                // alias yalnızca key yoksa referans olarak ekle (kopyalamaz — çift kayıt önlenir)
                 const alias = aliases[channel];
-                if (alias && alias !== channel && !result[alias]) {
-                    result[alias] = result[channel];
+                if (alias && alias !== channel) {
+                    if (!result[alias]) result[alias] = [];
+                    result[alias].push(entry);
                 }
             }
             return result;
@@ -18006,7 +18009,6 @@ function processEPGForChannel(channelKey) {
 
     // Sıralanmış program listesini cache'le — her çağrıda sort+parseEPGTime tekrarı önlenir
     if (!state._epgSortCache) state._epgSortCache = Object.create(null);
-    // Cache'i her zaman yenile — dedup için seenStarts her seferinde taze olmalı
     if (!state._epgSortCache[channelKey] || state._epgSortCache[channelKey].length !== programs.length) {
         // Her programın start/stop'unu bir kez parse et, ms olarak sakla
         const withMs = [];
@@ -18026,14 +18028,9 @@ function processEPGForChannel(channelKey) {
     let currentProgram = null;
     let nextProgram = null;
     const allPrograms = [];
-    const seenStarts = new Set(); // çift kayıt önleme
 
     for (let i = 0; i < sortedPrograms.length; i++) {
         const { program, startMs, endMs } = sortedPrograms[i];
-        // Aynı start zamanına sahip program zaten eklendiyse atla
-        const startKey = program.start + '|' + (program.title || '');
-        if (seenStarts.has(startKey)) continue;
-        seenStarts.add(startKey);
         const isNow = trNow >= startMs && trNow < endMs;
 
         allPrograms.push({ program, start: new Date(startMs), end: new Date(endMs), isNow });
@@ -18130,14 +18127,11 @@ function processEPGForChannel(channelKey) {
         // ── 7 GÜNLÜK EPG: aktif gün state ──
         window._epg7ActiveDay = 0; // 0 = bugün
 
-        let _epgLoading = false;
         async function showChannelEpg() {
     if (!state.player.name) {
         showToast("Kanal bilgisi bulunamadı");
         return;
     }
-    if (_epgLoading) return;
-    _epgLoading = true;
     
     
 
@@ -18173,11 +18167,7 @@ function processEPGForChannel(channelKey) {
         try {
             await loadEPGData();
         } catch(e) {
-        } finally {
-            _epgLoading = false;
         }
-    } else {
-        _epgLoading = false;
     }
     
     const epgInfo = getEPGInfo(channelName, channelTvgId);
@@ -18236,23 +18226,41 @@ function processEPGForChannel(channelKey) {
                     // Modal hâlâ açıksa güncelle
                     const _modal = document.getElementById('epgModal');
                     if (_modal && _modal.style.display !== 'none') {
-                        _epgLoading = false; // kilidi serbest bırak, yeniden çizim için
-                        showChannelEpg();
+                        showChannelEpg(channelName, channelTvgId);
                     }
                 }).catch(() => {});
             }).catch(() => {});
         }
 
         html += `
-            <div style="padding:10px 16px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-weight:600; color:var(--accent-primary);">Toplam ${epgInfo.totalPrograms} Program</div>
-                <div style="font-size:12px; color:var(--text-muted);">${new Date().toLocaleDateString('tr-TR')}</div>
+            <div style="padding:16px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-weight:600; color:var(--accent-primary);">Toplam ${epgInfo.totalPrograms} Program</div>
+                    <div style="font-size:12px; color:var(--text-muted);">${new Date().toLocaleDateString('tr-TR')}</div>
+                </div>
+                ${allPast ? `
+                    <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
+                        <div style="font-size:11px; color:#ff6400; font-weight:700;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:3px;animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>EPG YENİLENİYOR</div>
+                        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor, lütfen bekleyin...</div>
+                    </div>
+                ` : epgInfo.current ? `
+                    <div style="background:rgba(0,255,0,0.1); padding:8px; border-radius:6px; border-left:3px solid #00FF00; margin-top:8px;">
+                        <div style="font-size:11px; color:#00FF00;">ŞU AN İZLENİYOR</div>
+                        <div style="font-weight:600; margin-top:4px;">${epgInfo.current.title}</div>
+                        <div style="font-size:12px; color:#00FF00; margin-top:2px;">
+                            ${formatEPGTime(parseEPGTime(epgInfo.current.start))} - ${formatEPGTime(parseEPGTime(epgInfo.current.stop))}
+                        </div>
+                    </div>
+                ` : epgInfo.next ? `
+                    <div style="background:rgba(255,215,0,0.1); padding:8px; border-radius:6px; border-left:3px solid var(--accent-primary); margin-top:8px;">
+                        <div style="font-size:11px; color:var(--accent-primary);">SONRAKI PROGRAM</div>
+                        <div style="font-weight:600; margin-top:4px;">${epgInfo.next.title}</div>
+                        <div style="font-size:12px; color:var(--accent-secondary); margin-top:2px;">
+                            ${formatEPGTime(parseEPGTime(epgInfo.next.start))} - ${formatEPGTime(parseEPGTime(epgInfo.next.stop))}
+                        </div>
+                    </div>
+                ` : ''}
             </div>
-            ${allPast ? `
-            <div style="background:rgba(255,100,0,0.15); padding:8px 16px; border-radius:6px; border-left:3px solid #ff6400; margin-bottom:12px;">
-                <div style="font-size:11px; color:#ff6400; font-weight:700;">EPG YENİLENİYOR</div>
-                <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor...</div>
-            </div>` : ''}
         `;
         
         // TÜM programlar
@@ -25135,11 +25143,11 @@ function closeSidebar() {
         try {
             if (state.player.hls && !state.player.hls._destroyed) {
                 if (state.player.isLiveStream) {
-                    state.player.hls.config.maxBufferLength = 8;
-                    state.player.hls.config.maxMaxBufferLength = 40;
+                    state.player.hls.config.maxBufferLength = 10;
+                    state.player.hls.config.maxMaxBufferLength = 30;
                 } else {
                     state.player.hls.config.maxBufferLength = 20;   // 45→20: TVBox VOD kasması önle
-                    state.player.hls.config.maxMaxBufferLength = 60; // 45→60: yeterli VOD buffer
+                    state.player.hls.config.maxMaxBufferLength = 45; // 90→45: RAM baskısı azalt
                 }
             }
         } catch(e) {}
@@ -26573,7 +26581,7 @@ function openPasswordModal(m3uIndex, m3uName) {
         async function _tryFetchCfg(url) {
             try {
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 25000);
+                const t = setTimeout(() => ctrl.abort(), 15000);
                 const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow' }).catch(() => null);
                 clearTimeout(t);
                 return (r && r.ok) ? r : null;
@@ -26581,12 +26589,21 @@ function openPasswordModal(m3uIndex, m3uName) {
         }
         
         let response = null;
-        // Her protokolde önce direkt, sonra proxy zinciri dene
-        response = await _tryFetchCfg(CONFIG_URL);
-        if (!response) {
+        if (_isFileProto) {
+            // file:// CORS: proxy zinciri dene
             for (const _px of _CFGPROXIES) {
                 response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
-                if (response) { console.log('Config proxy OK:', _px); break; }
+                if (response) break;
+            }
+            // Tüm proxy'ler başarısız → direkt dene (bazı browser'lar izin verir)
+            if (!response) response = await _tryFetchCfg(CONFIG_URL);
+        } else {
+            response = await _tryFetchCfg(CONFIG_URL);
+            if (!response) {
+                for (const _px of _CFGPROXIES) {
+                    response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
+                    if (response) break;
+                }
             }
         }
         if (!response) throw new Error('Config fetch başarısız');
@@ -26632,34 +26649,35 @@ function openPasswordModal(m3uIndex, m3uName) {
 }
 
 function showNoConfigUI() {
+    
+    
+
     const grid = document.getElementById('channelsGrid');
     if (grid) {
         grid.innerHTML = `
-            <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--accent-primary);font-size:16px;">
-                <span class="material-symbols-outlined" style="font-size:48px;display:block;margin-bottom:16px;">wifi_off</span>
-                <div style="font-weight:bold;margin-bottom:12px;">Kanal Listesi Yüklenemedi</div>
-                <div style="color:var(--text-muted);margin-bottom:8px;font-size:13px;">İnternet bağlantınızı kontrol edin.</div>
-                <div id="_cfgRetryCountdown" style="color:var(--accent-primary);font-size:13px;margin-bottom:16px;">10 saniye sonra otomatik deneniyor...</div>
-                <button class="settings-btn secondary" onclick="clearConfigCache();loadConfig();" style="margin:0 auto;">
+            <div style="
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 40px;
+                color: var(--accent-primary);
+                font-size: 16px;
+            ">
+                <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 16px;">
+                    wifi_off
+                </span>
+                <div style="font-weight: bold; margin-bottom: 16px;">Config Yüklenemedi</div>
+                <div style="color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    İnternet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.
+                </div>
+                <button class="settings-btn secondary" onclick="location.reload()" style="margin: 0 auto;">
                     <span class="material-symbols-outlined">refresh</span>
-                    Şimdi Dene
+                    Yeniden Dene
                 </button>
             </div>
         `;
     }
-    showToast("Kanal listesi yüklenemedi, yeniden deneniyor...");
-    // Otomatik retry: 10 saniye sonra
-    let _retryCount = 10;
-    const _retryEl = document.getElementById('_cfgRetryCountdown');
-    const _retryTimer = setInterval(() => {
-        _retryCount--;
-        if (_retryEl) _retryEl.textContent = _retryCount + ' saniye sonra otomatik deneniyor...';
-        if (_retryCount <= 0) {
-            clearInterval(_retryTimer);
-            if (typeof clearConfigCache === 'function') clearConfigCache();
-            if (typeof loadConfig === 'function') loadConfig();
-        }
-    }, 1000);
+    
+    showToast("Config yüklenemedi!");
 }
         function processConfig(conf) {
             state.m3uList = conf.m3uList || conf.m3u_list || [];
@@ -27301,19 +27319,7 @@ async function loadRemainingM3UsInBackground(startIndex) {
         try {
             const actualIndex = startIndex + index;
             
-            const _M3U_PROXIES3 = [
-                'https://turk.sadecenjoy.workers.dev/proxy?url=',
-                'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
-                'https://api.allorigins.win/raw?url='
-            ];
-            let response = null;
-            try { response = await fetchWithTimeout(m3uItem.url, 90000); } catch(e) {}
-            if (!response || !response.ok) {
-                for (const _px of _M3U_PROXIES3) {
-                    try { response = await fetchWithTimeout(_px + encodeURIComponent(m3uItem.url), 90000); } catch(e) {}
-                    if (response && response.ok) break;
-                }
-            }
+            const response = await fetchWithTimeout(m3uItem.url, 120000);
             if (!response || !response.ok) {
                 continue;
             }
@@ -27326,7 +27332,6 @@ async function loadRemainingM3UsInBackground(startIndex) {
                     if (fresh.length > 0) state.channels.push(...fresh);
                 });
             } else {
-                // fetchWithTimeout artık Response döndürüyor
                 const text = await response.text().catch(() => null);
                 if (text) channels = (window.parseM3UOptimized || window.parseM3U || parseM3U)(text, actualIndex) || [];
             }
@@ -27534,20 +27539,8 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
                         if (!m3uContent) {
                             
-                            // fetchWithTimeout artık Response döndürür — doğrudan kullan
-                            const _M3U_PROXIES = [
-                                'https://turk.sadecenjoy.workers.dev/proxy?url=',
-                                'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
-                                'https://api.allorigins.win/raw?url='
-                            ];
-                            let resp = null;
-                            try { resp = await fetchWithTimeout(m3u.url, 60000); } catch(e) {}
-                            if (!resp || !resp.ok) {
-                                for (const _px of _M3U_PROXIES) {
-                                    try { resp = await fetchWithTimeout(_px + encodeURIComponent(m3u.url), 60000); } catch(e) {}
-                                    if (resp && resp.ok) break;
-                                }
-                            }
+
+                            const resp = await fetchWithTimeout(m3u.url, 90000).catch(() => null);
                             
                             if (resp && resp.ok) {
                                 let streamedChannels = null;
@@ -27561,8 +27554,9 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                         if (quickChannels.length > 0) {
                                             const partial = removeDuplicateChannels([...quickChannels]);
                                             state.channels = partial; fixChannelNames(state.channels);
-                                            
-
+                                            // Kategori 'all' olarak zorla — tab'a dokunmadan kanallar gelsin
+                                            state.activeCat = 'all';
+                                            state.sidebar.currentCategory = 'all';
                                             if (typeof extractCategories === 'function') extractCategories(state.channels);
                                             immediateRenderChannels();
                                             if (typeof filterChannels === 'function') filterChannels();
@@ -27648,7 +27642,6 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
             if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
             else if (typeof updateCategories === 'function') updateCategories();
             if (typeof renderCats === 'function') renderCats();
-            // Kanallar tam yüklendi — flag'i set et
             window._channelsFullyLoaded = true;
             renderChannels();
             updateChannelCount(state.filtered.length);
@@ -27727,19 +27720,7 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
 
                         if (!m3uContent) {
                             try {
-                                const _M3U_PROXIES2 = [
-                                    'https://turk.sadecenjoy.workers.dev/proxy?url=',
-                                    'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
-                                    'https://api.allorigins.win/raw?url='
-                                ];
-                                let response = null;
-                                try { response = await fetchWithTimeout(m3u.url, 90000); } catch(e) {}
-                                if (!response || !response.ok) {
-                                    for (const _px of _M3U_PROXIES2) {
-                                        try { response = await fetchWithTimeout(_px + encodeURIComponent(m3u.url), 90000); } catch(e) {}
-                                        if (response && response.ok) break;
-                                    }
-                                }
+                                const response = await fetchWithTimeout(m3u.url, 120000);
                                 if (response && response.ok) {
                                     if (response.body && typeof response.body.getReader === 'function') {
                                         
@@ -28152,9 +28133,14 @@ async function parseM3UStream(response, listIdx, onBatch) {
 async function fetchAndParseM3U(url, listIdx, timeout, onBatch) {
     const response = await fetchWithTimeout(url, timeout);
     if (!response) return [];
+
+    
+
     if (response.body && typeof response.body.getReader === 'function') {
         return await parseM3UStream(response, listIdx, onBatch);
     }
+    
+
     const text = await response.text().catch(() => '');
     return parseM3U(text, listIdx);
 }
@@ -33867,7 +33853,6 @@ function renderChannels() {
     
     // Boş liste kontrolü
     if (state.filtered.length === 0) {
-        // Kanallar henüz yükleniyorsa "bulunamadı" değil, yükleniyor göster
         const isLoading = !window._channelsFullyLoaded && state.channels.length === 0;
         if (isLoading) {
             grid.innerHTML = `
@@ -35847,12 +35832,12 @@ function resumeChannel(startTime) {
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 8;
-            hlsInst.config.maxMaxBufferLength = 40;
+            hlsInst.config.maxBufferLength    = 10;
+            hlsInst.config.maxMaxBufferLength = 30;
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
-            hlsInst.config.maxMaxBufferLength = 60;  // 45→60: yeterli VOD buffer
+            hlsInst.config.maxMaxBufferLength = 45;  // 90→45: RAM baskısı azalt
             hlsInst.config.backBufferLength   = 15; // 30→15: VOD geri sarma için yeterli
         }
 
@@ -42057,6 +42042,7 @@ function tryIframeRedirect(action) {
   async function fetchWithTimeout(url, timeout = 8000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
+    
     try {
         const response = await fetch(url, {
             signal: controller.signal,
@@ -42066,12 +42052,17 @@ function tryIframeRedirect(action) {
             }
         });
         clearTimeout(id);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        // Response objesini döndür (stream desteği için)
-        return response;
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        return await response.text();
     } catch (error) {
         clearTimeout(id);
-        if (error.name === 'AbortError') throw new Error(`Timeout: ${url} (${timeout}ms)`);
+        if (error.name === 'AbortError') {
+            throw new Error(`Timeout: ${url} yüklenemedi (${timeout}ms)`);
+        }
         throw error;
     }
 }
@@ -50287,14 +50278,12 @@ document.addEventListener('visibilitychange', function() {
         var hls = st && st.player && st.player.hls;
         if (!hls || hls._destroyed) return;
         if (document.hidden) {
-            // Arka planda buffer küçült — pil ve RAM tasarrufu
             if (st.player.isLiveStream) { hls.config.maxBufferLength = 6; hls.config.maxMaxBufferLength = 12; }
         } else {
-            // Öne gelince yüksek kalite buffer geri yükle
             if (st.player.isLiveStream) {
-                hls.config.maxBufferLength = 8; hls.config.maxMaxBufferLength = 60;
+                hls.config.maxBufferLength = 10; hls.config.maxMaxBufferLength = 30;
             } else {
-                hls.config.maxBufferLength = 20; hls.config.maxMaxBufferLength = 60;
+                hls.config.maxBufferLength = 20; hls.config.maxMaxBufferLength = 45; // 45/90→20/45 TVBox
             }
         }
     } catch(e) {}
@@ -51414,41 +51403,39 @@ var _ready = function(fn) {
     else document.addEventListener('DOMContentLoaded', fn);
 };
 
-/* ── 1. HLS CONFIG OVERRIDE: Yüksek kalite + hızlı açılış dengesi ── */
+/* ── 1. HLS CONFIG OVERRIDE: TVBox için optimize edilmiş buffer ── */
 _ready(function() {
-    // HLS_CONFIG global'i varsa optimize edilmiş parametreleri uygula
+    // HLS_CONFIG global'i varsa TVBox parametrelerini uygula
     if (typeof window.HLS_CONFIG !== 'undefined') {
-        // Buffer: hızlı başlangıç için küçük tutuldu, bant genişse büyüsün
-        window.HLS_CONFIG.maxBufferLength        = 8;   // 16→8sn: ilk kareyi hızlı al
-        window.HLS_CONFIG.maxMaxBufferLength     = 60;  // 40→60sn: bant varsa buffer dolsun = donma olmaz
-        window.HLS_CONFIG.maxBufferSize          = 80 * 1024 * 1024; // 50MB→80MB: 1080p/4K segment büyük
+        // Düşük başlangıç buffer — hızlı açılış (TVBox RAM kısıtlı)
+        window.HLS_CONFIG.maxBufferLength        = 16;  // 8→16sn: yeterli buffer = donma olmaz
+        window.HLS_CONFIG.maxMaxBufferLength     = 40;  // 30→40sn: TVBox için güvenli üst limit
+        window.HLS_CONFIG.maxBufferSize          = 50 * 1024 * 1024; // 30MB→50MB
         window.HLS_CONFIG.backBufferLength       = 0;   // Geri buffer yok — RAM öne
-        window.HLS_CONFIG.maxBufferHole          = 0.3; // 1.0→0.3: daha akıcı oynatım
+        window.HLS_CONFIG.maxBufferHole          = 1.0; // delik toleransı
 
-        // ABR: internet hızına göre otomatik en yüksek kalite
-        window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik — ölçüme göre hemen iyi kalite seçer
-        window.HLS_CONFIG.abrEwmaDefaultEstimate = 8000000; // 3→8Mbps: yüksek başlangıç tahmini
-        window.HLS_CONFIG.abrBandWidthFactor     = 0.92; // %92: agresif ama güvenli yüksek kalite
-        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.85; // kaliteyi hızlı yükselt
-        window.HLS_CONFIG.abrEwmaFastLive        = 3;   // bant düşünce hızlı tepki
-        window.HLS_CONFIG.abrEwmaSlowLive        = 9;   // bant artınca kaliteyi kararlı yükselt
+        // ABR: startLevel=-1 (ABR otomatik) — 0 her seferinde kalite değişimi yapıyor = donma
+        window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik seçsin
+        window.HLS_CONFIG.abrEwmaDefaultEstimate = 3000000; // 3Mbps: gerçekçi TVBox tahmini
+        window.HLS_CONFIG.abrBandWidthFactor     = 0.80; // güvenli bant kullanımı
+        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.65; // kalite artışına temkinli geç
 
-        // Stall recovery
-        window.HLS_CONFIG.nudgeOffset            = 0.3;
-        window.HLS_CONFIG.nudgeMaxRetry          = 8;
-        window.HLS_CONFIG.maxFragLookUpTolerance = 0.3; // 0.5→0.3: daha hassas segment arama
+        // Stall recovery — TVBox'ta daha agresif
+        window.HLS_CONFIG.nudgeOffset            = 0.3; // 0.2→0.3: daha güçlü nudge
+        window.HLS_CONFIG.nudgeMaxRetry          = 8;   // 6→8: daha fazla nudge dene
+        window.HLS_CONFIG.maxFragLookUpTolerance = 0.5; // 0.3→0.5: TVBox'ta segement lookup gevşet
 
-        // Fragment retry
-        window.HLS_CONFIG.fragLoadingMaxRetry    = 8;
-        window.HLS_CONFIG.fragLoadingRetryDelay  = 300; // 500→300ms: daha hızlı retry
-        window.HLS_CONFIG.fragLoadingTimeOut     = 25000; // 30→25sn
+        // Fragment retry — ağ titrediğinde daha sabırlı
+        window.HLS_CONFIG.fragLoadingMaxRetry    = 8;   // 6→8
+        window.HLS_CONFIG.fragLoadingRetryDelay  = 500; // 200→500ms: daha az agresif retry
+        window.HLS_CONFIG.fragLoadingTimeOut     = 30000; // 25→30sn: TVBox ağı yavaş
 
-        // Canlı yayın stabilizasyonu
-        window.HLS_CONFIG.liveSyncDurationCount         = 3;  // 4→3: live edge'e daha yakın = daha az gecikme
-        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity;
+        // Worker — TVBox'ta bazen worker thread sorun çıkarır
+        window.HLS_CONFIG.enableWorker           = true; // açık kal
 
-        // Prefetch — hızlı başlangıç için
-        window.HLS_CONFIG.startFragPrefetch      = true;
+        // Canlı yayın: seekToLiveEdge agresifliğini azalt
+        window.HLS_CONFIG.liveSyncDurationCount         = 4;  // 3→4: daha stabil live edge
+        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity; // kapalı kalsın
     }
 });
 
@@ -51690,17 +51677,18 @@ _ready(function() {
     }, 5 * 60 * 1000);
 });
 
-/* ── 9. HLS startLevel override: ABR her zaman otomatik ── */
+/* ── 9. HLS startLevel override: canlı yayında düşükten başla ── */
 _ready(function() {
-    // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i sıfırla
+    // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i TVBox için sıfırla
     var _origPlay = window.playChannel;
     if (typeof _origPlay !== 'function') return;
 
     window.playChannel = function(channel) {
-        // Hem canlı hem VOD: ABR otomatik kalite seçsin
-        // startLevel=0 (en düşük) yerine -1 (ABR): internet hızı ölçülür, hemen uygun kalite açılır
-        if (window.HLS_CONFIG) {
-            window.HLS_CONFIG.startLevel = -1; // ABR: bant ölçümüne göre en iyi kalite
+        // Canlı yayında: önce düşük kaliteden başla, buffer dolunca ABR yükseltsin
+        if (window.HLS_CONFIG && channel && channel.isLive !== false) {
+            window.HLS_CONFIG.startLevel = 0; // En düşük quality — hızlı açılış
+        } else if (window.HLS_CONFIG) {
+            window.HLS_CONFIG.startLevel = -1; // VOD: ABR otomatik
         }
         return _origPlay.apply(this, arguments);
     };
@@ -53888,318 +53876,5 @@ if (document.readyState === 'loading') {
 window._testAtaturkMemorial = startMemorial;
 window._endAtaturkMemorial  = endMemorial;
 
-})();
-</script>
-
-<!-- ═══ VOD MODAL REDESIGN v7 — TEMA UYUMLU ═══ -->
-<style id="vmR7">
-#vodModal {
-    background: rgba(0,0,0,0.65) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    z-index: 19999 !important;
-    padding: 16px !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-#vodModal[style*="flex"] { display: flex !important; }
-
-#vodModal .vod-modal-content {
-    position: relative !important;
-    width: min(410px, 94vw) !important;
-    max-width: min(410px, 94vw) !important;
-    height: min(82vh, 680px) !important;
-    max-height: min(82vh, 680px) !important;
-    min-height: 300px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    border-radius: 20px !important;
-    border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
-    background: linear-gradient(160deg, var(--bg-panel,#0f0f18) 0%, var(--bg-main,#09090f) 100%) !important;
-    box-shadow: 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),.06), 0 40px 100px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05) !important;
-    box-sizing: border-box !important;
-    margin: 0 auto !important;
-    animation: vmIn7 .25s cubic-bezier(.16,1,.3,1) both !important;
-}
-@keyframes vmIn7 {
-    from{opacity:0;transform:translateY(18px) scale(.97)}
-    to  {opacity:1;transform:translateY(0) scale(1)}
-}
-#vodModal .vod-modal-content::before {
-    content:'';position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg,transparent,rgba(var(--accent-primary-rgb,255,215,0),.85) 35%,rgba(var(--accent-primary-rgb,255,215,0),.95) 65%,transparent);
-    border-radius:20px 20px 0 0;z-index:2;pointer-events:none;
-}
-
-#vodModal .vod-modal-header {
-    display:flex !important;align-items:center !important;justify-content:space-between !important;
-    padding:13px 16px 11px !important;flex-shrink:0 !important;
-    border-bottom:1px solid rgba(255,255,255,.06) !important;background:transparent !important;
-}
-#vodModal .vod-modal-title {
-    font-size:11px !important;font-weight:800 !important;
-    color:rgba(var(--accent-primary-rgb,255,215,0),.65) !important;
-    letter-spacing:2.5px !important;text-transform:uppercase !important;
-}
-#vodModal .vod-modal-close {
-    width:32px !important;height:32px !important;border-radius:50% !important;
-    background:rgba(255,255,255,.09) !important;border:1px solid rgba(255,255,255,.13) !important;
-    color:rgba(255,255,255,.75) !important;display:flex !important;
-    align-items:center !important;justify-content:center !important;
-    cursor:pointer !important;flex-shrink:0 !important;
-    transition: transform .15s ease, box-shadow .15s ease !important;
-}
-
-#vodModalBody {
-    flex:1 1 0 !important;min-height:0 !important;
-    display:flex !important;flex-direction:column !important;
-    overflow-y:auto !important;overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch !important;scrollbar-width:none !important;
-}
-#vodModalBody::-webkit-scrollbar{display:none !important}
-
-#vodPosterContainer{flex-shrink:0 !important;width:100% !important;position:relative !important;}
-#vodPosterWrapper{
-    width:100% !important;aspect-ratio:16/9 !important;max-height:160px !important;
-    overflow:hidden !important;border-radius:0 !important;border:none !important;
-    background:#000 !important;position:relative !important;
-}
-#vodPosterWrapper::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(to bottom,transparent 45%,var(--bg-main,#09090f) 100%);
-    pointer-events:none;
-}
-#vodModalPoster,#vodPosterWrapper .vod-poster{
-    width:100% !important;height:100% !important;
-    object-fit:cover !important;object-position:center 25% !important;display:block !important;
-}
-
-#vodPosterContainer .vod-buttons-group{
-    display:flex !important;flex-direction:row !important;gap:8px !important;
-    padding:10px 14px 8px !important;width:100% !important;
-    box-sizing:border-box !important;background:transparent !important;border:none !important;margin:0 !important;
-}
-#vodModalPlayBtn{
-    flex:2 !important;padding:12px 10px !important;border-radius:12px !important;border:none !important;
-    background:var(--accent-primary,#FFD700) !important;color:var(--bg-main,#09090f) !important;
-    font-weight:900 !important;font-size:13px !important;letter-spacing:.8px !important;
-    display:flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;
-    cursor:pointer !important;box-shadow:0 4px 18px rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
-    margin:0 !important;width:auto !important;
-    transition: transform .15s ease, box-shadow .15s ease !important;
-}
-#vodModalContinueBtn{
-    flex:1 !important;padding:12px 8px !important;border-radius:12px !important;
-    border:1.5px solid rgba(var(--accent-primary-rgb,255,215,0),.5) !important;
-    background:rgba(var(--accent-primary-rgb,255,215,0),.1) !important;
-    color:var(--accent-primary,#FFD700) !important;
-    font-weight:700 !important;font-size:12px !important;
-    display:flex !important;align-items:center !important;justify-content:center !important;gap:5px !important;
-    cursor:pointer !important;margin:0 !important;width:auto !important;
-    transition: transform .15s ease, box-shadow .15s ease !important;
-}
-#vodTrailerStopWrapper{padding:0 14px 6px !important;}
-#vodTrailerStopBtn{width:100% !important;border-radius:12px !important;padding:10px !important;}
-
-#vodInfoContainer{flex-shrink:0 !important;padding:6px 16px 18px !important;overflow:visible !important;min-height:0 !important;}
-#vodInfoScroll{overflow:visible !important;height:auto !important;}
-#vodModalTitle{font-size:19px !important;font-weight:800 !important;color:#fff !important;margin:0 0 8px !important;line-height:1.25 !important;}
-#vodModalMeta{display:flex !important;align-items:center !important;flex-wrap:wrap !important;gap:5px !important;margin-bottom:10px !important;}
-#vodModalMeta .vod-meta-item{
-    background:rgba(255,255,255,.08) !important;border:1px solid rgba(255,255,255,.12) !important;
-    color:rgba(255,255,255,.8) !important;padding:3px 9px !important;border-radius:20px !important;
-    font-size:11px !important;font-weight:600 !important;
-}
-#vodModalMeta .vod-meta-item:first-child{
-    background:rgba(var(--accent-primary-rgb,255,215,0),.13) !important;
-    border-color:rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
-    color:var(--accent-primary,#FFD700) !important;
-}
-#vodModalOverview{
-    font-size:12px !important;color:rgba(255,255,255,.5) !important;line-height:1.6 !important;
-    margin-bottom:14px !important;display:-webkit-box !important;
-    -webkit-line-clamp:4 !important;-webkit-box-orient:vertical !important;overflow:hidden !important;
-}
-
-#vodSeasonsContainer .vod-section-title,
-#vodModalGenresContainer .vod-section-title,
-#vodModalCastContainer .vod-section-title,
-#vodModalDirectorContainer .vod-section-title{
-    font-size:10px !important;font-weight:800 !important;
-    color:rgba(var(--accent-primary-rgb,255,215,0),.6) !important;
-    letter-spacing:2px !important;text-transform:uppercase !important;margin-bottom:8px !important;
-}
-
-#vodSeasonSelector{display:flex !important;flex-wrap:wrap !important;gap:6px !important;margin-bottom:10px !important;padding:0 !important;}
-#vodSeasonSelector .vod-season-btn{
-    padding:6px 14px !important;border-radius:20px !important;
-    border:1.5px solid rgba(255,255,255,.12) !important;background:rgba(255,255,255,.06) !important;
-    color:rgba(255,255,255,.7) !important;font-size:12px !important;font-weight:700 !important;
-    cursor:pointer !important;white-space:nowrap !important;transition:transform .15s ease, box-shadow .15s ease !important;
-}
-#vodSeasonSelector .vod-season-btn.active{
-    background:var(--accent-primary,#FFD700) !important;color:var(--bg-main,#000) !important;
-    border-color:var(--accent-primary,#FFD700) !important;
-}
-
-#vodEpisodesContainer{
-    display:grid !important;grid-template-columns:1fr 1fr !important;gap:7px !important;
-    max-height:260px !important;min-height:50px !important;
-    overflow-y:auto !important;overflow-x:hidden !important;padding:2px 2px 8px !important;
-    scrollbar-width:thin !important;scrollbar-color:rgba(var(--accent-primary-rgb,255,215,0),.3) transparent !important;
-    -webkit-overflow-scrolling:touch !important;
-}
-#vodEpisodesContainer::-webkit-scrollbar{width:3px !important}
-#vodEpisodesContainer::-webkit-scrollbar-thumb{background:rgba(var(--accent-primary-rgb,255,215,0),.3) !important;border-radius:2px !important}
-#vodEpisodesContainer .vod-episode-card{
-    background:rgba(255,255,255,.05) !important;border:1.5px solid rgba(255,255,255,.09) !important;
-    border-radius:12px !important;padding:10px 11px !important;cursor:pointer !important;
-    position:relative !important;overflow:hidden !important;
-    transition: transform .15s ease, box-shadow .15s ease !important;
-    transform-origin: center center !important;
-}
-#vodEpisodesContainer .vod-episode-card .vod-episode-number{
-    font-size:10px !important;font-weight:800 !important;
-    color:rgba(var(--accent-primary-rgb,255,215,0),.75) !important;
-    letter-spacing:.5px !important;margin-bottom:4px !important;
-}
-#vodEpisodesContainer .vod-episode-card .vod-episode-title{
-    font-size:12px !important;font-weight:700 !important;color:rgba(255,255,255,.85) !important;
-    white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
-}
-#vodEpisodesContainer .vod-episode-card .vod-episode-desc{display:none !important}
-
-/* ══ KUMANDA ODAK — scale + glow ══ */
-#vodModalCloseBtn.remote-focused,
-#vodModalCloseBtn.tv-focused {
-    outline: 3px solid var(--accent-primary,#FFD700) !important;
-    outline-offset: 2px !important;
-    transform: scale(1.12) !important;
-    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.2), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),.45) !important;
-    background: rgba(var(--accent-primary-rgb,255,215,0),.15) !important;
-}
-#vodModalPlayBtn.remote-focused,
-#vodModalPlayBtn.tv-focused {
-    outline: 3px solid var(--accent-primary,#FFD700) !important;
-    outline-offset: 3px !important;
-    transform: scale(1.012) !important;
-    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.25), 0 6px 28px rgba(var(--accent-primary-rgb,255,215,0),.55) !important;
-    filter: brightness(1.08) !important;
-}
-#vodModalContinueBtn.remote-focused,
-#vodModalContinueBtn.tv-focused {
-    outline: 3px solid var(--accent-primary,#FFD700) !important;
-    outline-offset: 3px !important;
-    transform: scale(1.012) !important;
-    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.2), 0 4px 20px rgba(var(--accent-primary-rgb,255,215,0),.4) !important;
-    background: rgba(var(--accent-primary-rgb,255,215,0),.18) !important;
-}
-#vodSeasonSelector .vod-season-btn.remote-focused,
-#vodSeasonSelector .vod-season-btn.tv-focused {
-    outline: 3px solid var(--accent-primary,#FFD700) !important;
-    outline-offset: 2px !important;
-    transform: scale(1.012) !important;
-    background: rgba(var(--accent-primary-rgb,255,215,0),.18) !important;
-    border-color: var(--accent-primary,#FFD700) !important;
-    color: var(--accent-primary,#FFD700) !important;
-    box-shadow: 0 0 14px rgba(var(--accent-primary-rgb,255,215,0),.35) !important;
-}
-#vodEpisodesContainer .vod-episode-card.remote-focused,
-#vodEpisodesContainer .vod-episode-card.tv-focused,
-#vodEpisodesContainer .vod-episode-card.focused {
-    background: rgba(var(--accent-primary-rgb,255,215,0),.14) !important;
-    border-color: var(--accent-primary,#FFD700) !important;
-    outline: none !important;
-    transform: scale(1.012) !important;
-    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),.3), 0 4px 16px rgba(var(--accent-primary-rgb,255,215,0),.25) !important;
-    z-index: 1 !important;
-    position: relative !important;
-}
-#vodEpisodesContainer .vod-episode-card.remote-focused .vod-episode-number,
-#vodEpisodesContainer .vod-episode-card.tv-focused .vod-episode-number {
-    color: var(--accent-primary,#FFD700) !important;
-}
-
-/* Landscape */
-@media (orientation:landscape){
-    #vodModal{padding:8px !important;}
-    #vodModal .vod-modal-content{
-        width:min(370px,88vw) !important;max-width:min(370px,88vw) !important;
-        height:min(96vh,600px) !important;max-height:min(96vh,600px) !important;
-    }
-    #vodPosterWrapper{max-height:105px !important;}
-    #vodModalTitle{font-size:16px !important;}
-    #vodModalOverview{-webkit-line-clamp:2 !important;}
-    #vodEpisodesContainer{max-height:160px !important;}
-    #vodPosterContainer .vod-buttons-group{padding:8px 12px 6px !important;gap:6px !important;}
-    #vodModalPlayBtn{padding:9px 8px !important;font-size:12px !important;}
-    #vodModalContinueBtn{padding:9px 6px !important;font-size:11px !important;}
-}
-</style>
-
-<script>
-(function(){
-'use strict';
-var PC=['width','max-width','height','max-height','min-height','border-radius','overflow','flex-direction','display','box-sizing','padding','background','align-items','border','animation'];
-var PB=['flex-direction','overflow','overflow-y','overflow-x','flex','min-height','max-height','height','display'];
-var PW=['flex','max-height','height','aspect-ratio','border-bottom','border-right','border','border-radius','overflow'];
-var PBT=['flex','width','max-width','padding','font-size','background','border','border-radius','color','display','margin'];
-var PI=['flex','overflow','overflow-y','padding','height','min-height','max-height'];
-function clr(el,ps){if(!el)return;ps.forEach(function(p){try{el.style.removeProperty(p);}catch(e){}});}
-function fix(){
-    var m=document.getElementById('vodModal');
-    if(!m||m.style.display==='none')return;
-    clr(m.querySelector('.vod-modal-content'),PC);
-    clr(document.getElementById('vodModalBody'),PB);
-    clr(document.getElementById('vodPosterWrapper'),PW);
-    clr(document.getElementById('vodPosterContainer'),['flex','width','max-width','border-right','overflow']);
-    clr(document.getElementById('vodInfoContainer'),PI);
-    clr(document.getElementById('vodInfoScroll'),['overflow','height','max-height']);
-    clr(document.getElementById('vodEpisodesContainer'),['max-height','min-height','grid-template-columns','overflow-y','height','display']);
-    ['vodModalPlayBtn','vodModalContinueBtn'].forEach(function(id){clr(document.getElementById(id),PBT);});
-}
-function patchRebuild(){
-    if(typeof _rebuildVodModalElements==='undefined'){setTimeout(patchRebuild,400);return;}
-    window._rebuildVodModalElements=function(){
-        var sIds=['vodModalCloseBtn','vodTrailerBtn','vodContinueBtn','vodModalPlayBtn'];
-        var sEls=sIds.map(function(id){return document.getElementById(id);}).filter(Boolean);
-        var sBtns=Array.from(document.querySelectorAll('#vodSeasonSelector .vod-season-btn'));
-        var eCards=Array.from(document.querySelectorAll('#vodEpisodesContainer .vod-episode-card'));
-        var iScroll=document.getElementById('vodInfoScroll');
-        var els=sEls.concat(sBtns,eCards,iScroll?[iScroll]:[]);
-        if(!window.state)window.state={};
-        if(!window.state.remote)window.state.remote={};
-        window.state.remote.vodModalElements=els;
-        var ti=-1;
-        var cc=eCards.find(function(c){return c.querySelector('.vod-episode-continue');});
-        if(cc)ti=els.indexOf(cc);
-        if(ti<0){var pc=eCards.find(function(c){return c.querySelector('.vod-episode-playing');});if(pc)ti=els.indexOf(pc);}
-        if(ti<0){var ai=els.findIndex(function(el){return el.classList.contains('vod-season-btn')&&el.classList.contains('active');});ti=ai>=0?ai:(eCards.length>0?els.indexOf(eCards[0]):sEls.length);}
-        window.state.remote.vodModalIndex=Math.max(0,ti);
-        window.state.remote.vodEpisodeIndex=0;
-        els.forEach(function(el){
-            el.classList.remove('remote-focused','tv-focused','focused');
-            el.style.outline='';el.style.boxShadow='';el.style.transform='';
-        });
-        var fe=els[window.state.remote.vodModalIndex];
-        if(fe){fe.classList.add('remote-focused','tv-focused');fe.focus({preventScroll:true});setTimeout(function(){try{fe.scrollIntoView({block:'nearest',behavior:'auto'});}catch(e){}},60);}
-    };
-}
-function init(){
-    var m=document.getElementById('vodModal');
-    if(!m){setTimeout(init,300);return;}
-    new MutationObserver(function(muts){
-        muts.forEach(function(mu){
-            if(mu.attributeName==='style'&&m.style.display==='flex'){
-                fix();setTimeout(fix,80);setTimeout(fix,300);setTimeout(fix,700);
-            }
-        });
-    }).observe(m,{attributes:true});
-    window.addEventListener('orientationchange',function(){setTimeout(function(){if(m.style.display==='flex')fix();},300);});
-    window.addEventListener('resize',function(){if(m.style.display==='flex')fix();});
-    patchRebuild();
-}
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 })();
 </script>

@@ -10695,70 +10695,53 @@ function _saveDeviceIdToCookie(id) {
 }
 
 function _buildDeviceFingerprint() {
+    // Sadece veri temizlese de değişmeyen DONANIM değerleri kullanılıyor.
+    // Canvas fingerprint KASITLI olarak çıkarıldı — WebView güncellemesi veya
+    // veri temizleme sonrası canvas çıktısı değişiyor ve aynı cihazı
+    // farklı cihaz olarak algılatıyordu.
     const parts = [];
 
-    
+    // 1) UserAgent — cihaz modeli + Android sürümü, donanıma bağlı, değişmez
+    parts.push(navigator.userAgent.slice(0, 150));
 
-    try {
-        const c   = document.createElement('canvas');
-        c.width   = 280; c.height = 60;
-        const ctx = c.getContext('2d');
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle    = '#f60';
-        ctx.fillRect(125, 1, 62, 20);
-        ctx.fillStyle    = '#069';
-        ctx.font         = '11pt "Arial"';
-        ctx.fillText('UmitTV🎯', 2, 15);
-        ctx.fillStyle    = 'rgba(102,204,0,0.7)';
-        ctx.font         = '18pt "Arial"';
-        ctx.fillText('UmitTV🎯', 4, 45);
-        parts.push(c.toDataURL().slice(-80));
-    } catch(e) { parts.push('cvs_err'); }
+    // 2) Ekran çözünürlüğü — fiziksel ekrana bağlı, hiç değişmez
+    //    devicePixelRatio ve colorDepth ÇIKARILDI (WebView reset sonrası değişebilir)
+    parts.push(screen.width + 'x' + screen.height);
 
-    
+    // 3) CPU çekirdek sayısı — donanıma bağlı, değişmez
+    parts.push(String(navigator.hardwareConcurrency || 0));
 
-    parts.push([
-        screen.width, screen.height,
-        screen.colorDepth,
-        window.devicePixelRatio || 1,
-    ].join('x'));
+    // 4) Dokunmatik nokta sayısı — donanıma bağlı (TV=0, telefon=5-10)
+    parts.push(String(navigator.maxTouchPoints || 0));
 
-    
-
-    parts.push(navigator.userAgent.slice(0, 120));
-    parts.push(navigator.language || '');
-    parts.push(navigator.hardwareConcurrency || 0);
-    parts.push(navigator.maxTouchPoints || 0);
-
-    
-
-    try { parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch(e) {}
-
-    
-
+    // 5) GPU renderer — en stabil fingerprint kaynağı, donanıma doğrudan bağlı
     try {
         const gl  = document.createElement('canvas').getContext('webgl');
         if (gl) {
             const dbg = gl.getExtension('WEBGL_debug_renderer_info');
             if (dbg) {
-                parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).slice(0, 60));
+                parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).slice(0, 80));
                 parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL).slice(0, 40));
+            } else {
+                // Fallback: standart GL parametreler
+                parts.push(gl.getParameter(gl.RENDERER) || '');
+                parts.push(gl.getParameter(gl.VENDOR)   || '');
             }
         }
-    } catch(e) {}
+    } catch(e) { parts.push('gl_err'); }
 
-    
+    // 6) Zaman dilimi — cihaz bölgesine bağlı, veri temizlemeyle değişmez
+    try { parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch(e) {}
 
+    // FNV-1a 64-bit (2×32) hash
     const raw = parts.join('||');
-    let h1 = 0x811c9dc5, h2 = 0x9dc5a6f3, h3 = 0xdeadbeef, h4 = 0xc0ffee42;
+    let h1 = 0x811c9dc5, h2 = 0x9dc5a6f;
     for (let i = 0; i < raw.length; i++) {
         const c = raw.charCodeAt(i);
         h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
         h2 = Math.imul(h2 ^ c, 0x00000193) >>> 0;
-        h3 = Math.imul(h3 ^ c, 0x01234567) >>> 0;
-        h4 = Math.imul(h4 ^ c, 0x89abcdef) >>> 0;
     }
-    return 'fp_' + [h1,h2,h3,h4].map(x => x.toString(16).padStart(8,'0')).join('');
+    return 'fp_' + (h1.toString(16).padStart(8,'0') + h2.toString(16).padStart(8,'0'));
 }
 
 function _persistDeviceId(id) {
@@ -10769,15 +10752,13 @@ function _persistDeviceId(id) {
 }
 
 function getDeviceId() {
-    
+    // Cache kontrolü — sadece fp_ prefix'li stabil ID'ler geçerli
+    if (_deviceIdCache && _deviceIdCache.startsWith('fp_') && _deviceIdCache.length >= 16) return _deviceIdCache;
 
-    if (_deviceIdCache && _deviceIdCache.length >= 16) return _deviceIdCache;
-
-    
-
+    // localStorage kontrolü — sadece fp_ prefix'li kabul et
     try {
         const ls = localStorage.getItem('__umittv_did');
-        if (ls && ls.length >= 16) {
+        if (ls && ls.startsWith('fp_') && ls.length >= 16) {
             _deviceIdCache = ls;
             _saveDeviceIdToCookie(ls);
             _saveDeviceIdToIDB(ls);
@@ -10785,36 +10766,36 @@ function getDeviceId() {
         }
     } catch(e) {}
 
-    
-
+    // Cookie kontrolü — sadece fp_ prefix'li kabul et
     const ck = _getDeviceIdFromCookie();
-    if (ck && ck.length >= 16) {
+    if (ck && ck.startsWith('fp_') && ck.length >= 16) {
         _deviceIdCache = ck;
         try { localStorage.setItem('__umittv_did', ck); } catch(e) {}
         _saveDeviceIdToIDB(ck);
         return ck;
     }
 
-    
-
-    
-
-    // Tamamen deterministik fingerprint — random yok.
-    // Veri silinse bile aynı cihazda aynı ID üretilir.
-    const fp  = _buildDeviceFingerprint();
-    _persistDeviceId(fp);
-    return fp;
+    // Hiçbir storage'da stabil ID yok: donanım parmak izinden üret.
+    // Bu fonksiyon aynı cihazda her zaman aynı değeri döndürür —
+    // veri temizleme sonrasında da aynı ID elde edilir.
+    const uid = _buildDeviceFingerprint();
+    _persistDeviceId(uid);
+    return uid;
 }
 
 window._deviceIdReady = new Promise(resolve => {
     _getDeviceIdFromIDB().then(idbId => {
-        if (idbId && idbId.length >= 16) {
+        // Sadece donanim parmak izine dayali (fp_ prefix'li) ID'leri kabul et.
+        // Eski canvas-based veya bozuk ID'ler reddedilir; yeni fp_ uretilir.
+        const isStableFp = idbId && idbId.startsWith('fp_') && idbId.length >= 16;
+        if (isStableFp) {
             if (!_deviceIdCache) {
                 _deviceIdCache = idbId;
                 try { localStorage.setItem('__umittv_did', idbId); } catch(e) {}
                 _saveDeviceIdToCookie(idbId);
             }
         } else {
+            // Eski/gecersiz ID: yeni donanim parmak izi uret ve her yere kaydet
             const existing = getDeviceId();
             _saveDeviceIdToIDB(existing);
         }
@@ -10924,15 +10905,15 @@ function getDeviceName() {
     else if (/Mac/i.test(ua))     { model = 'Mac'; }
     else if (/Linux/i.test(ua))   { model = 'Linux'; }
 
-    // RE-LINK için benzersizlik: model adına fingerprint'in ilk 8 hex karakterini ekle
-    // Böylece aynı model adlı farklı cihazlar karışmaz, veri silinse de aynı cihaz eşleşir
+    // Benzersizlik için getDeviceId'den fp_ suffix al — _buildDeviceFingerprint'i tekrar çağırma
     try {
-        const fp = _buildDeviceFingerprint(); // 'fp_XXXXXXXX...'
-        const fpShort = fp.slice(3, 11); // ilk 8 hex
-        return (model + '#' + fpShort).substring(0, 60);
-    } catch(e) {
-        return model;
-    }
+        const did = getDeviceId(); // önbellekten gelir, yeniden hesaplanmaz
+        if (did && did.startsWith('fp_') && did.length >= 11) {
+            const fpShort = did.slice(3, 11); // ilk 8 hex
+            return (model + '#' + fpShort).substring(0, 60);
+        }
+    } catch(e) {}
+    return model;
 }
 
 async function apiLogin(telegramId, password) {

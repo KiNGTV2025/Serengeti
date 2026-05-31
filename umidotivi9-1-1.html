@@ -10553,6 +10553,816 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     </div><!-- /login-card -->
 </div><!-- /loginOverlay -->
 
+<!-- ═══════════════════════════════════════════════════════════
+     ÜMİT TV — ÖĞRETICI OVERLAY (Tutorial / Onboarding)
+     İlk açılışta gösterilir. localStorage ile bir kez gösterilir.
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* ── Tutorial Overlay ── */
+#tutorialOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999999;
+    background: rgba(4,6,13,0.97);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Exo 2', 'Rajdhani', sans-serif;
+    padding: 16px;
+    box-sizing: border-box;
+}
+#tutorialOverlay.tut-hidden { display: none !important; }
+
+/* Işıltı arka plan */
+#tutorialOverlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 50% at 30% 40%, rgba(255,215,0,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 70% at 80% 70%, rgba(255,120,0,0.04) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Kart — flex column: slaytlar scroll eder, footer sabit */
+.tut-card {
+    position: relative;
+    z-index: 2;
+    width: 480px;
+    max-width: 96vw;
+    /* height sabit olmalı — flex child'ın scroll alanını hesaplayabilmesi için */
+    height: 90vh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(155deg,
+        rgba(14,16,26,0.98) 0%,
+        rgba(10,12,22,1) 60%,
+        rgba(16,14,24,0.98) 100%);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-top: 1px solid rgba(255,215,0,0.45);
+    border-radius: 20px;
+    box-shadow:
+        0 0 0 1px rgba(255,215,0,0.07),
+        0 0 80px rgba(255,170,0,0.1),
+        0 40px 100px rgba(0,0,0,0.85),
+        inset 0 1px 0 rgba(255,255,255,0.07);
+    animation: tutCardIn 0.55s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes tutCardIn {
+    from { opacity:0; transform: translateY(32px) scale(0.96); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* Slayt kapsayıcı — scroll buraya, footer dışarıda */
+.tut-slides-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: scroll !important; /* scroll (auto değil) — Samsung WebView uyumu */
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative;
+    /* Global touch-action:manipulation'ı ezmek için pan-y zorunlu */
+    touch-action: pan-y !important;
+    -ms-touch-action: pan-y !important;
+    will-change: scroll-position;
+}
+.tut-slides-wrap::-webkit-scrollbar { display: none; }
+
+/* Tek slayt */
+.tut-slide {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 26px 28px 20px;
+    text-align: center;
+    animation: tutSlideIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+    box-sizing: border-box;
+    /* Slayt içi dokunuşun scroll'u geçirmesi için */
+    touch-action: pan-y !important;
+}
+.tut-slide.tut-active { display: flex; }
+@keyframes tutSlideIn {
+    from { opacity:0; transform: translateX(18px); }
+    to   { opacity:1; transform: translateX(0); }
+}
+@keyframes tutSlideInLeft {
+    from { opacity:0; transform: translateX(-18px); }
+    to   { opacity:1; transform: translateX(0); }
+}
+.tut-slide.tut-going-back { animation: tutSlideInLeft 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* Emoji ikonu */
+.tut-icon {
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 14px rgba(255,215,0,0.25));
+}
+
+/* Başlık */
+.tut-title {
+    font-family: 'Orbitron', 'Exo 2', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #FFD700;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 18px rgba(255,215,0,0.35);
+}
+
+/* Alt başlık */
+.tut-subtitle {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+}
+
+/* Açıklama kutusu */
+.tut-desc {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 12px;
+    padding: 16px 18px;
+    text-align: left;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+/* Adım listesi */
+.tut-steps {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+.tut-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+.tut-step-num {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #FFD700, #F1A800);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #000;
+}
+.tut-step-text {
+    font-size: 0.86rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.5;
+    padding-top: 2px;
+}
+.tut-step-text strong { color: #FFD700; }
+.tut-step-text code {
+    background: rgba(255,215,0,0.12);
+    border: 1px solid rgba(255,215,0,0.22);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: 0.82rem;
+    color: #FFD700;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* Uyarı kutusu */
+.tut-tip {
+    width: 100%;
+    background: rgba(255,215,0,0.06);
+    border: 1px solid rgba(255,215,0,0.22);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: rgba(255,215,0,0.85);
+    margin-bottom: 10px;
+    text-align: left;
+    line-height: 1.55;
+}
+.tut-tip-red {
+    background: rgba(255,80,80,0.06);
+    border-color: rgba(255,80,80,0.22);
+    color: rgba(255,130,130,0.9);
+}
+
+/* Rozet (yeni/mevcut etiketi) */
+.tut-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #FFD700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+/* İlerleme noktaları */
+.tut-dots {
+    display: flex;
+    gap: 7px;
+    justify-content: center;
+    padding: 4px 0 20px;
+}
+.tut-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+    transition: background 0.2s, transform 0.2s;
+}
+.tut-dot.tut-dot-active {
+    background: #FFD700;
+    transform: scale(1.35);
+    box-shadow: 0 0 7px rgba(255,215,0,0.55);
+}
+.tut-dot.tut-dot-done {
+    background: rgba(255,215,0,0.38);
+}
+
+/* Alt buton satırı */
+.tut-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px 28px;
+    gap: 10px;
+}
+
+/* Atla butonu */
+.tut-btn-skip {
+    background: none;
+    border: none;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.3);
+    cursor: pointer;
+    padding: 8px 4px;
+    transition: color 0.15s;
+    letter-spacing: 0.5px;
+}
+.tut-btn-skip:hover { color: rgba(255,255,255,0.6); }
+
+/* İleri / Bitir butonu */
+.tut-btn-next {
+    background: linear-gradient(135deg, #FFD700 0%, #F1A800 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: 'Exo 2', 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #000;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: box-shadow 0.15s, transform 0.1s;
+    box-shadow: 0 4px 18px rgba(255,215,0,0.22);
+}
+.tut-btn-next:hover {
+    box-shadow: 0 4px 28px rgba(255,215,0,0.45);
+    transform: translateY(-1px);
+}
+.tut-btn-next:active { transform: scale(0.97); }
+
+/* Geri butonu */
+.tut-btn-back {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: border-color 0.15s, color 0.15s;
+}
+.tut-btn-back:hover {
+    border-color: rgba(255,215,0,0.3);
+    color: rgba(255,215,0,0.8);
+}
+.tut-btn-back:disabled { opacity: 0; pointer-events: none; }
+
+/* D-pad focus — altın outline, app ile aynı stil */
+.tut-btn-next.tut-dpad,
+.tut-btn-back.tut-dpad,
+.tut-btn-skip.tut-dpad {
+    outline: 2.5px solid rgba(255,215,0,0.95) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+    transition: none !important;
+}
+.tut-btn-next.tut-dpad {
+    background: linear-gradient(135deg, #ffe040 0%, #F1A800 100%) !important;
+}
+.tut-btn-back.tut-dpad {
+    border-color: rgba(255,215,0,0.55) !important;
+    color: rgba(255,215,0,0.9) !important;
+    background: rgba(255,215,0,0.08) !important;
+}
+.tut-btn-skip.tut-dpad {
+    color: rgba(255,255,255,0.75) !important;
+}
+
+/* D-pad gösterge şeridi */
+.tut-dpad-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 4px 28px 10px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.22);
+    letter-spacing: 0.4px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.tut-dpad-hint.hidden { display: none; }
+.tut-dkey {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-family: monospace;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.35);
+}
+.tut-screen-box {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.8;
+    text-align: left;
+}
+.tut-screen-box .tut-msg-label {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.tut-screen-msg {
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px 8px 8px 2px;
+    padding: 8px 12px;
+    color: rgba(255,255,255,0.8);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.83rem;
+    display: inline-block;
+    max-width: 90%;
+    margin-bottom: 4px;
+}
+.tut-screen-reply {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 8px 8px 2px 8px;
+    padding: 8px 12px;
+    color: #FFD700;
+    font-size: 0.83rem;
+    font-family: 'Exo 2', sans-serif;
+    display: block;
+    margin-left: auto;
+    max-width: 90%;
+    text-align: right;
+}
+.tut-screen-highlight {
+    color: #FFD700;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+}
+</style>
+
+<!-- Tutorial HTML -->
+<div id="tutorialOverlay">
+    <div class="tut-card">
+        <div class="tut-slides-wrap">
+
+            <!-- ── Slayt 1: Hoş Geldin ── -->
+            <div class="tut-slide tut-active" id="tutSlide1">
+                <div class="tut-icon">👋</div>
+                <div class="tut-title">HOŞ GELDİN!</div>
+                <div class="tut-subtitle">ÜmitTV · Giriş Rehberi</div>
+                <div class="tut-desc">
+                    <strong style="color:#FFD700;">ÜmitTV'ye ilk kez mi giriyorsun?</strong><br><br>
+                    Bu kısa rehber sana <strong>nasıl giriş yapacağını</strong> adım adım gösterecek.<br><br>
+                    Endişelenme — çok basit! 🎉<br>
+                    Toplamda sadece <strong style="color:#FFD700;">5 ekran</strong> var.
+                </div>
+                <div class="tut-tip">
+                    💡 Bu rehberi bir daha görmek istemiyorsan, sonraki girişlerde otomatik olarak açılmaz.
+                </div>
+            </div>
+
+            <!-- ── Slayt 2: Telegram ID nedir? ── -->
+            <div class="tut-slide" id="tutSlide2">
+                <div class="tut-icon">📱</div>
+                <div class="tut-title">TELEGRAM ID NEDİR?</div>
+                <div class="tut-subtitle">Her Telegram hesabının kendine özel sayı kodu</div>
+                <div class="tut-steps">
+                    <div class="tut-step">
+                        <div class="tut-step-num">1</div>
+                        <div class="tut-step-text">Telefonda <strong>Telegram</strong> uygulamasını aç</div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">2</div>
+                        <div class="tut-step-text">Üstteki arama çubuğuna <code>@userinfobot</code> yaz ve aç</div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">3</div>
+                        <div class="tut-step-text">Bota herhangi bir şey yaz, örneğin <code>merhaba</code></div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">4</div>
+                        <div class="tut-step-text">Bot sana bir mesaj gönderecek. İçindeki <strong>Id:</strong> satırındaki <strong>sayı senin Telegram ID'n!</strong></div>
+                    </div>
+                </div>
+                <div class="tut-screen-box">
+                    <div class="tut-msg-label">📲 Bot'tan gelen mesaj (örnek)</div>
+                    <div class="tut-screen-reply">
+                        Id: <span class="tut-screen-highlight">123456789</span><br>
+                        <span style="font-size:0.73rem;opacity:0.6;">First name: Ahmet · Username: @ahmet</span>
+                    </div>
+                </div>
+                <div class="tut-tip">💡 <strong>Bu sayıyı kopyala</strong> — giriş ekranında bunu kullanacaksın.</div>
+            </div>
+
+            <!-- ── Slayt 3: Yeni Kullanıcı ── -->
+            <div class="tut-slide" id="tutSlide3">
+                <div class="tut-icon">🆕</div>
+                <div class="tut-badge">✨ İlk Kez Giriş Yapıyorum</div>
+                <div class="tut-title">YENİ KULLANICI</div>
+                <div class="tut-subtitle">Hesabın yoksa bu adımları takip et</div>
+                <div class="tut-steps">
+                    <div class="tut-step">
+                        <div class="tut-step-num">1</div>
+                        <div class="tut-step-text"><strong>Telegram ID</strong>'ni gir ve <strong>DEVAM ET</strong>'e bas</div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">2</div>
+                        <div class="tut-step-text">Telegram grubuna şunu yaz: <code>Ümit şifre belirlemek istiyorum</code></div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">3</div>
+                        <div class="tut-step-text">Admin onayladıktan sonra gruba <strong>UMIT-XXXX-XXXX</strong> formatında bir <strong>token kodu</strong> gelecek — onu gir</div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">4</div>
+                        <div class="tut-step-text">Kendine bir <strong>şifre belirle</strong> (en az 4 karakter)</div>
+                    </div>
+                </div>
+                <div class="tut-tip">
+                    ✅ Bir dahaki girişinde sadece <strong>ID + Şifre</strong> yeterli!
+                </div>
+            </div>
+
+            <!-- ── Slayt 4: Mevcut Kullanıcı ── -->
+            <div class="tut-slide" id="tutSlide4">
+                <div class="tut-icon">🔑</div>
+                <div class="tut-badge" style="background:rgba(0,200,100,0.08);border-color:rgba(0,200,100,0.3);color:#4dbb7a;">✔ Hesabım Zaten Var</div>
+                <div class="tut-title">MEVCUT KULLANICI</div>
+                <div class="tut-subtitle">Daha önce hesap açtıysan çok basit</div>
+                <div class="tut-steps">
+                    <div class="tut-step">
+                        <div class="tut-step-num">1</div>
+                        <div class="tut-step-text"><strong>Telegram ID</strong>'ni gir ve <strong>DEVAM ET</strong>'e bas</div>
+                    </div>
+                    <div class="tut-step">
+                        <div class="tut-step-num">2</div>
+                        <div class="tut-step-text"><strong>Şifreni</strong> gir ve <strong>GİRİŞ YAP</strong>'a bas — hepsi bu!</div>
+                    </div>
+                </div>
+                <div class="tut-tip">
+                    💡 <strong>Şans Kodun varsa</strong> daha da kolay: Telegram ID girmene gerek yok, sadece şans kodunu gir!
+                </div>
+                <div class="tut-tip tut-tip-red" style="margin-top:6px;">
+                    🔒 <strong>Şifreni mi unuttun?</strong> Giriş ekranında <em>"Şifremi Unuttum"</em> butonuna bas. Admin onayıyla yeni şifre belirleyebilirsin.
+                </div>
+            </div>
+
+            <!-- ── Slayt 5: Hazırsın! ── -->
+            <div class="tut-slide" id="tutSlide5">
+                <div class="tut-icon">🚀</div>
+                <div class="tut-title">HAZIRSIN!</div>
+                <div class="tut-subtitle">Artık giriş yapabilirsin</div>
+                <div class="tut-desc" style="text-align:center;">
+                    Hepsi bu kadar!<br><br>
+                    Aklında kalsın:<br><br>
+                    📱 <strong style="color:#FFD700;">Telegram ID</strong> → @userinfobot'tan<br>
+                    🔑 <strong style="color:#FFD700;">Şifre</strong> → İlk girişte sen belirlersin<br>
+                    🎰 <strong style="color:#FFD700;">Şans Kodu</strong> → Admin sana verir (opsiyonel)
+                </div>
+                <div class="tut-tip">
+                    🛟 Sorun yaşarsan:
+                    <a href="https://t.me/umitm0d" target="_blank" style="color:#FFD700;font-weight:700;text-decoration:none;">t.me/umitm0d</a>
+                    adresinden yardım alabilirsin.
+                </div>
+                <div style="margin-top:6px;font-size:0.75rem;color:rgba(255,255,255,0.25);text-align:center;">
+                    Bu rehber bir daha gösterilmeyecek.
+                </div>
+            </div>
+
+        </div><!-- /tut-slides-wrap -->
+
+        <!-- İlerleme noktaları -->
+        <div class="tut-dots" id="tutDots">
+            <div class="tut-dot tut-dot-active"></div>
+            <div class="tut-dot"></div>
+            <div class="tut-dot"></div>
+            <div class="tut-dot"></div>
+            <div class="tut-dot"></div>
+        </div>
+
+        <!-- Butonlar -->
+        <div class="tut-footer">
+            <button class="tut-btn-back" id="tutBtnBack" onclick="tutPrev()" disabled>← Geri</button>
+            <button class="tut-btn-skip" id="tutBtnSkip" onclick="tutClose()">Atla ✕</button>
+            <button class="tut-btn-next" id="tutBtnNext" onclick="tutNext()">İleri →</button>
+        </div>
+        <!-- D-Pad ipucu (TV kumanda) -->
+        <div class="tut-dpad-hint" id="tutDpadHint">
+            <span class="tut-dkey">◄ ►</span> Slayt
+            <span class="tut-dkey">▲ ▼</span> Buton seç
+            <span class="tut-dkey">OK</span> Onayla
+        </div>
+
+    </div><!-- /tut-card -->
+</div><!-- /tutorialOverlay -->
+
+<script>
+/* ═══ ÜmitTV Öğretici Overlay — v2.0 + D-Pad ═══ */
+(function() {
+    var STORAGE_KEY = 'umittv_tutorial_done_v2';
+    var totalSlides  = 5;
+    var currentSlide = 1;
+    var goingBack    = false;
+
+    /* D-Pad: 0=Geri, 1=Atla, 2=İleri (default) */
+    var BTN_BACK = 0, BTN_SKIP = 1, BTN_NEXT = 2;
+    var dpadFocused = BTN_NEXT; /* varsayılan odak: İleri */
+    var dpadActive  = false;    /* kumanda kullanıldıktan sonra true */
+
+    /* ── Buton eleman listesi (sıralı) ── */
+    function getBtns() {
+        return [
+            document.getElementById('tutBtnBack'),
+            document.getElementById('tutBtnSkip'),
+            document.getElementById('tutBtnNext')
+        ];
+    }
+
+    /* ── İlk açılış kontrolü ── */
+    function tutShow() {
+        var done = false;
+        try { done = localStorage.getItem(STORAGE_KEY) === '1'; } catch(e) {}
+        if (done) { tutClose(false); return; }
+        /* İlk odak ayarla */
+        setTimeout(function() { setDpadFocus(BTN_NEXT, false); }, 80);
+    }
+
+    /* ── Kapatma ── */
+    window.tutClose = function(save) {
+        var overlay = document.getElementById('tutorialOverlay');
+        if (overlay) {
+            overlay.style.animation = 'none';
+            overlay.style.opacity = '0';
+            overlay.style.transform = 'scale(0.96)';
+            overlay.style.transition = 'opacity 0.2s, transform 0.2s';
+            setTimeout(function() { overlay.classList.add('tut-hidden'); }, 190);
+        }
+        if (save !== false) {
+            try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}
+        }
+    };
+
+    /* ── Slayt navigasyonu ── */
+    window.tutNext = function() {
+        if (currentSlide >= totalSlides) { tutClose(true); return; }
+        goingBack = false;
+        goToSlide(currentSlide + 1);
+    };
+
+    window.tutPrev = function() {
+        if (currentSlide <= 1) return;
+        goingBack = true;
+        goToSlide(currentSlide - 1);
+    };
+
+    function goToSlide(n) {
+        var oldSlide = document.getElementById('tutSlide' + currentSlide);
+        var newSlide = document.getElementById('tutSlide' + n);
+        if (!newSlide) return;
+        if (oldSlide) oldSlide.classList.remove('tut-active', 'tut-going-back');
+        currentSlide = n;
+        newSlide.classList.remove('tut-active', 'tut-going-back');
+        void newSlide.offsetWidth;
+        if (goingBack) newSlide.classList.add('tut-going-back');
+        newSlide.classList.add('tut-active');
+        /* Slayt başına scroll */
+        var wrap = document.querySelector('.tut-slides-wrap');
+        if (wrap) wrap.scrollTop = 0;
+        /* Odağı İleri'ye sıfırla */
+        setDpadFocus(BTN_NEXT, dpadActive);
+        updateUI();
+    }
+
+    /* ── D-Pad Focus yönetimi ── */
+    function setDpadFocus(idx, showFocus) {
+        dpadFocused = idx;
+        var btns = getBtns();
+        btns.forEach(function(b, i) {
+            if (!b) return;
+            b.classList.remove('tut-dpad');
+            if (showFocus && i === idx && !b.disabled && b.style.visibility !== 'hidden') {
+                b.classList.add('tut-dpad');
+            }
+        });
+    }
+
+    /* Kullanılabilir butonlar (disabled veya hidden değil) */
+    function getAvailableBtns() {
+        var btns = getBtns();
+        var available = [];
+        btns.forEach(function(b, i) {
+            if (b && !b.disabled && b.style.visibility !== 'hidden') {
+                available.push(i);
+            }
+        });
+        return available;
+    }
+
+    /* ── UI güncelle ── */
+    function updateUI() {
+        /* Noktalar */
+        var dots = document.querySelectorAll('.tut-dot');
+        dots.forEach(function(d, i) {
+            d.classList.remove('tut-dot-active', 'tut-dot-done');
+            if (i + 1 < currentSlide) d.classList.add('tut-dot-done');
+            else if (i + 1 === currentSlide) d.classList.add('tut-dot-active');
+        });
+        /* Geri butonu */
+        var back = document.getElementById('tutBtnBack');
+        if (back) back.disabled = (currentSlide === 1);
+        /* İleri / Başla butonu */
+        var next = document.getElementById('tutBtnNext');
+        if (next) {
+            next.textContent = (currentSlide >= totalSlides) ? '🚀 BAŞLA!' : 'İleri →';
+        }
+        /* Atla butonu */
+        var skip = document.getElementById('tutBtnSkip');
+        if (skip) skip.style.visibility = (currentSlide >= totalSlides) ? 'hidden' : 'visible';
+    }
+
+    /* ── D-Pad klavye ── */
+    document.addEventListener('keydown', function(e) {
+        var overlay = document.getElementById('tutorialOverlay');
+        if (!overlay || overlay.classList.contains('tut-hidden')) return;
+
+        var kc = e.keyCode;
+
+        /* Sol ok / Geri tuşu → önceki slayt */
+        if (kc === 37 || kc === 8) {
+            e.preventDefault();
+            dpadActive = true;
+            tutPrev();
+            return;
+        }
+
+        /* Sağ ok → sonraki slayt */
+        if (kc === 39) {
+            e.preventDefault();
+            dpadActive = true;
+            tutNext();
+            return;
+        }
+
+        /* Yukarı ok → önceki butona git */
+        if (kc === 38) {
+            e.preventDefault();
+            dpadActive = true;
+            var avail = getAvailableBtns();
+            if (avail.length === 0) return;
+            var pos = avail.indexOf(dpadFocused);
+            var prevPos = (pos <= 0) ? avail.length - 1 : pos - 1;
+            setDpadFocus(avail[prevPos], true);
+            return;
+        }
+
+        /* Aşağı ok → sonraki butona git */
+        if (kc === 40) {
+            e.preventDefault();
+            dpadActive = true;
+            var avail = getAvailableBtns();
+            if (avail.length === 0) return;
+            var pos = avail.indexOf(dpadFocused);
+            var nextPos = (pos < 0 || pos >= avail.length - 1) ? 0 : pos + 1;
+            setDpadFocus(avail[nextPos], true);
+            return;
+        }
+
+        /* OK / Enter / boşluk → odaktaki butona bas */
+        if (kc === 13 || kc === 32 || kc === 415) {
+            e.preventDefault();
+            dpadActive = true;
+            var btns = getBtns();
+            var btn = btns[dpadFocused];
+            if (btn && !btn.disabled && btn.style.visibility !== 'hidden') {
+                /* Görsel flash */
+                btn.style.opacity = '0.65';
+                setTimeout(function() { btn.style.opacity = ''; }, 120);
+                btn.click();
+            }
+            return;
+        }
+
+        /* Escape → kapat */
+        if (kc === 27) {
+            e.preventDefault();
+            tutClose(true);
+            return;
+        }
+
+        /* Bazı TV kumandaların OK keyCode'ları */
+        if (kc === 85 || kc === 179 || kc === 228) {
+            var btns = getBtns();
+            var btn = btns[dpadFocused];
+            if (btn && !btn.disabled) btn.click();
+        }
+    }, true /* capture — login overlay'in key handler'ından önce yakala */);
+
+    /* Fare/dokunuş ile focus iptal */
+    document.addEventListener('mousedown', function() { dpadActive = false; setDpadFocus(BTN_NEXT, false); });
+    document.addEventListener('touchstart', function() { dpadActive = false; setDpadFocus(BTN_NEXT, false); }, { passive: true });
+
+    /* ── Login başarılı → tutorial'ı kapat ve kaydet ── */
+    document.addEventListener('umittv_login_ok', function() {
+        try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}
+        var overlay = document.getElementById('tutorialOverlay');
+        if (overlay) overlay.classList.add('tut-hidden');
+    });
+
+    /* Başlat */
+    tutShow();
+    updateUI();
+
+    /* ── touchmove: global engelleyicileri bypass et ── */
+    /* Uygulama bazı yerlerde touchmove'u document seviyesinde blokluyor.
+       slides-wrap üzerinde stopPropagation ile bunu aşıyoruz. */
+    document.addEventListener('DOMContentLoaded', function() {
+        var wrap = document.querySelector('.tut-slides-wrap');
+        if (!wrap) return;
+        wrap.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        }, { passive: true, capture: false });
+        wrap.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, { passive: true, capture: false });
+    });
+    /* DOMContentLoaded zaten geçtiyse doğrudan çalıştır */
+    if (document.readyState !== 'loading') {
+        var wrap = document.querySelector('.tut-slides-wrap');
+        if (wrap) {
+            wrap.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }, { passive: true, capture: false });
+            wrap.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true, capture: false });
+        }
+    }
+})();
+</script>
+
 <script>
 /* ═══ Modern Login - Progress Dots Güncelleme ═══ */
 (function() {
@@ -13064,7 +13874,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <div class="player-action-group">
                         <button class="player-action-btn" id="btnObjectFit" onclick="toggleObjectFit()" title="Ekran Modu">
                             <span class="material-symbols-outlined">fit_screen</span>
-                            <span class="btn-label">Boyut</span>
+                            <span class="btn-label">Ekran</span>
                         </button>
                         <button class="player-action-btn" id="btnPlayerFav" onclick="toggleFavPlayer()" title="Favorilere Ekle/Kaldır">
                             <span class="material-symbols-outlined" id="favIconPlayer">star_border</span>
@@ -15173,7 +15983,7 @@ document.addEventListener('umittv_login_ok', function() {
 // END Güvenlik Ekleri v2.0
 // ════════════════════════════════════════════════════════════════════════
 
-const CONFIG_URL = 'https://gitlab.com/umitm0d/yayin/-/raw/main/list.json';
+const CONFIG_URL = 'https://www.dropbox.com/scl/fi/k9xreh2yu4ls2o8o6t1n7/list.json?rlkey=y5lacdozy0uzq9kqxz709qj5r&st=p24zt83n&dl=1';
 const TMDB_API_KEY = '778bc93a59f5372fd28e7e9992ff6986';
 const VIDMODIFY_PROXY = 'https://vidmody.com/vs/';
 // ── VİDMODY RESOLVER WORKER ──
@@ -15297,11 +16107,11 @@ const HLS_CONFIG = {
 
     // ── BUFFER: Canlı/VOD dinamik — startHls içinde override edilir ──
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
-    maxBufferLength: 10,                 // 12→10sn: TVBox RAM tasarrufu — canlı için yeterli
-    maxMaxBufferLength: 30,              // 60→30sn: TVBox'ta 60sn buffer RAM'i doldurur, kasma yapar
-    maxBufferSize: 30 * 1024 * 1024,    // 60MB→30MB: TVBox düşük RAM — dolup taşma = UI donması önlenir
-    maxBufferHole: 0.5,                  // 0.8→0.5: çok geniş delik toleransı kare atlamaya yol açar
-    maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
+    maxBufferLength: 8,                  // 10→8sn: daha hızlı ilk kare — 8sn yeterli
+    maxMaxBufferLength: 40,              // 30→40sn: bant genişse buffer büyüsün = donma olmaz
+    maxBufferSize: 60 * 1024 * 1024,    // 30MB→60MB: yüksek kalite segment = daha büyük buffer gerek
+    maxBufferHole: 0.3,                  // 0.5→0.3: delik toleransı azaltıldı = daha akıcı oynatım
+    maxLoadingDelay: 3,                  // 4→3sn: daha hızlı tepki
 
     // ── RETRY: Zayıf internette paketi kaybetme, dene dene ──
     fragLoadingMaxRetry: 6,              // 12→6: çok fazla retry = açılmayan kanalda uzun bekleme
@@ -15316,17 +16126,18 @@ const HLS_CONFIG = {
     nudgeOffset: 0.2,                    // 0.1→0.2: daha belirgin ilerleme — takılı kalan buffer kırılır
     maxFragLookUpTolerance: 0.3,         // 0.5→0.3: segment arama hassasiyeti artar = atlama azalır
 
-    // ── ABR: Yüksek kalitede hızlı başla, kararlı kal ──
-    abrEwmaDefaultEstimate: 5000000,     // 1.5→5Mbps: 1080p için gerçekçi başlangıç tahmini = HD'den başla
-    abrEwmaFastLive: 4,                  // 3→4: ani bant düşüşüne daha sakin tepki = kalite titremesi azalır
-    abrEwmaSlowLive: 12,                 // 9→12: kalite artışı daha ölçülü = istikrar öncelikli
-    abrBandWidthFactor: 0.85,            // 0.70→0.85: mevcut bant genişliğinin %85'i = güvenli yüksek kalite
-    abrBandWidthUpFactor: 0.70,          // 0.50→0.70: kalite artışına daha güvenli yaklaş = donma olmaz
+    // ── ABR: İnternete göre en yüksek kaliteye hızlı ulaş ──
+    abrEwmaDefaultEstimate: 8000000,     // 8Mbps: yüksek başlangıç tahmini → ABR hemen iyi kaliteden başlar
+    abrEwmaFastLive: 3,                  // 3: bant düşüşüne hızlı tepki → donmadan kaliteyi indir
+    abrEwmaSlowLive: 9,                  // 9: bant artınca kaliteyi kararlı şekilde yükselt
+    abrBandWidthFactor: 0.92,            // %92 bant kullan → yüksek kalite + güvenlik payı
+    abrBandWidthUpFactor: 0.85,          // kalite yükseltmede %85 → agresif ama stabil
+    abrEwmaDefaultEstimateMax: 50000000, // Üst sınır yok — fiber/güçlü bağlantıda 4K'ya kadar çık
 
-    startLevel: -1,                      // ABR: otomatik en uygun kalite
+    startLevel: -1,                      // ABR otomatik — ilk ölçüme göre hemen en uygun kaliteyi seç
     autoStartLoad: true,
-    startFragPrefetch: false,            // true→false: ilk segment yüklenmeden prefetch = gecikme kaynağı
-    capLevelToPlayerSize: false,
+    startFragPrefetch: true,             // false→true: oynatmadan önce 1 segment önceden yükle = hızlı başlangıç
+    capLevelToPlayerSize: false,         // Ekran boyutuna göre kısıtlama YOK — her zaman en yüksek istenir
     appendErrorMaxRetry: 15,             // 10→15: VOD'da codec/parse hatalarında daha fazla retry — kare atlama önler
     enableSoftwareAES: true,
 
@@ -16906,10 +17717,10 @@ async function loadEPGData() {
                 };
                 if (!result[channel]) result[channel] = [];
                 result[channel].push(entry);
+                // alias yalnızca key yoksa referans olarak ekle (kopyalamaz — çift kayıt önlenir)
                 const alias = aliases[channel];
-                if (alias && alias !== channel) {
-                    if (!result[alias]) result[alias] = [];
-                    result[alias].push(entry);
+                if (alias && alias !== channel && !result[alias]) {
+                    result[alias] = result[channel];
                 }
             }
             return result;
@@ -17238,6 +18049,7 @@ function processEPGForChannel(channelKey) {
 
     // Sıralanmış program listesini cache'le — her çağrıda sort+parseEPGTime tekrarı önlenir
     if (!state._epgSortCache) state._epgSortCache = Object.create(null);
+    // Cache'i her zaman yenile — dedup için seenStarts her seferinde taze olmalı
     if (!state._epgSortCache[channelKey] || state._epgSortCache[channelKey].length !== programs.length) {
         // Her programın start/stop'unu bir kez parse et, ms olarak sakla
         const withMs = [];
@@ -17257,9 +18069,14 @@ function processEPGForChannel(channelKey) {
     let currentProgram = null;
     let nextProgram = null;
     const allPrograms = [];
+    const seenStarts = new Set(); // çift kayıt önleme
 
     for (let i = 0; i < sortedPrograms.length; i++) {
         const { program, startMs, endMs } = sortedPrograms[i];
+        // Aynı start zamanına sahip program zaten eklendiyse atla
+        const startKey = program.start + '|' + (program.title || '');
+        if (seenStarts.has(startKey)) continue;
+        seenStarts.add(startKey);
         const isNow = trNow >= startMs && trNow < endMs;
 
         allPrograms.push({ program, start: new Date(startMs), end: new Date(endMs), isNow });
@@ -17356,11 +18173,14 @@ function processEPGForChannel(channelKey) {
         // ── 7 GÜNLÜK EPG: aktif gün state ──
         window._epg7ActiveDay = 0; // 0 = bugün
 
+        let _epgLoading = false;
         async function showChannelEpg() {
     if (!state.player.name) {
         showToast("Kanal bilgisi bulunamadı");
         return;
     }
+    if (_epgLoading) return;
+    _epgLoading = true;
     
     
 
@@ -17396,7 +18216,11 @@ function processEPGForChannel(channelKey) {
         try {
             await loadEPGData();
         } catch(e) {
+        } finally {
+            _epgLoading = false;
         }
+    } else {
+        _epgLoading = false;
     }
     
     const epgInfo = getEPGInfo(channelName, channelTvgId);
@@ -17455,41 +18279,23 @@ function processEPGForChannel(channelKey) {
                     // Modal hâlâ açıksa güncelle
                     const _modal = document.getElementById('epgModal');
                     if (_modal && _modal.style.display !== 'none') {
-                        showChannelEpg(channelName, channelTvgId);
+                        _epgLoading = false; // kilidi serbest bırak, yeniden çizim için
+                        showChannelEpg();
                     }
                 }).catch(() => {});
             }).catch(() => {});
         }
 
         html += `
-            <div style="padding:16px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="font-weight:600; color:var(--accent-primary);">Toplam ${epgInfo.totalPrograms} Program</div>
-                    <div style="font-size:12px; color:var(--text-muted);">${new Date().toLocaleDateString('tr-TR')}</div>
-                </div>
-                ${allPast ? `
-                    <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
-                        <div style="font-size:11px; color:#ff6400; font-weight:700;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:3px;animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>EPG YENİLENİYOR</div>
-                        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor, lütfen bekleyin...</div>
-                    </div>
-                ` : epgInfo.current ? `
-                    <div style="background:rgba(0,255,0,0.1); padding:8px; border-radius:6px; border-left:3px solid #00FF00; margin-top:8px;">
-                        <div style="font-size:11px; color:#00FF00;">ŞU AN İZLENİYOR</div>
-                        <div style="font-weight:600; margin-top:4px;">${epgInfo.current.title}</div>
-                        <div style="font-size:12px; color:#00FF00; margin-top:2px;">
-                            ${formatEPGTime(parseEPGTime(epgInfo.current.start))} - ${formatEPGTime(parseEPGTime(epgInfo.current.stop))}
-                        </div>
-                    </div>
-                ` : epgInfo.next ? `
-                    <div style="background:rgba(255,215,0,0.1); padding:8px; border-radius:6px; border-left:3px solid var(--accent-primary); margin-top:8px;">
-                        <div style="font-size:11px; color:var(--accent-primary);">SONRAKI PROGRAM</div>
-                        <div style="font-weight:600; margin-top:4px;">${epgInfo.next.title}</div>
-                        <div style="font-size:12px; color:var(--accent-secondary); margin-top:2px;">
-                            ${formatEPGTime(parseEPGTime(epgInfo.next.start))} - ${formatEPGTime(parseEPGTime(epgInfo.next.stop))}
-                        </div>
-                    </div>
-                ` : ''}
+            <div style="padding:10px 16px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-weight:600; color:var(--accent-primary);">Toplam ${epgInfo.totalPrograms} Program</div>
+                <div style="font-size:12px; color:var(--text-muted);">${new Date().toLocaleDateString('tr-TR')}</div>
             </div>
+            ${allPast ? `
+            <div style="background:rgba(255,100,0,0.15); padding:8px 16px; border-radius:6px; border-left:3px solid #ff6400; margin-bottom:12px;">
+                <div style="font-size:11px; color:#ff6400; font-weight:700;">EPG YENİLENİYOR</div>
+                <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Son program: ${lastProgramDate} — Güncel EPG indiriliyor...</div>
+            </div>` : ''}
         `;
         
         // TÜM programlar
@@ -24372,11 +25178,11 @@ function closeSidebar() {
         try {
             if (state.player.hls && !state.player.hls._destroyed) {
                 if (state.player.isLiveStream) {
-                    state.player.hls.config.maxBufferLength = 10;
-                    state.player.hls.config.maxMaxBufferLength = 30;
+                    state.player.hls.config.maxBufferLength = 8;
+                    state.player.hls.config.maxMaxBufferLength = 40;
                 } else {
                     state.player.hls.config.maxBufferLength = 20;   // 45→20: TVBox VOD kasması önle
-                    state.player.hls.config.maxMaxBufferLength = 45; // 90→45: RAM baskısı azalt
+                    state.player.hls.config.maxMaxBufferLength = 60; // 45→60: yeterli VOD buffer
                 }
             }
         } catch(e) {}
@@ -25810,7 +26616,7 @@ function openPasswordModal(m3uIndex, m3uName) {
         async function _tryFetchCfg(url) {
             try {
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 15000);
+                const t = setTimeout(() => ctrl.abort(), 25000);
                 const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow' }).catch(() => null);
                 clearTimeout(t);
                 return (r && r.ok) ? r : null;
@@ -25818,21 +26624,12 @@ function openPasswordModal(m3uIndex, m3uName) {
         }
         
         let response = null;
-        if (_isFileProto) {
-            // file:// CORS: proxy zinciri dene
+        // Her protokolde önce direkt, sonra proxy zinciri dene
+        response = await _tryFetchCfg(CONFIG_URL);
+        if (!response) {
             for (const _px of _CFGPROXIES) {
                 response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
-                if (response) break;
-            }
-            // Tüm proxy'ler başarısız → direkt dene (bazı browser'lar izin verir)
-            if (!response) response = await _tryFetchCfg(CONFIG_URL);
-        } else {
-            response = await _tryFetchCfg(CONFIG_URL);
-            if (!response) {
-                for (const _px of _CFGPROXIES) {
-                    response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
-                    if (response) break;
-                }
+                if (response) { console.log('Config proxy OK:', _px); break; }
             }
         }
         if (!response) throw new Error('Config fetch başarısız');
@@ -25878,35 +26675,34 @@ function openPasswordModal(m3uIndex, m3uName) {
 }
 
 function showNoConfigUI() {
-    
-    
-
     const grid = document.getElementById('channelsGrid');
     if (grid) {
         grid.innerHTML = `
-            <div style="
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 40px;
-                color: var(--accent-primary);
-                font-size: 16px;
-            ">
-                <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 16px;">
-                    wifi_off
-                </span>
-                <div style="font-weight: bold; margin-bottom: 16px;">Config Yüklenemedi</div>
-                <div style="color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
-                    İnternet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.
-                </div>
-                <button class="settings-btn secondary" onclick="location.reload()" style="margin: 0 auto;">
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--accent-primary);font-size:16px;">
+                <span class="material-symbols-outlined" style="font-size:48px;display:block;margin-bottom:16px;">wifi_off</span>
+                <div style="font-weight:bold;margin-bottom:12px;">Kanal Listesi Yüklenemedi</div>
+                <div style="color:var(--text-muted);margin-bottom:8px;font-size:13px;">İnternet bağlantınızı kontrol edin.</div>
+                <div id="_cfgRetryCountdown" style="color:var(--accent-primary);font-size:13px;margin-bottom:16px;">10 saniye sonra otomatik deneniyor...</div>
+                <button class="settings-btn secondary" onclick="clearConfigCache();loadConfig();" style="margin:0 auto;">
                     <span class="material-symbols-outlined">refresh</span>
-                    Yeniden Dene
+                    Şimdi Dene
                 </button>
             </div>
         `;
     }
-    
-    showToast("Config yüklenemedi!");
+    showToast("Kanal listesi yüklenemedi, yeniden deneniyor...");
+    // Otomatik retry: 10 saniye sonra
+    let _retryCount = 10;
+    const _retryEl = document.getElementById('_cfgRetryCountdown');
+    const _retryTimer = setInterval(() => {
+        _retryCount--;
+        if (_retryEl) _retryEl.textContent = _retryCount + ' saniye sonra otomatik deneniyor...';
+        if (_retryCount <= 0) {
+            clearInterval(_retryTimer);
+            if (typeof clearConfigCache === 'function') clearConfigCache();
+            if (typeof loadConfig === 'function') loadConfig();
+        }
+    }, 1000);
 }
         function processConfig(conf) {
             state.m3uList = conf.m3uList || conf.m3u_list || [];
@@ -26545,7 +27341,19 @@ async function loadRemainingM3UsInBackground(startIndex) {
         try {
             const actualIndex = startIndex + index;
             
-            const response = await fetchWithTimeout(m3uItem.url, 120000);
+            const _M3U_PROXIES3 = [
+                'https://turk.sadecenjoy.workers.dev/proxy?url=',
+                'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
+                'https://api.allorigins.win/raw?url='
+            ];
+            let response = null;
+            try { response = await fetchWithTimeout(m3uItem.url, 90000); } catch(e) {}
+            if (!response || !response.ok) {
+                for (const _px of _M3U_PROXIES3) {
+                    try { response = await fetchWithTimeout(_px + encodeURIComponent(m3uItem.url), 90000); } catch(e) {}
+                    if (response && response.ok) break;
+                }
+            }
             if (!response || !response.ok) {
                 continue;
             }
@@ -26558,6 +27366,7 @@ async function loadRemainingM3UsInBackground(startIndex) {
                     if (fresh.length > 0) state.channels.push(...fresh);
                 });
             } else {
+                // fetchWithTimeout artık Response döndürüyor
                 const text = await response.text().catch(() => null);
                 if (text) channels = (window.parseM3UOptimized || window.parseM3U || parseM3U)(text, actualIndex) || [];
             }
@@ -26765,8 +27574,20 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
                         if (!m3uContent) {
                             
-
-                            const resp = await fetchWithTimeout(m3u.url, 90000).catch(() => null);
+                            // fetchWithTimeout artık Response döndürür — doğrudan kullan
+                            const _M3U_PROXIES = [
+                                'https://turk.sadecenjoy.workers.dev/proxy?url=',
+                                'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
+                                'https://api.allorigins.win/raw?url='
+                            ];
+                            let resp = null;
+                            try { resp = await fetchWithTimeout(m3u.url, 60000); } catch(e) {}
+                            if (!resp || !resp.ok) {
+                                for (const _px of _M3U_PROXIES) {
+                                    try { resp = await fetchWithTimeout(_px + encodeURIComponent(m3u.url), 60000); } catch(e) {}
+                                    if (resp && resp.ok) break;
+                                }
+                            }
                             
                             if (resp && resp.ok) {
                                 let streamedChannels = null;
@@ -26943,7 +27764,19 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
 
                         if (!m3uContent) {
                             try {
-                                const response = await fetchWithTimeout(m3u.url, 120000);
+                                const _M3U_PROXIES2 = [
+                                    'https://turk.sadecenjoy.workers.dev/proxy?url=',
+                                    'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
+                                    'https://api.allorigins.win/raw?url='
+                                ];
+                                let response = null;
+                                try { response = await fetchWithTimeout(m3u.url, 90000); } catch(e) {}
+                                if (!response || !response.ok) {
+                                    for (const _px of _M3U_PROXIES2) {
+                                        try { response = await fetchWithTimeout(_px + encodeURIComponent(m3u.url), 90000); } catch(e) {}
+                                        if (response && response.ok) break;
+                                    }
+                                }
                                 if (response && response.ok) {
                                     if (response.body && typeof response.body.getReader === 'function') {
                                         
@@ -27356,14 +28189,9 @@ async function parseM3UStream(response, listIdx, onBatch) {
 async function fetchAndParseM3U(url, listIdx, timeout, onBatch) {
     const response = await fetchWithTimeout(url, timeout);
     if (!response) return [];
-
-    
-
     if (response.body && typeof response.body.getReader === 'function') {
         return await parseM3UStream(response, listIdx, onBatch);
     }
-    
-
     const text = await response.text().catch(() => '');
     return parseM3U(text, listIdx);
 }
@@ -35037,12 +35865,12 @@ function resumeChannel(startTime) {
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 10;
-            hlsInst.config.maxMaxBufferLength = 30;
+            hlsInst.config.maxBufferLength    = 8;
+            hlsInst.config.maxMaxBufferLength = 40;
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
-            hlsInst.config.maxMaxBufferLength = 45;  // 90→45: RAM baskısı azalt
+            hlsInst.config.maxMaxBufferLength = 60;  // 45→60: yeterli VOD buffer
             hlsInst.config.backBufferLength   = 15; // 30→15: VOD geri sarma için yeterli
         }
 
@@ -41247,7 +42075,6 @@ function tryIframeRedirect(action) {
   async function fetchWithTimeout(url, timeout = 8000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-    
     try {
         const response = await fetch(url, {
             signal: controller.signal,
@@ -41257,17 +42084,12 @@ function tryIframeRedirect(action) {
             }
         });
         clearTimeout(id);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        return await response.text();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Response objesini döndür (stream desteği için)
+        return response;
     } catch (error) {
         clearTimeout(id);
-        if (error.name === 'AbortError') {
-            throw new Error(`Timeout: ${url} yüklenemedi (${timeout}ms)`);
-        }
+        if (error.name === 'AbortError') throw new Error(`Timeout: ${url} (${timeout}ms)`);
         throw error;
     }
 }
@@ -49483,12 +50305,14 @@ document.addEventListener('visibilitychange', function() {
         var hls = st && st.player && st.player.hls;
         if (!hls || hls._destroyed) return;
         if (document.hidden) {
+            // Arka planda buffer küçült — pil ve RAM tasarrufu
             if (st.player.isLiveStream) { hls.config.maxBufferLength = 6; hls.config.maxMaxBufferLength = 12; }
         } else {
+            // Öne gelince yüksek kalite buffer geri yükle
             if (st.player.isLiveStream) {
-                hls.config.maxBufferLength = 10; hls.config.maxMaxBufferLength = 30;
+                hls.config.maxBufferLength = 8; hls.config.maxMaxBufferLength = 60;
             } else {
-                hls.config.maxBufferLength = 20; hls.config.maxMaxBufferLength = 45; // 45/90→20/45 TVBox
+                hls.config.maxBufferLength = 20; hls.config.maxMaxBufferLength = 60;
             }
         }
     } catch(e) {}
@@ -50608,39 +51432,41 @@ var _ready = function(fn) {
     else document.addEventListener('DOMContentLoaded', fn);
 };
 
-/* ── 1. HLS CONFIG OVERRIDE: TVBox için optimize edilmiş buffer ── */
+/* ── 1. HLS CONFIG OVERRIDE: Yüksek kalite + hızlı açılış dengesi ── */
 _ready(function() {
-    // HLS_CONFIG global'i varsa TVBox parametrelerini uygula
+    // HLS_CONFIG global'i varsa optimize edilmiş parametreleri uygula
     if (typeof window.HLS_CONFIG !== 'undefined') {
-        // Düşük başlangıç buffer — hızlı açılış (TVBox RAM kısıtlı)
-        window.HLS_CONFIG.maxBufferLength        = 16;  // 8→16sn: yeterli buffer = donma olmaz
-        window.HLS_CONFIG.maxMaxBufferLength     = 40;  // 30→40sn: TVBox için güvenli üst limit
-        window.HLS_CONFIG.maxBufferSize          = 50 * 1024 * 1024; // 30MB→50MB
+        // Buffer: hızlı başlangıç için küçük tutuldu, bant genişse büyüsün
+        window.HLS_CONFIG.maxBufferLength        = 8;   // 16→8sn: ilk kareyi hızlı al
+        window.HLS_CONFIG.maxMaxBufferLength     = 60;  // 40→60sn: bant varsa buffer dolsun = donma olmaz
+        window.HLS_CONFIG.maxBufferSize          = 80 * 1024 * 1024; // 50MB→80MB: 1080p/4K segment büyük
         window.HLS_CONFIG.backBufferLength       = 0;   // Geri buffer yok — RAM öne
-        window.HLS_CONFIG.maxBufferHole          = 1.0; // delik toleransı
+        window.HLS_CONFIG.maxBufferHole          = 0.3; // 1.0→0.3: daha akıcı oynatım
 
-        // ABR: startLevel=-1 (ABR otomatik) — 0 her seferinde kalite değişimi yapıyor = donma
-        window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik seçsin
-        window.HLS_CONFIG.abrEwmaDefaultEstimate = 3000000; // 3Mbps: gerçekçi TVBox tahmini
-        window.HLS_CONFIG.abrBandWidthFactor     = 0.80; // güvenli bant kullanımı
-        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.65; // kalite artışına temkinli geç
+        // ABR: internet hızına göre otomatik en yüksek kalite
+        window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik — ölçüme göre hemen iyi kalite seçer
+        window.HLS_CONFIG.abrEwmaDefaultEstimate = 8000000; // 3→8Mbps: yüksek başlangıç tahmini
+        window.HLS_CONFIG.abrBandWidthFactor     = 0.92; // %92: agresif ama güvenli yüksek kalite
+        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.85; // kaliteyi hızlı yükselt
+        window.HLS_CONFIG.abrEwmaFastLive        = 3;   // bant düşünce hızlı tepki
+        window.HLS_CONFIG.abrEwmaSlowLive        = 9;   // bant artınca kaliteyi kararlı yükselt
 
-        // Stall recovery — TVBox'ta daha agresif
-        window.HLS_CONFIG.nudgeOffset            = 0.3; // 0.2→0.3: daha güçlü nudge
-        window.HLS_CONFIG.nudgeMaxRetry          = 8;   // 6→8: daha fazla nudge dene
-        window.HLS_CONFIG.maxFragLookUpTolerance = 0.5; // 0.3→0.5: TVBox'ta segement lookup gevşet
+        // Stall recovery
+        window.HLS_CONFIG.nudgeOffset            = 0.3;
+        window.HLS_CONFIG.nudgeMaxRetry          = 8;
+        window.HLS_CONFIG.maxFragLookUpTolerance = 0.3; // 0.5→0.3: daha hassas segment arama
 
-        // Fragment retry — ağ titrediğinde daha sabırlı
-        window.HLS_CONFIG.fragLoadingMaxRetry    = 8;   // 6→8
-        window.HLS_CONFIG.fragLoadingRetryDelay  = 500; // 200→500ms: daha az agresif retry
-        window.HLS_CONFIG.fragLoadingTimeOut     = 30000; // 25→30sn: TVBox ağı yavaş
+        // Fragment retry
+        window.HLS_CONFIG.fragLoadingMaxRetry    = 8;
+        window.HLS_CONFIG.fragLoadingRetryDelay  = 300; // 500→300ms: daha hızlı retry
+        window.HLS_CONFIG.fragLoadingTimeOut     = 25000; // 30→25sn
 
-        // Worker — TVBox'ta bazen worker thread sorun çıkarır
-        window.HLS_CONFIG.enableWorker           = true; // açık kal
+        // Canlı yayın stabilizasyonu
+        window.HLS_CONFIG.liveSyncDurationCount         = 3;  // 4→3: live edge'e daha yakın = daha az gecikme
+        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity;
 
-        // Canlı yayın: seekToLiveEdge agresifliğini azalt
-        window.HLS_CONFIG.liveSyncDurationCount         = 4;  // 3→4: daha stabil live edge
-        window.HLS_CONFIG.liveMaxLatencyDurationCount   = Infinity; // kapalı kalsın
+        // Prefetch — hızlı başlangıç için
+        window.HLS_CONFIG.startFragPrefetch      = true;
     }
 });
 
@@ -50882,18 +51708,17 @@ _ready(function() {
     }, 5 * 60 * 1000);
 });
 
-/* ── 9. HLS startLevel override: canlı yayında düşükten başla ── */
+/* ── 9. HLS startLevel override: ABR her zaman otomatik ── */
 _ready(function() {
-    // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i TVBox için sıfırla
+    // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i sıfırla
     var _origPlay = window.playChannel;
     if (typeof _origPlay !== 'function') return;
 
     window.playChannel = function(channel) {
-        // Canlı yayında: önce düşük kaliteden başla, buffer dolunca ABR yükseltsin
-        if (window.HLS_CONFIG && channel && channel.isLive !== false) {
-            window.HLS_CONFIG.startLevel = 0; // En düşük quality — hızlı açılış
-        } else if (window.HLS_CONFIG) {
-            window.HLS_CONFIG.startLevel = -1; // VOD: ABR otomatik
+        // Hem canlı hem VOD: ABR otomatik kalite seçsin
+        // startLevel=0 (en düşük) yerine -1 (ABR): internet hızı ölçülür, hemen uygun kalite açılır
+        if (window.HLS_CONFIG) {
+            window.HLS_CONFIG.startLevel = -1; // ABR: bant ölçümüne göre en iyi kalite
         }
         return _origPlay.apply(this, arguments);
     };
@@ -53081,5 +53906,318 @@ if (document.readyState === 'loading') {
 window._testAtaturkMemorial = startMemorial;
 window._endAtaturkMemorial  = endMemorial;
 
+})();
+</script>
+
+<!-- ═══ VOD MODAL REDESIGN v7 — TEMA UYUMLU ═══ -->
+<style id="vmR7">
+#vodModal {
+    background: rgba(0,0,0,0.65) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    z-index: 19999 !important;
+    padding: 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+#vodModal[style*="flex"] { display: flex !important; }
+
+#vodModal .vod-modal-content {
+    position: relative !important;
+    width: min(410px, 94vw) !important;
+    max-width: min(410px, 94vw) !important;
+    height: min(82vh, 680px) !important;
+    max-height: min(82vh, 680px) !important;
+    min-height: 300px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+    border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
+    background: linear-gradient(160deg, var(--bg-panel,#0f0f18) 0%, var(--bg-main,#09090f) 100%) !important;
+    box-shadow: 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),.06), 0 40px 100px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05) !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    animation: vmIn7 .25s cubic-bezier(.16,1,.3,1) both !important;
+}
+@keyframes vmIn7 {
+    from{opacity:0;transform:translateY(18px) scale(.97)}
+    to  {opacity:1;transform:translateY(0) scale(1)}
+}
+#vodModal .vod-modal-content::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(var(--accent-primary-rgb,255,215,0),.85) 35%,rgba(var(--accent-primary-rgb,255,215,0),.95) 65%,transparent);
+    border-radius:20px 20px 0 0;z-index:2;pointer-events:none;
+}
+
+#vodModal .vod-modal-header {
+    display:flex !important;align-items:center !important;justify-content:space-between !important;
+    padding:13px 16px 11px !important;flex-shrink:0 !important;
+    border-bottom:1px solid rgba(255,255,255,.06) !important;background:transparent !important;
+}
+#vodModal .vod-modal-title {
+    font-size:11px !important;font-weight:800 !important;
+    color:rgba(var(--accent-primary-rgb,255,215,0),.65) !important;
+    letter-spacing:2.5px !important;text-transform:uppercase !important;
+}
+#vodModal .vod-modal-close {
+    width:32px !important;height:32px !important;border-radius:50% !important;
+    background:rgba(255,255,255,.09) !important;border:1px solid rgba(255,255,255,.13) !important;
+    color:rgba(255,255,255,.75) !important;display:flex !important;
+    align-items:center !important;justify-content:center !important;
+    cursor:pointer !important;flex-shrink:0 !important;
+    transition: transform .15s ease, box-shadow .15s ease !important;
+}
+
+#vodModalBody {
+    flex:1 1 0 !important;min-height:0 !important;
+    display:flex !important;flex-direction:column !important;
+    overflow-y:auto !important;overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;scrollbar-width:none !important;
+}
+#vodModalBody::-webkit-scrollbar{display:none !important}
+
+#vodPosterContainer{flex-shrink:0 !important;width:100% !important;position:relative !important;}
+#vodPosterWrapper{
+    width:100% !important;aspect-ratio:16/9 !important;max-height:160px !important;
+    overflow:hidden !important;border-radius:0 !important;border:none !important;
+    background:#000 !important;position:relative !important;
+}
+#vodPosterWrapper::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(to bottom,transparent 45%,var(--bg-main,#09090f) 100%);
+    pointer-events:none;
+}
+#vodModalPoster,#vodPosterWrapper .vod-poster{
+    width:100% !important;height:100% !important;
+    object-fit:cover !important;object-position:center 25% !important;display:block !important;
+}
+
+#vodPosterContainer .vod-buttons-group{
+    display:flex !important;flex-direction:row !important;gap:8px !important;
+    padding:10px 14px 8px !important;width:100% !important;
+    box-sizing:border-box !important;background:transparent !important;border:none !important;margin:0 !important;
+}
+#vodModalPlayBtn{
+    flex:2 !important;padding:12px 10px !important;border-radius:12px !important;border:none !important;
+    background:var(--accent-primary,#FFD700) !important;color:var(--bg-main,#09090f) !important;
+    font-weight:900 !important;font-size:13px !important;letter-spacing:.8px !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;
+    cursor:pointer !important;box-shadow:0 4px 18px rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
+    margin:0 !important;width:auto !important;
+    transition: transform .15s ease, box-shadow .15s ease !important;
+}
+#vodModalContinueBtn{
+    flex:1 !important;padding:12px 8px !important;border-radius:12px !important;
+    border:1.5px solid rgba(var(--accent-primary-rgb,255,215,0),.5) !important;
+    background:rgba(var(--accent-primary-rgb,255,215,0),.1) !important;
+    color:var(--accent-primary,#FFD700) !important;
+    font-weight:700 !important;font-size:12px !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;gap:5px !important;
+    cursor:pointer !important;margin:0 !important;width:auto !important;
+    transition: transform .15s ease, box-shadow .15s ease !important;
+}
+#vodTrailerStopWrapper{padding:0 14px 6px !important;}
+#vodTrailerStopBtn{width:100% !important;border-radius:12px !important;padding:10px !important;}
+
+#vodInfoContainer{flex-shrink:0 !important;padding:6px 16px 18px !important;overflow:visible !important;min-height:0 !important;}
+#vodInfoScroll{overflow:visible !important;height:auto !important;}
+#vodModalTitle{font-size:19px !important;font-weight:800 !important;color:#fff !important;margin:0 0 8px !important;line-height:1.25 !important;}
+#vodModalMeta{display:flex !important;align-items:center !important;flex-wrap:wrap !important;gap:5px !important;margin-bottom:10px !important;}
+#vodModalMeta .vod-meta-item{
+    background:rgba(255,255,255,.08) !important;border:1px solid rgba(255,255,255,.12) !important;
+    color:rgba(255,255,255,.8) !important;padding:3px 9px !important;border-radius:20px !important;
+    font-size:11px !important;font-weight:600 !important;
+}
+#vodModalMeta .vod-meta-item:first-child{
+    background:rgba(var(--accent-primary-rgb,255,215,0),.13) !important;
+    border-color:rgba(var(--accent-primary-rgb,255,215,0),.3) !important;
+    color:var(--accent-primary,#FFD700) !important;
+}
+#vodModalOverview{
+    font-size:12px !important;color:rgba(255,255,255,.5) !important;line-height:1.6 !important;
+    margin-bottom:14px !important;display:-webkit-box !important;
+    -webkit-line-clamp:4 !important;-webkit-box-orient:vertical !important;overflow:hidden !important;
+}
+
+#vodSeasonsContainer .vod-section-title,
+#vodModalGenresContainer .vod-section-title,
+#vodModalCastContainer .vod-section-title,
+#vodModalDirectorContainer .vod-section-title{
+    font-size:10px !important;font-weight:800 !important;
+    color:rgba(var(--accent-primary-rgb,255,215,0),.6) !important;
+    letter-spacing:2px !important;text-transform:uppercase !important;margin-bottom:8px !important;
+}
+
+#vodSeasonSelector{display:flex !important;flex-wrap:wrap !important;gap:6px !important;margin-bottom:10px !important;padding:0 !important;}
+#vodSeasonSelector .vod-season-btn{
+    padding:6px 14px !important;border-radius:20px !important;
+    border:1.5px solid rgba(255,255,255,.12) !important;background:rgba(255,255,255,.06) !important;
+    color:rgba(255,255,255,.7) !important;font-size:12px !important;font-weight:700 !important;
+    cursor:pointer !important;white-space:nowrap !important;transition:transform .15s ease, box-shadow .15s ease !important;
+}
+#vodSeasonSelector .vod-season-btn.active{
+    background:var(--accent-primary,#FFD700) !important;color:var(--bg-main,#000) !important;
+    border-color:var(--accent-primary,#FFD700) !important;
+}
+
+#vodEpisodesContainer{
+    display:grid !important;grid-template-columns:1fr 1fr !important;gap:7px !important;
+    max-height:260px !important;min-height:50px !important;
+    overflow-y:auto !important;overflow-x:hidden !important;padding:2px 2px 8px !important;
+    scrollbar-width:thin !important;scrollbar-color:rgba(var(--accent-primary-rgb,255,215,0),.3) transparent !important;
+    -webkit-overflow-scrolling:touch !important;
+}
+#vodEpisodesContainer::-webkit-scrollbar{width:3px !important}
+#vodEpisodesContainer::-webkit-scrollbar-thumb{background:rgba(var(--accent-primary-rgb,255,215,0),.3) !important;border-radius:2px !important}
+#vodEpisodesContainer .vod-episode-card{
+    background:rgba(255,255,255,.05) !important;border:1.5px solid rgba(255,255,255,.09) !important;
+    border-radius:12px !important;padding:10px 11px !important;cursor:pointer !important;
+    position:relative !important;overflow:hidden !important;
+    transition: transform .15s ease, box-shadow .15s ease !important;
+    transform-origin: center center !important;
+}
+#vodEpisodesContainer .vod-episode-card .vod-episode-number{
+    font-size:10px !important;font-weight:800 !important;
+    color:rgba(var(--accent-primary-rgb,255,215,0),.75) !important;
+    letter-spacing:.5px !important;margin-bottom:4px !important;
+}
+#vodEpisodesContainer .vod-episode-card .vod-episode-title{
+    font-size:12px !important;font-weight:700 !important;color:rgba(255,255,255,.85) !important;
+    white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
+}
+#vodEpisodesContainer .vod-episode-card .vod-episode-desc{display:none !important}
+
+/* ══ KUMANDA ODAK — scale + glow ══ */
+#vodModalCloseBtn.remote-focused,
+#vodModalCloseBtn.tv-focused {
+    outline: 3px solid var(--accent-primary,#FFD700) !important;
+    outline-offset: 2px !important;
+    transform: scale(1.12) !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.2), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),.45) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),.15) !important;
+}
+#vodModalPlayBtn.remote-focused,
+#vodModalPlayBtn.tv-focused {
+    outline: 3px solid var(--accent-primary,#FFD700) !important;
+    outline-offset: 3px !important;
+    transform: scale(1.012) !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.25), 0 6px 28px rgba(var(--accent-primary-rgb,255,215,0),.55) !important;
+    filter: brightness(1.08) !important;
+}
+#vodModalContinueBtn.remote-focused,
+#vodModalContinueBtn.tv-focused {
+    outline: 3px solid var(--accent-primary,#FFD700) !important;
+    outline-offset: 3px !important;
+    transform: scale(1.012) !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),.2), 0 4px 20px rgba(var(--accent-primary-rgb,255,215,0),.4) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),.18) !important;
+}
+#vodSeasonSelector .vod-season-btn.remote-focused,
+#vodSeasonSelector .vod-season-btn.tv-focused {
+    outline: 3px solid var(--accent-primary,#FFD700) !important;
+    outline-offset: 2px !important;
+    transform: scale(1.012) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),.18) !important;
+    border-color: var(--accent-primary,#FFD700) !important;
+    color: var(--accent-primary,#FFD700) !important;
+    box-shadow: 0 0 14px rgba(var(--accent-primary-rgb,255,215,0),.35) !important;
+}
+#vodEpisodesContainer .vod-episode-card.remote-focused,
+#vodEpisodesContainer .vod-episode-card.tv-focused,
+#vodEpisodesContainer .vod-episode-card.focused {
+    background: rgba(var(--accent-primary-rgb,255,215,0),.14) !important;
+    border-color: var(--accent-primary,#FFD700) !important;
+    outline: none !important;
+    transform: scale(1.012) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),.3), 0 4px 16px rgba(var(--accent-primary-rgb,255,215,0),.25) !important;
+    z-index: 1 !important;
+    position: relative !important;
+}
+#vodEpisodesContainer .vod-episode-card.remote-focused .vod-episode-number,
+#vodEpisodesContainer .vod-episode-card.tv-focused .vod-episode-number {
+    color: var(--accent-primary,#FFD700) !important;
+}
+
+/* Landscape */
+@media (orientation:landscape){
+    #vodModal{padding:8px !important;}
+    #vodModal .vod-modal-content{
+        width:min(370px,88vw) !important;max-width:min(370px,88vw) !important;
+        height:min(96vh,600px) !important;max-height:min(96vh,600px) !important;
+    }
+    #vodPosterWrapper{max-height:105px !important;}
+    #vodModalTitle{font-size:16px !important;}
+    #vodModalOverview{-webkit-line-clamp:2 !important;}
+    #vodEpisodesContainer{max-height:160px !important;}
+    #vodPosterContainer .vod-buttons-group{padding:8px 12px 6px !important;gap:6px !important;}
+    #vodModalPlayBtn{padding:9px 8px !important;font-size:12px !important;}
+    #vodModalContinueBtn{padding:9px 6px !important;font-size:11px !important;}
+}
+</style>
+
+<script>
+(function(){
+'use strict';
+var PC=['width','max-width','height','max-height','min-height','border-radius','overflow','flex-direction','display','box-sizing','padding','background','align-items','border','animation'];
+var PB=['flex-direction','overflow','overflow-y','overflow-x','flex','min-height','max-height','height','display'];
+var PW=['flex','max-height','height','aspect-ratio','border-bottom','border-right','border','border-radius','overflow'];
+var PBT=['flex','width','max-width','padding','font-size','background','border','border-radius','color','display','margin'];
+var PI=['flex','overflow','overflow-y','padding','height','min-height','max-height'];
+function clr(el,ps){if(!el)return;ps.forEach(function(p){try{el.style.removeProperty(p);}catch(e){}});}
+function fix(){
+    var m=document.getElementById('vodModal');
+    if(!m||m.style.display==='none')return;
+    clr(m.querySelector('.vod-modal-content'),PC);
+    clr(document.getElementById('vodModalBody'),PB);
+    clr(document.getElementById('vodPosterWrapper'),PW);
+    clr(document.getElementById('vodPosterContainer'),['flex','width','max-width','border-right','overflow']);
+    clr(document.getElementById('vodInfoContainer'),PI);
+    clr(document.getElementById('vodInfoScroll'),['overflow','height','max-height']);
+    clr(document.getElementById('vodEpisodesContainer'),['max-height','min-height','grid-template-columns','overflow-y','height','display']);
+    ['vodModalPlayBtn','vodModalContinueBtn'].forEach(function(id){clr(document.getElementById(id),PBT);});
+}
+function patchRebuild(){
+    if(typeof _rebuildVodModalElements==='undefined'){setTimeout(patchRebuild,400);return;}
+    window._rebuildVodModalElements=function(){
+        var sIds=['vodModalCloseBtn','vodTrailerBtn','vodContinueBtn','vodModalPlayBtn'];
+        var sEls=sIds.map(function(id){return document.getElementById(id);}).filter(Boolean);
+        var sBtns=Array.from(document.querySelectorAll('#vodSeasonSelector .vod-season-btn'));
+        var eCards=Array.from(document.querySelectorAll('#vodEpisodesContainer .vod-episode-card'));
+        var iScroll=document.getElementById('vodInfoScroll');
+        var els=sEls.concat(sBtns,eCards,iScroll?[iScroll]:[]);
+        if(!window.state)window.state={};
+        if(!window.state.remote)window.state.remote={};
+        window.state.remote.vodModalElements=els;
+        var ti=-1;
+        var cc=eCards.find(function(c){return c.querySelector('.vod-episode-continue');});
+        if(cc)ti=els.indexOf(cc);
+        if(ti<0){var pc=eCards.find(function(c){return c.querySelector('.vod-episode-playing');});if(pc)ti=els.indexOf(pc);}
+        if(ti<0){var ai=els.findIndex(function(el){return el.classList.contains('vod-season-btn')&&el.classList.contains('active');});ti=ai>=0?ai:(eCards.length>0?els.indexOf(eCards[0]):sEls.length);}
+        window.state.remote.vodModalIndex=Math.max(0,ti);
+        window.state.remote.vodEpisodeIndex=0;
+        els.forEach(function(el){
+            el.classList.remove('remote-focused','tv-focused','focused');
+            el.style.outline='';el.style.boxShadow='';el.style.transform='';
+        });
+        var fe=els[window.state.remote.vodModalIndex];
+        if(fe){fe.classList.add('remote-focused','tv-focused');fe.focus({preventScroll:true});setTimeout(function(){try{fe.scrollIntoView({block:'nearest',behavior:'auto'});}catch(e){}},60);}
+    };
+}
+function init(){
+    var m=document.getElementById('vodModal');
+    if(!m){setTimeout(init,300);return;}
+    new MutationObserver(function(muts){
+        muts.forEach(function(mu){
+            if(mu.attributeName==='style'&&m.style.display==='flex'){
+                fix();setTimeout(fix,80);setTimeout(fix,300);setTimeout(fix,700);
+            }
+        });
+    }).observe(m,{attributes:true});
+    window.addEventListener('orientationchange',function(){setTimeout(function(){if(m.style.display==='flex')fix();},300);});
+    window.addEventListener('resize',function(){if(m.style.display==='flex')fix();});
+    patchRebuild();
+}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 })();
 </script>

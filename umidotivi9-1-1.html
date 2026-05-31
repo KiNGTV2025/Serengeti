@@ -11644,11 +11644,8 @@ function getDeviceId() {
 
     
 
-    const fp  = _buildDeviceFingerprint();
-    const rnd = 'r' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-    
-
-    const uid = 'fp_' + fp.slice(3, 11) + rnd;
+    // Saf donanım parmak izi — storage silinse bile aynı ID üretilir
+    const uid = _buildDeviceFingerprint();
     _persistDeviceId(uid);
     return uid;
 }

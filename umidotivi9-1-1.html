@@ -8200,525 +8200,441 @@ body.sidebar-open {
          
    
  
+/* ═══════════════════════════════════════════
+   VOD MODAL — REC TV STYLE v2
+   Full-screen sinematik detay sayfası
+   ═══════════════════════════════════════════ */
+
 .vod-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.95);
+    background: rgba(0,0,0,0.0);
     z-index: 5000;
     display: none;
     justify-content: center;
-    align-items: center;
-    padding: 8px;  
+    align-items: flex-end;
+    padding: 0;
     overflow: hidden;
     box-sizing: border-box;
 }
 
+/* Tam ekran backdrop - sinematik */
 .vod-modal-content {
-    background: var(--bg-panel);
+    background: #0a0a0f;
     width: 100%;
-    max-width: 700px;  
-    max-height: 90vh;  
-    border-radius: 16px;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--accent-primary);
-    margin: 0 auto;
-}
-
- 
-.vod-poster-wrapper {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    max-height: 200px;  
-    border-radius: 0;
-    overflow: hidden;
-    position: relative;
-    background: #000;
-    border-bottom: 2px solid var(--accent-primary);
-    flex-shrink: 0;  
-}
-
- 
-.vod-modal-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;  
-    -webkit-overflow-scrolling: touch;
-}
-
- 
-.vod-info-container {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
- 
-.vod-buttons-group {
-    flex-shrink: 0;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-panel);
-}
-
- 
-@media (min-width: 480px) {
-    .vod-modal {
-        padding: 0;
-        align-items: center;
-    }
-    .vod-modal-content {
-        min-height: unset;
-        max-height: 94vh;
-        width: 96vw;
-        max-width: 960px;
-        border-radius: 16px;
-        border: 2px solid var(--accent-primary);
-    }
-}
-
- 
-.vod-poster-wrapper {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    max-height: 180px;         
-    border-radius: 0;
-    overflow: hidden;
-    position: relative;
-    background: #000;
     border: none;
-    border-bottom: 2px solid var(--accent-primary);
+    margin: 0;
+    position: relative;
 }
 
-@media (min-width: 480px) {
-    .vod-poster-wrapper { max-height: 220px; }  
+/* ── Backdrop büyük poster ── */
+.vod-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+.vod-backdrop-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    opacity: 0.35;
+    filter: blur(2px) saturate(1.3);
+    transform: scale(1.05);
+}
+.vod-backdrop-grad {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10,10,15,0.4) 0%,
+        rgba(10,10,15,0.6) 35%,
+        rgba(10,10,15,0.92) 65%,
+        #0a0a0f 100%
+    );
 }
 
- 
+/* ── Header bar (geri butonu) ── */
+.vod-modal-header {
+    position: relative;
+    z-index: 10;
+    padding: 10px 14px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+/* ── Geri butonu - Netflix/REC TV tarzı ── */
+.vod-modal-close {
+    background: rgba(0,0,0,0.55);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+.vod-modal-close:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.35);
+}
+.vod-modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-primary, #FFD700);
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+/* ── Modal body: scrollable ── */
 .vod-modal-body {
     display: flex;
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 5;
+}
+
+/* ── Hero: poster sol + info sağ ── */
+.vod-hero-section {
+    display: flex;
+    gap: 14px;
+    padding: 12px 14px 0;
+    flex-shrink: 0;
+}
+
+/* Sol thumbnail poster (2:3 ratio, küçük) */
+.vod-poster-container {
+    flex: 0 0 auto;
+    width: 110px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vod-poster-wrapper {
+    width: 110px;
+    aspect-ratio: 2 / 3;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: #1a1a24;
+    border: 2px solid rgba(255,215,0,0.25);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    flex-shrink: 0;
+}
+.vod-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 8px;
+}
+
+/* VOD tür rozeti (FİLM / DİZİ) */
+.vod-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--accent-primary, #FFD700);
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    width: fit-content;
+}
+
+/* Sağ: başlık + meta + özet */
+.vod-info-container {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: visible;
+    padding: 0;
+}
+
+/* Başlık */
+.vod-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 8px 0;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+}
+
+/* Meta satırı: IMDb + yıl + süre + yaş */
+.vod-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+/* IMDb badge: sarı zemin */
+.vod-meta-item {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.vod-meta-item.imdb-badge {
+    background: #f5c518;
+    color: #000;
+    border: none;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+.vod-meta-item.imdb-badge::before {
+    content: 'IMDb ';
+}
+.vod-meta-item.views-badge {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.55);
+    font-size: 11px;
+}
+
+/* Özet metin */
+.vod-overview {
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}
+
+/* ── Butonlar ── */
+.vod-buttons-group {
+    display: flex;
+    gap: 8px;
+    padding: 14px 14px 6px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+.vod-play-btn, .vod-continue-btn, .vod-trailer-btn {
+    flex: 1;
+    padding: 13px 8px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 14px;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+}
+.vod-play-btn {
+    background: var(--accent-primary, #FFD700);
+    color: #000;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.3);
+}
+.vod-continue-btn {
+    background: rgba(255,215,0,0.1);
+    color: var(--accent-primary, #FFD700);
+    border: 1.5px solid rgba(255,215,0,0.4);
+}
+.vod-trailer-btn {
+    background: rgba(220,0,0,0.7);
+    color: #fff;
+    border: 1.5px solid rgba(255,80,80,0.5);
+    flex: 0 0 auto;
+    padding: 13px 16px;
+    border-radius: 10px;
+}
+
+/* ── Info scroll alanı ── */
+.vod-info-scroll {
+    height: auto;
+    overflow-y: visible;
+    outline: none;
+    padding: 0 14px 20px;
+    position: relative;
+    z-index: 5;
+}
+
+/* Bölüm başlıkları */
+.vod-section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 18px 0 10px;
+}
+
+/* Genre pill'lar */
+.vod-genre-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.vod-genre-item, .vod-genre-tag {
+    background: rgba(255,215,0,0.08);
+    color: rgba(255,215,0,0.85);
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(255,215,0,0.25);
+}
+
+/* Oyuncular: yatay scroll */
+.vod-cast-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+.vod-cast-list::-webkit-scrollbar { display: none; }
+.vod-cast-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 64px;
+    flex-shrink: 0;
+}
+
+/* Sezonlar */
+.vod-seasons-container {
+    margin-top: 4px;
+}
+.vod-season-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 2px 0 10px;
+}
+.vod-season-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+    transition: none;
+}
+.vod-season-btn.active {
+    background: var(--accent-primary, #FFD700);
+    color: #000;
+    border-color: var(--accent-primary, #FFD700);
+}
+
+/* Bölüm grid */
+.vod-episodes-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 2px 2px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.vod-episodes-container::-webkit-scrollbar { display: none; }
+
+/* ── Landscape mode ── */
+@media (orientation: landscape) {
+    .vod-hero-section {
+        padding: 8px 14px 0;
+    }
+    .vod-poster-container {
+        width: 90px;
+    }
+    .vod-poster-wrapper {
+        width: 90px;
+    }
+    .vod-title {
+        font-size: 18px !important;
+    }
+    .vod-overview {
+        -webkit-line-clamp: 3;
+    }
+    .vod-buttons-group {
+        padding: 10px 14px 4px;
+    }
+    .vod-play-btn, .vod-continue-btn, .vod-trailer-btn {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    .vod-info-scroll {
+        padding: 0 14px 12px;
+    }
+    .vod-episodes-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+        max-height: 180px !important;
+    }
+}
+
+/* ── Landscape + çok kısa ── */
+@media (orientation: landscape) and (max-height: 500px) {
+    .vod-modal-header { padding: 6px 14px 0; }
+    .vod-hero-section { padding: 6px 14px 0; gap: 10px; }
+    .vod-poster-container { width: 70px; }
+    .vod-poster-wrapper { width: 70px; }
+    .vod-title { font-size: 15px !important; margin-bottom: 5px !important; }
+    .vod-overview { -webkit-line-clamp: 2; font-size: 12px; }
+    .vod-buttons-group { padding: 8px 14px 2px; }
+    .vod-play-btn, .vod-continue-btn { padding: 9px 6px; font-size: 12px; }
+    .vod-info-scroll { padding: 0 14px 8px; }
+    .vod-episodes-container {
+        grid-template-columns: repeat(4, 1fr) !important;
+        max-height: 120px !important;
+    }
 }
         
          
-        @media (orientation: landscape) and (max-height: 500px) {
-            .vod-modal {
-                padding: 2px;
-                align-items: center;
-                overflow: hidden;
-            }
-            .vod-modal-content {
-                min-height: unset;
-                max-height: 98vh;
-                border-radius: 12px;
-                border: 2px solid var(--accent-primary);
-                width: 99vw;
-                max-width: 100%;
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-            }
-            .vod-modal-header {
-                padding: 6px 12px;
-            }
-            .vod-modal-body {
-                flex-direction: column !important;
-                overflow-y: auto;
-                overflow-x: hidden;
-                -webkit-overflow-scrolling: touch;
-                flex: 1;
-                min-height: 0;
-            }
-            .vod-poster-container {
-                flex-shrink: 0;
-                width: 100% !important;
-                max-width: 100%;
-            }
-            .vod-poster-wrapper {
-                width: 100% !important;
-                aspect-ratio: 16/9 !important;
-                max-height: 160px !important;
-                flex: unset !important;
-                border-bottom: 2px solid var(--accent-primary) !important;
-                border-right: none !important;
-            }
-            .vod-poster {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: cover !important;
-                object-position: center top !important;
-            }
-            .vod-buttons-group {
-                padding: 6px 8px !important;
-                flex-direction: row !important;
-                gap: 6px !important;
-            }
-            .vod-play-btn, .vod-continue-btn {
-                flex: 1 !important;
-                padding: 8px 6px !important;
-                font-size: 12px !important;
-            }
-            .vod-info-container {
-                flex-shrink: 0;
-                overflow: visible;
-                padding: 8px 12px 12px;
-                -webkit-overflow-scrolling: touch;
-            }
-            .vod-title {
-                font-size: 15px !important;
-                margin-bottom: 5px !important;
-            }
-            .vod-overview {
-                max-height: 60px !important;
-                font-size: 11px !important;
-                overflow-y: auto !important;
-                margin-bottom: 6px !important;
-            }
-            .vod-meta {
-                margin-bottom: 6px !important;
-                gap: 4px !important;
-            }
-            .vod-meta-item {
-                font-size: 10px !important;
-                padding: 2px 7px !important;
-            }
-            .vod-episodes-container {
-                grid-template-columns: repeat(3, 1fr) !important;
-                max-height: 120px !important;
-            }
-        }
-
-         
-        @media (orientation: landscape) {
-            .vod-modal {
-                padding: 2px;
-                align-items: center;
-                overflow: hidden;
-            }
-            .vod-modal-content {
-                max-height: 98vh;
-                width: min(860px, 99vw);
-                max-width: 860px;
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-            }
-            /* BODY: dikey — poster üstte, scroll altta */
-            .vod-modal-body {
-                flex-direction: column !important;
-                overflow-y: auto;
-                overflow-x: hidden;
-                -webkit-overflow-scrolling: touch;
-                flex: 1;
-                min-height: 0;
-                max-height: calc(98vh - 52px);
-            }
-            .vod-poster-container {
-                flex-shrink: 0;
-                width: 100% !important;
-                max-width: 100%;
-            }
-            .vod-poster-wrapper {
-                width: 100% !important;
-                aspect-ratio: 16 / 9 !important;
-                max-height: 280px !important;
-                flex: unset !important;
-                border-bottom: 2px solid var(--accent-primary) !important;
-                border-right: none !important;
-            }
-            .vod-poster {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: cover !important;
-                object-position: center top !important;
-            }
-            .vod-buttons-group {
-                flex-direction: row !important;
-                flex-wrap: wrap;
-                gap: 8px;
-                padding: 10px 14px !important;
-            }
-            .vod-play-btn, .vod-continue-btn {
-                flex: 1 !important;
-                padding: 12px 8px !important;
-            }
-            .vod-info-container {
-                flex-shrink: 0;
-                overflow: visible;
-                padding: 10px 14px 16px;
-                -webkit-overflow-scrolling: touch;
-            }
-            .vod-title {
-                font-size: 17px !important;
-                margin-bottom: 6px !important;
-            }
-            .vod-overview {
-                font-size: 12px !important;
-                max-height: unset !important;
-                overflow-y: visible !important;
-            }
-            .vod-meta-item {
-                font-size: 11px !important;
-            }
-            .cast-grid {
-                grid-template-columns: repeat(4, 1fr) !important;
-            }
-            .vod-cast-list {
-                gap: 8px !important;
-            }
-            .vod-cast-item {
-                min-width: 60px !important;
-            }
-            .vod-seasons-container {
-                margin-top: 8px !important;
-            }
-            .vod-season-selector {
-                padding: 4px 0 6px !important;
-                margin-bottom: 6px !important;
-                gap: 5px !important;
-            }
-            .vod-season-btn {
-                padding: 5px 12px !important;
-                font-size: 11px !important;
-            }
-            .vod-episodes-container {
-                grid-template-columns: repeat(3, 1fr) !important;
-                max-height: 220px !important;
-                min-height: 60px !important;
-                height: auto !important;
-                overflow-y: auto !important;
-                overflow-x: hidden !important;
-                gap: 6px !important;
-                padding: 2px 2px 6px !important;
-            }
-            .vod-episode-card {
-                padding: 8px 10px !important;
-                border-radius: 10px !important;
-            }
-            .vod-episode-number {
-                font-size: 10px !important;
-                margin-bottom: 3px !important;
-            }
-            .vod-episode-title {
-                font-size: 12px !important;
-            }
-            .vod-episode-desc {
-                display: none !important;
-            }
-        }
-        
-        .vod-modal-header {
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .vod-modal-close {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid var(--border-color);
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .vod-modal-body {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        
-         
-        .vod-poster-container {
-            flex: 0 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 0;
-        }
-        
-        .vod-poster-wrapper {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            max-height: 220px;
-            border-radius: 0;
-            overflow: hidden;
-            position: relative;
-            background: #000;
-            border: none;
-            border-bottom: 2px solid var(--accent-primary);
-        }
-        
-        @media (min-width: 480px) {
-            .vod-poster-wrapper { max-height: 280px; }
-        }
-        
-        .vod-poster {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top center;
-        }
-        
-        .vod-info-container {
-            flex: 1;
-            padding: 12px 16px 16px 16px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .vod-info-scroll {
-            height: auto;
-            overflow-y: visible;
-            outline: none;
-        }
-        
-        .vod-buttons-group {
-            flex-direction: row !important;
-            gap: 8px !important;
-        }
-        .vod-play-btn, .vod-continue-btn {
-            flex: 1;
-            padding: 12px 8px !important;
-            font-size: 14px !important;
-            min-width: 0;
-        }
-        
-        .vod-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 12px;
-            line-height: 1.2;
-        }
-        
-        .vod-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        
-        .vod-meta-item {
-            background: rgba(255,255,255,0.15);
-            padding: 4px 10px;
-            border-radius: 16px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        
-        .vod-overview {
-            font-size: 14px;
-            line-height: 1.5;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-        
-        .vod-section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--accent-primary);
-            margin-bottom: 8px;
-            margin-top: 16px;
-        }
-        
-        .vod-genre-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        
-        .vod-genre-item {
-            background: rgba(255,215,0,0.15);
-            color: var(--accent-primary);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            border: 1px solid var(--accent-primary);
-        }
-        
-        .vod-cast-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        
-        .vod-cast-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            min-width: 70px;
-        }
-        
-        .vod-play-btn, .vod-continue-btn, .vod-trailer-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        .vod-play-btn {
-            background: var(--accent-primary);
-            color: #000;
-        }
-        
-        .vod-continue-btn {
-            background: rgba(255,215,0,0.15);
-            color: var(--accent-primary);
-            border: 1px solid var(--accent-primary);
-        }
-        
-        .vod-trailer-btn {
-            background: rgba(180,0,0,0.55);
-            color: #FFD700;
-            border: 2px solid #ff5555;
-            position: relative;
-            bottom: unset;
-            left: unset;
-            right: unset;
-            z-index: 1;
-            width: 100%;
-            margin-top: 0;
-            border-radius: 0;
-        }
-        
+        /* Old landscape/VOD blocks removed - new CSS in main block above */
         .vod-trailer-close {
             position: absolute;
             top: 12px;
@@ -8734,17 +8650,6 @@ body.sidebar-open {
             cursor: pointer;
             z-index: 3;
             border: 1px solid #fff;
-        }
-        
-         
-        .vod-buttons-group {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-        
-        .vod-buttons-group button {
-            flex: 1;
         }
         
          
@@ -9891,50 +9796,7 @@ body.sidebar-open {
  
  
  
-@media (min-width: 1280px) and (orientation: portrait) {
-    .vod-modal-content {
-        max-width: 550px !important;
-        max-height: 85vh !important;
-    }
-    
-    .vod-poster-wrapper {
-        max-height: 160px !important;
-    }
-    
-    .vod-modal-body {
-        max-height: calc(85vh - 160px) !important;
-    }
-    
-    .vod-title {
-        font-size: 18px !important;
-        margin-bottom: 8px !important;
-    }
-    
-    .vod-overview {
-        font-size: 13px !important;
-        max-height: 80px !important;
-    }
-    
-    .vod-meta-item {
-        font-size: 11px !important;
-        padding: 2px 8px !important;
-    }
-    
-    .vod-play-btn, .vod-continue-btn {
-        padding: 10px !important;
-        font-size: 14px !important;
-    }
-    
-    .vod-episodes-container {
-        max-height: 280px !important;
-        overflow-y: auto !important;
-    }
-    
-    .vod-episode-card {
-        padding: 8px !important;
-        border-radius: 10px !important;
-    }
-}
+/* 1280px portrait: tam ekran tasarımda gerek yok — kaldırıldı */
 </style>
 <style>
 /* ═══ ULTRA-FAST PATCH ═══ */
@@ -11618,6 +11480,16 @@ window.handleLogin = async function() {
     try {
         const res = await apiLogin(currentTelegramId, loginValue);
         if (res.success) {
+            // Nick varsa sakla (worker destekliyorsa), yoksa telegram_id kullan
+            if (res.nick || res.name || res.first_name || res.username) {
+                try {
+                    const _an = res.nick || res.first_name || res.name || res.username;
+                    localStorage.setItem('umittv_tg_nick', _an);
+                } catch(_e) {}
+            } else {
+                // Nick gelmiyorsa ID'yi nick olarak kaydet
+                try { localStorage.setItem('umittv_tg_nick', String(currentTelegramId)); } catch(_e) {}
+            }
             if (res.key_id) window._lastLoginKeyId = res.key_id;
             if (res.lowmode) {
                 try {
@@ -11811,7 +11683,9 @@ function doLogin() {
                      || (newPassInput    && newPassInput.value)
                      || '';
         const device_id = getDeviceId();
-        const authData  = { telegram_id: currentTelegramId, device_id: device_id, ts: Date.now() };
+        let _savedNickForAuth = '';
+        try { _savedNickForAuth = localStorage.getItem('umittv_tg_nick') || ''; } catch(_e) {}
+        const authData  = { telegram_id: currentTelegramId, device_id: device_id, ts: Date.now(), nick: _savedNickForAuth || String(currentTelegramId) };
         
 
         if (window._lastLoginKeyId) {
@@ -12563,63 +12437,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="vod-modal" id="vodModal">
         <div class="vod-modal-content">
-            <div class="vod-modal-header">
-                <div class="vod-modal-title" style="color:var(--accent-primary); font-size:18px; font-weight:600;">Film/Program Bilgisi</div>
-                <button class="vod-modal-close" id="vodModalCloseBtn" onclick="closeVodModal()">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
+
+            <!-- Sinematik backdrop (bulanık büyük poster) -->
+            <div class="vod-backdrop" id="vodBackdrop">
+                <img id="vodBackdropImg" class="vod-backdrop-img" src="" alt="">
+                <div class="vod-backdrop-grad"></div>
             </div>
+
+            <!-- Header: geri butonu -->
+            <div class="vod-modal-header">
+                <button class="vod-modal-close" id="vodModalCloseBtn" onclick="closeVodModal()">
+                    <span class="material-symbols-outlined" style="font-size:20px;">arrow_back</span>
+                </button>
+                <div class="vod-modal-title">Detay</div>
+                <div style="width:38px;"></div>
+            </div>
+
+            <!-- Scrollable body -->
             <div class="vod-modal-body" id="vodModalBody">
-                
-                <div class="vod-poster-container" id="vodPosterContainer">
-                    <div class="vod-poster-wrapper" id="vodPosterWrapper">
-                        <img loading="lazy" id="vodModalPoster" class="vod-poster" src="" alt="Poster">
+
+                <!-- Hero: küçük poster sol + bilgi sağ -->
+                <div class="vod-hero-section">
+                    <!-- Sol: 2:3 poster -->
+                    <div class="vod-poster-container" id="vodPosterContainer">
+                        <div class="vod-poster-wrapper" id="vodPosterWrapper">
+                            <img loading="lazy" id="vodModalPoster" class="vod-poster" src="" alt="Poster">
+                        </div>
+                        <!-- Fragman durdur butonu (trailer aktifken) -->
+                        <div id="vodTrailerStopWrapper" style="display:none; margin-top:8px;">
+                            <button id="vodTrailerStopBtn" onclick="closeTrailer()"
+                                    style="width:100%; background:rgba(200,30,30,0.85); color:#fff; border:1.5px solid rgba(255,100,100,0.5); border-radius:8px; padding:9px 0; font-size:12px; font-weight:700; font-family:'Rajdhani',sans-serif; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
+                                <span class="material-symbols-outlined" style="font-size:16px;">stop_circle</span>
+                                DURDUR
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div id="vodTrailerStopWrapper" style="display:none; padding:6px 12px 0 12px; width:100%; box-sizing:border-box;">
-                        <button id="vodTrailerStopBtn" onclick="closeTrailer()"
-                                style="width:100%; background:rgba(200,30,30,0.9); color:#fff; border:2px solid rgba(255,100,100,0.5); border-radius:12px; padding:11px 0; font-size:15px; font-weight:700; font-family:Rajdhani,sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; letter-spacing:0.5px;">
-                            <span class="material-symbols-outlined" style="font-size:20px;">stop_circle</span>
-                            FRAGMANI DURDUR
-                        </button>
-                    </div>
-                    <div class="vod-buttons-group" style="padding:10px 12px 0 12px; width:100%; box-sizing:border-box;">
-                        <button class="vod-play-btn" id="vodModalPlayBtn" onclick="playVodFromModal()">
-                            <span class="material-symbols-outlined">play_arrow</span>
-                            OYNAT
-                        </button>
-                        <button class="vod-continue-btn" id="vodModalContinueBtn" onclick="continueVodFromModal()" style="display:none;">
-                            <span class="material-symbols-outlined">play_circle</span>
-                            DEVAM
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="vod-info-container" id="vodInfoContainer">
-                    <div class="vod-info-scroll" id="vodInfoScroll" tabindex="0">
+
+                    <!-- Sağ: başlık + meta -->
+                    <div class="vod-info-container" id="vodInfoContainer">
                         <h1 class="vod-title" id="vodModalTitle"></h1>
                         <div class="vod-meta" id="vodModalMeta"></div>
-                        <div class="vod-overview" id="vodModalOverview"></div>
-                        <div class="vod-seasons-container" id="vodSeasonsContainer" style="display: none;">
-                            <div class="vod-section-title">Sezonlar ve Bölümler</div>
-                            <div class="vod-season-selector" id="vodSeasonSelector"></div>
-                            <div class="vod-episodes-container" id="vodEpisodesContainer"></div>
-                        </div>
-                        <div class="vod-genres" id="vodModalGenresContainer" style="display:none;">
-                            <div class="vod-section-title">Türler</div>
-                            <div class="vod-genre-list" id="vodModalGenres"></div>
-                        </div>
-                        <div class="vod-cast" id="vodModalCastContainer" style="display:none;">
-                            <div class="vod-section-title">Oyuncular</div>
-                            <div class="vod-cast-list" id="vodModalCast"></div>
-                        </div>
-                        <div class="vod-cast" id="vodModalDirectorContainer" style="display:none;">
-                            <div class="vod-section-title">Yönetmen</div>
-                            <div class="vod-cast-list" id="vodModalDirector"></div>
-                        </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Butonlar: OYNAT / DEVAM / FRAGMAN -->
+                <div class="vod-buttons-group" style="padding:12px 14px 6px; flex-shrink:0;">
+                    <button class="vod-play-btn" id="vodModalPlayBtn" onclick="playVodFromModal()">
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        OYNAT
+                    </button>
+                    <button class="vod-continue-btn" id="vodModalContinueBtn" onclick="continueVodFromModal()" style="display:none;">
+                        <span class="material-symbols-outlined">play_circle</span>
+                        DEVAM
+                    </button>
+                </div>
+
+                <!-- İçerik scroll alanı: özet + sezonlar / türler / oyuncular -->
+                <div class="vod-info-scroll" id="vodInfoScroll" tabindex="0">
+                    <!-- Özet bloğu -->
+                    <div id="vodOverviewBlock" style="padding:10px 0 6px;">
+                        <div class="vod-section-title" style="margin-bottom:6px;">📝 Özet</div>
+                        <div id="vodModalOverview" style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.7);font-family:'Rajdhani',sans-serif;"></div>
+                    </div>
+                    <div class="vod-seasons-container" id="vodSeasonsContainer" style="display: none;">
+                        <div class="vod-section-title">Sezonlar ve Bölümler</div>
+                        <div class="vod-season-selector" id="vodSeasonSelector"></div>
+                        <div class="vod-episodes-container" id="vodEpisodesContainer"></div>
+                    </div>
+                    <div class="vod-genres" id="vodModalGenresContainer" style="display:none;">
+                        <div class="vod-section-title">Türler</div>
+                        <div class="vod-genre-list" id="vodModalGenres"></div>
+                    </div>
+                    <div class="vod-cast" id="vodModalCastContainer" style="display:none;">
+                        <div class="vod-section-title">Oyuncular</div>
+                        <div class="vod-cast-list" id="vodModalCast"></div>
+                    </div>
+                    <div class="vod-cast" id="vodModalDirectorContainer" style="display:none;">
+                        <div class="vod-section-title">Yönetmen</div>
+                        <div class="vod-cast-list" id="vodModalDirector"></div>
+                    </div>
+
+                    <!-- ── KULLANICI YORUMLARI ── -->
+                    <div id="vodReviewsSection" style="display:none; padding:14px 0 6px;">
+                        <div class="vod-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+                            <span>💬 Yorumlar</span>
+                            <span id="vodReviewCount" style="font-size:11px;color:rgba(255,215,0,0.6);font-weight:600;"></span>
+                        </div>
+                        <div id="vodReviewForm" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px;margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                                <span style="font-size:11px;color:rgba(255,255,255,0.5);font-family:'Rajdhani',sans-serif;font-weight:600;">PUANINIZ:</span>
+                                <div id="vodStarPicker" style="display:flex;gap:3px;">
+                                    <span class="vod-review-star" onclick="vodPickStar(1)" style="font-size:22px;cursor:pointer;color:rgba(255,255,255,0.2);transition:color 0.15s;">★</span>
+                                    <span class="vod-review-star" onclick="vodPickStar(2)" style="font-size:22px;cursor:pointer;color:rgba(255,255,255,0.2);transition:color 0.15s;">★</span>
+                                    <span class="vod-review-star" onclick="vodPickStar(3)" style="font-size:22px;cursor:pointer;color:rgba(255,255,255,0.2);transition:color 0.15s;">★</span>
+                                    <span class="vod-review-star" onclick="vodPickStar(4)" style="font-size:22px;cursor:pointer;color:rgba(255,255,255,0.2);transition:color 0.15s;">★</span>
+                                    <span class="vod-review-star" onclick="vodPickStar(5)" style="font-size:22px;cursor:pointer;color:rgba(255,255,255,0.2);transition:color 0.15s;">★</span>
+                                </div>
+                                <span id="vodStarLabel" style="font-size:11px;color:rgba(255,215,0,0.5);margin-left:4px;font-family:'Rajdhani',sans-serif;"></span>
+                            </div>
+                            <textarea id="vodReviewInput" placeholder="Yorumunuzu yazin..." maxlength="500"
+                                style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;color:#fff;font-size:13px;font-family:'Rajdhani',sans-serif;resize:none;height:72px;box-sizing:border-box;outline:none;line-height:1.4;"
+                                onfocus="this.style.borderColor='rgba(255,215,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                                <span id="vodReviewUser" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;"></span>
+                                <button onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gonder</button>
+                            </div>
+                        </div>
+                        <div id="vodReviewsList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;scrollbar-width:none;padding-right:2px;"></div>
+                        <div id="vodReviewsEmpty" style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:16px 0;display:none;">Henuz yorum yok. Ilk yorumu sen yap! 🎬</div>
+                    </div>
+
+                </div>
+
+            </div><!-- /vod-modal-body -->
         </div>
     </div>
 
@@ -13473,6 +13403,16 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             </button>
             <button class="settings-btn secondary" id="btnImportSort" onclick="importSortBackup()">
                 <span class="material-symbols-outlined">restore</span> Yedeği Geri Yükle
+            </button>
+            <!-- Tam ekran butonu gizle/göster toggle -->
+            <button class="settings-btn secondary" id="btnToggleFullscreenBtn"
+                onclick="toggleFsBtnVisibility()"
+                style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:8px;">
+                    <span class="material-symbols-outlined">fullscreen</span>
+                    Tam Ekran Butonu
+                </span>
+                <span id="fsBtnToggleLabel" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba(255,215,0,0.15);color:#FFD700;">AÇ</span>
             </button>
             <button class="modal-back-btn" tabindex="0" id="btnSettingsBack" onclick="closeSettingsModal()">
                 <span class="material-symbols-outlined">arrow_back</span> Geri
@@ -19861,13 +19801,16 @@ listSeriesChannels();
         const __posterSrc = _fbLogo || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
         const modal = document.getElementById('vodModal');
         const posterWrapper = document.getElementById('vodPosterWrapper');
+        // Backdrop güncelle
+        const __bdImg = document.getElementById('vodBackdropImg');
+        if (__bdImg) __bdImg.src = __posterSrc;
         if (posterWrapper) {
             posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${__posterSrc}" alt="${channelName}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+'">`;
         }
         if (document.getElementById('vodModalTitle')) document.getElementById('vodModalTitle').textContent = channelName;
         if (document.getElementById('vodModalMeta')) document.getElementById('vodModalMeta').innerHTML = `<div class="vod-meta-item">${new Date().getFullYear()}</div>`;
         const _ovEl = document.getElementById('vodModalOverview');
-        if (_ovEl) _ovEl.textContent = 'Bu film/program için bilgi bulunamadı.';
+        if (_ovEl) _ovEl.textContent = '';
         const _gcEl = document.getElementById('vodModalGenresContainer');
         const _ccEl = document.getElementById('vodModalCastContainer');
         const _dcEl = document.getElementById('vodModalDirectorContainer');
@@ -19897,9 +19840,16 @@ listSeriesChannels();
         : (vodInfo.poster || '');
     const posterSrc = backdropSrc || vodInfo.poster || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
 
+    // Backdrop güncelle (sinematik arka plan)
+    const _bdImgEl = document.getElementById('vodBackdropImg');
+    if (_bdImgEl) _bdImgEl.src = backdropSrc || vodInfo.poster || posterSrc;
+
+    // Poster: 2:3 oranı için sadece dikey poster kullan, backdrop değil
+    const _thumbSrc = vodInfo.poster || backdropSrc || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
+
     posterWrapper.innerHTML = `
         <img loading="lazy" id="vodModalPoster" class="vod-poster"
-             src="${posterSrc}"
+             src="${_thumbSrc}"
              alt="${vodInfo.title || channelName}"
              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+'">
     `;
@@ -20001,15 +19951,23 @@ listSeriesChannels();
     if (vodInfo.cast && vodInfo.cast.length > 0) {
         if (_cc) _cc.style.display = 'block';
         const _cg = document.getElementById('vodModalCast');
-        if (_cg) _cg.innerHTML = vodInfo.cast.map(actor => 
+        if (_cg) _cg.innerHTML = vodInfo.cast.map(actor =>
             actor.image ? `
-                <div class="vod-cast-item" style="display:flex; flex-direction:column; align-items:center; text-align:center; min-width:70px;">
-                    <img loading="lazy" src="${actor.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; margin-bottom:4px; border:1px solid var(--accent-primary);">
-                    <div style="font-size:10px; font-weight:600;">${actor.name}</div>
-                    <div style="font-size:9px; color:var(--text-muted);">${actor.character || 'Oyuncu'}</div>
+                <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                    <img loading="lazy" src="${actor.image}"
+                         style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin-bottom:4px;border:1.5px solid rgba(255,215,0,0.4);"
+                         onerror="this.style.display='none'">
+                    <div style="font-size:10px;font-weight:700;color:#fff;line-height:1.2;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.name}</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.45);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.character || 'Oyuncu'}</div>
                 </div>
             ` : `
-                <div class="vod-cast-item">${actor.name}</div>
+                <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                    <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,215,0,0.2);margin-bottom:4px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.3);">person</span>
+                    </div>
+                    <div style="font-size:10px;font-weight:700;color:#fff;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.name}</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.45);">${actor.character || 'Oyuncu'}</div>
+                </div>
             `
         ).join('');
     } else {
@@ -20019,9 +19977,22 @@ listSeriesChannels();
     if (vodInfo.director) {
         if (_dc) _dc.style.display = 'block';
         const _dg = document.getElementById('vodModalDirector');
-        if (_dg) _dg.innerHTML = `<div class="vod-cast-item">${vodInfo.director}</div>`;
+        if (_dg) _dg.innerHTML = `
+            <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,215,0,0.08);border:1.5px solid rgba(255,215,0,0.3);margin-bottom:4px;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,215,0,0.7);">movie</span>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:#fff;">${vodInfo.director}</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.45);">Yönetmen</div>
+            </div>
+        `;
     } else {
         if (_dc) _dc.style.display = 'none';
+    }
+
+    // ── YORUMLAR BÖLÜMÜNÜ AÇ ──
+    if (typeof window.vodOpenReviews === 'function') {
+        window.vodOpenReviews(vodInfo.title || channelName);
     }
     
     const continueData = state.continueWatching[channelName];
@@ -20069,7 +20040,8 @@ listSeriesChannels();
         // Temiz dizi adı hesapla (group-title varsa o, yoksa kanal adından suffix'leri çıkar)
         let _seriesKey = channelName;
         if (_chForSeries && _chForSeries.group && _chForSeries.group.length > 3) {
-            _seriesKey = _chForSeries.group;
+            // group adından da TR:/EN: gibi prefix'leri temizle
+            _seriesKey = _chForSeries.group.replace(/^[A-Z]{2,4}:\s*/i, '').trim();
         } else {
             _seriesKey = channelName
                 .replace(/^TR:\s*/i, '')
@@ -20239,6 +20211,11 @@ function closeEpDescDialog() {
     var _vsc=document.getElementById('vodSeasonsContainer'); if(_vsc) _vsc.style.display='none';
     document.getElementById('vodSeasonSelector').innerHTML = '';
     document.getElementById('vodEpisodesContainer').innerHTML = '';
+
+    // Yorumlar bölümünü gizle
+    var _vrs = document.getElementById('vodReviewsSection'); if (_vrs) _vrs.style.display = 'none';
+    var _vrl = document.getElementById('vodReviewsList'); if (_vrl) _vrl.innerHTML = '';
+    var _vri = document.getElementById('vodReviewInput'); if (_vri) _vri.value = '';
     
     if (state.remote.active && state.remote.zone === 'vodModal') {
         state.remote.zone = 'channels';
@@ -20266,6 +20243,12 @@ async function fetchSeriesInfo(seriesName) {
             catch(e) { clearTimeout(t); return null; }
         };
 
+        // Türk dizisi mi kontrolü
+        const _snLow = seriesName.toLowerCase();
+        const _hasTurkishChars = /[ığüşöçİĞÜŞÖÇ]/.test(seriesName);
+        const _turkishKws = ['çirkin','cirkin','cırkin','türk','turk','yerli','sevdiğim','kral kaybederse','çarpıntı','çarpinti'];
+        const _isTR = _hasTurkishChars || _turkishKws.some(kw => _snLow.includes(kw));
+
         // TMDB API ile dizi arama
         const searchData = await _sf(
             `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(seriesName)}&language=tr-TR`
@@ -20275,11 +20258,19 @@ async function fetchSeriesInfo(seriesName) {
             return null;
         }
         
-        const seriesId = searchData.results[0].id;
+        // Türk dizisi ise TR menşeli sonucu tercih et
+        let _bestResult = searchData.results[0];
+        if (_isTR) {
+            const _trResult = searchData.results.find(r =>
+                r.original_language === 'tr' || r.origin_country?.includes('TR')
+            );
+            if (_trResult) _bestResult = _trResult;
+        }
+        const seriesId = _bestResult.id;
         
         // Dizi detaylarını al
         const seriesData = await _sf(
-            `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos,images`
+            `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos,images,credits`
         );
         if (!seriesData) return null;
         
@@ -20317,14 +20308,23 @@ async function fetchSeriesInfo(seriesName) {
         // state.channels içinde bu diziye ait tüm bölümleri bul
         const allChannels = (window.state && window.state.channels) ? window.state.channels : [];
         // Dizi adıyla eşleşen VOD kanallarını topla
-        const relatedChs = allChannels.filter(c =>
-            c && !c.isLive && c.url && c.name && (
-                c.name === seriesName ||
-                c.name.startsWith(seriesName) ||
-                (c.group && c.group === seriesName) ||
-                c.name.toLowerCase().includes(seriesName.toLowerCase().slice(0, Math.min(seriesName.length, 10)))
-            )
-        );
+        // "TR: Çirkin 1. Bölüm" gibi prefix'li formatları da yakala
+        const _snLower = seriesName.toLowerCase();
+        const _snShort = _snLower.slice(0, Math.min(seriesName.length, 10));
+        const relatedChs = allChannels.filter(c => {
+            if (!c || c.isLive || !c.url || !c.name) return false;
+            const _cname = c.name;
+            const _clow  = _cname.toLowerCase();
+            if (_cname === seriesName) return true;
+            if (_cname.startsWith(seriesName)) return true;
+            if (c.group && c.group === seriesName) return true;
+            // "TR: Çirkin ..." → "çirkin" eşleşmesi
+            if (_clow.includes(_snShort)) return true;
+            // "TR: DiziAdı ..." → prefix'i soy ve karşılaştır
+            const _stripped = _cname.replace(/^[A-Z]{2,4}:\s*/i, '').toLowerCase();
+            if (_stripped.startsWith(_snLower) || _stripped.includes(_snShort)) return true;
+            return false;
+        });
 
         if (relatedChs.length > 0) {
             // Her sezon/bölüm için M3U kanalı bul
@@ -20354,6 +20354,8 @@ async function fetchSeriesInfo(seriesName) {
                                 new RegExp(`\\b0*${en}\\.\\s*Bölüm\\b`, 'i').test(n) ||
                                 new RegExp(`\\b0*${en}\\.\\s*Bolum\\b`, 'i').test(n) ||
                                 new RegExp(`Bölüm\\s+0*${en}\\b`, 'i').test(n) ||
+                                new RegExp(`\\s+0*${en}\\s*Bölüm\\b`, 'i').test(n) ||
+                                new RegExp(`\\s+0*${en}\\s*Bolum\\b`, 'i').test(n) ||
                                 new RegExp(`\\b${en}$`).test(n.trim())
                             ))
                         );
@@ -20373,6 +20375,21 @@ async function fetchSeriesInfo(seriesName) {
                 || seriesData.videos.results.find(v => v.site === 'YouTube');
             if (_tv) _trailerKey = _tv.key;
         }
+        // Oyuncular (credits)
+        let _castArr = [];
+        if (seriesData.credits && seriesData.credits.cast) {
+            _castArr = seriesData.credits.cast.slice(0, 12).map(c => ({
+                name: c.name,
+                character: c.character || '',
+                image: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : null
+            }));
+        }
+        // Yönetmen
+        let _directorName = null;
+        if (seriesData.credits && seriesData.credits.crew) {
+            const _dir = seriesData.credits.crew.find(c => c.job === 'Director' || c.department === 'Directing');
+            if (_dir) _directorName = _dir.name;
+        }
         // Toplam bölüm sayısı
         const _totalEps = seriesData.number_of_episodes || Object.values(seasons).reduce((a, s) => a + (s ? s.length : 0), 0);
         state.series.seriesCache[seriesName] = {
@@ -20387,6 +20404,8 @@ async function fetchSeriesInfo(seriesName) {
             totalSeasons: totalSeasons,
             totalEpisodes: _totalEps,
             trailer: _trailerKey,
+            cast: _castArr,
+            director: _directorName,
             _tmdbFetched: true,
             seasons: seasons,
             genres: seriesData.genres ? seriesData.genres.map(g => g.name) : []
@@ -20490,9 +20509,23 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
         const isWatched = state.series.watchedEpisodes && !!state.series.watchedEpisodes[watchKey];
 
         let displayTitle = episode.title || `Bölüm ${episode.episode}`;
-        if (displayTitle.startsWith(seriesName)) {
-            displayTitle = displayTitle.replace(seriesName, '').replace(/^[\s\-]+/, '').trim();
+        // "TR: Çirkin 1. Bölüm" → "1. Bölüm" veya dizi adıyla başlayan başlıkları temizle
+        const _stripPrefixes = [
+            seriesName,
+            'TR: ' + seriesName,
+            'EN: ' + seriesName,
+        ];
+        for (const _pfx of _stripPrefixes) {
+            if (displayTitle.startsWith(_pfx)) {
+                displayTitle = displayTitle.slice(_pfx.length).replace(/^[\s\-:]+/, '').trim();
+                break;
+            }
         }
+        // Hâlâ "TR:" ile başlıyorsa (başka format) genel temizle
+        if (/^[A-Z]{2,4}:\s*/i.test(displayTitle)) {
+            displayTitle = displayTitle.replace(/^[A-Z]{2,4}:\s*/i, '').trim();
+        }
+        if (!displayTitle) displayTitle = `Bölüm ${episode.episode}`;
         const safeTitle = displayTitle || `Bölüm ${episode.episode}`;
         const safeDesc = (episode.description || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         const safeUrl = (episode.url || '').replace(/'/g, '&#39;');
@@ -20878,6 +20911,115 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
             break;
     }
 });
+
+// ── VOD Yorum Formu D-Pad Navigasyon ──
+// Yıldız seçimi, textarea, Gönder butonu için kumanda desteği
+(function() {
+    var _reviewZone = 'stars'; // 'stars' | 'textarea' | 'submit'
+    var _tempStars = 0;
+
+    function reviewDpadVisible() {
+        var s = document.getElementById('vodReviewsSection');
+        return s && s.style.display !== 'none';
+    }
+
+    function highlightReviewZone(zone) {
+        _reviewZone = zone;
+        var stars = document.getElementById('vodStarPicker');
+        var textarea = document.getElementById('vodReviewInput');
+        var btn = document.querySelector('[onclick="vodSubmitReview()"]');
+
+        if (stars) stars.style.outline = zone === 'stars' ? '2px solid #FFD700' : 'none';
+        if (textarea) {
+            textarea.style.borderColor = zone === 'textarea' ? '#FFD700' : 'rgba(255,255,255,0.1)';
+            textarea.style.outline = zone === 'textarea' ? '2px solid rgba(255,215,0,0.4)' : 'none';
+        }
+        if (btn) {
+            btn.style.transform = zone === 'submit' ? 'scale(1.08)' : '';
+            btn.style.boxShadow = zone === 'submit' ? '0 0 14px rgba(255,215,0,0.5)' : '';
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        var modal = document.getElementById('vodModal');
+        if (!modal || modal.style.display !== 'flex') return;
+        if (!reviewDpadVisible()) return;
+
+        // Textarea aktifken sadece Escape çıksın, diğerleri yazıya gitsin
+        var activeEl = document.activeElement;
+        var inTextarea = activeEl && activeEl.id === 'vodReviewInput';
+        if (inTextarea && e.key !== 'Escape') return;
+
+        switch(e.key) {
+            case 'ArrowDown':
+                e.stopPropagation();
+                e.preventDefault();
+                if (_reviewZone === 'stars') highlightReviewZone('textarea');
+                else if (_reviewZone === 'textarea') highlightReviewZone('submit');
+                break;
+            case 'ArrowUp':
+                e.stopPropagation();
+                e.preventDefault();
+                if (_reviewZone === 'submit') highlightReviewZone('textarea');
+                else if (_reviewZone === 'textarea') highlightReviewZone('stars');
+                break;
+            case 'ArrowLeft':
+                if (_reviewZone === 'stars') {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    _tempStars = Math.max(0, (window._vrMyStarsLocal || 0) - 1);
+                    window._vrMyStarsLocal = _tempStars;
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(_tempStars);
+                }
+                break;
+            case 'ArrowRight':
+                if (_reviewZone === 'stars') {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    _tempStars = Math.min(5, (window._vrMyStarsLocal || 0) + 1);
+                    window._vrMyStarsLocal = _tempStars;
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(_tempStars);
+                }
+                break;
+            case 'Enter':
+            case 'OK':
+                if (_reviewZone === 'submit') {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (typeof window.vodSubmitReview === 'function') window.vodSubmitReview();
+                } else if (_reviewZone === 'textarea') {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    var ta = document.getElementById('vodReviewInput');
+                    if (ta) ta.focus();
+                } else if (_reviewZone === 'stars') {
+                    // Enter = yıldızı onayla, textarea'ya geç
+                    e.stopPropagation();
+                    e.preventDefault();
+                    highlightReviewZone('textarea');
+                }
+                break;
+            case 'Escape':
+                if (inTextarea) {
+                    e.preventDefault();
+                    var ta2 = document.getElementById('vodReviewInput');
+                    if (ta2) ta2.blur();
+                    highlightReviewZone('submit');
+                }
+                break;
+        }
+    }, true); // capture=true: vodModal handler'dan önce yakala
+
+    // Yorum bölümü açıldığında zone'u sıfırla
+    var origOpen = window.vodOpenReviews;
+    window.vodOpenReviews = async function(t) {
+        _reviewZone = 'stars';
+        window._vrMyStarsLocal = 0;
+        if (typeof origOpen === 'function') await origOpen(t);
+        setTimeout(function() { highlightReviewZone('stars'); }, 200);
+    };
+})();
+
     // Player'a özel tuş kontrolleri
     document.addEventListener('keydown', (e) => {
         if (!state.player.isPlaying || !state.series.currentSeries) return;
@@ -21710,7 +21852,9 @@ function closeTrailer() {
         const _tKey = _seriesData.trailer;
         const _tTitle = _seriesData.title || channelName;
         posterWrapper.style.position = 'relative';
-        posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${_bdSrc}" alt="${channelName}" onerror="this.src='${BLANK}'">`;
+        posterWrapper.innerHTML = `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${_seriesData.poster||_bdSrc}" alt="${channelName}" onerror="this.src='${BLANK}'">`;
+        // Backdrop güncelle
+        const _bd1 = document.getElementById('vodBackdropImg'); if(_bd1) _bd1.src = _bdSrc;
         if (_tKey) {
             const _ovEl = document.createElement('div');
             _ovEl.className = 'trailer-play-overlay';
@@ -21736,8 +21880,10 @@ function closeTrailer() {
     } else if (vodInfo) {
         // FİLM — eski mantık
         const posterUrl = vodInfo.backdrop || vodInfo.poster || BLANK;
+        // Backdrop güncelle
+        const _bd2 = document.getElementById('vodBackdropImg'); if(_bd2) _bd2.src = posterUrl;
         posterWrapper.innerHTML = `
-            <img loading="lazy" id="vodModalPoster" class="vod-poster" src="${posterUrl}" 
+            <img loading="lazy" id="vodModalPoster" class="vod-poster" src="${vodInfo.poster||posterUrl}" 
                  alt="${vodInfo.title||channelName}" style="width:100%; height:100%; object-fit:cover;"
                  onerror="this.src='${BLANK}'">
             ${vodInfo.trailer ? `
@@ -22413,12 +22559,10 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     return;
                 } catch(err) {
                     console.warn('PiP hatası:', err.name, err.message);
-                    // NotAllowedError: video oynanmıyor olabilir
                     if (err.name === 'NotAllowedError' && video.paused) {
                         showToast('⚠ PiP için önce video oynatın');
                         return;
                     }
-                    // Diğer hatalar — desteklenmiyor
                     showToast('⚠ PiP bu WebView\'da desteklenmiyor');
                 }
                 return;
@@ -29402,11 +29546,17 @@ async function openSeriesModal(seriesName, originalIndex) {
     const _smModal = document.getElementById('vodModal');
     if (_smModal) _smModal.setAttribute('data-channel-name', seriesName);
     
-    let seriesData = state.series?.seriesCache?.[seriesName];
+    // seriesName'den de TR: prefix'ini temizle (güvenlik için)
+    const _cleanedSeriesName = seriesName.replace(/^[A-Z]{2,4}:\s*/i, '').trim() || seriesName;
+    const _lookupName = _cleanedSeriesName !== seriesName ? _cleanedSeriesName : seriesName;
+    
+    let seriesData = state.series?.seriesCache?.[seriesName]
+                  || state.series?.seriesCache?.[_lookupName];
     
     if (!seriesData) {
         // Cache'de yoksa, kanallardan yeniden oluşturmayı dene
         // Hem tam eşleşme hem de group-title ile ara
+        const _smSnLower = seriesName.toLowerCase();
         const seriesChannels = state.channels.filter(c => {
             if (c.isLive || !c.name) return false;
             // Tam isim eşleşmesi (bu kanal bir dizi bölümü ise, adı seriesName ile başlayabilir)
@@ -29415,6 +29565,9 @@ async function openSeriesModal(seriesName, originalIndex) {
             if (c.group && c.group === seriesName) return true;
             // İsim içinde geçiyor mu
             if (c.name.includes(seriesName)) return true;
+            // "TR: Çirkin 1. Bölüm" → prefix'i soy ve karşılaştır
+            const _stripped = c.name.replace(/^[A-Z]{2,4}:\s*/i, '');
+            if (_stripped.toLowerCase().startsWith(_smSnLower)) return true;
             return false;
         });
         
@@ -29477,8 +29630,8 @@ async function openSeriesModal(seriesName, originalIndex) {
     const _posterWrapper = document.getElementById('vodPosterWrapper');
     const BLANK_POSTER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+';
 
-    // ── TMDB'den güncel trailer/backdrop/rating/genres çek (cache'de yoksa) ──
-    if (!seriesData._tmdbFetched) {
+    // ── TMDB'den güncel trailer/backdrop/rating/genres çek (cache'de yoksa veya backdrop eksikse) ──
+    if (!seriesData._tmdbFetched || !seriesData.backdrop || !seriesData.poster) {
         try {
             const _sf2 = async (url) => {
                 const c = new AbortController();
@@ -29486,15 +29639,36 @@ async function openSeriesModal(seriesName, originalIndex) {
                 try { const r = await fetch(url, {signal: c.signal}); clearTimeout(t); return r.ok ? await r.json() : null; }
                 catch(e) { clearTimeout(t); return null; }
             };
-            // id yoksa önce TMDB'den dizi ara
+            // id yoksa VEYA Türk dizi ise ID'yi doğrula
             let _tmdbId = seriesData.id;
-            if (!_tmdbId) {
-                const _srch = await _sf2(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(seriesName)}&language=tr-TR`);
-                if (_srch && _srch.results && _srch.results.length > 0) _tmdbId = _srch.results[0].id;
+            const _qName2 = _lookupName || seriesName;
+            const _qLow2 = _qName2.toLowerCase();
+            const _qHasTR2 = /[ığüşöçİĞÜŞÖÇ]/.test(_qName2);
+            const _qTRkws2 = ['çirkin','cirkin','türk','turk','yerli','çarpıntı'];
+            const _qIsTR2 = _qHasTR2 || _qTRkws2.some(kw => _qLow2.includes(kw));
+            // Türk dizisi ise her zaman yeniden ara — yanlış ID gelmiş olabilir
+            if (!_tmdbId || _qIsTR2) {
+                const _qName = _lookupName || seriesName;
+                const _qLow = _qName.toLowerCase();
+                const _qHasTR = /[ığüşöçİĞÜŞÖÇ]/.test(_qName);
+                const _qTRkws = ['çirkin','cirkin','türk','turk','yerli','çarpıntı'];
+                const _qIsTR = _qHasTR || _qTRkws.some(kw => _qLow.includes(kw));
+                const _srch = await _sf2(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(_qName)}&language=tr-TR`);
+                if (_srch && _srch.results && _srch.results.length > 0) {
+                    // Türk dizisi ise TR menşeli sonucu tercih et
+                    if (_qIsTR) {
+                        const _trRes = _srch.results.find(r =>
+                            r.original_language === 'tr' || r.origin_country?.includes('TR')
+                        );
+                        _tmdbId = _trRes ? _trRes.id : _srch.results[0].id;
+                    } else {
+                        _tmdbId = _srch.results[0].id;
+                    }
+                }
             }
             seriesData._tmdbFetched = true; // Bir kez dene, başarısız olsa bile tekrar sorma
             if (_tmdbId) {
-                const _td = await _sf2(`https://api.themoviedb.org/3/tv/${_tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos`);
+                const _td = await _sf2(`https://api.themoviedb.org/3/tv/${_tmdbId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=videos,credits`);
                 if (_td) {
                     seriesData.id = _tmdbId;
                     if (_td.videos && _td.videos.results) {
@@ -29503,12 +29677,32 @@ async function openSeriesModal(seriesName, originalIndex) {
                             || _td.videos.results.find(v => v.site === 'YouTube');
                         if (_tv2) seriesData.trailer = _tv2.key;
                     }
+                    // Oyuncular (credits)
+                    if (_td.credits && _td.credits.cast && _td.credits.cast.length > 0) {
+                        seriesData.cast = _td.credits.cast.slice(0, 12).map(c => ({
+                            name: c.name,
+                            character: c.character || '',
+                            image: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : null
+                        }));
+                    }
+                    // Yaratıcı/Yönetmen
+                    if (_td.credits && _td.credits.crew) {
+                        const _dir = _td.credits.crew.find(c => c.job === 'Director' || c.department === 'Directing');
+                        if (_dir) seriesData.director = _dir.name;
+                    }
                     if (!seriesData.backdrop && _td.backdrop_path) seriesData.backdrop = `https://image.tmdb.org/t/p/w1280${_td.backdrop_path}`;
                     if (!seriesData.rating && _td.vote_average) seriesData.rating = _td.vote_average;
                     if (!seriesData.genres && _td.genres) seriesData.genres = _td.genres.map(g => g.name);
                     if (!seriesData.overview && _td.overview) seriesData.overview = _td.overview;
                     if (!seriesData.year && _td.first_air_date) seriesData.year = new Date(_td.first_air_date).getFullYear();
                     if (!seriesData.poster && _td.poster_path) seriesData.poster = `https://image.tmdb.org/t/p/w500${_td.poster_path}`;
+                    // TMDB geldikten hemen sonra backdrop ve poster'ı DOM'da güncelle
+                    const _bdNow = seriesData.backdrop || seriesData.poster || BLANK_POSTER;
+                    const _bdElNow = document.getElementById('vodBackdropImg');
+                    if (_bdElNow && _bdNow) _bdElNow.src = _bdNow;
+                    const _posterNow = seriesData.poster || _bdNow;
+                    const _posterImgNow = document.getElementById('vodModalPoster');
+                    if (_posterImgNow && _posterNow) _posterImgNow.src = _posterNow;
                 }
             }
         } catch(e) { seriesData._tmdbFetched = true; }
@@ -29516,12 +29710,17 @@ async function openSeriesModal(seriesName, originalIndex) {
 
     // Backdrop veya poster seç
     const _bdSrc = seriesData.backdrop || seriesData.poster || BLANK_POSTER;
+    const _thumbSrc2 = seriesData.poster || _bdSrc;
 
-    // Poster
+    // Backdrop güncelle (sinematik arka plan)
+    const _bdEl2 = document.getElementById('vodBackdropImg');
+    if (_bdEl2) _bdEl2.src = _bdSrc;
+
+    // Poster (2:3 dikey)
     _posterWrapper.style.position = 'relative';
     _posterWrapper.innerHTML = `
         <img loading="lazy" id="vodModalPoster" class="vod-poster"
-             src="${_bdSrc}" alt="${seriesName}"
+             src="${_thumbSrc2}" alt="${seriesName}"
              onerror="this.src='${BLANK_POSTER}'">
     `;
 
@@ -29604,8 +29803,55 @@ async function openSeriesModal(seriesName, originalIndex) {
         _gl2.innerHTML = seriesData.genres.map(g => `<span class="vod-genre-tag">${g}</span>`).join('');
         _gc2.style.display = 'block';
     } else if (_gc2) { _gc2.style.display = 'none'; }
-    const _cc2 = document.getElementById('vodModalCastContainer');   if (_cc2) _cc2.style.display = 'none';
-    const _dc2 = document.getElementById('vodModalDirectorContainer'); if (_dc2) _dc2.style.display = 'none';
+    const _cc2 = document.getElementById('vodModalCastContainer');
+    const _cg2 = document.getElementById('vodModalCast');
+    const _dc2 = document.getElementById('vodModalDirectorContainer');
+    const _dg2 = document.getElementById('vodModalDirector');
+
+    if (seriesData.cast && seriesData.cast.length > 0 && _cc2 && _cg2) {
+        _cg2.innerHTML = seriesData.cast.map(actor =>
+            actor.image ? `
+                <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                    <img loading="lazy" src="${actor.image}"
+                         style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin-bottom:4px;border:1.5px solid rgba(255,215,0,0.4);"
+                         onerror="this.style.display='none'">
+                    <div style="font-size:10px;font-weight:700;color:#fff;line-height:1.2;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.name}</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.45);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.character || 'Oyuncu'}</div>
+                </div>
+            ` : `
+                <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                    <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,215,0,0.2);margin-bottom:4px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.3);">person</span>
+                    </div>
+                    <div style="font-size:10px;font-weight:700;color:#fff;line-height:1.2;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${actor.name}</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.45);">${actor.character || 'Oyuncu'}</div>
+                </div>
+            `
+        ).join('');
+        _cc2.style.display = 'block';
+    } else {
+        if (_cc2) _cc2.style.display = 'none';
+    }
+
+    if (seriesData.director && _dc2 && _dg2) {
+        _dg2.innerHTML = `
+            <div class="vod-cast-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;min-width:64px;flex-shrink:0;">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,215,0,0.08);border:1.5px solid rgba(255,215,0,0.3);margin-bottom:4px;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,215,0,0.7);">movie</span>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:#fff;">${seriesData.director}</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.45);">Yönetmen</div>
+            </div>
+        `;
+        _dc2.style.display = 'block';
+    } else {
+        if (_dc2) _dc2.style.display = 'none';
+    }
+
+    // ── YORUMLAR BÖLÜMÜNÜ AÇ ──
+    if (typeof window.vodOpenReviews === 'function') {
+        window.vodOpenReviews(seriesData.title || seriesName);
+    }
     
     // Sezon/bölüm container'ını göster ve doldur
     const seasonsContainer = document.getElementById('vodSeasonsContainer');
@@ -31882,8 +32128,32 @@ function addContinueCardStyles() {
         }
         
         
+        // Tam ekran butonu toggle
+        window.toggleFsBtnVisibility = function() {
+            try {
+                var hidden = localStorage.getItem('umittv_hide_fs_btn') === '1';
+                hidden = !hidden;
+                localStorage.setItem('umittv_hide_fs_btn', hidden ? '1' : '0');
+                _syncFsBtnToggleLabel();
+                if (typeof window._updateMobileFsBtn === 'function') window._updateMobileFsBtn();
+                if (typeof showToast === 'function') showToast(hidden ? '🔲 Tam ekran butonu gizlendi' : '🔲 Tam ekran butonu gösteriliyor');
+            } catch(e) {}
+        };
+        function _syncFsBtnToggleLabel() {
+            try {
+                var hidden = localStorage.getItem('umittv_hide_fs_btn') === '1';
+                var lbl = document.getElementById('fsBtnToggleLabel');
+                if (lbl) {
+                    lbl.textContent = hidden ? 'GİZLİ' : 'AÇ';
+                    lbl.style.background = hidden ? 'rgba(231,76,60,0.2)' : 'rgba(255,215,0,0.15)';
+                    lbl.style.color = hidden ? '#e74c3c' : '#FFD700';
+                }
+            } catch(e) {}
+        }
+
         function openSettingsModal() { 
             var _stm=document.getElementById('settingsModal'); if(_stm) _stm.style.display='flex';
+            _syncFsBtnToggleLabel();
             if(state.remote.active) { 
                 state.remote.zone = 'settingsModal'; 
                 state.remote.settingsIndex = 0; 
@@ -35007,26 +35277,21 @@ function resumeChannel(startTime) {
             _progBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
         }
 
-        // HIZ BUTONU: sadece VOD'da göster (canlı yayında anlamsız)
+        // HIZ BUTONU: hem canlı hem VOD'da göster
         const _speedBtn = document.getElementById('btnSpeed');
         if (_speedBtn) {
-            _speedBtn.style.display = state.player.isLiveStream ? 'none' : 'flex';
+            _speedBtn.style.display = 'flex';
         }
-        // Hız sıfırla — her yeni VOD 1x'ten başlasın
-        if (!state.player.isLiveStream) {
+        // Hız uygula — kaydedilmiş hızı her seferinde uygula
+        {
             var _vid = document.getElementById('videoPlayer');
             if (_vid) _vid.playbackRate = window._playbackSpeed || 1;
         }
 
-        // PiP BUTONU: tarayıcı veya Android WebView destekliyorsa göster
+        // PiP BUTONU: her zaman göster — desteklenmiyor ise togglePiP hata verir
         const _pipBtn = document.getElementById('btnPip');
         if (_pipBtn) {
-            const _pipSupported = !!(
-                document.pictureInPictureEnabled ||
-                (function(){ try { var v = document.getElementById('videoPlayer'); return v && v.webkitSupportsPresentationMode; } catch(e){ return false; } })() ||
-                /Android/i.test(navigator.userAgent)   /* Android WebView — her zaman dene */
-            );
-            _pipBtn.style.display = _pipSupported ? 'flex' : 'none';
+            _pipBtn.style.display = 'flex';
         }
 
         // KONTROL GİZLE BUTONU: canlı yayın VE VOD'da göster
@@ -51588,6 +51853,309 @@ _ready(function() {
 </script>
 
 <script>
+
+// ══════════════════════════════════════════════════════════════════
+//  VOD YORUM SİSTEMİ — Firebase Realtime Database (Kalıcı)
+//  - İçerik başlığına göre /reviews/{key}/ altında saklanır
+//  - Kullanıcı adı: telegram_id (varsa) veya wp_nick localStorage'dan
+// ══════════════════════════════════════════════════════════════════
+(function() {
+'use strict';
+
+const VOD_REVIEWS_FB = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
+
+// ── Güvenli Firebase anahtar üret (başlıktan) ──
+function vrSafeKey(title) {
+  return (title || 'unknown')
+    .toLowerCase()
+    .replace(/[.#$/[\]]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .slice(0, 80);
+}
+
+// ── Cihaz parmak izi üret (localStorage'dan bağımsız, deterministik) ──
+function vrDeviceFingerprint() {
+  try {
+    var nav = window.navigator;
+    var scr = window.screen;
+    var parts = [
+      nav.userAgent || '',
+      nav.language || '',
+      (nav.languages || []).join(','),
+      String(scr.width || 0) + 'x' + String(scr.height || 0),
+      String(scr.colorDepth || 0),
+      Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+      String(nav.hardwareConcurrency || 0),
+      String(nav.maxTouchPoints || 0),
+      nav.platform || ''
+    ];
+    var raw = parts.join('|');
+    // djb2 hash → 4 basamaklı sayı
+    var h = 5381;
+    for (var i = 0; i < raw.length; i++) {
+      h = ((h << 5) + h) + raw.charCodeAt(i);
+      h = h & 0x7fffffff;
+    }
+    return String(1000 + (h % 9000));
+  } catch(e) {
+    return String(Math.floor(Math.random() * 9000 + 1000));
+  }
+}
+
+// ── Kullanıcı adı al: telegram_id > wp_nick > cihaz parmak izi ──
+function vrGetUserName() {
+  // 1) Giriş yapmış kullanıcı → önce nick, yoksa telegram_id
+  try {
+    const auth = JSON.parse(localStorage.getItem('umittv_auth') || 'null');
+    if (auth && auth.telegram_id && String(auth.telegram_id) !== 'SANS_KODU') {
+      // auth.nick varsa onu kullan, yoksa umittv_tg_nick'e bak, son çare ID
+      const tgNick = auth.nick
+        || localStorage.getItem('umittv_tg_nick')
+        || ('Kullanici_' + String(auth.telegram_id));
+      return tgNick;
+    }
+  } catch(e) {}
+  // 2) Watch Party nick
+  try {
+    const nick = localStorage.getItem('wp_nick');
+    if (nick && nick.trim()) return nick.trim();
+  } catch(e) {}
+  // 3) localStorage'da saklı mı? (hız için)
+  try {
+    const KEY = 'umittv_guest_uid';
+    const saved = localStorage.getItem(KEY);
+    if (saved && saved.trim()) return saved.trim();
+  } catch(e) {}
+  // 4) Parmak izinden üret ve kaydet
+  var uid = 'Misafir_' + vrDeviceFingerprint();
+  try { localStorage.setItem('umittv_guest_uid', uid); } catch(e) {}
+  return uid;
+}
+
+// ── Kullanıcıya özgü renk (telegram_id hash) ──
+function vrUserColor(name) {
+  const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4','#ff5722'];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return colors[h % colors.length];
+}
+
+// ── Firebase GET ──
+async function vrFbGet(path) {
+  try {
+    const r = await fetch(VOD_REVIEWS_FB + path + '.json', { method: 'GET' });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+// ── Firebase PUSH ──
+async function vrFbPush(path, data) {
+  try {
+    const r = await fetch(VOD_REVIEWS_FB + path + '.json', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) {
+      const errBody = await r.text().catch(()=>'');
+      console.warn('[VodReview] Firebase POST hata:', r.status, errBody);
+      return null;
+    }
+    return await r.json();
+  } catch(e) {
+    console.warn('[VodReview] Firebase POST exception:', e.message);
+    return null;
+  }
+}
+
+// ── Durum ──
+let _vrCurrentKey = '';
+let _vrCurrentTitle = '';
+let _vrMyStars = 0;
+let _vrMyReviewKey = '';   // Bu kullanıcının mevcut yorum key'i (güncelleme için)
+
+// ── Yorum bölümünü aç (VOD modal içinde) ──
+window.vodOpenReviews = async function(contentTitle) {
+  _vrCurrentTitle = contentTitle || '';
+  _vrCurrentKey = vrSafeKey(_vrCurrentTitle);
+  _vrMyStars = 0;
+  _vrMyReviewKey = '';
+
+  const section = document.getElementById('vodReviewsSection');
+  if (!section) return;
+  section.style.display = 'block';
+
+  // Kullanıcı adını göster
+  const userName = vrGetUserName();
+  const userEl = document.getElementById('vodReviewUser');
+  if (userEl) userEl.textContent = '👤 ' + userName;
+
+  // Yıldızları sıfırla
+  vodPickStar(0);
+
+  // Yorumları yükle
+  await vodLoadReviews();
+};
+
+// ── Yorumları Firebase'den yükle ──
+async function vodLoadReviews() {
+  const listEl = document.getElementById('vodReviewsList');
+  const emptyEl = document.getElementById('vodReviewsEmpty');
+  const countEl = document.getElementById('vodReviewCount');
+  if (!listEl) return;
+
+  listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Yorumlar yükleniyor...</div>';
+
+  const data = await vrFbGet('/reviews/' + _vrCurrentKey);
+
+  listEl.innerHTML = '';
+  if (!data || Object.keys(data).length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Sırala: yeniden eskiye
+  const entries = Object.entries(data).sort((a, b) => (b[1].ts || 0) - (a[1].ts || 0));
+  if (countEl) countEl.textContent = entries.length + ' yorum';
+
+  // Mevcut kullanıcının yorumunu bul
+  const myName = vrGetUserName();
+  entries.forEach(([key, rev]) => {
+    if (rev.userId === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
+    vodRenderReview(key, rev, myName);
+  });
+}
+
+// ── Tek yorum kartı oluştur ──
+function vodRenderReview(key, rev, myName) {
+  const listEl = document.getElementById('vodReviewsList');
+  if (!listEl) return;
+
+  const isMe = rev.userId === myName;
+  const color = vrUserColor(rev.userId || rev.nick || '?');
+  const initial = (rev.nick || rev.userId || '?')[0].toUpperCase();
+  const starsHtml = rev.stars
+    ? '<div style="color:#FFD700;font-size:13px;margin-top:3px;">' +
+      '★'.repeat(rev.stars) +
+      '<span style="color:rgba(255,255,255,0.15)">' + '★'.repeat(5 - rev.stars) + '</span></div>'
+    : '';
+  const dateStr = rev.ts ? new Date(rev.ts).toLocaleDateString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+                            new Date(rev.ts).toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}) : '';
+  const deleteBtn = isMe
+    ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
+    : '';
+
+  const el = document.createElement('div');
+  el.id = 'vr_' + key;
+  el.style.cssText = 'display:flex;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px;';
+  el.innerHTML =
+    '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + initial + '</div>' +
+    '<div style="flex:1;min-width:0;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;">' +
+        '<div style="display:flex;align-items:baseline;gap:6px;">' +
+          '<span style="font-size:12px;font-weight:700;color:' + color + ';">' + (rev.nick || rev.userId || '?') + '</span>' +
+          (isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<span style="font-size:10px;color:rgba(255,255,255,0.2);">' + dateStr + '</span>' +
+          deleteBtn +
+        '</div>' +
+      '</div>' +
+      starsHtml +
+      (rev.text ? '<div style="font-size:13px;color:#dde0ee;line-height:1.45;margin-top:4px;">' + rev.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' : '') +
+    '</div>';
+  listEl.appendChild(el);
+}
+
+// ── Yıldız seç ──
+window.vodPickStar = function(val) {
+  _vrMyStars = val;
+  const stars = document.querySelectorAll('.vod-review-star');
+  stars.forEach((s, i) => {
+    s.style.color = i < val ? '#FFD700' : 'rgba(255,255,255,0.2)';
+    s.style.textShadow = i < val ? '0 0 8px rgba(255,215,0,0.6)' : 'none';
+  });
+  const lbl = document.getElementById('vodStarLabel');
+  if (lbl) {
+    const labels = ['','Çok Kötü','Kötü','Orta','İyi','Harika'];
+    lbl.textContent = val ? labels[val] : '';
+  }
+};
+
+// ── Yorum gönder ──
+window.vodSubmitReview = async function() {
+  const input = document.getElementById('vodReviewInput');
+  const text = (input ? input.value.trim() : '');
+  if (!text && !_vrMyStars) {
+    if (typeof showToast === 'function') showToast('⚠ Yorum yazın veya puan verin');
+    return;
+  }
+  if (!_vrCurrentKey) {
+    if (typeof showToast === 'function') showToast('⚠ İçerik bulunamadı');
+    return;
+  }
+
+  const btn = document.querySelector('[onclick="vodSubmitReview()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
+
+  const userName = vrGetUserName();
+  const reviewData = {
+    userId: userName,
+    nick: userName,
+    text: text,
+    stars: _vrMyStars,
+    contentTitle: _vrCurrentTitle,
+    ts: Date.now()
+  };
+
+  // Mevcut yorumu sil (güncelleme)
+  if (_vrMyReviewKey) {
+    try {
+      await fetch(VOD_REVIEWS_FB + '/reviews/' + _vrCurrentKey + '/' + _vrMyReviewKey + '.json', { method: 'DELETE' });
+    } catch(e) {}
+  }
+
+  const result = await vrFbPush('/reviews/' + _vrCurrentKey, reviewData);
+  if (btn) { btn.disabled = false; btn.textContent = 'Gönder'; }
+
+  if (!result || !result.name) {
+    if (typeof showToast === 'function') showToast('⚠ Yorum gönderilemedi — Firebase DB kurallarını veya bağlantıyı kontrol edin');
+    console.error('[VodReview] Gönderme başarısız. FB_URL:', VOD_REVIEWS_FB, ' key:', _vrCurrentKey);
+    return;
+  }
+
+  _vrMyReviewKey = result.name;
+  if (input) input.value = '';
+  if (typeof showToast === 'function') showToast('✅ Yorumunuz kaydedildi!');
+  await vodLoadReviews();
+};
+
+// ── Yorum sil ──
+window.vodDeleteReview = async function(key) {
+  if (!_vrCurrentKey || !key) return;
+  try {
+    await fetch(VOD_REVIEWS_FB + '/reviews/' + _vrCurrentKey + '/' + key + '.json', { method: 'DELETE' });
+    const el = document.getElementById('vr_' + key);
+    if (el) el.remove();
+    if (_vrMyReviewKey === key) { _vrMyReviewKey = ''; _vrMyStars = 0; vodPickStar(0); }
+    if (typeof showToast === 'function') showToast('🗑 Yorum silindi');
+    await vodLoadReviews();
+  } catch(e) {}
+};
+
+// ── Global'e expose et ──
+window._vodReviews = { openReviews: window.vodOpenReviews, getKey: vrSafeKey };
+
+})();
+
+
+</script>
+<script>
 // ── Unhandled fetch / network hatalarını yakala — konsolu temizle ──
 window.addEventListener('unhandledrejection', function(e) {
     var reason = e.reason;
@@ -51943,12 +52511,29 @@ window.openWatchPartyLobby = function() {
   }
   document.getElementById('wpLobbyModal').classList.add('wp-open');
   wpLoadRooms();
-  // Kaydedilmiş nick'i otomatik doldur
+  // Nick önceliği: telegram auth.nick > umittv_tg_nick > wp_nick
   try {
-    const savedNick = localStorage.getItem('wp_nick');
-    if(savedNick) {
+    let autoNick = '';
+    // 1) Giriş yapmış kullanıcının nick'i
+    try {
+      const _auth = JSON.parse(localStorage.getItem('umittv_auth') || 'null');
+      if (_auth && _auth.nick && _auth.telegram_id && String(_auth.telegram_id) !== 'SANS_KODU') {
+        autoNick = _auth.nick;
+      }
+    } catch(_e) {}
+    // 2) umittv_tg_nick
+    if (!autoNick) {
+      autoNick = localStorage.getItem('umittv_tg_nick') || '';
+    }
+    // 3) Eski wp_nick
+    if (!autoNick) {
+      autoNick = localStorage.getItem('wp_nick') || '';
+    }
+    if (autoNick) {
       const nickInput = document.getElementById('wpNickInput');
-      if(nickInput && !nickInput.value) nickInput.value = savedNick;
+      if (nickInput && !nickInput.value) nickInput.value = autoNick;
+      // wp_nick'i de güncelle ki tutarlı olsun
+      try { localStorage.setItem('wp_nick', autoNick); } catch(_e) {}
     }
   } catch(e) {}
   setTimeout(() => {
@@ -53897,6 +54482,8 @@ html, body {
         if (!isMobile()) return;
 
         var btn = document.getElementById('mobileFullscreenBtn');
+        // Kullanıcı gizlemeyi seçtiyse butonu gösterme
+        try { if (localStorage.getItem('umittv_hide_fs_btn') === '1') { return; } } catch(_e) {}
         if (btn) btn.classList.add('visible');
 
         /* İLK DOKUNUŞTA otomatik tam ekran */
@@ -53928,6 +54515,8 @@ html, body {
     window._updateMobileFsBtn = function() {
         var btn = document.getElementById('mobileFullscreenBtn');
         if (!btn) return;
+        // Kullanıcı gizlemeyi seçtiyse her zaman gizle
+        try { if (localStorage.getItem('umittv_hide_fs_btn') === '1') { btn.classList.remove('visible'); return; } } catch(_e) {}
         var isLandscape = window.innerWidth > window.innerHeight;
         var playerView = document.getElementById('playerView');
         var playerOpen = playerView && playerView.style.display === 'flex';

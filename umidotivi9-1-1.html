@@ -20787,16 +20787,8 @@ function setupPlayerSeriesControls() {
     });
     // VOD Modal Kumanda Kontrolü
 document.getElementById('vodModal').addEventListener('keydown', function(e) {
-    // Remote zone'u vodModal'a zorla - modal açıkken her zaman
-    if (state.remote && state.remote.zone !== 'vodModal') {
-        const modal = document.getElementById('vodModal');
-        if (modal && modal.style.display === 'flex') {
-            state.remote.zone = 'vodModal';
-            if (!state.remote.vodModalButtons || state.remote.vodModalButtons.length === 0) {
-                state.remote.vodModalButtons = ['vodModalCloseBtn', 'vodModalPlayBtn', 'vodInfoScroll'];
-            }
-        }
-    }
+    // DEVRE DIŞI — patchVodModalDpad tek yetkili handler olarak yönetiliyor
+    return;
     if (this.style.display !== 'flex') return;
 
     const seasonButtons = Array.from(document.querySelectorAll('.vod-season-btn'));
@@ -20960,9 +20952,11 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
     }
 
     document.addEventListener('keydown', function(e) {
+        // DEVRE DIŞI — patchVodModalDpad içinde yorum navigasyonu yönetiliyor
         var modal = document.getElementById('vodModal');
         if (!modal || modal.style.display !== 'flex') return;
         if (!reviewDpadVisible()) return;
+        return; // patchVodModalDpad handle ediyor
 
         // Textarea aktifken sadece Escape çıksın, diğerleri yazıya gitsin
         var activeEl = document.activeElement;
@@ -41840,7 +41834,7 @@ function handleFavoriteChannelSelect(key) {
     'searchModal': handleSearchModalRemote,
     'sortBackupModal': handleSortBackupModalRemote,
     'quickSortNumModal': handleQuickSortNumModalRemote,
-    'vodModal': handleVodModalRemote,
+    // vodModal patchVodModalDpad tarafından yönetiliyor — buradan kaldırıldı
     'sleepModeModal': handleSleepModeModalRemote,
     'addM3UModal': handleAddM3UModalRemote,
     'passwordModal': handlePasswordModalRemote,
@@ -43998,116 +43992,8 @@ if (typeof window.fetchM3UChannels === 'undefined') {
     
 
     function handleVodModalKeys(e) {
-        const modal = document.getElementById('vodModal');
-        if (!modal || modal.style.display !== 'flex') return;
-        if (!window.state?.remote?.vodModalElements) return;
-        
-        const elements = window.state.remote.vodModalElements;
-        if (elements.length === 0) return;
-
-        let currentIdx = window.state.remote.vodModalIndex || 0;
-        const currentEl = elements[currentIdx];
-
-        const isSeasonBtn = currentEl?.classList.contains('vod-season-btn');
-        const isEpisodeCard = currentEl?.classList.contains('vod-episode-card');
-
-        switch(e.key) {
-            case 'ArrowUp':
-                e.preventDefault();
-                e.stopPropagation();
-                if (isEpisodeCard) {
-                    
-
-                    const episodeCards = document.querySelectorAll('.vod-episode-card');
-                    const epIdx = Array.from(episodeCards).indexOf(currentEl);
-                    if (epIdx > 0) {
-                        window.state.remote.vodModalIndex = elements.indexOf(episodeCards[epIdx - 1]);
-                    } else {
-                        window.state.remote.vodModalIndex = (currentIdx - 1 + elements.length) % elements.length;
-                    }
-                } else {
-                    window.state.remote.vodModalIndex = (currentIdx - 1 + elements.length) % elements.length;
-                }
-                updateFocus(elements, window.state.remote.vodModalIndex);
-                break;
-                
-            case 'ArrowDown':
-                e.preventDefault();
-                e.stopPropagation();
-                if (isEpisodeCard) {
-                    const episodeCards = document.querySelectorAll('.vod-episode-card');
-                    const epIdx = Array.from(episodeCards).indexOf(currentEl);
-                    if (epIdx + 1 < episodeCards.length) {
-                        window.state.remote.vodModalIndex = elements.indexOf(episodeCards[epIdx + 1]);
-                    } else {
-                        window.state.remote.vodModalIndex = (currentIdx + 1) % elements.length;
-                    }
-                } else {
-                    window.state.remote.vodModalIndex = (currentIdx + 1) % elements.length;
-                }
-                updateFocus(elements, window.state.remote.vodModalIndex);
-                break;
-                
-            case 'ArrowLeft':
-                e.preventDefault();
-                e.stopPropagation();
-                if (isSeasonBtn) {
-                    const seasonBtns = document.querySelectorAll('.vod-season-btn');
-                    const sIdx = Array.from(seasonBtns).indexOf(currentEl);
-                    if (sIdx > 0) {
-                        window.state.remote.vodModalIndex = elements.indexOf(seasonBtns[sIdx - 1]);
-                        updateFocus(elements, window.state.remote.vodModalIndex);
-                        seasonBtns[sIdx - 1].click();
-                    }
-                } else {
-                    window.state.remote.vodModalIndex = (currentIdx - 1 + elements.length) % elements.length;
-                    updateFocus(elements, window.state.remote.vodModalIndex);
-                }
-                break;
-                
-            case 'ArrowRight':
-                e.preventDefault();
-                e.stopPropagation();
-                if (isSeasonBtn) {
-                    const seasonBtns = document.querySelectorAll('.vod-season-btn');
-                    const sIdx = Array.from(seasonBtns).indexOf(currentEl);
-                    if (sIdx < seasonBtns.length - 1) {
-                        window.state.remote.vodModalIndex = elements.indexOf(seasonBtns[sIdx + 1]);
-                        updateFocus(elements, window.state.remote.vodModalIndex);
-                        seasonBtns[sIdx + 1].click();
-                    }
-                } else {
-                    window.state.remote.vodModalIndex = (currentIdx + 1) % elements.length;
-                    updateFocus(elements, window.state.remote.vodModalIndex);
-                }
-                break;
-                
-            case 'Enter':
-            case 'OK':
-            case ' ':
-                e.preventDefault();
-                e.stopPropagation();
-                closeSidebarIfOpen();
-                if (currentEl) {
-                    if (currentEl.click) {
-                        currentEl.click();
-                    } else {
-                        currentEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                    }
-                }
-                break;
-                
-            case 'Backspace':
-            case 'Escape':
-            case 'Back':
-            case 'GoBack':
-                
-
-                
-
-                e.preventDefault();
-                break;
-        }
+        // DEVRE DIŞI — patchVodModalDpad tek yetkili handler
+        // Bu listener boş bırakıldı, çakışma önlendi
     }
 
     
@@ -44133,6 +44019,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
         observer.observe(vodModal, { attributes: true });
     }
 
+    // handleVodModalKeys boş — sadece kayıtlı, hiçbir şey yapmıyor
     document.addEventListener('keydown', handleVodModalKeys, true);
     
     const originalOpen = window.openVodModal;
@@ -46145,10 +46032,13 @@ document.addEventListener('umittv_channels_ready', function() {
     
 
     const VOD_ZONE = { BUTTONS: 0, SEASONS: 1, EPISODES: 2 };
+    const VOD_REVIEW_ZONE = 3;
     let _vodZone = VOD_ZONE.BUTTONS;
     let _btnIdx = 0;
     let _seasonIdx = 0;
     let _episodeIdx = 0;
+    let _reviewSubZone = 'stars'; // 'stars' | 'textarea' | 'submit'
+    let _reviewStarVal = 0;
 
     function _getSeasonBtns() { return Array.from(document.querySelectorAll('#vodSeasonSelector .vod-season-btn')); }
     function _getEpisodeCards() { return Array.from(document.querySelectorAll('#vodEpisodesContainer .vod-episode-card')); }
@@ -46183,7 +46073,9 @@ document.addEventListener('umittv_channels_ready', function() {
         const seasonBtns = _getSeasonBtns();
         const modalBtns = _getModalBtns();
 
-        
+        // Yorum zone'unu sıfırla
+        _reviewSubZone = 'stars';
+        _reviewStarVal = 0;
 
         if (seasonBtns.length > 0) {
             _vodZone = VOD_ZONE.SEASONS;
@@ -46192,7 +46084,7 @@ document.addEventListener('umittv_channels_ready', function() {
         } else {
             _vodZone = VOD_ZONE.BUTTONS;
             _btnIdx = 0;
-            _focusEl(modalBtns[0]);
+            _focusEl(modalBtns[0] || modalBtns[modalBtns.length - 1]);
         }
     }
 
@@ -46231,51 +46123,117 @@ document.addEventListener('umittv_channels_ready', function() {
 
     
 
+    // Yardımcı: gerçek grid sütun sayısını DOM'dan oku
+    function _getGridCols() {
+        const container = document.getElementById('vodEpisodesContainer');
+        if (!container) return 1;
+        const cards = container.querySelectorAll('.vod-episode-card');
+        if (!cards.length) return 1;
+        // gridTemplateColumns'dan sütun sayısı
+        const gtc = getComputedStyle(container).gridTemplateColumns;
+        const colCount = gtc ? gtc.split(' ').filter(s => s.trim()).length : 0;
+        if (colCount > 0) return colCount;
+        // Fallback: offsetWidth ile hesapla
+        const cw = cards[0].offsetWidth || 1;
+        return Math.max(1, Math.round(container.offsetWidth / (cw + 8)));
+    }
+
+    function _getReviewSection() {
+        const s = document.getElementById('vodReviewsSection');
+        return (s && s.style.display !== 'none') ? s : null;
+    }
+
+    function _highlightReviewZone(zone) {
+        _reviewSubZone = zone;
+        const starPicker = document.getElementById('vodStarPicker');
+        const textarea = document.getElementById('vodReviewInput');
+        const btn = document.querySelector('[onclick="vodSubmitReview()"]');
+        if (starPicker) starPicker.style.outline = zone === 'stars' ? '3px solid #FFD700' : 'none';
+        if (textarea) {
+            textarea.style.borderColor = zone === 'textarea' ? '#FFD700' : 'rgba(255,255,255,0.1)';
+            textarea.style.outline = zone === 'textarea' ? '3px solid rgba(255,215,0,0.4)' : 'none';
+        }
+        if (btn) {
+            btn.style.transform = zone === 'submit' ? 'scale(1.08)' : '';
+            btn.style.boxShadow = zone === 'submit' ? '0 0 14px rgba(255,215,0,0.5)' : '';
+            btn.style.outline = zone === 'submit' ? '3px solid #FFD700' : '';
+        }
+    }
+
     function _newHandleVodModalRemote(e) {
         const modal = document.getElementById('vodModal');
         if (!modal || modal.style.display !== 'flex') return;
+
+        // Çift-fire koruması: aynı event zaten işlendiyse atla
+        if (e._vodHandled) return;
+        e._vodHandled = true;
+        e.preventDefault();
+        e.stopPropagation();
 
         const seasonBtns = _getSeasonBtns();
         const episodeCards = _getEpisodeCards();
         const modalBtns = _getModalBtns();
         const hasSeasons = seasonBtns.length > 0;
+        const hasReview = !!_getReviewSection();
 
         switch(e.key) {
-
-            
-
             case 'ArrowUp':
-                e.preventDefault();
-                if (_vodZone === VOD_ZONE.EPISODES) {
-                    if (_episodeIdx > 1) {
-                        _episodeIdx -= 2; // 2 sütunlu grid
+                if (_vodZone === VOD_REVIEW_ZONE) {
+                    // Yorum zone içi navigasyon: submit→textarea→stars
+                    if (_reviewSubZone === 'submit') {
+                        _highlightReviewZone('textarea');
+                    } else if (_reviewSubZone === 'textarea') {
+                        _highlightReviewZone('stars');
+                    } else {
+                        // Stars'tan çıkış — episode veya sezon zone'una dön
+                        _clearFocus();
+                        if (episodeCards.length > 0) {
+                            _vodZone = VOD_ZONE.EPISODES;
+                            _episodeIdx = episodeCards.length - 1;
+                            _focusEl(episodeCards[_episodeIdx]);
+                        } else if (hasSeasons) {
+                            _vodZone = VOD_ZONE.SEASONS;
+                            _seasonIdx = 0;
+                            _focusEl(seasonBtns[_seasonIdx]);
+                        } else {
+                            _vodZone = VOD_ZONE.BUTTONS;
+                            _btnIdx = Math.max(0, modalBtns.length - 1);
+                            _focusEl(modalBtns[_btnIdx]);
+                        }
+                    }
+                } else if (_vodZone === VOD_ZONE.EPISODES) {
+                    const cols = _getGridCols();
+                    if (_episodeIdx - cols >= 0) {
+                        _episodeIdx -= cols;
                         _focusEl(episodeCards[_episodeIdx]);
-                    } else if (_episodeIdx <= 1) {
-                        
-
+                    } else {
+                        // İlk satır — sezon zone'una çık
                         _vodZone = VOD_ZONE.SEASONS;
                         const activeSeason = seasonBtns.findIndex(b => b.classList.contains('active'));
                         _seasonIdx = activeSeason >= 0 ? activeSeason : 0;
-                        _focusEl(seasonBtns[_seasonIdx]);
+                        if (seasonBtns.length > 0) {
+                            _focusEl(seasonBtns[_seasonIdx]);
+                        } else {
+                            _vodZone = VOD_ZONE.BUTTONS;
+                            _btnIdx = Math.max(0, modalBtns.length - 1);
+                            _focusEl(modalBtns[_btnIdx]);
+                        }
                     }
                 } else if (_vodZone === VOD_ZONE.SEASONS) {
-                    
-
                     _vodZone = VOD_ZONE.BUTTONS;
                     _btnIdx = Math.max(0, modalBtns.length - 1);
                     _focusEl(modalBtns[_btnIdx]);
                 } else if (_vodZone === VOD_ZONE.BUTTONS) {
+                    // En üstteyiz — en üst butondan yukarı gidilmez
                     if (_btnIdx > 0) {
                         _btnIdx--;
                         _focusEl(modalBtns[_btnIdx]);
                     }
+                    // _btnIdx === 0 ise hiçbir şey yapma (wrap yok)
                 }
                 break;
 
-            
-
             case 'ArrowDown':
-                e.preventDefault();
                 if (_vodZone === VOD_ZONE.BUTTONS) {
                     if (_btnIdx < modalBtns.length - 1) {
                         _btnIdx++;
@@ -46296,78 +46254,91 @@ document.addEventListener('umittv_channels_ready', function() {
                         _focusEl(episodeCards[0]);
                     }
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
-                    const next = _episodeIdx + 2; // 2 sütunlu grid
+                    const cols = _getGridCols();
+                    const next = _episodeIdx + cols;
                     if (next < episodeCards.length) {
                         _episodeIdx = next;
                         _focusEl(episodeCards[_episodeIdx]);
-                    } else if (_episodeIdx + 1 < episodeCards.length) {
+                    } else if (_episodeIdx < episodeCards.length - 1) {
+                        // Son satır yarım — son karta git
                         _episodeIdx = episodeCards.length - 1;
                         _focusEl(episodeCards[_episodeIdx]);
+                    } else {
+                        // Son karttayız — yorum zone'una geç (varsa)
+                        if (hasReview) {
+                            _vodZone = VOD_REVIEW_ZONE;
+                            _reviewStarVal = 0;
+                            _clearFocus();
+                            _highlightReviewZone('stars');
+                            // vodInfoScroll'u yorum alanına scroll et
+                            const sc = document.getElementById('vodInfoScroll');
+                            if (sc) sc.scrollTop = sc.scrollHeight;
+                        }
                     }
+                } else if (_vodZone === VOD_REVIEW_ZONE) {
+                    if (_reviewSubZone === 'stars') {
+                        _highlightReviewZone('textarea');
+                    } else if (_reviewSubZone === 'textarea') {
+                        _highlightReviewZone('submit');
+                    }
+                    // submit'ten aşağı gidilmez
                 }
                 break;
 
-            
-
             case 'ArrowLeft':
-                e.preventDefault();
                 if (_vodZone === VOD_ZONE.SEASONS) {
                     if (_seasonIdx > 0) {
                         _seasonIdx--;
                         _focusEl(seasonBtns[_seasonIdx]);
-                        seasonBtns[_seasonIdx].click(); // Sezonu değiştir
+                        seasonBtns[_seasonIdx].click();
                     }
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
-                    if (_episodeIdx % 2 === 1) {
-                        
-
-                        _episodeIdx--;
-                        _focusEl(episodeCards[_episodeIdx]);
-                    } else if (_episodeIdx > 0) {
+                    const cols = _getGridCols();
+                    const col = _episodeIdx % cols;
+                    if (col > 0) {
                         _episodeIdx--;
                         _focusEl(episodeCards[_episodeIdx]);
                     }
+                    // Sol sütundayız → hareket etme
                 } else if (_vodZone === VOD_ZONE.BUTTONS) {
                     if (_btnIdx > 0) { _btnIdx--; _focusEl(modalBtns[_btnIdx]); }
+                } else if (_vodZone === VOD_REVIEW_ZONE && _reviewSubZone === 'stars') {
+                    // Yıldız azalt
+                    _reviewStarVal = Math.max(0, _reviewStarVal - 1);
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                 }
                 break;
 
-            
-
             case 'ArrowRight':
-                e.preventDefault();
                 if (_vodZone === VOD_ZONE.SEASONS) {
                     if (_seasonIdx < seasonBtns.length - 1) {
                         _seasonIdx++;
                         _focusEl(seasonBtns[_seasonIdx]);
-                        seasonBtns[_seasonIdx].click(); // Sezonu değiştir
+                        seasonBtns[_seasonIdx].click();
                     }
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
-                    if (_episodeIdx % 2 === 0 && _episodeIdx + 1 < episodeCards.length) {
-                        
-
-                        _episodeIdx++;
-                        _focusEl(episodeCards[_episodeIdx]);
-                    } else if (_episodeIdx < episodeCards.length - 1) {
+                    const cols = _getGridCols();
+                    const col = _episodeIdx % cols;
+                    if (col < cols - 1 && _episodeIdx + 1 < episodeCards.length) {
                         _episodeIdx++;
                         _focusEl(episodeCards[_episodeIdx]);
                     }
+                    // Sağ sütundayız veya son kart → hareket etme
                 } else if (_vodZone === VOD_ZONE.BUTTONS) {
                     if (_btnIdx < modalBtns.length - 1) { _btnIdx++; _focusEl(modalBtns[_btnIdx]); }
+                } else if (_vodZone === VOD_REVIEW_ZONE && _reviewSubZone === 'stars') {
+                    // Yıldız artır
+                    _reviewStarVal = Math.min(5, _reviewStarVal + 1);
+                    if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                 }
                 break;
 
-            
-
             case 'Enter':
             case 'OK':
-                e.preventDefault();
                 if (_vodZone === VOD_ZONE.BUTTONS) {
                     modalBtns[_btnIdx]?.click();
                 } else if (_vodZone === VOD_ZONE.SEASONS) {
                     seasonBtns[_seasonIdx]?.click();
-                    
-
                     setTimeout(() => {
                         const cards = _getEpisodeCards();
                         if (cards.length > 0) {
@@ -46378,20 +46349,41 @@ document.addEventListener('umittv_channels_ready', function() {
                     }, 150);
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
                     episodeCards[_episodeIdx]?.click();
+                } else if (_vodZone === VOD_REVIEW_ZONE) {
+                    if (_reviewSubZone === 'stars') {
+                        _highlightReviewZone('textarea');
+                    } else if (_reviewSubZone === 'textarea') {
+                        const ta = document.getElementById('vodReviewInput');
+                        if (ta) { ta.focus(); }
+                    } else if (_reviewSubZone === 'submit') {
+                        if (typeof window.vodSubmitReview === 'function') window.vodSubmitReview();
+                    }
                 }
                 break;
-
-            
 
             case 'Backspace':
             case 'Escape':
             case 'Back':
-                e.preventDefault();
-                if (typeof window.closeVodModal === 'function') window.closeVodModal();
+                if (_vodZone === VOD_REVIEW_ZONE) {
+                    // Yorum zone'undan çık — episode'a dön
+                    _clearFocus();
+                    _highlightReviewZone('stars'); // sıfırla ama gizleme
+                    if (episodeCards.length > 0) {
+                        _vodZone = VOD_ZONE.EPISODES;
+                        _episodeIdx = Math.max(0, episodeCards.length - 1);
+                        _focusEl(episodeCards[_episodeIdx]);
+                    } else {
+                        _vodZone = VOD_ZONE.BUTTONS;
+                        _btnIdx = 0;
+                        _focusEl(modalBtns[0]);
+                    }
+                } else {
+                    if (typeof window.closeVodModal === 'function') window.closeVodModal();
+                }
                 break;
 
             default:
-                return; // Diğer tuşlara dokunma
+                return;
         }
     }
 
@@ -46401,18 +46393,22 @@ document.addEventListener('umittv_channels_ready', function() {
 
     
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const vodModal = document.getElementById('vodModal');
-        if (vodModal) {
-            
-
-            vodModal.addEventListener('keydown', function(e) {
-                const modal = document.getElementById('vodModal');
-                if (!modal || modal.style.display !== 'flex') return;
-                _newHandleVodModalRemote(e);
-            }, true); // capture: true → eski listener'lardan önce çalışır
+    // TEK YETKİLİ LISTENER — capture:true ile en önce çalışır
+    // vodModal açıkken tüm yön tuşlarını ve OK'i yakalar
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('vodModal');
+        if (!modal || modal.style.display !== 'flex') return;
+        // Textarea aktifse (yorum yazıyorsa) sadece Escape'i işle
+        if (document.activeElement && document.activeElement.id === 'vodReviewInput') {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                document.activeElement.blur();
+                _highlightReviewZone('submit');
+            }
+            return;
         }
-    });
+        _newHandleVodModalRemote(e);
+    }, true);
 
     // vodModal updateRemoteFocus wrap → boştu, TVBOX_PERF_UNIFIED'a gerek yok
 
@@ -46568,11 +46564,10 @@ document.addEventListener('umittv_channels_ready', function() {
 })(); // end fixQualitySubtitleButtons
 
 document.addEventListener('keydown', function(e) {
-    if (!window.state || !window.state.remote) return;
-    if (window.state.remote.zone !== 'vodModal') return;
-    var modal = document.getElementById('vodModal');
-    if (!modal || modal.style.display !== 'flex') return;
-    if (typeof window.handleVodModalRemote === 'function') window.handleVodModalRemote(e);
+    // DEVRE DIŞI — patchVodModalDpad vodModal'a capture listener ile bağlı, tekrar çalıştırmaya gerek yok
+    // if (!window.state || !window.state.remote) return;
+    // if (window.state.remote.zone !== 'vodModal') return;
+    // if (typeof window.handleVodModalRemote === 'function') window.handleVodModalRemote(e);
 }, true);
 
 document.addEventListener('keydown', function(e) {

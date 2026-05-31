@@ -16451,7 +16451,7 @@ let state = {
     channels: [], 
     filtered: [], 
     cats: [], 
-    activeCat: 'Tümü', 
+    activeCat: 'all', 
     selectedM3U: 'all', 
     m3uList: [], 
     themes: [],
@@ -26866,6 +26866,7 @@ async function loadAllChannels(forceRefresh = false) {
                     if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
                     else if (typeof updateCategories === 'function') updateCategories();
                     renderCats();
+                    window._channelsFullyLoaded = true;
                     renderChannels();
                     updateChannelCount(state.filtered.length);
                     document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
@@ -26936,11 +26937,13 @@ async function loadAllChannels(forceRefresh = false) {
 
                     state.selectedM3U = state.selectedM3U === undefined ? 'all' : state.selectedM3U;
                     state.activeCat = 'all';
+                    state.sidebar.currentCategory = 'all';
                     state.filtered = state.channels.filter(c => c.listIdx !== undefined);
                     if (state.filtered.length === 0) state.filtered = [...state.channels];
                     if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
                     else if (typeof updateCategories === 'function') updateCategories();
                     renderCats();
+                    window._channelsFullyLoaded = true;
                     renderChannels();
                     updateChannelCount(state.filtered.length);
                     document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
@@ -27639,11 +27642,14 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
             // ── selectM3U('all') ile aynı render mantığı — en güvenilir yol ──
             state.selectedM3U = 'all';
             state.activeCat = 'all';
+            state.sidebar.currentCategory = 'all';
             state.filtered = state.channels.filter(c => c.listIdx !== undefined);
             if (state.filtered.length === 0) state.filtered = [...state.channels];
             if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
             else if (typeof updateCategories === 'function') updateCategories();
             if (typeof renderCats === 'function') renderCats();
+            // Kanallar tam yüklendi — flag'i set et
+            window._channelsFullyLoaded = true;
             renderChannels();
             updateChannelCount(state.filtered.length);
             document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
@@ -33861,6 +33867,25 @@ function renderChannels() {
     
     // Boş liste kontrolü
     if (state.filtered.length === 0) {
+        // Kanallar henüz yükleniyorsa "bulunamadı" değil, yükleniyor göster
+        const isLoading = !window._channelsFullyLoaded && state.channels.length === 0;
+        if (isLoading) {
+            grid.innerHTML = `
+                <div style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 40px;
+                    color: var(--text-muted);
+                    font-size: 16px;
+                ">
+                    <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 16px; animation: spin 1.2s linear infinite;">
+                        sync
+                    </span>
+                    Kanallar yükleniyor...
+                </div>
+            `;
+            return;
+        }
         grid.innerHTML = `
             <div style="
                 grid-column: 1 / -1;

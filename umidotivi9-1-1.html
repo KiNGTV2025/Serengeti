@@ -1542,8 +1542,10 @@ img {
     // TVBox tespiti: Android TV / FireTV / genel WebView
     var isTvBox = /Android/.test(navigator.userAgent) &&
                   (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(navigator.userAgent) ||
-                   window.screen.width >= 1280 && !('ontouchstart' in window) ||
+                   window.screen.width >= 1280 ||          /* Android TV dokunmatik olsa da büyük ekran */
                    /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(navigator.userAgent));
+    /* Android TV: BRAVIA, Philips, TCL vb. — dokunmatik katman olsa da kumandayla çalışır */
+    window._isAndroidTV = isTvBox; /* setupRemote'ta touchstart kontrolü için global */
 
     function applyTvPatch() {
         var b = document.body;
@@ -4538,6 +4540,157 @@ body {
     box-sizing: border-box;
 }
 #seekAmountPanel.visible { display: flex; }
+/* ── HIZ PANELİ — MX Player tarzı slider ── */
+#speedPanel {
+    position: fixed;
+    background: rgba(18,16,8,0.97);
+    border: 1px solid rgba(255,215,0,0.22);
+    border-radius: 12px;
+    padding: 10px 12px 10px;
+    display: none;
+    flex-direction: column;
+    gap: 7px;
+    z-index: 999999;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.92);
+    pointer-events: auto;
+    width: min(320px, calc(100vw - 16px));
+    box-sizing: border-box;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+#speedPanel.visible { display: flex; touch-action: none; }
+/* Üst satır: − | büyük hız göstergesi | + */
+#speedTopRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+.sp-pm-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+    flex-shrink: 0;
+}
+.sp-pm-btn:hover, .sp-pm-btn.dpad-focused {
+    background: rgba(255,215,0,0.20);
+    border-color: rgba(255,215,0,0.7);
+    transform: scale(1.08);
+}
+.sp-pm-btn:active { transform: scale(0.93); }
+#speedDisplay {
+    flex: 1;
+    text-align: center;
+    font-family: 'Rajdhani', 'Exo 2', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    line-height: 1;
+    user-select: none;
+}
+#speedResetBtn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, border-color 0.12s;
+    touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+    flex-shrink: 0;
+}
+#speedResetBtn:hover, #speedResetBtn.dpad-focused {
+    background: rgba(255,215,0,0.15);
+    border-color: rgba(255,215,0,0.5);
+    color: #FFD700;
+}
+/* Slider satırı */
+#speedSliderRow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    padding: 0 2px;
+}
+#speedSliderTrack {
+    position: relative;
+    flex: 1;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+}
+#speedSliderBg {
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    transform: translateY(-50%);
+    height: 3px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 2px;
+}
+#speedSliderFill {
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    height: 3px;
+    background: #4a90d9;
+    border-radius: 2px;
+    pointer-events: none;
+    transition: width 0.08s;
+}
+/* Tick noktaları: 0.10,1.0,2.0,3.0,4.0 */
+.sp-tick {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px; height: 5px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 50%;
+    pointer-events: none;
+}
+#speedHandle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    pointer-events: none;
+    transition: left 0.08s;
+    z-index: 2;
+}
+/* Alt tick etiketleri */
+#speedLabelsRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+    margin-top: -2px;
+}
+#speedLabelsRow span {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    min-width: 20px;
+}
 #seekAmountPanel > div {
     display: flex;
     gap: 4px;
@@ -13096,6 +13249,49 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="btn-label" id="hideControlsLabel">Gizle</span>
                         </button>
                         <div style="position:relative;">
+                        <button class="player-action-btn" id="btnSpeed" title="Oynatma Hızı" style="display:none;">
+                            <span class="material-symbols-outlined">speed</span>
+                            <span class="btn-label" id="speedBtnLabel">1×</span>
+                        </button>
+                        <div id="speedPanel">
+                            <!-- Üst satır: − | hız göstergesi | + | reset -->
+                            <div id="speedTopRow">
+                                <button class="sp-pm-btn" id="speedMinusBtn" onclick="speedStep(-1)" title="Yavaşlat">−</button>
+                                <div id="speedDisplay">1.00×</div>
+                                <button class="sp-pm-btn" id="speedPlusBtn" onclick="speedStep(+1)" title="Hızlandır">+</button>
+                                <button id="speedResetBtn" onclick="resetPlaybackSpeed()" title="Sıfırla">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">replay</span>
+                                </button>
+                            </div>
+                            <!-- Slider -->
+                            <div id="speedSliderRow">
+                                <div id="speedSliderTrack" id="speedSliderTrack">
+                                    <div id="speedSliderBg"></div>
+                                    <div id="speedSliderFill" style="width:0%"></div>
+                                    <!-- tick noktaları: 0.10,1.0,2.0,3.0,4.0 pozisyonları JS ile set edilir -->
+                                    <div class="sp-tick" id="spTick0"></div>
+                                    <div class="sp-tick" id="spTick1"></div>
+                                    <div class="sp-tick" id="spTick2"></div>
+                                    <div class="sp-tick" id="spTick3"></div>
+                                    <div class="sp-tick" id="spTick4"></div>
+                                    <div id="speedHandle"></div>
+                                </div>
+                            </div>
+                            <!-- Alt etiketler -->
+                            <div id="speedLabelsRow">
+                                <span>0.10x</span>
+                                <span>1.0x</span>
+                                <span>2.0x</span>
+                                <span>3.0x</span>
+                                <span>4.0x</span>
+                            </div>
+                            <!-- Kumanda ipucu -->
+                            <div id="speedRemoteHint" style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:10px;color:rgba(255,215,0,0.45);letter-spacing:0.5px;margin-top:-2px;">
+                                ◀ ▶ Hız &nbsp;|&nbsp; ↵ Uygula &nbsp;|&nbsp; ⟲ Sıfırla
+                            </div>
+                        </div>
+                        </div>
+                        <div style="position:relative;">
                         <button class="player-action-btn" id="btnSeekAmount" title="Sarma Süresi Seç">
                             <span class="material-symbols-outlined">fast_forward</span>
                             <span class="btn-label" id="seekAmountBtnLabel">+10s</span>
@@ -13122,6 +13318,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="material-symbols-outlined" id="wpPlayerBtnIcon">chat_bubble</span>
                             <span class="btn-label">WP</span>
                             <span id="wpPlayerUnreadDot" style="display:none;position:absolute;top:4px;right:4px;width:7px;height:7px;background:#e74c3c;border-radius:50%;border:1px solid rgba(0,0,0,0.5);"></span>
+                        </button>
+                        <button class="player-action-btn" id="btnPip" onclick="togglePiP()" title="Resim İçinde Resim (PiP)">
+                            <span class="material-symbols-outlined" id="pipIcon">picture_in_picture</span>
+                            <span class="btn-label" id="pipLabel">PiP</span>
                         </button>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
@@ -13454,6 +13654,17 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <input type="checkbox" id="vibrationToggle" checked>
                     <span class="toggle-slider"></span>
                 </label>
+            </div>
+
+            <div class="toggle-container">
+                <span>Dikey Kaydırma ile Kanal Değişimi</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="swipeChannelToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:15px; text-align:center;">
+                (Kapalıyken bildirim ekranı kanal değiştirmez)
             </div>
 
             <div class="modal-btns" style="margin-top: 20px;">
@@ -15749,7 +15960,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -15785,6 +15996,7 @@ let state = {
         sleepTimer: null,
         lowPerformanceMode: false,
         fastMode: false,
+        swipeChannelChange: true,
     },
     
     passwordManager: {
@@ -15864,7 +16076,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSeekAmount', 'btnWPChat', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
         
         
 
@@ -22108,6 +22320,95 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             showControls(3000);
         }
 
+        /* ═══════════════════════════════════════════════════
+           PiP — Resim İçinde Resim (Picture-in-Picture)
+           Kumanda: btnPip → Enter/OK → togglePiP()
+           ═══════════════════════════════════════════════════ */
+        window.togglePiP = async function() {
+            const video = document.getElementById('videoPlayer');
+            if (!video) { showToast('⚠ Video bulunamadı'); return; }
+
+            // PiP desteklenmiyor mu?
+            if (!document.pictureInPictureEnabled && !video.webkitSupportsPresentationMode) {
+                showToast('⚠ Bu tarayıcı PiP desteklemiyor');
+                return;
+            }
+
+            try {
+                const pipIcon  = document.getElementById('pipIcon');
+                const pipLabel = document.getElementById('pipLabel');
+                const btn      = document.getElementById('btnPip');
+
+                // Webkit (Safari/iOS) PiP
+                if (video.webkitSupportsPresentationMode) {
+                    const mode = video.webkitPresentationMode === 'picture-in-picture'
+                        ? 'inline' : 'picture-in-picture';
+                    video.webkitSetPresentationMode(mode);
+                    const inPiP = mode === 'picture-in-picture';
+                    if (pipIcon)  pipIcon.textContent  = inPiP ? 'picture_in_picture_alt' : 'picture_in_picture';
+                    if (pipLabel) pipLabel.textContent = inPiP ? 'PiP ✓' : 'PiP';
+                    if (btn) btn.classList.toggle('btn-active', inPiP);
+                    showToast(inPiP ? '📺 PiP Açıldı — Arka Planda Oynatılıyor' : '📺 PiP Kapatıldı');
+                    playKeySound('click');
+                    return;
+                }
+
+                // Standart API
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                    if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
+                    if (pipLabel) pipLabel.textContent = 'PiP';
+                    if (btn) btn.classList.remove('btn-active');
+                    showToast('📺 PiP Kapatıldı');
+                } else {
+                    await video.requestPictureInPicture();
+                    if (pipIcon)  pipIcon.textContent  = 'picture_in_picture_alt';
+                    if (pipLabel) pipLabel.textContent = 'PiP ✓';
+                    if (btn) btn.classList.add('btn-active');
+                    showToast('📺 PiP Açıldı — Arka Planda Oynatılıyor');
+                }
+                playKeySound('click');
+
+            } catch(err) {
+                console.warn('PiP hatası:', err);
+                showToast('⚠ PiP başlatılamadı: ' + (err.message || err));
+            }
+        };
+
+        /* PiP olaylarını dinle — video PiP'ten çıkınca butonu güncelle */
+        (function() {
+            const video = document.getElementById('videoPlayer');
+            if (!video) return;
+
+            video.addEventListener('enterpictureinpicture', function() {
+                const pipIcon  = document.getElementById('pipIcon');
+                const pipLabel = document.getElementById('pipLabel');
+                const btn      = document.getElementById('btnPip');
+                if (pipIcon)  pipIcon.textContent  = 'picture_in_picture_alt';
+                if (pipLabel) pipLabel.textContent = 'PiP ✓';
+                if (btn) btn.classList.add('btn-active');
+            });
+
+            video.addEventListener('leavepictureinpicture', function() {
+                const pipIcon  = document.getElementById('pipIcon');
+                const pipLabel = document.getElementById('pipLabel');
+                const btn      = document.getElementById('btnPip');
+                if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
+                if (pipLabel) pipLabel.textContent = 'PiP';
+                if (btn) btn.classList.remove('btn-active');
+            });
+
+            /* Android TV: document visibility değişince (uygulama arkaya gidince) otomatik PiP */
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && window._isAndroidTV && video && !video.paused) {
+                    /* Android TV arka plana geçince otomatik PiP aç */
+                    if (document.pictureInPictureEnabled && !document.pictureInPictureElement) {
+                        video.requestPictureInPicture().catch(function(){});
+                    }
+                }
+            });
+        })();
+
         document.addEventListener('fullscreenchange', function() {
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             const fullscreenIconBottom = document.getElementById('fullscreenIconBottom');
@@ -22661,7 +22962,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 if (_isSeries) {
                     if (dY < 0) { if (typeof nextEpisode === 'function') nextEpisode(); }
                     else        { if (typeof prevEpisode === 'function') prevEpisode(); }
-                } else {
+                } else if (state.controlSettings.swipeChannelChange !== false) {
                     if (dY < 0) { nextCh(); showToast(_isLive ? '\u25b6 Sonraki Kanal' : '\u25b6 Sonraki Film'); }
                     else        { prevCh(); showToast(_isLive ? '\u25c4 Önceki Kanal' : '\u25c4 Önceki Film'); }
                 }
@@ -23646,6 +23947,7 @@ function saveControlSettings() {
             fastMode: document.getElementById('fastModeToggle').checked,
             sleepModeEnabled: document.getElementById('sleepModeToggle')?.checked || false,
             sleepTimeMinutes: Number(document.getElementById('sleepTimeSlider')?.value || 60),
+            swipeChannelChange: document.getElementById('swipeChannelToggle')?.checked !== false,
         };
 
         state.controlSettings = {
@@ -23747,6 +24049,9 @@ function updateSettingsUI() {
         document.getElementById('vibrationToggle').checked = settings.vibrationEnabled;
         document.getElementById('lowPerformanceToggle').checked = settings.lowPerformanceMode;
         document.getElementById('fastModeToggle').checked = settings.fastMode;
+        if (document.getElementById('swipeChannelToggle')) {
+            document.getElementById('swipeChannelToggle').checked = settings.swipeChannelChange !== false;
+        }
     }
     
     // Sleep Mode Modal'daki inputları güncelle
@@ -24137,6 +24442,8 @@ window.testSettings = {
         var panel = document.getElementById('seekAmountPanel');
         var btn   = document.getElementById('btnSeekAmount');
         if (!panel) return;
+        // Hız paneli açıksa kapat
+        if (window._speedPanelOpen) window.closeSpeedPanel();
         window._seekAmountPanelOpen = !window._seekAmountPanelOpen;
         if (window._seekAmountPanelOpen) {
             panel.classList.add('visible');
@@ -24233,8 +24540,278 @@ window.testSettings = {
 })();
 // ────────────────────────────────────────────────────────────────
 
-// Global değişken
-let sidebarRenderTimeout = null;
+// ── HIZ PANELİ — MX Player tarzı slider (0.25x – 4.0x) ─────────
+(function() {
+    // Hız aralığı: 0.25 – 4.0, 0.25 adım → 16 basamak (index 0-15)
+    var SP_MIN = 0.10, SP_MAX = 4.0, SP_STEP = 0.10;
+    var SP_TICKS = [0.10, 1.0, 2.0, 3.0, 4.0]; // slider tick pozisyonları
+
+    window._playbackSpeed = parseFloat(localStorage.getItem('playbackSpeed') || '1') || 1;
+    window._speedPanelOpen = false;
+    // D-pad odağı: 0=minus, 1=display(slider), 2=plus, 3=reset
+    window._speedDpadFocus = 1;
+
+    function _clamp(v) {
+        var steps = Math.round(v / SP_STEP);
+        var clamped = Math.max(Math.round(SP_MIN / SP_STEP), Math.min(Math.round(SP_MAX / SP_STEP), steps));
+        return Math.round(clamped * SP_STEP * 100) / 100; // iki ondalık basamak hassasiyeti
+    }
+    function _fmt(r) { return r.toFixed(2).replace(/\.?0+$/, '') + '×'; }
+
+    function _rateToPercent(r) { return (r - SP_MIN) / (SP_MAX - SP_MIN) * 100; }
+
+    function _updateUI(r) {
+        var pct = _rateToPercent(r);
+        var fill = document.getElementById('speedSliderFill');
+        var handle = document.getElementById('speedHandle');
+        var disp = document.getElementById('speedDisplay');
+        var lbl = document.getElementById('speedBtnLabel');
+        if (fill) fill.style.width = pct + '%';
+        if (handle) handle.style.left = pct + '%';
+        if (disp) disp.textContent = _fmt(r);
+        if (lbl) lbl.textContent = _fmt(r);
+    }
+
+    function _applySpeed(r, closeAfter) {
+        r = _clamp(r);
+        window._playbackSpeed = r;
+        localStorage.setItem('playbackSpeed', r);
+        var vid = document.getElementById('videoPlayer');
+        if (vid) vid.playbackRate = r;
+
+        // ── Hıza göre HLS buffer dinamik ayarı ──
+        // 2x+ üzerinde segment tüketimi hızlandığı için buffer büyütülmezse takılma olur.
+        // Formül: 1x = 20sn, 2x = 40sn, 3x = 60sn, 4x = 80sn (orantılı)
+        var hls = window.state && window.state.player && window.state.player.hls;
+        if (hls && hls.config) {
+            var baseLen = Math.round(20 * Math.max(1, r));   // 20sn × hız
+            var baseMax = Math.round(45 * Math.max(1, r));   // 45sn × hız
+            hls.config.maxBufferLength    = Math.min(baseLen, 120);
+            hls.config.maxMaxBufferLength = Math.min(baseMax, 240);
+            // Buffer yeniden besle — mevcut pozisyondan yükle
+            if (r > 1 && typeof hls.startLoad === 'function') {
+                hls.startLoad(-1);
+            }
+        }
+
+        _updateUI(r);
+        if (closeAfter) {
+            window.closeSpeedPanel();
+            if (typeof showToast === 'function') showToast('⚡ Oynatma hızı: ' + _fmt(r));
+            if (typeof playKeySound === 'function') playKeySound('confirm');
+        }
+    }
+
+    window.setPlaybackSpeed = function(r) { _applySpeed(r, true); };
+    window.resetPlaybackSpeed = function() { _applySpeed(1, false); if (typeof showToast === 'function') showToast('⚡ Hız sıfırlandı: 1×'); };
+    window.speedStep = function(dir) {
+        _applySpeed(window._playbackSpeed + dir * SP_STEP, false);
+        if (typeof playKeySound === 'function') playKeySound('nav');
+    };
+
+    function _positionPanel() {
+        var btn = document.getElementById('btnSpeed');
+        var panel = document.getElementById('speedPanel');
+        if (!btn || !panel) return;
+        var rect = btn.getBoundingClientRect();
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+
+        /* Genişlik: ekrana tam sığacak şekilde hesapla */
+        var panelW = Math.min(320, vw - 16);
+        panel.style.width = panelW + 'px';
+        panel.style.maxHeight = (vh - 20) + 'px';
+
+        /* Yatay: buton merkezine hizala, kenara taşmasın */
+        var left = rect.left + rect.width / 2 - panelW / 2;
+        left = Math.max(8, Math.min(left, vw - panelW - 8));
+        panel.style.left = left + 'px';
+
+        /* Dikey: önce panelin gerçek yüksekliğini ölç */
+        panel.style.visibility = 'hidden';
+        panel.style.display = 'flex';
+        var panelH = panel.offsetHeight;
+        panel.style.display = '';
+        panel.style.visibility = '';
+
+        /* Butonun üstünde yeterli alan var mı? */
+        var spaceAbove = rect.top - 8;
+        if (panelH <= spaceAbove) {
+            /* Üste yerleştir */
+            panel.style.top    = 'auto';
+            panel.style.bottom = (vh - rect.top + 8) + 'px';
+        } else {
+            /* Yer yok: butonun altına yerleştir, yine de taşmasın */
+            var topPos = Math.max(8, rect.bottom + 8);
+            panel.style.top    = topPos + 'px';
+            panel.style.bottom = 'auto';
+        }
+
+        /* Tick noktalarını pozisyonla */
+        SP_TICKS.forEach(function(r, i) {
+            var tick = document.getElementById('spTick' + i);
+            if (tick) tick.style.left = _rateToPercent(r) + '%';
+        });
+    }
+
+    function _dpadFocusUpdate() {
+        var ids = ['speedMinusBtn', null, 'speedPlusBtn', 'speedResetBtn'];
+        ids.forEach(function(id, i) {
+            if (!id) return;
+            var b = document.getElementById(id);
+            if (b) b.classList.toggle('dpad-focused', i === window._speedDpadFocus);
+        });
+    }
+    function _dpadFocusClear() {
+        ['speedMinusBtn','speedPlusBtn','speedResetBtn'].forEach(function(id) {
+            var b = document.getElementById(id);
+            if (b) b.classList.remove('dpad-focused');
+        });
+    }
+
+    window.toggleSpeedPanel = function() {
+        var panel = document.getElementById('speedPanel');
+        if (!panel) return;
+        if (window._seekAmountPanelOpen) window.closeSeekAmountPanel && window.closeSeekAmountPanel();
+        window._speedPanelOpen = !window._speedPanelOpen;
+        if (window._speedPanelOpen) {
+            panel.classList.add('visible');
+            _positionPanel();
+            _updateUI(window._playbackSpeed);
+            window._speedDpadFocus = 1; // slider/display odağında başla
+            _dpadFocusUpdate();
+            if (typeof showControls === 'function') showControls(99999);
+            // Kumanda ipucunu sadece remote/TV modunda göster
+            var hint = document.getElementById('speedRemoteHint');
+            if (hint) hint.style.display = (window._isAndroidTV || (window.state && window.state.remote && window.state.remote.active)) ? 'block' : 'none';
+        } else {
+            panel.classList.remove('visible');
+            _dpadFocusClear();
+        }
+    };
+
+    window.closeSpeedPanel = function() {
+        window._speedPanelOpen = false;
+        var panel = document.getElementById('speedPanel');
+        if (panel) panel.classList.remove('visible');
+        _dpadFocusClear();
+        if (typeof showControls === 'function') showControls(4000);
+    };
+
+    // Slider dokunma/tıklama (touch + mouse)
+    function _sliderHit(clientX) {
+        var track = document.getElementById('speedSliderTrack');
+        if (!track) return;
+        var rect = track.getBoundingClientRect();
+        var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        var raw = SP_MIN + pct * (SP_MAX - SP_MIN);
+        _applySpeed(raw, false);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        _updateUI(window._playbackSpeed);
+
+        var speedBtn = document.getElementById('btnSpeed');
+        if (speedBtn) {
+            speedBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                window.toggleSpeedPanel();
+            });
+        }
+
+        var panel = document.getElementById('speedPanel');
+
+        // ── Arkaya geçişi engelle: panel açıkken tüm touch/pointer event'leri yakala ──
+        // capture:true ile üstten yakala → playerContainer'a ulaşmasın
+        if (panel) {
+            ['touchstart','touchmove','touchend','touchcancel','pointerdown','pointermove','pointerup'].forEach(function(ev) {
+                panel.addEventListener(ev, function(e) {
+                    e.stopPropagation();
+                    // touchmove + pointerdown → scroll/seek tetiklenmesin
+                    if (ev === 'touchmove' || ev === 'pointerdown' || ev === 'touchstart') {
+                        e.preventDefault();
+                    }
+                }, { passive: false, capture: false });
+            });
+        }
+
+        var track = document.getElementById('speedSliderTrack');
+        if (track) {
+            var _dragging = false;
+            track.addEventListener('mousedown', function(e) {
+                _dragging = true; _sliderHit(e.clientX); e.preventDefault(); e.stopPropagation();
+            });
+            document.addEventListener('mousemove', function(e) {
+                if (_dragging) _sliderHit(e.clientX);
+            });
+            document.addEventListener('mouseup', function() { _dragging = false; });
+
+            track.addEventListener('touchstart', function(e) {
+                _dragging = true; _sliderHit(e.touches[0].clientX);
+                e.preventDefault(); e.stopPropagation();
+            }, { passive: false, capture: true });
+            track.addEventListener('touchmove', function(e) {
+                if (_dragging) { _sliderHit(e.touches[0].clientX); }
+                e.preventDefault(); e.stopPropagation();
+            }, { passive: false, capture: true });
+            track.addEventListener('touchend', function(e) {
+                _dragging = false;
+                e.stopPropagation();
+            }, { passive: false, capture: true });
+        }
+
+        // +/- ve reset butonları touch
+        var mb = document.getElementById('speedMinusBtn');
+        var pb = document.getElementById('speedPlusBtn');
+        var rb = document.getElementById('speedResetBtn');
+        if (mb) mb.addEventListener('touchend', function(e){ e.preventDefault(); e.stopImmediatePropagation(); window.speedStep(-1); }, { passive:false, capture:true });
+        if (pb) pb.addEventListener('touchend', function(e){ e.preventDefault(); e.stopImmediatePropagation(); window.speedStep(+1); }, { passive:false, capture:true });
+        if (rb) rb.addEventListener('touchend', function(e){ e.preventDefault(); e.stopImmediatePropagation(); window.resetPlaybackSpeed(); }, { passive:false, capture:true });
+    });
+
+    // D-pad navigasyon: Sol/Sağ = hız adımı, Yukarı/Aşağı = focus geçişi, Enter = uygula/kapat
+    document.addEventListener('keydown', function(ev) {
+        if (!window._speedPanelOpen) return;
+        var k = ev.key, c = ev.keyCode;
+        if (k === 'ArrowLeft' || c === 37) {
+            ev.preventDefault(); ev.stopPropagation();
+            window.speedStep(-1);
+        } else if (k === 'ArrowRight' || c === 39) {
+            ev.preventDefault(); ev.stopPropagation();
+            window.speedStep(+1);
+        } else if (k === 'ArrowUp' || c === 38) {
+            ev.preventDefault(); ev.stopPropagation();
+            // focus: minus ← display ← plus ← reset (döngüsel)
+            window._speedDpadFocus = (window._speedDpadFocus + 3) % 4;
+            _dpadFocusUpdate();
+        } else if (k === 'ArrowDown' || c === 40) {
+            ev.preventDefault(); ev.stopPropagation();
+            window._speedDpadFocus = (window._speedDpadFocus + 1) % 4;
+            _dpadFocusUpdate();
+        } else if (k === 'Enter' || c === 13) {
+            ev.preventDefault(); ev.stopPropagation();
+            var f = window._speedDpadFocus;
+            if (f === 0) window.speedStep(-1);
+            else if (f === 2) window.speedStep(+1);
+            else if (f === 3) window.resetPlaybackSpeed();
+            else { window.closeSpeedPanel(); if (typeof showToast==='function') showToast('⚡ Oynatma hızı: ' + _fmt(window._playbackSpeed)); }
+        } else if (k === 'Escape' || k === 'Backspace' || c === 27 || c === 461) {
+            ev.preventDefault(); ev.stopPropagation();
+            window.closeSpeedPanel();
+        }
+    }, true);
+
+    // Panel dışına tıklayınca kapat
+    document.addEventListener('click', function(ev) {
+        if (!window._speedPanelOpen) return;
+        var panel = document.getElementById('speedPanel');
+        var btn   = document.getElementById('btnSpeed');
+        if (panel && panel.contains(ev.target)) return;
+        if (btn   && btn.contains(ev.target))   return;
+        window.closeSpeedPanel();
+    }, true);
+})();
+// ────────────────────────────────────────────────────────────────
 
 function openSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -34007,6 +34584,8 @@ function resumeChannel(startTime) {
         var b = document.getElementById(id);
         if (b) { b.classList.remove('btn-active','remote-focused','focused'); }
     });
+    // Hız panelini kapat
+    if (window._speedPanelOpen && typeof window.closeSpeedPanel === 'function') window.closeSpeedPanel();
 
     // 0. Önceki Timeout'u Temizle (Çok Önemli!)
     // Eğer önceki kanal yüklenirken hızlıca değiştirdiyseniz, eski sayacı iptal etmeliyiz.
@@ -34282,6 +34861,8 @@ function resumeChannel(startTime) {
     
     updatePlayerFavIcon(ch.name);
     checkOrientation();
+    // Oynatıcı açılınca mobil tam ekran butonunu gizle
+    if (typeof window._updateMobileFsBtn === 'function') window._updateMobileFsBtn();
     
     const logoDisplay = document.getElementById('playerLogoDisplay');
     const channel = state.channels.find(c => c.name === ch.name);
@@ -34374,6 +34955,25 @@ function resumeChannel(startTime) {
         const _progBtn = document.getElementById('btnHideLiveProgress');
         if (_progBtn) {
             _progBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
+        }
+
+        // HIZ BUTONU: sadece VOD'da göster (canlı yayında anlamsız)
+        const _speedBtn = document.getElementById('btnSpeed');
+        if (_speedBtn) {
+            _speedBtn.style.display = state.player.isLiveStream ? 'none' : 'flex';
+        }
+        // Hız sıfırla — her yeni VOD 1x'ten başlasın
+        if (!state.player.isLiveStream) {
+            var _vid = document.getElementById('videoPlayer');
+            if (_vid) _vid.playbackRate = window._playbackSpeed || 1;
+        }
+
+        // PiP BUTONU: tarayıcı destekliyorsa göster
+        const _pipBtn = document.getElementById('btnPip');
+        if (_pipBtn) {
+            const _pipSupported = !!(document.pictureInPictureEnabled ||
+                (function(){ try { var v = document.getElementById('videoPlayer'); return v && v.webkitSupportsPresentationMode; } catch(e){ return false; } })());
+            _pipBtn.style.display = _pipSupported ? 'flex' : 'none';
         }
 
         // KONTROL GİZLE BUTONU: canlı yayın VE VOD'da göster
@@ -36171,6 +36771,10 @@ function updatePlayerEpgBar(channelName, tvgId) {
 function closePlayer() {
     // Buffer badge durdur
     if (typeof stopBufferBadge === 'function') stopBufferBadge();
+    // PiP açıksa kapat
+    if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().catch(function(){});
+    }
     // WP: host kapat bildir
     if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
       try {
@@ -36239,6 +36843,8 @@ function closePlayer() {
     
     const _pvClose = document.getElementById('playerView');
     if (_pvClose) _pvClose.style.display = 'none';
+    // Mobil tam ekran butonunu tekrar göster (portrait + player kapalı)
+    if (typeof window._updateMobileFsBtn === 'function') window._updateMobileFsBtn();
     // Canlı progress bar gizleme sınıfını temizle (sonraki açılışta state'e göre uygulansın)
     const _pcClose = document.getElementById('playerControls');
     if (_pcClose) _pcClose.classList.remove('hide-live-progress');
@@ -40798,7 +41404,9 @@ function handleFavoriteChannelSelect(key) {
 
         function setupRemote() {
     // Touch/mouse kullanımında remote (D-pad) modu kapat — highlight olmasın
+    // Android TV'de touchstart sistem tarafından tetiklenebilir — kumandayı kapatma
     document.addEventListener('touchstart', () => {
+        if (window._isAndroidTV) return; /* Android TV + TV Box: touch kumandayı kapatmasın */
         if (state.remote.active) {
             state.remote.active = false;
             document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
@@ -40815,10 +41423,15 @@ function handleFavoriteChannelSelect(key) {
     });
 
     document.addEventListener('keydown', (e) => {
+        const _wasInactive = !state.remote.active;
         state.remote.active = true;
         if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','OK','Backspace','Escape',' ', 'ChannelUp', 'ChannelDown'].includes(e.key)) { 
             playKeySound('navigate'); 
-            triggerVibration(30); 
+            triggerVibration(30);
+            /* Android TV: remote ilk kez aktifleşince odaklanma göster */
+            if (_wasInactive && typeof updateRemoteFocus === 'function') {
+                updateRemoteFocus();
+            }
         }
         
         const modalHandlers = {
@@ -50662,7 +51275,20 @@ _ready(function() {
             if (now - _lastFastRecovery < 3000) return; // 3sn'den sık recovery yok
 
             clearTimeout(_fastStallTimer);
+            // Yüksek hızda (>1x) buffer tüketimi hızlı → daha kısa timeout ile müdahale
+            var spd = window._playbackSpeed || 1;
+            var waitMs = spd > 1.5 ? 600 : spd > 1 ? 1000 : 1500;
             _fastStallTimer = setTimeout(function() {
+                _lastFastRecovery = Date.now();
+
+                // Yüksek hızda HLS'i yeniden besle
+                var hls = window.state && window.state.player && window.state.player.hls;
+                if (hls && spd > 1) {
+                    try {
+                        hls.startLoad(-1); // mevcut pozisyondan yeniden yükle
+                    } catch(e) {}
+                }
+
                 if (video.paused && !window._userPaused) {
                     try { video.play().catch(function(){}); } catch(e) {}
                 }
@@ -50679,7 +51305,7 @@ _ready(function() {
                         try { video.play().catch(function(){}); } catch(e) {}
                     }
                 } catch(e) {}
-            }, 1500); // 1.5sn sonra müdahale — mevcut watchdog'dan daha hızlı
+            }, waitMs);
         }, { passive: true });
 
         // Error recovery
@@ -53135,6 +53761,12 @@ html, body {
 :-webkit-full-screen #mobileFullscreenBtn {
     display: none !important;
 }
+/* Yatay modda gizle */
+@media (orientation: landscape) {
+    #mobileFullscreenBtn {
+        display: none !important;
+    }
+}
 </style>
 
 <!-- Tam Ekran butonu (mobilde görünür) -->
@@ -53236,6 +53868,25 @@ html, body {
     } else {
         initMobileFullscreen();
     }
+
+    /* Oynatıcı veya yönelim değişince butonu güncelle */
+    window._updateMobileFsBtn = function() {
+        var btn = document.getElementById('mobileFullscreenBtn');
+        if (!btn) return;
+        var isLandscape = window.innerWidth > window.innerHeight;
+        var playerView = document.getElementById('playerView');
+        var playerOpen = playerView && playerView.style.display === 'flex';
+        if (isLandscape || playerOpen) {
+            btn.classList.remove('visible');
+        } else {
+            if (isMobile()) btn.classList.add('visible');
+        }
+    };
+
+    window.addEventListener('orientationchange', function() {
+        setTimeout(window._updateMobileFsBtn, 100);
+    });
+    window.addEventListener('resize', window._updateMobileFsBtn);
 
 })();
 </script>

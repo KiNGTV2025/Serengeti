@@ -1500,27 +1500,27 @@ img {
     50%      { outline-color: var(--accent-primary, #FFD700); opacity: 0.55; }
 }
 
-/* Kanal kartı — tema rengi blink */
+/* Kanal kartı — tema rengi blink — PC'de aktif, TVBox'ta JS ile override edilir */
 .channel-card.remote-focused,
 .channel-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards,
-               focusBlink 1.1s ease-in-out 220ms infinite !important;
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
     transform: scale(1.10) !important;
     transform-origin: center center !important;
-    will-change: transform, box-shadow !important;
+    will-change: transform !important;
     z-index: 2 !important;
     position: relative !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
+                0 0 18px rgba(255,215,0,0.45) !important;
 }
 
-/* Buton/pill odağı — outline blink */
+/* Buton/pill odağı — outline blink — PC'de aktif, TVBox'ta JS ile override edilir */
 .header-btn.remote-focused,
 .player-action-btn.remote-focused,
 .m3u-pill.remote-focused,
 .cat-pill.remote-focused,
 .sidebar-category-pill.remote-focused,
 .category-list-item.remote-focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards,
-               focusBlinkOutline 1.2s ease-in-out 220ms infinite !important;
+    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
 }
 
 /* Odak KORUNUMU — remote-focused class varken outline hiç kaybolmasın */
@@ -1736,6 +1736,11 @@ img {
             --focus-outline:   var(--accent-primary);
             --focus-bg:        rgba(255,215,0,0.20);
             --focus-glow:      0 0 20px rgba(255,215,0,0.35);
+            /* Active pill — kontrast garantili (applyTheme tarafından güncellenir) */
+            --pill-active-bg:     rgba(255,215,0,0.18);
+            --pill-active-border: rgba(255,215,0,0.55);
+            --pill-active-text:   #FFD700;
+            --pill-active-shadow: 0 2px 12px rgba(255,215,0,0.35);
         }
         
          
@@ -1887,9 +1892,11 @@ body {
 }
 
  
-.low-performance-mode .lock-neon {
-    animation: none !important;  
-    text-shadow: 0 0 4px var(--accent-primary) !important;
+.low-performance-mode .lock-neon,
+.low-performance-mode .lock-neon.lock-locked,
+.low-performance-mode .lock-neon.lock-unlocked {
+    animation: none !important;
+    filter: drop-shadow(0 0 3px var(--accent-primary)) !important;
 }
 
  
@@ -1922,9 +1929,9 @@ body {
 .low-performance-mode .cat-pill.active,
 .fast-mode .m3u-pill.active,
 .fast-mode .cat-pill.active {
-    background: var(--accent-secondary) !important;
-    color: var(--accent-primary) !important;
-    border-color: var(--accent-secondary) !important;
+    background: var(--pill-active-bg, rgba(255,215,0,0.18)) !important;
+    color: var(--pill-active-text, #FFD700) !important;
+    border-color: var(--pill-active-border, rgba(255,215,0,0.55)) !important;
     box-shadow: none !important;
 }
 
@@ -2500,11 +2507,11 @@ body {
         }
         
         .m3u-pill.active, .cat-pill.active { 
-            background: var(--accent-secondary); 
-            color: var(--accent-primary); 
-            border-color: var(--accent-secondary); 
+            background: var(--pill-active-bg, rgba(255,215,0,0.18));
+            color: var(--pill-active-text, #FFD700);
+            border-color: var(--pill-active-border, rgba(255,215,0,0.55));
             transform: none !important;
-            box-shadow: 0 0 0 2px var(--accent-secondary);
+            box-shadow: var(--pill-active-shadow, 0 2px 12px rgba(255,215,0,0.35));
             font-weight: 800;
         }
 
@@ -2626,8 +2633,20 @@ body {
         }
         
         .grid-count:before {
-            content: "📺";
-            font-size: 14px;
+            content: "";
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+            background-color: var(--accent-primary, #FFD700);
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='7' width='20' height='14' rx='2' ry='2'/%3E%3Cpolyline points='16 2 12 7 8 2'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='7' width='20' height='14' rx='2' ry='2'/%3E%3Cpolyline points='16 2 12 7 8 2'/%3E%3C/svg%3E");
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
         }
 
          
@@ -7674,12 +7693,29 @@ select.sort-dpad-focused {
 
  
 .lock-neon {
-    display: inline-block;
-    color: var(--accent-primary);
-    text-shadow: 0 0 4px var(--accent-primary);  
-    animation: none;  
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
     vertical-align: middle;
+    line-height: 1;
+}
+
+/* Kilitli: tema rengiyle yanıp söner */
+.lock-neon.lock-locked {
+    color: var(--accent-primary, #FFD700);
+    animation: lockPulse 1.2s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px var(--accent-primary, #FFD700));
+}
+
+/* Açık kilit: sabit yeşil, animasyon yok */
+.lock-neon.lock-unlocked {
+    color: #2ed573;
+    animation: none;
+    filter: drop-shadow(0 0 3px rgba(46,213,115,0.6));
+}
+
+@keyframes lockPulse {
+    0%,100% { opacity: 1; filter: drop-shadow(0 0 5px var(--accent-primary,#FFD700)) drop-shadow(0 0 2px var(--accent-primary,#FFD700)); }
+    50%      { opacity: 0.35; filter: drop-shadow(0 0 1px var(--accent-primary,#FFD700)); }
 }
 
 .modal-content { 
@@ -10126,11 +10162,11 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
   transition: all 0.15s ease !important;
 }
 .cat-pill.active, .m3u-pill.active {
-  background: var(--accent-secondary) !important;
-  color: var(--accent-primary) !important;
+  background: var(--pill-active-bg, rgba(255,215,0,0.18)) !important;
+  color: var(--pill-active-text, #FFD700) !important;
   font-weight: 800 !important;
-  border-color: var(--accent-secondary) !important;
-  box-shadow: 0 2px 12px rgba(var(--accent-primary-rgb,255,215,0),0.35) !important;
+  border-color: var(--pill-active-border, rgba(255,215,0,0.55)) !important;
+  box-shadow: var(--pill-active-shadow, 0 2px 12px rgba(255,215,0,0.35)) !important;
 }
 .cat-pill:hover, .m3u-pill:hover {
   background: rgba(255,255,255,0.12) !important;
@@ -12540,11 +12576,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 onfocus="this.style.borderColor='rgba(255,215,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                                 <span id="vodReviewUser" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;"></span>
-                                <button onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gonder</button>
+                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gonder</button>
                             </div>
                         </div>
                         <div id="vodReviewsList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;scrollbar-width:none;padding-right:2px;"></div>
                         <div id="vodReviewsEmpty" style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:16px 0;display:none;">Henuz yorum yok. Ilk yorumu sen yap! 🎬</div>
+                        <!-- ── YUKARIYA ÇIK BUTONU (kumanda ile ulaşılabilir) ── -->
+                        <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+                            <button id="vodScrollUpBtn" style="background:rgba(255,215,0,0.1);border:1.5px solid rgba(255,215,0,0.3);border-radius:10px;color:rgba(255,215,0,0.8);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;padding:8px 20px;cursor:pointer;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">
+                                <span style="font-size:16px;">↑</span> Yukarı Çık
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -12565,7 +12607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:var(--accent-primary,#FFD700);letter-spacing:2px;text-shadow:0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.5);">⬡ WATCH PARTY</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:1px;">Arkadaşlarınla Birlikte İzle</div>
       </div>
-      <button onclick="closeWpLobby()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.5);width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;" class="wp-remote-focus">✕</button>
+      <button onclick="closeWpLobby()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.5);width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;" class="wp-remote-focus"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
 
     <!-- Kullanıcı adı -->
@@ -12582,7 +12624,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="font-size:12px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>Oda Oluştur</div>
         <input id="wpRoomPasswordInput" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'" placeholder="Şifre (opsiyonel)">
         <button id="wpCreateBtn" onclick="wpCreateRoom()" class="wp-remote-focus" style="width:100%;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:8px;padding:11px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
-          ✦ ODA AÇ
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>ODA AÇ
         </button>
       </div>
 
@@ -12592,7 +12634,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <input id="wpJoinCodeInput" placeholder="ODA KODU..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;outline:none;text-transform:uppercase;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter'){wpJoinRoom()}">
         <input id="wpJoinPasswordInput" placeholder="Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
         <button id="wpJoinBtn" onclick="wpJoinRoom()" class="wp-remote-focus" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:0.5px;">
-          → KATIL
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>KATIL
         </button>
       </div>
     </div>
@@ -12615,11 +12657,11 @@ document.addEventListener('DOMContentLoaded', () => {
             onkeydown="if(event.key==='Enter'){wpRoomPwPromptConfirm();}if(event.key==='Escape'){wpRoomPwPromptCancel();}">
           <button onclick="wpRoomPwPromptConfirm()" class="wp-remote-focus"
             style="background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:8px;padding:9px 16px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;white-space:nowrap;">
-            ✓ GİR
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>GİR
           </button>
           <button onclick="wpRoomPwPromptCancel()" class="wp-remote-focus"
             style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.5);cursor:pointer;">
-            ✕
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
       </div>
@@ -12635,7 +12677,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div style="padding:12px 14px;border-bottom:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.12);flex-shrink:0;background:var(--bg-main,#0f0f18);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
       <div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:2px;">⬡ WATCH PARTY</div>
-      <button onclick="closeWpPanel()" class="wp-remote-focus" style="background:#e74c3c;border:none;border-radius:6px;color:#fff;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;" title="Odadan Çık">✕</button>
+      <button onclick="closeWpPanel()" class="wp-remote-focus" style="background:#e74c3c;border:none;border-radius:6px;color:#fff;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;" title="Odadan Çık"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       <button onclick="hideWpPanel()" class="wp-remote-focus" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Paneli Gizle (Odada Kal)">−</button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
@@ -12648,7 +12690,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <!-- Tab Satırı -->
   <div style="display:flex;border-bottom:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.12);flex-shrink:0;background:var(--bg-main,#0f0f18);">
-    <button id="wpTabChat" onclick="wpSwitchTab('chat')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid var(--accent-primary,#FFD700);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:var(--accent-primary,#FFD700);cursor:pointer;letter-spacing:0.5px;">💬 SOHBET</button>
+    <button id="wpTabChat" onclick="wpSwitchTab('chat')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid var(--accent-primary,#FFD700);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:var(--accent-primary,#FFD700);cursor:pointer;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SOHBET</button>
     <button id="wpTabComments" onclick="wpSwitchTab('comments')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>YORUMLAR</button>
     <button id="wpTabMembers" onclick="wpSwitchTab('members')" class="wp-remote-focus" style="flex:1;padding:9px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>ÜYELER</button>
   </div>
@@ -13716,54 +13758,68 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     </div>
     
 <div class="modal-bg" id="searchModal" onclick="if(event.target.id==='searchModal') closeSearchModal()">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="m3u-modal-header">
-            <h3 style="color:var(--accent-primary); font-size:20px;">Kanal Arama</h3>
-            <button class="icon-btn" onclick="closeSearchModal()" style="width:32px; height:32px;">
-                <span class="material-symbols-outlined">close</span>
+    <div class="modal-content" style="max-width:520px;padding:0;overflow:hidden;border-radius:20px;background:linear-gradient(160deg,#0e1020 0%,#0a0c18 100%);border:1px solid rgba(255,215,0,0.2);box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,215,0,0.08);">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,215,0,0.04);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-primary,#FFD700);">search</span>
+                <span style="font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:2px;">ARAMA</span>
+            </div>
+            <button id="btnSearchClose" onclick="closeSearchModal()" tabindex="0" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;">
+                <span class="material-symbols-outlined" style="font-size:18px;">close</span>
             </button>
         </div>
-        
-        <div class="input-group" style="margin-top: 15px;">
-            <div class="filter-input-container">
-                <input type="text" id="searchInput" class="password-input" 
-                       placeholder="Kanal adı, kategori veya tür ara..."
-                       onkeyup="if(event.key==='Enter') performSearch()"
-                       autocomplete="off">
-                <span class="material-symbols-outlined filter-icon">search</span>
+
+        <div style="padding:16px 20px 20px;">
+            <!-- Arama kutusu -->
+            <div style="position:relative;margin-bottom:14px;">
+                <span class="material-symbols-outlined" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:20px;color:rgba(255,255,255,0.35);pointer-events:none;z-index:1;">search</span>
+                <input type="text" id="searchInput"
+                    placeholder="Kanal adı, kategori veya tür ara..."
+                    autocomplete="off" autocorrect="off" spellcheck="false"
+                    onkeyup="if(event.key==='Enter'){document.activeElement.blur();performSearch();}"
+                    style="width:100%;padding:13px 14px 13px 44px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:#fff;font-size:15px;font-family:'Rajdhani',sans-serif;font-weight:500;box-sizing:border-box;outline:none;-webkit-tap-highlight-color:transparent;">
+            </div>
+
+            <!-- Toggle'lar yan yana -->
+            <div style="display:flex;gap:10px;margin-bottom:14px;">
+                <div id="vodToggleContainer" tabindex="0" onclick="document.getElementById('includeVodToggle').click()" style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+                    <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);font-family:'Rajdhani',sans-serif;">VOD</span>
+                    <label class="toggle-switch" style="pointer-events:none;transform:scale(0.85);">
+                        <input type="checkbox" id="includeVodToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="liveToggleContainer" tabindex="0" onclick="document.getElementById('includeLiveToggle').click()" style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+                    <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);font-family:'Rajdhani',sans-serif;">Canlı</span>
+                    <label class="toggle-switch" style="pointer-events:none;transform:scale(0.85);">
+                        <input type="checkbox" id="includeLiveToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Aksiyon butonları -->
+            <div style="display:flex;gap:10px;margin-bottom:14px;">
+                <button id="btnSearchCancel" onclick="closeSearchModal()" tabindex="0" style="flex:1;padding:12px;background:rgba(var(--accent-primary-rgb,255,255,255),0.07);border:1.5px solid rgba(var(--accent-primary-rgb,255,255,255),0.25);border-radius:12px;color:var(--accent-primary,rgba(255,255,255,0.7));font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;">İptal</button>
+                <button id="btnSearchClear" onclick="clearSearch()" tabindex="0" style="flex:1;padding:12px;background:rgba(255,100,100,0.1);border:1.5px solid rgba(255,100,100,0.3);border-radius:12px;color:#ff8080;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;display:none;">Temizle</button>
+                <button id="btnSearchPerform" onclick="performSearch()" tabindex="0" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:12px;color:#000;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:7px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ARA</button>
+            </div>
+
+            <!-- Sonuç başlığı -->
+            <div id="searchResultsHeader" style="display:none;padding:8px 12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);border-radius:10px;margin-bottom:10px;align-items:center;justify-content:space-between;">
+                <span style="font-size:12px;font-weight:700;color:var(--accent-primary,#FFD700);font-family:'Rajdhani',sans-serif;letter-spacing:1px;">SONUÇLAR</span>
+                <span id="searchResultsCount" style="font-size:12px;color:rgba(255,255,255,0.5);font-family:'Rajdhani',sans-serif;"></span>
+            </div>
+
+            <!-- Sonuç listesi -->
+            <div id="searchResultsContainer" style="max-height:320px;overflow-y:auto;overflow-x:hidden;display:none;scrollbar-width:thin;scrollbar-color:rgba(255,215,0,0.3) transparent;-webkit-overflow-scrolling:touch;">
+                <div id="searchResultsList" style="display:flex;flex-direction:column;gap:6px;padding:2px;"></div>
             </div>
         </div>
-        
-        <div class="toggle-container" id="vodToggleContainer" tabindex="0" style="margin: 15px 0; cursor:pointer;" onclick="document.getElementById('includeVodToggle').click()">
-            <span>VOD'ları Dahil Et</span>
-            <label class="toggle-switch" style="pointer-events:none;">
-                <input type="checkbox" id="includeVodToggle" checked>
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
-        
-        <div class="toggle-container" id="liveToggleContainer" tabindex="0" style="margin: 15px 0; cursor:pointer;" onclick="document.getElementById('includeLiveToggle').click()">
-            <span>Canlı Kanalları Dahil Et</span>
-            <label class="toggle-switch" style="pointer-events:none;">
-                <input type="checkbox" id="includeLiveToggle" checked>
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
-        
-        
-        <div id="searchResultsContainer" style="max-height: 300px; overflow-y: auto; margin-top: 15px; display: none;">
-            <div class="search-results-header" style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
-                <span style="color: var(--accent-primary); font-weight: 600;">Sonuçlar</span>
-                <span id="searchResultsCount" style="font-size: 12px; color: var(--text-muted);">0 kanal bulundu</span>
-            </div>
-            <div id="searchResultsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-        
-        <div class="modal-btns" style="margin-top: 20px; justify-content: space-between;">
-            <button class="continue-modal-btn cancel" id="btnSearchCancel" onclick="closeSearchModal()">İptal</button>
-            <button class="continue-modal-btn continue" id="btnSearchClear" onclick="clearSearch()" style="display: none;">Temizle</button>
-            <button class="continue-modal-btn continue" id="btnSearchPerform" onclick="performSearch()">Ara</button>
-        </div>
+
+        <!-- Geri butonu -->
         <button class="modal-back-btn" tabindex="0" id="btnSearchBack" onclick="closeSearchModal()">
             <span class="material-symbols-outlined">arrow_back</span> Geri
         </button>
@@ -28878,11 +28934,13 @@ async function parseM3UAsync(text, listIdx) {
                 const hasPassword = m.password || m.encryptedPassword;
                 // Config'den gelen listede şifre direkt yazılıysa (m.password) → her zaman açık say
                 // Kullanıcı eklediği listede → sessionUnlocked veya rememberedPasswords'a bakıyoruz
-                const isUnlocked = (hasPassword && m.password) ||
-                    (hasPassword && m.encryptedPassword) ||
-                    state.passwordManager.rememberedPasswords[m.url] ||
+                const isUnlocked = state.passwordManager.rememberedPasswords[m.url] ||
                     state.passwordManager.sessionUnlocked.has(m.url);
-                const lockIcon = hasPassword ? (isUnlocked ? '<span class="lock-neon">🔐</span>' : '<span class="lock-neon">✅</span>') : '';
+                const lockIcon = hasPassword
+                    ? (isUnlocked
+                        ? '<span class="lock-neon lock-unlocked"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 019.9-1"/></svg></span>'
+                        : '<span class="lock-neon lock-locked"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>')
+                    : '';
                 const isCached = state.m3uMemoryCache.has(m.url);
                 const cachedSizeMB = isCached ? state.m3uMemoryCache.get(m.url).sizeMB : 0;
                 const memInfo = isCached ? ` <span style="font-size:10px;opacity:0.7">${cachedSizeMB.toFixed(0)}MB</span>` : '';
@@ -30714,8 +30772,8 @@ function _vhsRender() {
             +   '<div class="vhs-title">' + _e(item.name) + '</div>'
             +   (item.overview ? '<div class="vhs-overview">' + _e(item.overview) + '</div>' : '')
             +   '<div class="vhs-btns">'
-            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')">&#9654; ' + btnLabel + '</button>'
-            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')">&#8505; Detay</button>'
+            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg> ' + btnLabel + '</button>'
+            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Detay</button>'
             +   '</div>'
             + '</div>'
             + '</div>';
@@ -31292,7 +31350,7 @@ setTimeout(_vhsInit, 1200);
                 <span class="cw-header-title">Kaldığın Yerden Devam Et</span>
             </div>
             <button class="cw-clear-btn" id="btnClearAllContinue"
-                    onclick="event.stopPropagation(); clearContinueWatching();"
+                    onclick="event.stopPropagation(); if(state.remote.zone !== 'clearAllContinue') clearContinueWatching();"
                     tabindex="0">
                 <span class="material-symbols-outlined" style="font-size:${_isTVBox ? '12px' : '14px'};">delete_sweep</span>
                 ${_isTVBox ? 'Temizle' : 'Tümünü Temizle'}
@@ -31452,122 +31510,14 @@ setTimeout(_vhsInit, 1200);
             }
         });
         
-        // Card keydown olayı
+        // Card keydown — tüm navigasyon handleContinueCardsRemote (global handler) tarafından yönetiliyor.
+        // Çift tetiklenme önlemek için kart düzeyinde navigasyon kaldırıldı.
         card.addEventListener('keydown', function(e) {
-            if (state.remote.zone !== 'continueCards') return;
-            
-            const currentCard = state.remote.continueCards;
-            const actionButtons = this.querySelectorAll('.continue-action-btn');
-            const closeBtn = this.querySelector('.continue-options-btn');
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    // Sol ok: X butonundaysak action butonlara, action butonlar arasında geçiş, yoksa önceki kart
-                    if (currentCard.selectedButtonIndex === -1) {
-                        // X butonundan → ilk action butona geç
-                        currentCard.selectedButtonIndex = 0;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, false);
-                    } else if (currentCard.selectedButtonIndex > 0) {
-                        currentCard.selectedButtonIndex--;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, false);
-                    } else if (index > 0) {
-                        cards[index - 1].focus();
-                    } else if (currentCard.hasClearButton) {
-                        clearBtn.focus();
-                    }
-                    break;
-                    
-                case 'ArrowRight':
-                    e.preventDefault();
-                    // Sağ ok: Butonlar arası veya X butonuna
-                    if (currentCard.selectedButtonIndex === -1) {
-                        // X butonundan sağa → sonraki kart varsa git, yoksa Tümünü Temizle'ye
-                        if (index < cards.length - 1) {
-                            cards[index + 1].focus();
-                        } else if (currentCard.hasClearButton && clearBtn) {
-                            // Son karttaki X'ten sağa → Tümünü Temizle
-                            state.remote.zone = 'clearAllContinue';
-                            clearBtn.classList.add('remote-focused');
-                            updateRemoteFocus();
-                            showRemoteHint('Tümünü Temizle (Enter)');
-                        }
-                    } else if (currentCard.selectedButtonIndex < actionButtons.length - 1) {
-                        currentCard.selectedButtonIndex++;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, false);
-                    } else {
-                        // En sağdaki butondan → X'e geç
-                        currentCard.selectedButtonIndex = -1;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, true);
-                        showRemoteHint(`Kaldığın Yerden: ${channelName} (Sil)`);
-                    }
-                    break;
-                    
-                case 'ArrowUp':
-                    e.preventDefault();
-                    if (currentCard.selectedButtonIndex !== -1) {
-                        // Action butonlardan → X'e çık
-                        currentCard.selectedButtonIndex = -1;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, true);
-                        showRemoteHint(`Kaldığın Yerden: ${channelName} (Sil)`);
-                    } else {
-                        // Zaten X'te → grid'e çık
-                        state.remote.zone = 'channels';
-                        state.remote.index = 0;
-                        updateRemoteFocus();
-                    }
-                    break;
-                    
-                case 'ArrowDown':
-                    e.preventDefault();
-                    if (currentCard.selectedButtonIndex === -1) {
-                        // X'ten → action butonlara
-                        currentCard.selectedButtonIndex = 0;
-                        updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, false);
-                    } else {
-                        // Action butonlardan → grid'e
-                        state.remote.zone = 'channels';
-                        state.remote.index = 0;
-                        updateRemoteFocus();
-                    }
-                    break;
-                    
-                case 'Enter':
-                case 'OK':
-                    e.preventDefault();
-                    if (currentCard.selectedButtonIndex === -1) {
-                        // X butonu seçiliyse → direkt sil (modal açmadan)
-                        deleteContinueWatchingRecord(channelName);
-                        return;
-                    }
-                    const selectedButton = actionButtons[currentCard.selectedButtonIndex];
-                    if (selectedButton) {
-                        const action = selectedButton.dataset.action;
-                        const channelName2 = selectedButton.dataset.channelName;
-                        const time = selectedButton.dataset.time;
-                        if (action === 'continue' && time) {
-                            playFromContinueCard(channelName2, parseFloat(time), true);
-                        } else if (action === 'restart') {
-                            playFromContinueCard(channelName2, 0, false);
-                        }
-                    }
-                    break;
-                    
-                case 'Menu':
-                case 'ContextMenu':
-                    e.preventDefault();
-                    // Silme seçeneği
-                    openDeleteContinueModal(channelName, continueIndex);
-                    break;
-                    
-                case 'Backspace':
-                case 'Escape':
-                    e.preventDefault();
-                    // Back tuşu: Normal kanallara dön
-                    state.remote.zone = 'channels';
-                    state.remote.index = 0;
-                    updateRemoteFocus();
-                    break;
+            // Navigasyon global keydown handler'ında (handleContinueCardsRemote) işleniyor.
+            // Burada sadece varsayılan tarayıcı davranışını engelle.
+            if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter','OK',
+                 'Backspace','Escape','Menu','ContextMenu'].includes(e.key)) {
+                e.preventDefault();
             }
         });
         
@@ -31583,17 +31533,10 @@ setTimeout(_vhsInit, 1200);
             });
             
             btn.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === 'OK') {
+                // Navigasyon handleContinueCardsRemote tarafından yönetiliyor.
+                if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter','OK',
+                     'Backspace','Escape'].includes(e.key)) {
                     e.preventDefault();
-                    const action = this.dataset.action;
-                    const channelName = this.dataset.channelName;
-                    const time = this.dataset.time;
-                    
-                    if (action === 'continue' && time) {
-                        playFromContinueCard(channelName, parseFloat(time), true);
-                    } else if (action === 'restart') {
-                        playFromContinueCard(channelName, 0, false);
-                    }
                 }
             });
         });
@@ -31633,10 +31576,14 @@ function updateContinueCardsFocus() {
     // DOM focus ver — kumanda olaylarının ulaşması için zorunlu
     try { card.focus({ preventScroll: true }); } catch(e) {}
     
-    // Seçili butonu remote-focused yap
+    // Seçili butonu remote-focused yap (selectedButtonIndex === -1 ise X butonu seçili — action buton highlight etme)
     const actionButtons = card.querySelectorAll('.continue-action-btn');
-    if (actionButtons.length > currentCard.selectedButtonIndex) {
+    if (currentCard.selectedButtonIndex >= 0 && actionButtons.length > currentCard.selectedButtonIndex) {
         actionButtons[currentCard.selectedButtonIndex].classList.add('remote-focused');
+    } else if (currentCard.selectedButtonIndex === -1) {
+        // X butonu seçili → onu highlight et
+        const closeBtn = card.querySelector('.continue-options-btn');
+        if (closeBtn) closeBtn.classList.add('remote-focused');
     }
     
     // Kartı görünür alana getir
@@ -31648,7 +31595,9 @@ function updateContinueCardsFocus() {
     
     // İpucu göster
     const channelName = card.dataset.channelName;
-    const actionText = currentCard.selectedButtonIndex === 0 ? 'Devam Et' : 'Baştan İzle';
+    const actionText = currentCard.selectedButtonIndex === -1 ? 'Sil' 
+                     : currentCard.selectedButtonIndex === 0  ? 'Devam Et' 
+                     : 'Baştan İzle';
     showRemoteHint(`Kaldığın Yerden: ${channelName} (${actionText})`);
 }
 function updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, showClose) {
@@ -37998,8 +37947,20 @@ function updateSidebarFavIcons(channelName) {
             const r = document.documentElement;
             // Tüm CSS değişkenlerini tek RAF içinde uygula — titreme önlenir
             requestAnimationFrame(function() {
-            r.style.setProperty('--bg-main', t.bg); 
-            r.style.setProperty('--bg-panel', t.panel); 
+            // bg ve panel'i karanlık tut — açık renkli temalar (premium sarı vb.) sayfa bg'sini parlak yapmasın
+            (function() {
+                const clampDark = (hex, maxLum) => {
+                    if (!hex || !hex.startsWith('#')) return hex;
+                    const h = hex.replace('#','');
+                    const toC = s => { const v = parseInt(s,16)/255; return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4); };
+                    const lum = 0.2126*toC(h.substring(0,2))+0.7152*toC(h.substring(2,4))+0.0722*toC(h.substring(4,6));
+                    if (lum <= maxLum) return hex; // zaten koyu, dokunma
+                    // Çok açık → koyu gri fallback (primary'den hafif tintli)
+                    return '#111111';
+                };
+                r.style.setProperty('--bg-main',  clampDark(t.bg,    0.12));
+                r.style.setProperty('--bg-panel', clampDark(t.panel, 0.18));
+            })();
             r.style.setProperty('--accent-primary', t.primary); 
             r.style.setProperty('--accent-secondary', t.secondary);
             
@@ -38084,6 +38045,42 @@ function updateSidebarFavIcons(channelName) {
                 r.style.setProperty('--focus-card-bg',   focusBg || t.secondary || '#111');
                 r.style.setProperty('--focus-card-text', focusText || t.primary || '#FFD700');
                 r.style.setProperty('--focus-card-glow', `0 0 0 3px ${t.primary || '#FFD700'}, 0 0 18px rgba(${(t.primary && t.primary.startsWith('#')) ? hexToRgb(t.primary) : '255,215,0'},0.5)`);
+
+                // ── Active pill: bg ve text rengi kontrast garantili hesapla ──
+                try {
+                    const primRgb = t.primary && t.primary.startsWith('#') ? hexToRgb(t.primary) : '255,215,0';
+                    const secRgb  = t.secondary && t.secondary.startsWith('#') ? hexToRgb(t.secondary) : null;
+                    const lumP = (t.primary  && t.primary.startsWith('#'))  ? getLum(t.primary.replace('#','').padEnd(6,'0'))  : 0.5;
+                    const lumS = (t.secondary && t.secondary.startsWith('#')) ? getLum(t.secondary.replace('#','').padEnd(6,'0')) : null;
+
+                    // Secondary varsa ve koyu ise (lum<0.35) → secondary bg + primary text (GS, FB, TS gibi)
+                    // Secondary açıksa veya yoksa → primary'nin şeffaf tonu bg, primary text
+                    let pillActiveBg, pillActiveBorder, pillActiveText, pillActiveShadow;
+
+                    if (secRgb && lumS !== null && lumS < 0.35 && getContrast(lumP, lumS) >= 2.5) {
+                        // Secondary koyu, primary üstünde okunuyor → secondary bg + primary text
+                        pillActiveBg     = t.secondary;
+                        pillActiveBorder = t.secondary;
+                        pillActiveText   = t.primary;
+                        pillActiveShadow = `0 2px 14px rgba(${secRgb},0.55)`;
+                    } else {
+                        // Yoksa ya da uyumsuzsa → primary tonu
+                        pillActiveBg     = `rgba(${primRgb},0.18)`;
+                        pillActiveBorder = `rgba(${primRgb},0.55)`;
+                        pillActiveText   = lumP >= 0.15 ? t.primary : '#ffffff';
+                        pillActiveShadow = `0 2px 12px rgba(${primRgb},0.35)`;
+                    }
+
+                    r.style.setProperty('--pill-active-bg',     pillActiveBg);
+                    r.style.setProperty('--pill-active-border',  pillActiveBorder);
+                    r.style.setProperty('--pill-active-text',    pillActiveText);
+                    r.style.setProperty('--pill-active-shadow',  pillActiveShadow);
+                } catch(e3) {
+                    r.style.setProperty('--pill-active-bg',    'rgba(255,215,0,0.18)');
+                    r.style.setProperty('--pill-active-border', 'rgba(255,215,0,0.55)');
+                    r.style.setProperty('--pill-active-text',   '#FFD700');
+                    r.style.setProperty('--pill-active-shadow', '0 2px 12px rgba(255,215,0,0.35)');
+                }
                 // Modal kart arkaplanı — tema rengiyle hafif tintli, tam opak
                 try {
                     const rgb2 = hexToRgb(t.primary);
@@ -38188,6 +38185,7 @@ function openSearchModal() {
     document.getElementById('includeVodToggle').checked = searchState.includeVod;
     document.getElementById('includeLiveToggle').checked = searchState.includeLive;
     var _src=document.getElementById('searchResultsContainer'); if(_src) _src.style.display='none';
+    var _srh=document.getElementById('searchResultsHeader'); if(_srh) _srh.style.display='none';
     const clearBtn = document.getElementById('btnSearchClear');
     if (clearBtn) clearBtn.style.display = 'none';
     const countEl = document.getElementById('searchResultsCount');
@@ -38286,82 +38284,77 @@ function performSearch() {
 
 function displaySearchResults(results) {
     const container = document.getElementById('searchResultsContainer');
+    const header = document.getElementById('searchResultsHeader');
     const list = document.getElementById('searchResultsList');
     const count = document.getElementById('searchResultsCount');
-    
-    if (!container || !list || !count) return;
-    
+
+    if (!container || !list) return;
+
     if (results.length === 0) {
         container.style.display = 'none';
+        if (header) header.style.display = 'none';
         return;
     }
-    
+
+    // Header goster
+    if (header) { header.style.display = 'flex'; }
+    if (count) count.textContent = results.length + ' kanal';
     container.style.display = 'block';
-    count.textContent = `${results.length} kanal bulundu`;
-    
+
     let html = '';
-    results.forEach((channel, index) => {
+    results.forEach(function(channel, index) {
         if (!channel) return;
-        
         const isVod = channel.isLive === false;
-        const isFav = state.favs && state.favs.has(channel.name);
-        const channelName = channel.name || 'İsimsiz Kanal';
+        const isFav = window.state && window.state.favs && window.state.favs.has(channel.name);
+        const channelName = channel.name || '\u0130simsiz Kanal';
         const channelGroup = channel.group || 'Genel';
         const logo = channel.logo || '';
-        
-        html += `
-            <div class="search-result-item" 
-                 onclick="playFromSearchResult(${index})"
-                 data-index="${index}"
-                 data-channel-name="${channelName}"
-                 tabindex="0">
-                <div class="search-result-logo" style="width:36px;height:36px;min-width:36px;min-height:36px;max-width:36px;max-height:36px;">
-                    ${logo ? 
-                        `<img src="${logo}" alt="${channelName}" loading="lazy" 
-                              style="width:32px;height:32px;min-width:32px;min-height:32px;max-width:32px;max-height:32px;object-fit:contain;padding:2px;">` : 
-                        `<span class="material-symbols-outlined" style="font-size:20px;">
-                            ${isVod ? 'movie' : (channelGroup === RADIO_CATEGORY_NAME ? 'radio' : 'tv')}
-                        </span>`
-                    }
-                </div>
-                <div class="search-result-info">
-                    <div class="search-result-name">${channelName}</div>
-                    <div class="search-result-details">
-                        <span>${channelGroup}</span>
-                        <span class="search-result-type ${isVod ? 'vod' : ''}">
-                            ${isVod ? 'VOD' : 'CANLI'}
-                        </span>
-                        ${isFav ? '<span class="fav-icon">★</span>' : ''}
-                    </div>
-                </div>
-            </div>
-        `;
+        const typeLabel = isVod ? 'VOD' : 'CANLI';
+        const typeBg = isVod
+            ? 'background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;'
+            : 'background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));color:#000;';
+
+        html += '<div class="search-result-item" data-index="' + index + '" data-channel-name="' + channelName.replace(/"/g, '&quot;') + '" tabindex="0" style="touch-action:manipulation;">' +
+            '<div class="search-result-logo" style="width:44px;height:44px;min-width:44px;">' +
+            (logo
+                ? '<img src="' + logo + '" alt="" loading="lazy" style="width:40px;height:40px;object-fit:contain;">'
+                : '<span class="material-symbols-outlined" style="font-size:24px;">' + (isVod ? 'movie' : 'tv') + '</span>'
+            ) +
+            '</div>' +
+            '<div class="search-result-info" style="flex:1;min-width:0;">' +
+                '<div class="search-result-name" style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + channelName + '</div>' +
+                '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;">' +
+                    '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:0.8px;' + typeBg + '">' + typeLabel + '</span>' +
+                    '<span style="font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">' + channelGroup + '</span>' +
+                    (isFav ? '<span style="color:var(--accent-primary,#FFD700);font-size:14px;margin-left:auto;">★</span>' : '') +
+                '</div>' +
+            '</div>' +
+            '<span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.2);flex-shrink:0;">chevron_right</span>' +
+            '</div>';
     });
-    
+
     list.innerHTML = html;
-    
-    // Kumanda için event listener'lar ekle
-    setTimeout(() => {
-        const resultItems = document.querySelectorAll('.search-result-item');
-        resultItems.forEach((item, index) => {
-            item.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === 'OK') {
-                    e.preventDefault();
-                    playFromSearchResult(index);
-                }
-            });
+
+    // Touch/click handler - dokunmatik icin guvensiz onclick yerine event listener
+    if (!list._srClickBound) {
+        list._srClickBound = true;
+        list.addEventListener('click', function(e) {
+            const item = e.target.closest('.search-result-item');
+            if (!item) return;
+            const idx = parseInt(item.getAttribute('data-index'));
+            if (!isNaN(idx)) playFromSearchResult(idx);
         });
-    }, 50);
-    
-    // Remote focus için — her zaman ilk sonuca odaklan (remote.active olsun olmasın)
-    if (state.remote.zone === 'searchModal') {
-        const visibleBase = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'].filter(id => {
+    }
+
+    // Kumanda icin: sonuclara otomatik focus
+    if (state.remote && state.remote.zone === 'searchModal') {
+        const visibleBase = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'].filter(function(id) {
             const el = document.getElementById(id);
             return el && el.style.display !== 'none';
         });
-        state.remote.searchIndex = visibleBase.length; // İlk sonuç öğesi
+        state.remote.searchIndex = visibleBase.length; // ilk sonuc
         state.remote.active = true;
-        setTimeout(() => _updateSearchRemoteFocus(), 150);
+        setTimeout(function() { _updateSearchRemoteFocus(); }, 100);
     }
 }
 
@@ -38415,6 +38408,7 @@ function clearSearch() {
     document.getElementById('searchInput').value = '';
     const container = document.getElementById('searchResultsContainer');
     if (container) container.style.display = 'none';
+    var _srh2=document.getElementById('searchResultsHeader'); if(_srh2) _srh2.style.display='none';
     const clearBtn = document.getElementById('btnSearchClear');
     if (clearBtn) clearBtn.style.display = 'none';
     const count = document.getElementById('searchResultsCount');
@@ -38432,169 +38426,148 @@ function clearSearch() {
     playKeySound('click');
 }
 
-// ARAMA MODALI İÇİN KUMANDA HANDLER
+// ARAMA MODALI KUMANDA HANDLER - Yeniden yazildi
 function handleSearchModalRemote(e) {
-    // Input odaklanmışsa sadece Escape ve özel tuşları yakala, geri kalanı input'a bırak
-    const activeEl = document.activeElement;
-    const inputEl = document.getElementById('searchInput');
-    const inputFocused = activeEl && activeEl.id === 'searchInput';
+    const modal = document.getElementById('searchModal');
+    if (!modal || modal.style.display !== 'flex') return;
 
+    const inputEl = document.getElementById('searchInput');
+    const inputFocused = document.activeElement && document.activeElement.id === 'searchInput';
+
+    // Input odaklanmissa: Escape/ArrowDown disinda yaziya birak
     if (inputFocused) {
         if (e.key === 'Escape' || e.key === 'Backspace') {
             e.preventDefault();
             inputEl.blur();
             state.remote.searchIndex = 0;
             _updateSearchRemoteFocus();
-            return;
-        }
-        if (e.key === 'ArrowDown') {
+        } else if (e.key === 'ArrowDown') {
             e.preventDefault();
             inputEl.blur();
-            // Sonuç varsa ilk sonuca, yoksa VOD toggle'a geç
-            const resultItems = document.querySelectorAll('.search-result-item');
-            if (resultItems.length > 0) {
-                const visibleBase = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'].filter(id => {
-                    const el = document.getElementById(id);
-                    return el && el.style.display !== 'none';
-                });
-                state.remote.searchIndex = visibleBase.length; // ilk sonuç
-            } else {
-                state.remote.searchIndex = 1; // VOD toggle
-            }
+            state.remote.searchIndex = 1; // VOD toggle
             _updateSearchRemoteFocus();
-            return;
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            inputEl.blur();
+            performSearch();
         }
-        // Diğer tuşlar input'a gitsin (yazı yazma)
         return;
     }
 
-    // Navigasyon öğelerini oluştur
-    const baseElements = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform', 'btnSearchBack'];
-    // btnSearchClear gizliyse listeden çıkar
-    const clearBtn = document.getElementById('btnSearchClear');
-    const visibleBase = baseElements.filter(id => {
-        const el = document.getElementById(id);
+    e.preventDefault();
+
+    // Navigasyon listesi: sabit + sonuclar
+    const BASE_IDS = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'];
+    const visibleBase = BASE_IDS.filter(function(id) {
+        var el = document.getElementById(id);
         return el && el.style.display !== 'none';
     });
-
-    const resultItems = Array.from(document.querySelectorAll('.search-result-item'));
-    const resultIds = resultItems.map((_, i) => `searchResult_${i}`);
-    const allElements = [...visibleBase, ...resultIds];
+    const resultItems = Array.from(document.querySelectorAll('#searchResultsList .search-result-item'));
+    const totalCount = visibleBase.length + resultItems.length;
 
     if (state.remote.searchIndex === undefined) state.remote.searchIndex = 0;
+    var idx = state.remote.searchIndex;
 
     switch(e.key) {
         case 'ArrowUp':
-            e.preventDefault();
-            state.remote.searchIndex = Math.max(0, state.remote.searchIndex - 1);
+            idx = Math.max(0, idx - 1);
             break;
         case 'ArrowDown':
-            e.preventDefault();
-            state.remote.searchIndex = Math.min(allElements.length - 1, state.remote.searchIndex + 1);
+            idx = Math.min(totalCount - 1, idx + 1);
             break;
-        case 'Enter': case 'OK': {
-            e.preventDefault();
-            const activeId = allElements[state.remote.searchIndex];
-            if (!activeId) break;
-
-            if (activeId.startsWith('searchResult_')) {
-                const idx = parseInt(activeId.split('_')[1]);
-                if (resultItems[idx]) resultItems[idx].click();
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            // Toggle'larda sol/sag = toggle et
+            var curId = idx < visibleBase.length ? visibleBase[idx] : null;
+            if (curId === 'vodToggleContainer') { document.getElementById('includeVodToggle').click(); }
+            else if (curId === 'liveToggleContainer') { document.getElementById('includeLiveToggle').click(); }
+            break;
+        case 'Enter':
+        case 'OK': {
+            if (idx < visibleBase.length) {
+                var elId = visibleBase[idx];
+                var el = document.getElementById(elId);
+                if (!el) break;
+                if (el.tagName === 'INPUT' && el.type === 'text') {
+                    el.focus(); el.select(); return;
+                } else {
+                    el.click();
+                }
             } else {
-                const el = document.getElementById(activeId);
-                if (el) {
-                    if (el.classList && el.classList.contains('toggle-container')) {
-                        // toggle-container'a tıkla (click handler checkbox'ı toggle eder)
-                        el.click();
-                    } else if (el.type === 'checkbox') {
-                        el.checked = !el.checked;
-                        el.dispatchEvent(new Event('change'));
-                    } else if (el.tagName === 'BUTTON') {
-                        el.click();
-                    } else if (el.tagName === 'INPUT' && el.type === 'text') {
-                        // Arama input'una odaklan — klavye açılır
-                        el.focus();
-                        el.select();
-                        return; // focus sonrası updateRemoteFocus çağırma
-                    }
+                var ri = idx - visibleBase.length;
+                var item = resultItems[ri];
+                if (item) {
+                    // Direkt playFromSearchResult cagir
+                    var dataIdx = parseInt(item.getAttribute('data-index'));
+                    if (!isNaN(dataIdx)) playFromSearchResult(dataIdx);
                 }
             }
             break;
         }
-        case 'Backspace': case 'Escape': case 'GoBack': case 'Back':
-            e.preventDefault();
-            e._backHandled = true;
+        case 'Backspace':
+        case 'Escape':
+        case 'Back':
+        case 'GoBack':
             closeSearchModal();
+            return;
+        default:
             return;
     }
 
+    state.remote.searchIndex = idx;
     _updateSearchRemoteFocus();
 }
 
-// Arama modalı için özel focus güncelleme
 function _updateSearchRemoteFocus() {
-    // Önceki focus'u temizle — hem search-remote-focused hem toggle'lardaki remote-focused
-    document.querySelectorAll('.search-remote-focused').forEach(el => {
-        el.classList.remove('search-remote-focused');
-        el.classList.remove('remote-focused');
+    // Onceki focus'u temizle
+    document.querySelectorAll('#searchModal .remote-focused, #searchModal .search-remote-focused').forEach(function(el) {
+        el.classList.remove('remote-focused', 'search-remote-focused');
         el.style.outline = '';
         el.style.outlineOffset = '';
         el.style.boxShadow = '';
+        el.style.borderColor = '';
         el.style.background = '';
         el.style.transform = '';
-        el.style.borderColor = '';
-    });
-    // Toggle container'larda kalan remote-focused artıklarını da temizle
-    document.querySelectorAll('#searchModal .remote-focused').forEach(el => {
-        el.classList.remove('remote-focused');
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-        el.style.boxShadow = '';
-        el.style.borderColor = '';
     });
 
-    const baseElements = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform', 'btnSearchBack'];
-    const visibleBase = baseElements.filter(id => {
-        const el = document.getElementById(id);
+    var BASE_IDS = ['searchInput', 'vodToggleContainer', 'liveToggleContainer', 'btnSearchCancel', 'btnSearchClear', 'btnSearchPerform'];
+    var visibleBase = BASE_IDS.filter(function(id) {
+        var el = document.getElementById(id);
         return el && el.style.display !== 'none';
     });
-    const resultItems = Array.from(document.querySelectorAll('.search-result-item'));
-    const resultIds = resultItems.map((_, i) => `searchResult_${i}`);
-    const allElements = [...visibleBase, ...resultIds];
+    var resultItems = Array.from(document.querySelectorAll('#searchResultsList .search-result-item'));
+    var totalCount = visibleBase.length + resultItems.length;
 
-    const idx = state.remote.searchIndex || 0;
-    const activeId = allElements[idx];
-    if (!activeId) return;
+    var idx = state.remote.searchIndex || 0;
+    if (idx >= totalCount) idx = Math.max(0, totalCount - 1);
+    state.remote.searchIndex = idx;
 
-    let focusEl = null;
-    if (activeId.startsWith('searchResult_')) {
-        const ri = parseInt(activeId.split('_')[1]);
-        focusEl = resultItems[ri];
+    var focusEl = null;
+    if (idx < visibleBase.length) {
+        focusEl = document.getElementById(visibleBase[idx]);
     } else {
-        focusEl = document.getElementById(activeId);
+        focusEl = resultItems[idx - visibleBase.length];
     }
 
-    if (focusEl) {
-        // Her elemana her iki class'ı ekle — CSS kuralları hem remote-focused hem search-remote-focused bekliyor
-        focusEl.classList.add('search-remote-focused');
-        focusEl.classList.add('remote-focused');
+    if (!focusEl) return;
 
-        if (activeId.startsWith('searchResult_')) {
-            // CSS class yeterli, inline stil ekleme
-        } else if (focusEl.classList.contains('toggle-container')) {
-            // Toggle: CSS class yeterli
-        } else if (focusEl.tagName === 'INPUT') {
-            // Input kutusu — belirgin border + outline
-            focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-            focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
-            focusEl.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.25)';
-        } else {
-            // Butonlar (İptal, Ara, Geri) — inline outline ile kesin görünürlük
-            focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-            focusEl.style.outlineOffset = '2px';
-        }
-        focusEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    focusEl.classList.add('remote-focused', 'search-remote-focused');
+    if (focusEl.tagName === 'INPUT') {
+        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
+        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
+        focusEl.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.25)';
+    } else if (focusEl.classList.contains('toggle-container') || focusEl.id === 'vodToggleContainer' || focusEl.id === 'liveToggleContainer') {
+        focusEl.style.outline = '2px solid var(--accent-primary, #FFD700)';
+        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
+    } else if (focusEl.classList.contains('search-result-item')) {
+        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
+        focusEl.style.background = 'rgba(255,215,0,0.15)';
+    } else {
+        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
+        focusEl.style.outlineOffset = '2px';
     }
+    try { focusEl.focus({ preventScroll: true }); } catch(e) {}
+    focusEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
 }
 
 // Sort Backup Modal remote D-pad handler
@@ -39127,14 +39100,16 @@ function deleteContinueWatchingRecord(name) {
                     }
                 }
             } else if (currentEl && currentEl.id === 'vodInfoScroll') {
-                // vodInfoScroll'dayken: scroll alanını yukarı kaydır
+                // vodInfoScroll'dayken: scroll alanını yukarı kaydır (asıl scroll: vodModalBody)
+                const mb = document.getElementById('vodModalBody');
                 const sc = currentEl;
-                const atTop = sc.scrollTop <= 4;
+                const atTop = (mb ? mb.scrollTop : sc.scrollTop) <= 4;
                 if (atTop) {
                     // Zaten tepedeyiz — oynat butonuna çık
                     state.remote.vodModalIndex = Math.max(0, currentIdx - 1);
                 } else {
-                    sc.scrollTop -= 80;
+                    if (mb) mb.scrollTop -= 80;
+                    else sc.scrollTop -= 80;
                 }
             } else if (currentEl && currentEl.classList.contains('vod-review-star')) {
                 // Yorum yıldızından yukarı → vodInfoScroll'a dön
@@ -39174,10 +39149,12 @@ function deleteContinueWatchingRecord(name) {
                     }
                 }
             } else if (currentEl && currentEl.id === 'vodInfoScroll') {
-                // vodInfoScroll'dayken: scroll alanını aşağı kaydır
+                // vodInfoScroll'dayken: scroll alanını aşağı kaydır (asıl scroll: vodModalBody)
                 // En alta gelince yorum yıldızlarına geç
+                const mb = document.getElementById('vodModalBody');
                 const sc = currentEl;
-                const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 4;
+                const scrollEl = mb || sc;
+                const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 4;
                 if (atBottom) {
                     // Yorum yıldızı varsa ona git
                     const firstStar = elements.find(el => el.classList.contains('vod-review-star'));
@@ -39185,7 +39162,7 @@ function deleteContinueWatchingRecord(name) {
                         state.remote.vodModalIndex = elements.indexOf(firstStar);
                     }
                 } else {
-                    sc.scrollTop += 80;
+                    scrollEl.scrollTop += 80;
                 }
             } else {
                 state.remote.vodModalIndex = Math.min(elements.length - 1, currentIdx + 1);
@@ -41240,36 +41217,65 @@ function handleContinueCardsRemote(e) {
     switch(e.key) {
         case 'ArrowLeft':
             e.preventDefault();
-            if (currentCard.selectedButtonIndex > 0) {
-                // Butonlar arasında sola
-                currentCard.selectedButtonIndex--;
-                updateContinueCardsFocus();
-            } else if (currentCard.selectedCardIndex > 0) {
-                // Önceki karta
-                currentCard.selectedCardIndex--;
-                currentCard.selectedButtonIndex = 0;
-                updateContinueCardsFocus();
-            } else if (clearBtn) {
-                // Clear butonuna
-                clearBtn.focus();
-                clearBtn.classList.add('remote-focused');
+            {
+                const _cwCardEl = cards[currentCard.selectedCardIndex];
+                const _cwActionBtns = _cwCardEl ? _cwCardEl.querySelectorAll('.continue-action-btn') : [];
+                const _cwCloseBtn  = _cwCardEl ? _cwCardEl.querySelector('.continue-options-btn') : null;
+
+                if (currentCard.selectedButtonIndex === -1) {
+                    // X butonundan ← → Baştan İzle'ye (son action buton)
+                    currentCard.selectedButtonIndex = _cwActionBtns.length - 1;
+                    updateContinueCardsFocusWithClose(_cwCardEl, _cwActionBtns, _cwCloseBtn, false);
+                } else if (currentCard.selectedButtonIndex > 0) {
+                    // Butonlar arasında sola (Baştan → Devam Et)
+                    currentCard.selectedButtonIndex--;
+                    updateContinueCardsFocus();
+                } else if (currentCard.selectedCardIndex > 0) {
+                    // Önceki karta geç (X butonundan değil, Devam Et'ten)
+                    currentCard.selectedCardIndex--;
+                    currentCard.selectedButtonIndex = 0;
+                    updateContinueCardsFocus();
+                } else if (clearBtn) {
+                    // ← İlk kartta Devam Et'teyken → Tümünü Temizle'ye geçiş + zone güncelle
+                    state.remote.zone = 'clearAllContinue';
+                    document.querySelectorAll('.continue-card, .continue-action-btn, .continue-options-btn')
+                        .forEach(function(el) { el.classList.remove('remote-focused'); });
+                    clearBtn.classList.add('remote-focused');
+                    showRemoteHint('Tümünü Temizle (Enter)');
+                }
             }
             break;
             
         case 'ArrowRight':
             e.preventDefault();
-            const currentCardEl = cards[currentCard.selectedCardIndex];
-            const actionButtons = currentCardEl ? currentCardEl.querySelectorAll('.continue-action-btn') : [];
-            
-            if (currentCard.selectedButtonIndex < actionButtons.length - 1) {
-                // Butonlar arasında sağa
-                currentCard.selectedButtonIndex++;
-                updateContinueCardsFocus();
-            } else if (currentCard.selectedCardIndex < cards.length - 1) {
-                // Sonraki karta
-                currentCard.selectedCardIndex++;
-                currentCard.selectedButtonIndex = 0;
-                updateContinueCardsFocus();
+            {
+                const _cwCardEl = cards[currentCard.selectedCardIndex];
+                const _cwActionBtns = _cwCardEl ? _cwCardEl.querySelectorAll('.continue-action-btn') : [];
+                const _cwCloseBtn  = _cwCardEl ? _cwCardEl.querySelector('.continue-options-btn') : null;
+
+                if (currentCard.selectedButtonIndex === -1) {
+                    // X butonundan → sonraki kart veya Tümünü Temizle'ye
+                    if (currentCard.selectedCardIndex < cards.length - 1) {
+                        currentCard.selectedCardIndex++;
+                        currentCard.selectedButtonIndex = 0;
+                        updateContinueCardsFocus();
+                    } else if (clearBtn) {
+                        state.remote.zone = 'clearAllContinue';
+                        document.querySelectorAll('.continue-card, .continue-action-btn, .continue-options-btn')
+                            .forEach(function(el) { el.classList.remove('remote-focused'); });
+                        clearBtn.classList.add('remote-focused');
+                        showRemoteHint('Tümünü Temizle (Enter)');
+                    }
+                } else if (currentCard.selectedButtonIndex < _cwActionBtns.length - 1) {
+                    // Butonlar arasında sağa (Devam Et → Baştan İzle)
+                    currentCard.selectedButtonIndex++;
+                    updateContinueCardsFocus();
+                } else if (_cwCloseBtn) {
+                    // Son action butondan → X butonuna
+                    currentCard.selectedButtonIndex = -1;
+                    updateContinueCardsFocusWithClose(_cwCardEl, _cwActionBtns, _cwCloseBtn, true);
+                    showRemoteHint('Kaldığın Yerden: ' + (_cwCardEl ? _cwCardEl.dataset.channelName || '' : '') + ' (Sil)');
+                }
             }
             break;
             
@@ -41313,20 +41319,26 @@ function handleContinueCardsRemote(e) {
         case 'Enter':
         case 'OK':
             e.preventDefault();
-            const card = cards[currentCard.selectedCardIndex];
-            if (card) {
-                const actionButtons = card.querySelectorAll('.continue-action-btn');
-                const selectedButton = actionButtons[currentCard.selectedButtonIndex];
-                
-                if (selectedButton) {
-                    const action = selectedButton.dataset.action;
-                    const channelName = selectedButton.dataset.channelName;
-                    const time = selectedButton.dataset.time;
-                    
-                    if (action === 'continue' && time) {
-                        playFromContinueCard(channelName, parseFloat(time), true);
-                    } else if (action === 'restart') {
-                        playFromContinueCard(channelName, 0, false);
+            {
+                const _enterCard = cards[currentCard.selectedCardIndex];
+                if (_enterCard) {
+                    if (currentCard.selectedButtonIndex === -1) {
+                        // X butonu seçiliyse → kaydı sil (film başlatma!)
+                        const _delName = _enterCard.dataset.channelName;
+                        if (_delName) deleteContinueWatchingRecord(_delName);
+                        return;
+                    }
+                    const _enterActionBtns = _enterCard.querySelectorAll('.continue-action-btn');
+                    const _enterSelBtn = _enterActionBtns[currentCard.selectedButtonIndex];
+                    if (_enterSelBtn) {
+                        const action     = _enterSelBtn.dataset.action;
+                        const channelName = _enterSelBtn.dataset.channelName;
+                        const time        = _enterSelBtn.dataset.time;
+                        if (action === 'continue' && time) {
+                            playFromContinueCard(channelName, parseFloat(time), true);
+                        } else if (action === 'restart') {
+                            playFromContinueCard(channelName, 0, false);
+                        }
                     }
                 }
             }
@@ -46086,6 +46098,15 @@ document.addEventListener('umittv_channels_ready', function() {
             _btnIdx = 0;
             _focusEl(modalBtns[0] || modalBtns[modalBtns.length - 1]);
         }
+
+        // Açılış hint
+        const hintEl = document.getElementById('remoteHint');
+        if (hintEl) {
+            hintEl.textContent = '↑↓ Gezin | OK: Seç | Geri: Kapat';
+            hintEl.style.display = 'block';
+            clearTimeout(window._vodDpadHintTimer);
+            window._vodDpadHintTimer = setTimeout(() => { hintEl.style.display = 'none'; }, 2500);
+        }
     }
 
     
@@ -46147,16 +46168,39 @@ document.addEventListener('umittv_channels_ready', function() {
         _reviewSubZone = zone;
         const starPicker = document.getElementById('vodStarPicker');
         const textarea = document.getElementById('vodReviewInput');
-        const btn = document.querySelector('[onclick="vodSubmitReview()"]');
-        if (starPicker) starPicker.style.outline = zone === 'stars' ? '3px solid #FFD700' : 'none';
-        if (textarea) {
-            textarea.style.borderColor = zone === 'textarea' ? '#FFD700' : 'rgba(255,255,255,0.1)';
-            textarea.style.outline = zone === 'textarea' ? '3px solid rgba(255,215,0,0.4)' : 'none';
+        // Selector: id önce, yoksa onclick attr ile bul
+        const btn = document.getElementById('vodSubmitBtn') || document.querySelector('[onclick="vodSubmitReview()"]');
+        const scrollUpBtn = document.getElementById('vodScrollUpBtn');
+
+        // Tümünü sıfırla
+        if (starPicker) starPicker.style.outline = 'none';
+        if (textarea) { textarea.style.borderColor = 'rgba(255,255,255,0.1)'; textarea.style.outline = 'none'; }
+        if (btn) { btn.style.transform = ''; btn.style.boxShadow = ''; btn.style.outline = ''; }
+        if (scrollUpBtn) { scrollUpBtn.style.transform = ''; scrollUpBtn.style.boxShadow = ''; scrollUpBtn.style.outline = ''; }
+
+        if (zone === 'stars') {
+            if (starPicker) { starPicker.style.outline = '3px solid #FFD700'; starPicker.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+        } else if (zone === 'textarea') {
+            if (textarea) { textarea.style.borderColor = '#FFD700'; textarea.style.outline = '3px solid rgba(255,215,0,0.4)'; textarea.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+        } else if (zone === 'submit') {
+            if (btn) { btn.style.outline = '3px solid #FFD700'; btn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+        } else if (zone === 'scrollup') {
+            if (scrollUpBtn) { scrollUpBtn.style.outline = '3px solid #FFD700'; scrollUpBtn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; scrollUpBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         }
-        if (btn) {
-            btn.style.transform = zone === 'submit' ? 'scale(1.08)' : '';
-            btn.style.boxShadow = zone === 'submit' ? '0 0 14px rgba(255,215,0,0.5)' : '';
-            btn.style.outline = zone === 'submit' ? '3px solid #FFD700' : '';
+
+        // Hint güncelle
+        const hintEl = document.getElementById('remoteHint');
+        if (hintEl) {
+            const hints = {
+                stars: '←→ Yıldız | ↓ Yorum Yaz | OK: Onayla',
+                textarea: '↑ Yıldızlar | ↓ Gönder | OK: Klavye Aç',
+                submit: '↑ Yorum | OK: Gönder | ↓ Yukarı Çık',
+                scrollup: 'OK: Yukarı Git | ↑: Gönder\'e Dön'
+            };
+            hintEl.textContent = hints[zone] || '';
+            hintEl.style.display = 'block';
+            clearTimeout(window._reviewHintTimer);
+            window._reviewHintTimer = setTimeout(() => { hintEl.style.display = 'none'; }, 3000);
         }
     }
 
@@ -46179,14 +46223,17 @@ document.addEventListener('umittv_channels_ready', function() {
         switch(e.key) {
             case 'ArrowUp':
                 if (_vodZone === VOD_REVIEW_ZONE) {
-                    // Yorum zone içi navigasyon: submit→textarea→stars
-                    if (_reviewSubZone === 'submit') {
+                    // Yorum zone içi navigasyon: scrollup→submit→textarea→stars
+                    if (_reviewSubZone === 'scrollup') {
+                        _highlightReviewZone('submit');
+                    } else if (_reviewSubZone === 'submit') {
                         _highlightReviewZone('textarea');
                     } else if (_reviewSubZone === 'textarea') {
                         _highlightReviewZone('stars');
                     } else {
                         // Stars'tan çıkış — episode veya sezon zone'una dön
                         _clearFocus();
+                        _reviewSubZone = 'stars'; // sıfırla
                         if (episodeCards.length > 0) {
                             _vodZone = VOD_ZONE.EPISODES;
                             _episodeIdx = episodeCards.length - 1;
@@ -46246,6 +46293,16 @@ document.addEventListener('umittv_channels_ready', function() {
                         _vodZone = VOD_ZONE.EPISODES;
                         _episodeIdx = 0;
                         _focusEl(episodeCards[0]);
+                    } else if (hasReview) {
+                        // Film (bölüm yok) — doğrudan yorum zone'una geç
+                        _vodZone = VOD_REVIEW_ZONE;
+                        _reviewStarVal = 0;
+                        _clearFocus();
+                        _highlightReviewZone('stars');
+                        const _mb1 = document.getElementById('vodModalBody');
+                        const _sc1 = document.getElementById('vodInfoScroll');
+                        const _se1 = _mb1 || _sc1;
+                        if (_se1) _se1.scrollTop = _se1.scrollHeight;
                     }
                 } else if (_vodZone === VOD_ZONE.SEASONS) {
                     if (episodeCards.length > 0) {
@@ -46270,9 +46327,11 @@ document.addEventListener('umittv_channels_ready', function() {
                             _reviewStarVal = 0;
                             _clearFocus();
                             _highlightReviewZone('stars');
-                            // vodInfoScroll'u yorum alanına scroll et
-                            const sc = document.getElementById('vodInfoScroll');
-                            if (sc) sc.scrollTop = sc.scrollHeight;
+                            // vodModalBody'yi yorum alanına scroll et (asıl scroll eden o)
+                            const _mb2 = document.getElementById('vodModalBody');
+                            const _sc2 = document.getElementById('vodInfoScroll');
+                            const _se2 = _mb2 || _sc2;
+                            if (_se2) _se2.scrollTop = _se2.scrollHeight;
                         }
                     }
                 } else if (_vodZone === VOD_REVIEW_ZONE) {
@@ -46280,8 +46339,15 @@ document.addEventListener('umittv_channels_ready', function() {
                         _highlightReviewZone('textarea');
                     } else if (_reviewSubZone === 'textarea') {
                         _highlightReviewZone('submit');
+                    } else if (_reviewSubZone === 'submit') {
+                        // submit'ten aşağı → scrollup (yukarı çık butonu)
+                        const scrollUpBtn = document.getElementById('vodScrollUpBtn');
+                        if (scrollUpBtn) {
+                            _highlightReviewZone('scrollup');
+                        }
+                        // scrollup'tan aşağı gidilmez
                     }
-                    // submit'ten aşağı gidilmez
+                    // scrollup'tan aşağı gidilmez
                 }
                 break;
 
@@ -46293,19 +46359,21 @@ document.addEventListener('umittv_channels_ready', function() {
                         seasonBtns[_seasonIdx].click();
                     }
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
-                    const cols = _getGridCols();
-                    const col = _episodeIdx % cols;
-                    if (col > 0) {
+                    const colsL = _getGridCols();
+                    const colL = _episodeIdx % colsL;
+                    if (colL > 0) {
                         _episodeIdx--;
                         _focusEl(episodeCards[_episodeIdx]);
                     }
-                    // Sol sütundayız → hareket etme
                 } else if (_vodZone === VOD_ZONE.BUTTONS) {
                     if (_btnIdx > 0) { _btnIdx--; _focusEl(modalBtns[_btnIdx]); }
                 } else if (_vodZone === VOD_REVIEW_ZONE && _reviewSubZone === 'stars') {
-                    // Yıldız azalt
+                    // Yıldız azalt (min 1, 0 = temizle)
                     _reviewStarVal = Math.max(0, _reviewStarVal - 1);
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
+                    // Yıldız outline'ı koru (vodPickStar sıfırlamaz)
+                    const sp = document.getElementById('vodStarPicker');
+                    if (sp) sp.style.outline = '3px solid #FFD700';
                 }
                 break;
 
@@ -46317,19 +46385,21 @@ document.addEventListener('umittv_channels_ready', function() {
                         seasonBtns[_seasonIdx].click();
                     }
                 } else if (_vodZone === VOD_ZONE.EPISODES) {
-                    const cols = _getGridCols();
-                    const col = _episodeIdx % cols;
-                    if (col < cols - 1 && _episodeIdx + 1 < episodeCards.length) {
+                    const colsR = _getGridCols();
+                    const colR = _episodeIdx % colsR;
+                    if (colR < colsR - 1 && _episodeIdx + 1 < episodeCards.length) {
                         _episodeIdx++;
                         _focusEl(episodeCards[_episodeIdx]);
                     }
-                    // Sağ sütundayız veya son kart → hareket etme
                 } else if (_vodZone === VOD_ZONE.BUTTONS) {
                     if (_btnIdx < modalBtns.length - 1) { _btnIdx++; _focusEl(modalBtns[_btnIdx]); }
                 } else if (_vodZone === VOD_REVIEW_ZONE && _reviewSubZone === 'stars') {
                     // Yıldız artır
                     _reviewStarVal = Math.min(5, _reviewStarVal + 1);
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
+                    // Yıldız outline'ı koru
+                    const sp2 = document.getElementById('vodStarPicker');
+                    if (sp2) sp2.style.outline = '3px solid #FFD700';
                 }
                 break;
 
@@ -46357,6 +46427,17 @@ document.addEventListener('umittv_channels_ready', function() {
                         if (ta) { ta.focus(); }
                     } else if (_reviewSubZone === 'submit') {
                         if (typeof window.vodSubmitReview === 'function') window.vodSubmitReview();
+                    } else if (_reviewSubZone === 'scrollup') {
+                        // Asıl scroll eden vodModalBody — onu başa sar
+                        const mb = document.getElementById('vodModalBody');
+                        if (mb) { try { mb.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { mb.scrollTop = 0; } }
+                        const sc = document.getElementById('vodInfoScroll');
+                        if (sc) { try { sc.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { sc.scrollTop = 0; } }
+                        // Buttons zone'una dön
+                        _clearFocus();
+                        _vodZone = VOD_ZONE.BUTTONS;
+                        _btnIdx = 0;
+                        _focusEl(modalBtns[0]);
                     }
                 }
                 break;
@@ -46367,7 +46448,16 @@ document.addEventListener('umittv_channels_ready', function() {
                 if (_vodZone === VOD_REVIEW_ZONE) {
                     // Yorum zone'undan çık — episode'a dön
                     _clearFocus();
-                    _highlightReviewZone('stars'); // sıfırla ama gizleme
+                    _reviewSubZone = 'stars'; // sıfırla
+                    // Tüm review highlight'ları temizle
+                    const rBtn = document.getElementById('vodSubmitBtn') || document.querySelector('[onclick="vodSubmitReview()"]');
+                    const rSp = document.getElementById('vodStarPicker');
+                    const rTa = document.getElementById('vodReviewInput');
+                    const rUp = document.getElementById('vodScrollUpBtn');
+                    if (rSp) rSp.style.outline = 'none';
+                    if (rTa) { rTa.style.borderColor = 'rgba(255,255,255,0.1)'; rTa.style.outline = 'none'; }
+                    if (rBtn) { rBtn.style.outline = ''; rBtn.style.boxShadow = ''; }
+                    if (rUp) { rUp.style.outline = ''; rUp.style.boxShadow = ''; }
                     if (episodeCards.length > 0) {
                         _vodZone = VOD_ZONE.EPISODES;
                         _episodeIdx = Math.max(0, episodeCards.length - 1);
@@ -46408,6 +46498,23 @@ document.addEventListener('umittv_channels_ready', function() {
             return;
         }
         _newHandleVodModalRemote(e);
+
+        // Her tuş sonrası hint güncelle (review zone dışında)
+        if (_vodZone !== VOD_REVIEW_ZONE) {
+            const hintEl = document.getElementById('remoteHint');
+            if (hintEl) {
+                let h = '';
+                if (_vodZone === VOD_ZONE.BUTTONS) h = '↑↓ Butonlar | OK: Seç | ↓ İçerik';
+                else if (_vodZone === VOD_ZONE.SEASONS) h = '←→ Sezon | OK: Seç | ↑ Butonlar | ↓ Bölümler';
+                else if (_vodZone === VOD_ZONE.EPISODES) h = '←→↑↓ Bölüm | OK: Oynat | ↑ Sezon | ↓ Yorumlar';
+                if (h) {
+                    hintEl.textContent = h;
+                    hintEl.style.display = 'block';
+                    clearTimeout(window._vodDpadHintTimer);
+                    window._vodDpadHintTimer = setTimeout(() => { hintEl.style.display = 'none'; }, 2500);
+                }
+            }
+        }
     }, true);
 
     // vodModal updateRemoteFocus wrap → boştu, TVBOX_PERF_UNIFIED'a gerek yok
@@ -51597,6 +51704,16 @@ video {
     contain: layout style !important;
 }
 
+/* ── VOD YORUM ZONE KUMANDA ODAĞI ── */
+#vodSubmitBtn,
+#vodScrollUpBtn {
+    transition: none !important;
+    will-change: auto !important;
+}
+#vodScrollUpBtn {
+    -webkit-tap-highlight-color: transparent;
+}
+
 </style>
 
 <script id="umittv-tvbox-js-ultimate">
@@ -52370,6 +52487,14 @@ function fbListen(path, callback) {
   return es; // .close() ile durdurulabilir
 }
 
+// ── Firebase fonksiyonlarını global scope'a aktar (player kodu window.fbSet kullanıyor) ──
+window.fbGet    = fbGet;
+window.fbSet    = fbSet;
+window.fbPush   = fbPush;
+window.fbDelete = fbDelete;
+window.fbUpdate = fbUpdate;
+window.fbListen = fbListen;
+
 // ── DURUM ──
 const WP = {
   inRoom: false,
@@ -52427,9 +52552,23 @@ window.wpLoadRooms = async function wpLoadRooms() {
   // Şifre prompt'unu gizle
   wpRoomPwPromptCancel();
   list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:14px;">Odalar yükleniyor...</div>';
-  const rooms = await fbGet('/rooms');
+  let rooms = null;
+  let fetchOk = false;
+  try {
+    // Firebase'e doğrudan fetch ile bağlantı testi yap
+    const testUrl = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app/rooms.json';
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 8000);
+    const resp = await fetch(testUrl, { method: 'GET', mode: 'cors', cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(tid);
+    if (resp.ok) {
+      fetchOk = true;
+      rooms = await resp.json(); // null = DB boş (normal), object = odalar var
+    }
+  } catch(e) { fetchOk = false; }
+
   list.innerHTML = '';
-  if(rooms === null) {
+  if(!fetchOk) {
     list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
       '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Bağlantı hatası</div>' +
       '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
@@ -52471,16 +52610,16 @@ window.wpLoadRooms = async function wpLoadRooms() {
     el.innerHTML = `
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:700;color:#e8e8f0;display:flex;align-items:center;gap:6px;">
-          ${hasLock ? '<span style="color:var(--accent-primary,#FFD700);font-size:13px;">🔒</span>' : '<span style="color:#2ed573;font-size:13px;">🔓</span>'}
+          ${hasLock ? `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-primary,#FFD700);flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2ed573;flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><line x1="7" y1="11" x2="3" y2="11" style="stroke:none"/><path d="M7 11V7a5 5 0 019.9-1"/></svg>`}
           <span>${r.roomName||'Oda'}</span>
           ${isMyRoom ? '<span style="font-size:10px;background:rgba(var(--accent-primary-rgb,255,215,0),0.2);color:var(--accent-primary,#FFD700);padding:1px 6px;border-radius:4px;font-weight:700;border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);">SAHİBİ</span>' : ''}
         </div>
         <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">${(r.contentTitle && !r.contentTitle.toLowerCase().includes('yükleniyor') ? r.contentTitle : 'Ümit TV')} <span style="color:rgba(255,255,255,0.2);">•</span> <span style="font-family:'Orbitron',sans-serif;letter-spacing:2px;">${code}</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:8px;">
-        <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:12px;padding:3px 10px;font-size:12px;color:var(--accent-primary,#FFD700);font-weight:700;">${memberCount} 👁</div>
-        <button class="wp-room-enter-btn wp-remote-focus" data-enter="${code}">▶ GİR</button>
-        ${isMyRoom ? `<button class="wp-del-btn wp-remote-focus" data-code="${code}" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.5);border-radius:8px;width:32px;height:32px;color:#e74c3c;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;" title="Odayı Sil">🗑</button>` : ''}
+        <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:12px;padding:3px 10px;font-size:12px;color:var(--accent-primary,#FFD700);font-weight:700;display:flex;align-items:center;gap:4px;">${memberCount} <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <button class="wp-room-enter-btn wp-remote-focus" data-enter="${code}"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="flex-shrink:0;vertical-align:middle;margin-right:4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>GİR</button>
+        ${isMyRoom ? `<button class="wp-del-btn wp-remote-focus" data-code="${code}" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.5);border-radius:8px;width:32px;height:32px;color:#e74c3c;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;" title="Odayı Sil"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>` : ''}
       </div>
     `;
     // Sil butonu
@@ -52488,11 +52627,11 @@ window.wpLoadRooms = async function wpLoadRooms() {
     if(delBtn) {
       delBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        delBtn.textContent = '⏳';
+        delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>';
         delBtn.disabled = true;
         const c = delBtn.getAttribute('data-code');
         await fbDelete('/rooms/' + c);
-        wpShowToast('🗑 Oda silindi: ' + c);
+        wpShowToast('Oda silindi: ' + c);
         wpLoadRooms();
       });
     }
@@ -54630,5 +54769,43 @@ html, body {
     });
     window.addEventListener('resize', window._updateMobileFsBtn);
 
+})();
+</script>
+
+<script>
+/* ── YUKARI ÇIK BUTONU — dokunmatik fix ── */
+(function() {
+  function doScrollUp(e) {
+    if (e && e.cancelable) e.preventDefault();
+    var targets = [
+      document.getElementById('vodModalBody'),
+      document.getElementById('vodInfoScroll'),
+      document.querySelector('.vod-modal-content'),
+      document.querySelector('.vod-modal')
+    ];
+    targets.forEach(function(el) {
+      if (!el) return;
+      try { el.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e2) {}
+      try { el.scrollTop = 0; } catch(e3) {}
+    });
+  }
+
+  function bindBtn() {
+    var btn = document.getElementById('vodScrollUpBtn');
+    if (!btn || btn._scrollBound) return;
+    btn._scrollBound = true;
+    btn.addEventListener('touchend', doScrollUp, { passive: false });
+    btn.addEventListener('click', doScrollUp);
+  }
+
+  document.addEventListener('DOMContentLoaded', bindBtn);
+
+  // vodModal her açıldığında yeniden bağla
+  document.addEventListener('click', function(e) {
+    var el = e.target;
+    if (el && (el.classList.contains('vod-card') || el.closest('.vod-card'))) {
+      setTimeout(bindBtn, 400);
+    }
+  }, true);
 })();
 </script>

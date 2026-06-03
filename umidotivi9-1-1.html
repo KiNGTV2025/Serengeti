@@ -14910,7 +14910,15 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 || location.port === '2435';
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
-    const allowed = ua.includes('okhttp');
+    // okhttp: App24 indirme UA'sı
+    // '; wv)': Android WebView render UA standart işareti (App24 WebView içinde bu gelir)
+    // appcreator: AppCreator24 bazı sürümlerde ekliyor
+    // android+mobile: genel Android WebView (Samsung Browser ve Firefox hariç)
+    const allowed = ua.includes('okhttp')
+                 || ua.includes('; wv)')
+                 || ua.includes('wv)')
+                 || ua.includes('appcreator')
+                 || (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser'));
     if (!allowed) {
         // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
         try {
@@ -14969,13 +14977,18 @@ const UmitSecurityManager = (function () {
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
     const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView
+        'okhttp',        // AppCreator24 APK WebView (indirme UA)
         'okhttp/4',      // AppCreator24 v4.x
+        '; wv)',          // Android WebView render UA standart işareti
+        'wv)',            // Kısa form
+        'appcreator',    // AppCreator24 bazı sürümlerde
     ];
 
     function _isUAAllowed() {
         if (IS_DEV) return true; // geliştirmede her UA geçer
         const ua = (navigator.userAgent || '').toLowerCase();
+        // Android WebView genel kontrol (Samsung Browser ve Firefox hariç)
+        if (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser')) return true;
         return ALLOWED_UA_PATTERNS.some(p => ua.includes(p.toLowerCase()));
     }
 
@@ -24590,10 +24603,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!overlay || overlay.classList.contains('hidden')) {
             resolve(); return;
         }
+        var _resolved = false;
+        function _doResolve() {
+            if (_resolved) return;
+            _resolved = true;
+            resolve();
+        }
         document.addEventListener('umittv_login_ok', function handler() {
             document.removeEventListener('umittv_login_ok', handler);
-            resolve();
+            _doResolve();
         });
+        // App24 WebView güvenlik: 12 saniye içinde login_ok gelmezse de devam et
+        // (WebView UA farkı veya fetch askıda kalırsa sonsuz beklemeyi önler)
+        setTimeout(_doResolve, 12000);
     });
 
     // ── HER ZAMAN DÜŞÜK PERFORMANS + HIZLI MOD AÇIK BAŞLA ──

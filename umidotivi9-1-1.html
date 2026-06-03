@@ -14902,41 +14902,8 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 //
 // ════════════════════════════════════════════════════════════════════════
 
-// ── UA EARLY BLOCK: init beklenmeden anında çalışır ─────────────────────
-(function() {
-    const _isDev = location.hostname === 'localhost'
-                || location.hostname === '127.0.0.1'
-                || location.hostname.startsWith('192.168.')
-                || location.port === '2435';
-    if (_isDev) return;
-    const ua = (navigator.userAgent || '').toLowerCase();
-    const allowed = ua.includes('okhttp');
-    if (!allowed) {
-        // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
-        try {
-            const _tgBot  = '8483455183:AAH6dcdlpBaQnG3f-ppQQYAEe3S73ba3w-Q';
-            const _tgChat = '-1003873863119';
-            const _ua     = navigator.userAgent || 'bilinmiyor';
-            const _msg    = '🚨 <b>ÜMİT TV — TARAYICI ERİŞİM DENEMESİ</b>\n\n⚠️ <b>Sebep:</b> Yetkisiz tarayıcı erişimi\n📱 <b>UA:</b> <code>' + _ua.slice(0,80) + '</code>';
-            fetch('https://api.telegram.org/bot' + _tgBot + '/sendMessage', {
-                method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ chat_id: _tgChat, text: _msg, parse_mode: 'HTML' })
-            }).catch(function(){});
-        } catch(e) {}
-        document.addEventListener('DOMContentLoaded', function() {
-            try { document.body.style.filter = 'none'; document.body.style.pointerEvents = 'none'; } catch(e) {}
-            const ov = document.createElement('div');
-            ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,8,12,0.98);display:flex;align-items:center;justify-content:center;font-family:sans-serif;padding:24px;box-sizing:border-box;';
-            ov.innerHTML = '<div style="max-width:420px;width:100%;background:rgba(28,8,8,0.99);border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;text-align:center;"><div style=\"font-size:52px;margin-bottom:14px;\">🔒</div><div style=\"font-size:16px;font-weight:900;color:#ff3333;letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;\">Güvenlik Uyarısı</div><div style=\"font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;\">Bu uygulama yalnızca resmi APK üzerinden açılabilir!\n\nTarayıcı erişimi engellendi.</div><div style=\"font-size:10px;color:rgba(255,80,80,0.4);margin-top:20px;letter-spacing:2px;\">ÜMİT TV SECURITY SYSTEM v2</div></div>';
-            document.body.appendChild(ov);
-            new MutationObserver(function() {
-                if (!document.body.contains(ov)) { document.body.appendChild(ov); document.body.style.filter = 'none'; }
-            }).observe(document.body, { childList: true });
-        });
-        // Script yüklenmesini de durdur
-        window.stop && window.stop();
-    }
-})();
+// ── UA EARLY BLOCK: DEVRE DIŞI — tüm ortamlar izinli ─────────────────────
+// (App24, tarayıcı, WebView vb. hepsi çalışır)
 
 const UmitSecurityManager = (function () {
     'use strict';
@@ -14974,9 +14941,7 @@ const UmitSecurityManager = (function () {
     ];
 
     function _isUAAllowed() {
-        if (IS_DEV) return true; // geliştirmede her UA geçer
-        const ua = (navigator.userAgent || '').toLowerCase();
-        return ALLOWED_UA_PATTERNS.some(p => ua.includes(p.toLowerCase()));
+        return true; // Tüm ortamlar izinli (App24, tarayıcı, WebView)
     }
 
     // ════════════════════════════════════════════════════
@@ -15582,13 +15547,13 @@ const UmitSecurityManager = (function () {
 
 // ── Başlat ───────────────────────────────────────────────────────────────
 UmitSecurityManager.init({
-    ua:       true,    // Sadece APK WebView (okhttp) erişebilir, tarayıcı engellenir
-    domain:   true,    // Sadece izinli domainlerde çalış
+    ua:       false,   // UA kontrolü kapalı — tüm ortamlar izinli
+    domain:   false,   // Domain kilidi kapalı
     devtools: false,   // TVBox'ta false — yanlış pozitif riski var
-    proxy:    true,    // WebRTC VPN/proxy tespiti
-    ext:      true,    // HTTP intercept eklentisi tespiti
+    proxy:    false,   // VPN/proxy tespiti kapalı
+    ext:      false,   // HTTP intercept eklentisi tespiti kapalı
     tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
-    block:    true,    // Tespit edilince kilitle
+    block:    false,   // Kilitleme kapalı
     threshold:160,
     onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },
 });
@@ -16310,7 +16275,7 @@ const EPG_MULTI_SOURCES = [
 
 const STREAM_PROXY = 'https://proxy.umitmodpremiumtr.workers.dev/?stream='; // primary
 const STREAM_PROXY2 = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
-const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=proxy';
+const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=';
 
 // ── REDIRECT-RESOLVE DOMAINS: fetch ile gerçek URL'yi bul, sonra HLS.js'e ver ──
 // Bu domainler 302 redirect yapıyor; HLS.js redirect'i takip edemez veya CORS patlar.
@@ -17897,12 +17862,23 @@ async function loadEPGData() {
         
 
         
-        const PROXIES = [
-            'https://turk.sadecenjoy.workers.dev/proxy?url=',
-            'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
-            'https://proxy.umittv.workers.dev/?url=proxy',
-        ];
-        
+        // Promise.any polyfill — eski Android WebView (Chrome <85) uyumluluğu için
+        if (typeof Promise.any !== 'function') {
+            Promise.any = function(promises) {
+                return new Promise(function(resolve, reject) {
+                    var n = promises.length;
+                    if (n === 0) { reject(new Error('All promises rejected')); return; }
+                    var errors = new Array(n);
+                    promises.forEach(function(p, i) {
+                        Promise.resolve(p).then(resolve, function(err) {
+                            errors[i] = err;
+                            if (--n === 0) reject(new Error('All promises rejected'));
+                        });
+                    });
+                });
+            };
+        }
+
         async function tryFetchEPG(url, timeoutMs = 12000) {
             try {
                 const ctrl = new AbortController();
@@ -17917,7 +17893,7 @@ async function loadEPGData() {
                 if (r.ok) {
                     const ct = r.headers.get('content-type') || '';
                     // HTML yanıtı reddet — redirect sayfası ya da hata sayfasıdır, XML değil
-                    if (ct.includes('text/html') && !url.includes('allorigins')) {
+                    if (ct.includes('text/html')) {
                         return null;
                     }
                     return r;
@@ -17930,24 +17906,9 @@ async function loadEPGData() {
 
         async function fetchOneEpgSource(srcUrls, label) {
             let response = null;
-            const _isFile = (typeof location !== 'undefined' && location.protocol === 'file:');
             for (const epgUrl of srcUrls) {
-                if (_isFile) {
-                    // file:// ortamında CORS engeli: proxy önce
-                    const proxyResults = await Promise.any(
-                        PROXIES.map(proxy => tryFetchEPG(proxy + encodeURIComponent(epgUrl)).then(r => r ? r : Promise.reject()))
-                    ).catch(() => null);
-                    if (proxyResults) { response = proxyResults; console.log('✓ EPG proxy OK:', label); break; }
-                    response = await tryFetchEPG(epgUrl);
-                    if (response) { console.log('✓ EPG direkt OK:', label); break; }
-                } else {
-                    response = await tryFetchEPG(epgUrl);
-                    if (response) { console.log('✓ EPG direkt OK:', label); break; }
-                    const proxyResults = await Promise.any(
-                        PROXIES.map(proxy => tryFetchEPG(proxy + encodeURIComponent(epgUrl)).then(r => r ? r : Promise.reject()))
-                    ).catch(() => null);
-                    if (proxyResults) { response = proxyResults; console.log('✓ EPG proxy OK:', label); break; }
-                }
+                response = await tryFetchEPG(epgUrl);
+                if (response) { console.log('✓ EPG direkt OK:', label); break; }
             }
             if (!response) { console.warn('✗ EPG kaynağı başarısız:', label); return null; }
             let text = await response.text();
@@ -37723,14 +37684,9 @@ function resumeChannel(startTime) {
             }
         })();
     } else if (isHlsUrl) {
-        // AppCreator24 WebView (okhttp UA): http:// HLS URL'lerine Mixed Content engeli UYGULANMAZ → direkt aç
-        const _isOkhttpHls = (navigator.userAgent || '').toLowerCase().includes('okhttp');
-        // http:// ile başlayan HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç
-        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && !_isOkhttpHls) {
+        // http:// HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç (tüm ortamlar)
+        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:')) {
             startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-        } else if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:') && _isOkhttpHls) {
-            // App24 okhttp WebView → direkt HLS, proxy gerekmez
-            startHls(rawUrl);
         } else
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan
@@ -37835,10 +37791,8 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
-        // AppCreator24 WebView (okhttp UA): http:// linklere Mixed Content engeli UYGULANMAZ
-        // → direkt rawUrl kullan, kesinlikle HLS.js'e gönderme (HLS.js MKV/MP4 parse edemez)
-        const _isOkhttp = (navigator.userAgent || '').toLowerCase().includes('okhttp');
-        const _isMixedContent = !_isOkhttp && rawUrl.startsWith('http:') && location.protocol === 'https:';
+        // http:// mixed content → proxy üzerinden aç (tüm ortamlar)
+        const _isMixedContent = rawUrl.startsWith('http:') && location.protocol === 'https:';
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;

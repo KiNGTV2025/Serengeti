@@ -607,7 +607,7 @@
     }
     </style>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" media="print" onload="this.media='all'"></noscript>
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"></noscript>
     <style>
      
     .material-symbols-outlined {
@@ -14823,8 +14823,8 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     
     <div class="cache-indicator" id="cacheIndicator">Önbellek: 0</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script>
         
 
@@ -14910,15 +14910,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 || location.port === '2435';
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
-    // okhttp: App24 indirme UA'sı
-    // '; wv)': Android WebView render UA standart işareti (App24 WebView içinde bu gelir)
-    // appcreator: AppCreator24 bazı sürümlerde ekliyor
-    // android+mobile: genel Android WebView (Samsung Browser ve Firefox hariç)
-    const allowed = ua.includes('okhttp')
-                 || ua.includes('; wv)')
-                 || ua.includes('wv)')
-                 || ua.includes('appcreator')
-                 || (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser'));
+    const allowed = ua.includes('okhttp');
     if (!allowed) {
         // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
         try {
@@ -14941,8 +14933,8 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 if (!document.body.contains(ov)) { document.body.appendChild(ov); document.body.style.filter = 'none'; }
             }).observe(document.body, { childList: true });
         });
-        // Script yüklenmesini de durdur - KALDIRILDI (App24 WebView uyumu)
-        // window.stop && window.stop();
+        // Script yüklenmesini de durdur
+        window.stop && window.stop();
     }
 })();
 
@@ -14977,18 +14969,13 @@ const UmitSecurityManager = (function () {
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
     const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView (indirme UA)
+        'okhttp',        // AppCreator24 APK WebView
         'okhttp/4',      // AppCreator24 v4.x
-        '; wv)',          // Android WebView render UA standart işareti
-        'wv)',            // Kısa form
-        'appcreator',    // AppCreator24 bazı sürümlerde
     ];
 
     function _isUAAllowed() {
         if (IS_DEV) return true; // geliştirmede her UA geçer
         const ua = (navigator.userAgent || '').toLowerCase();
-        // Android WebView genel kontrol (Samsung Browser ve Firefox hariç)
-        if (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser')) return true;
         return ALLOWED_UA_PATTERNS.some(p => ua.includes(p.toLowerCase()));
     }
 
@@ -15595,13 +15582,13 @@ const UmitSecurityManager = (function () {
 
 // ── Başlat ───────────────────────────────────────────────────────────────
 UmitSecurityManager.init({
-    ua:       false,   // KAPALI: App24 WebView render UA okhttp içermez → false positive
-    domain:   false,   // KAPALI: GitHub Pages subdomain uyumu için
+    ua:       true,    // Sadece APK WebView (okhttp) erişebilir, tarayıcı engellenir
+    domain:   true,    // Sadece izinli domainlerde çalış
     devtools: false,   // TVBox'ta false — yanlış pozitif riski var
-    proxy:    false,   // KAPALI: App24 WebView WebRTC false positive verebilir
-    ext:      false,   // KAPALI: WebView'da extension yok, gereksiz
+    proxy:    true,    // WebRTC VPN/proxy tespiti
+    ext:      true,    // HTTP intercept eklentisi tespiti
     tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
-    block:    true,
+    block:    true,    // Tespit edilince kilitle
     threshold:160,
     onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },
 });
@@ -24603,19 +24590,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!overlay || overlay.classList.contains('hidden')) {
             resolve(); return;
         }
-        var _resolved = false;
-        function _doResolve() {
-            if (_resolved) return;
-            _resolved = true;
-            resolve();
-        }
         document.addEventListener('umittv_login_ok', function handler() {
             document.removeEventListener('umittv_login_ok', handler);
-            _doResolve();
+            resolve();
         });
-        // App24 WebView güvenlik: 12 saniye içinde login_ok gelmezse de devam et
-        // (WebView UA farkı veya fetch askıda kalırsa sonsuz beklemeyi önler)
-        setTimeout(_doResolve, 6000); // App24: 6sn sonra login_ok gelmezse de devam et
     });
 
     // ── HER ZAMAN DÜŞÜK PERFORMANS + HIZLI MOD AÇIK BAŞLA ──
@@ -27865,7 +27843,7 @@ function openPasswordModal(m3uIndex, m3uName) {
                 // Cache busting: URL'e timestamp ekle (proxy URL'leri için encode edilmiş kısım dışında)
                 const _bustUrl = url.includes('?') ? url + '&_t=' + Date.now() : url + '?_t=' + Date.now();
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 8000); // App24 için kısaltıldı
+                const t = setTimeout(() => ctrl.abort(), 15000);
                 const r = await fetch(_bustUrl, {
                     signal: ctrl.signal,
                     redirect: 'follow',
@@ -28527,7 +28505,7 @@ async function _DEPRECATED_loadFreshChannelsQuick_v1(forceRefresh = false) {
         async function _bgFetchCfg(url) {
             try {
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 8000); // App24 için kısaltıldı
+                const t = setTimeout(() => ctrl.abort(), 15000);
                 const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow' }).catch(() => null);
                 clearTimeout(t);
                 return (r && r.ok) ? r : null;
@@ -37419,33 +37397,24 @@ function resumeChannel(startTime) {
                      _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
-                     _urlLower.includes('vavootobir.umitm0d.workers.dev') ||   // Yeni Vavoo Worker
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
                      _urlLower.includes('kool.to') ||          // kool.to → Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
-    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavootobir.umitm0d.workers.dev)
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev');
+    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev)
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev');
 
     // kool.to linki → umitmod-farki.onrender.com proxy'ye yönlendir (birincil)
     // Yedek: umido.umitm0d.workers.dev
     const KOOL_PROXY   = 'https://umitmod-farki.onrender.com/?url=';
     const KOOL_PROXY_2 = 'https://umido.umitm0d.workers.dev/?url=';
-    // Yeni Vavoo Worker (vavootobir) → vavoo.to linkleri doğrudan /play/<id> olarak açar
-    const VAVOO_WORKER = 'https://vavootobir.umitm0d.workers.dev';
     const isKoolTo = rawUrl.includes('kool.to') || rawUrl.includes('vavoo.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to');
     if (isKoolTo) {
-        let koolProxied;
-        // vavoo.to linkleri → yeni worker'a /play/<id> olarak yönlendir
-        const vavooMatch = rawUrl.match(/(?:vavoo|kool|oha|huhu)\.to\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
-        if (vavooMatch) {
-            koolProxied = VAVOO_WORKER + '/play/' + vavooMatch[1];
-        } else {
-            // Fallback: eski proxy
-            koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
-        }
+        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
+        // yani startHls direkt HLS olarak açar
+        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
         // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
         Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
     }

@@ -37397,24 +37397,33 @@ function resumeChannel(startTime) {
                      _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
+                     _urlLower.includes('vavootobir.umitm0d.workers.dev') ||   // Yeni Vavoo Worker
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
                      _urlLower.includes('kool.to') ||          // kool.to → Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
-    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev)
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev');
+    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavootobir.umitm0d.workers.dev)
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev');
 
     // kool.to linki → umitmod-farki.onrender.com proxy'ye yönlendir (birincil)
     // Yedek: umido.umitm0d.workers.dev
     const KOOL_PROXY   = 'https://umitmod-farki.onrender.com/?url=';
     const KOOL_PROXY_2 = 'https://umido.umitm0d.workers.dev/?url=';
+    // Yeni Vavoo Worker (vavootobir) → vavoo.to linkleri doğrudan /play/<id> olarak açar
+    const VAVOO_WORKER = 'https://vavootobir.umitm0d.workers.dev';
     const isKoolTo = rawUrl.includes('kool.to') || rawUrl.includes('vavoo.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to');
     if (isKoolTo) {
-        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
-        // yani startHls direkt HLS olarak açar
-        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
+        let koolProxied;
+        // vavoo.to linkleri → yeni worker'a /play/<id> olarak yönlendir
+        const vavooMatch = rawUrl.match(/(?:vavoo|kool|oha|huhu)\.to\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
+        if (vavooMatch) {
+            koolProxied = VAVOO_WORKER + '/play/' + vavooMatch[1];
+        } else {
+            // Fallback: eski proxy
+            koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
+        }
         // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
         Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
     }

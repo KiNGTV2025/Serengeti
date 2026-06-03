@@ -14910,15 +14910,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 || location.port === '2435';
     if (_isDev) return;
     const ua = (navigator.userAgent || '').toLowerCase();
-    // okhttp: App24 indirme UA'sı
-    // '; wv)': Android WebView render UA standart işareti (App24 WebView içinde bu gelir)
-    // appcreator: AppCreator24 bazı sürümlerde ekliyor
-    // android+mobile: genel Android WebView (Samsung Browser ve Firefox hariç)
-    const allowed = ua.includes('okhttp')
-                 || ua.includes('; wv)')
-                 || ua.includes('wv)')
-                 || ua.includes('appcreator')
-                 || (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser'));
+    const allowed = ua.includes('okhttp');
     if (!allowed) {
         // Telegram bildirimi gönder (UmitSecurityExtras henüz yüklenmemiş olabilir, direkt fetch)
         try {
@@ -14977,18 +14969,13 @@ const UmitSecurityManager = (function () {
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
     const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView (indirme UA)
+        'okhttp',        // AppCreator24 APK WebView
         'okhttp/4',      // AppCreator24 v4.x
-        '; wv)',          // Android WebView render UA standart işareti
-        'wv)',            // Kısa form
-        'appcreator',    // AppCreator24 bazı sürümlerde
     ];
 
     function _isUAAllowed() {
         if (IS_DEV) return true; // geliştirmede her UA geçer
         const ua = (navigator.userAgent || '').toLowerCase();
-        // Android WebView genel kontrol (Samsung Browser ve Firefox hariç)
-        if (ua.includes('android') && ua.includes('mobile') && !ua.includes('firefox') && !ua.includes('samsungbrowser')) return true;
         return ALLOWED_UA_PATTERNS.some(p => ua.includes(p.toLowerCase()));
     }
 
@@ -24603,19 +24590,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!overlay || overlay.classList.contains('hidden')) {
             resolve(); return;
         }
-        var _resolved = false;
-        function _doResolve() {
-            if (_resolved) return;
-            _resolved = true;
-            resolve();
-        }
         document.addEventListener('umittv_login_ok', function handler() {
             document.removeEventListener('umittv_login_ok', handler);
-            _doResolve();
+            resolve();
         });
-        // App24 WebView güvenlik: 12 saniye içinde login_ok gelmezse de devam et
-        // (WebView UA farkı veya fetch askıda kalırsa sonsuz beklemeyi önler)
-        setTimeout(_doResolve, 12000);
     });
 
     // ── HER ZAMAN DÜŞÜK PERFORMANS + HIZLI MOD AÇIK BAŞLA ──
@@ -37419,33 +37397,24 @@ function resumeChannel(startTime) {
                      _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
-                     _urlLower.includes('vavootobir.umitm0d.workers.dev') ||   // Yeni Vavoo Worker
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
                      _urlLower.includes('kool.to') ||          // kool.to → Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
-    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavootobir.umitm0d.workers.dev)
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev');
+    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev)
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev');
 
     // kool.to linki → umitmod-farki.onrender.com proxy'ye yönlendir (birincil)
     // Yedek: umido.umitm0d.workers.dev
     const KOOL_PROXY   = 'https://umitmod-farki.onrender.com/?url=';
     const KOOL_PROXY_2 = 'https://umido.umitm0d.workers.dev/?url=';
-    // Yeni Vavoo Worker (vavootobir) → vavoo.to linkleri doğrudan /play/<id> olarak açar
-    const VAVOO_WORKER = 'https://vavootobir.umitm0d.workers.dev';
     const isKoolTo = rawUrl.includes('kool.to') || rawUrl.includes('vavoo.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to');
     if (isKoolTo) {
-        let koolProxied;
-        // vavoo.to linkleri → yeni worker'a /play/<id> olarak yönlendir
-        const vavooMatch = rawUrl.match(/(?:vavoo|kool|oha|huhu)\.to\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
-        if (vavooMatch) {
-            koolProxied = VAVOO_WORKER + '/play/' + vavooMatch[1];
-        } else {
-            // Fallback: eski proxy
-            koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
-        }
+        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
+        // yani startHls direkt HLS olarak açar
+        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
         // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
         Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
     }
@@ -57762,6 +57731,16 @@ function _buildSnap(channels, m3uCount) {
    Karşılaştır ve bildirim gönder
 ════════════════════════════════════════════ */
 function _compareAndNotify(oldSnap, newSnap, channels) {
+    /* ── DEBUG (geçici) ── */
+    try {
+        var _dbgOldLive = oldSnap.liveNames ? oldSnap.liveNames.split('\n').filter(Boolean).length : 0;
+        var _dbgNewLive = newSnap.liveNames ? newSnap.liveNames.split('\n').filter(Boolean).length : 0;
+        var _dbgOldM3u  = oldSnap.m3uCount || 0;
+        var _dbgNewM3u  = newSnap.m3uCount || 0;
+        console.log('[UmitNC] compareAndNotify → oldLive:', _dbgOldLive, 'newLive:', _dbgNewLive,
+            'oldM3u:', _dbgOldM3u, 'newM3u:', _dbgNewM3u, 'channels:', channels.length,
+            'mini:', !!oldSnap._mini);
+    } catch(e) {}
     /* Set'e çevir: O(1) lookup */
     var oldLive = new Set(oldSnap.liveNames ? oldSnap.liveNames.split('\n') : []);
     var oldVod  = new Set(oldSnap.vodNames  ? oldSnap.vodNames.split('\n')  : []);
@@ -57789,6 +57768,7 @@ function _compareAndNotify(oldSnap, newSnap, channels) {
     });
 
     /* ── 1. Yeni canlı kanallar ── */
+    try { console.log('[UmitNC] oldLive size:', oldLive.size, 'oldUrls size:', oldUrls.size, 'useUrlFallback:', useUrlFallback); } catch(e) {}
     var addedLive = channels.filter(function(c) {
         if (!c || c.isLive === false || c.isSeries) return false;
         if (useUrlFallback) {
@@ -57797,6 +57777,7 @@ function _compareAndNotify(oldSnap, newSnap, channels) {
         }
         return !oldLive.has(c.name);
     });
+    try { console.log('[UmitNC] addedLive:', addedLive.length); } catch(e) {}
     if (addedLive.length > 0 && addedLive.length <= 20) {
         addedLive.forEach(function(c) {
             (function(ch) {
@@ -58003,6 +57984,13 @@ window._umitCheckNewContent = function(channels, saveAfter) {
         var m3uCount = (window.state && window.state.m3uList) ? window.state.m3uList.length : 0;
         var oldSnap  = _loadSnap();
         var newSnap  = _buildSnap(channels, m3uCount);
+        /* ── DEBUG ── */
+        try {
+            console.log('[UmitNC] checkNewContent → saveAfter:', saveAfter,
+                '_snapHasBaseline:', _snapHasBaseline,
+                'oldSnap:', oldSnap ? 'VAR(m3u=' + (oldSnap.m3uCount||0) + ')' : 'YOK',
+                'channels:', channels.length, 'm3uCount:', m3uCount);
+        } catch(e) {}
         /* Snap varsa karşılaştır — ama baseline henüz bu oturumda kaydedildiyse atla.
            _snapHasBaseline: aynı oturumda ilk kez snap kurulduysa true.
            Bu durumda karşılaştırma yapılmaz (kanalların tamamı "yeni" görünür). */

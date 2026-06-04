@@ -1,7 +1,6 @@
 ﻿ <!DOCTYPE html>
 <html lang="tr">
 <head>
-
 <meta name="referrer" content="no-referrer">
   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -13776,7 +13775,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 
 <div class="player-container" id="playerContainer" style="background: none !important;">
     
-<video id="videoPlayer" playsinline
+    <video id="videoPlayer" 
            preload="auto"
            autoplay 
            muted
@@ -37780,10 +37779,10 @@ function resumeChannel(startTime) {
                     startHls(STREAM_PROXY + encodeURIComponent(origUrl));
                 }
             })(rawUrl);
-        }else if (needsStreamProxy && !streamUrl.includes('proxy')) {
-    // Proxy KALDIRILDI - direkt dene
-    startHls(rawUrl);
-} else if (isHighResDirect) {
+        } else if (needsStreamProxy) {
+            // Referer korumalı → direkt STREAM_PROXY ile aç (Referer/Origin sorununu çözer)
+            startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+        } else if (isHighResDirect) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);
         } else {

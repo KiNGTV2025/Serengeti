@@ -36479,8 +36479,21 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    const _isKool = _fb && (_fb.includes('kool.to') || _fb.includes('vavoo.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
-                    if (!_isKool && _fb) {
+                    const _vavooRawFbMatch = _fb && _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
+                    const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
+                    if (_vavooRawFbMatch) {
+                        // vavoo.to ham URL → Vavoo Worker ile yeniden dene
+                        try {
+                            if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
+                            video.pause(); video.removeAttribute('src');
+                        } catch(e) {}
+                        const _vavooFbUrl = 'https://umittv.sadecenjoy.workers.dev/play/' + _vavooRawFbMatch[1];
+                        const _hlsVFb = new Hls(HLS_CONFIG);
+                        state.player.hls = _hlsVFb;
+                        _hlsVFb.attachMedia(video);
+                        _hlsVFb.loadSource(_vavooFbUrl);
+                        video.play().catch(()=>{});
+                    } else if (!_isKool && _fb) {
                         // Mevcut HLS'i durdur, proxy ile yeniden başlat
                         try {
                             if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
@@ -37359,19 +37372,35 @@ function resumeChannel(startTime) {
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
                      _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
-                     _urlLower.includes('kool.to') ||          // kool.to → Worker ile HLS
+                     _urlLower.includes('kool.to') ||            // kool.to → Worker ile HLS
+                     _urlLower.includes('vavoo.to') ||           // vavoo.to → Vavoo Worker ile HLS
+                     _urlLower.includes('oha.to') ||             // oha.to → Vavoo Worker ile HLS
+                     _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
-    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev)
+    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavoo.to/vavoo-iptv/play/ ham URL)
     const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev');
+
+    // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
+    const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
+
+    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
+    const _vavooRawMatch = rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
+    const isVavooRaw = !!_vavooRawMatch;
+    if (isVavooRaw) {
+        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
+        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
+        Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
+    }
 
     // kool.to linki → umitmod-farki.onrender.com proxy'ye yönlendir (birincil)
     // Yedek: umido.umitm0d.workers.dev
     const KOOL_PROXY   = 'https://umitmod-farki.onrender.com/?url=';
     const KOOL_PROXY_2 = 'https://umido.umitm0d.workers.dev/?url=';
-    const isKoolTo = rawUrl.includes('kool.to') || rawUrl.includes('vavoo.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to');
+    // isKoolTo: artık SADECE kool.to ham URL'leri (vavoo.to isVavooRaw ile ayrı ele alındı)
+    const isKoolTo = !isVavooRaw && (rawUrl.includes('kool.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to'));
     if (isKoolTo) {
         // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
         // yani startHls direkt HLS olarak açar
@@ -37379,7 +37408,7 @@ function resumeChannel(startTime) {
         // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
         Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
     }
-    const effectiveUrl = (isKoolTo && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
+    const effectiveUrl = ((isKoolTo || isVavooRaw) && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
@@ -37602,7 +37631,11 @@ function resumeChannel(startTime) {
             hlsInst.destroy();
             state.player.hls = null;
 
-            if (isKoolTo && streamUrl === effectiveUrl) {
+            if (isVavooRaw) {
+                // Vavoo Worker hata verdi → Worker'ı tekrar çağır (taze resolve yapar)
+                showToast('Vavoo yeniden bağlanıyor...');
+                startHls(effectiveUrl);
+            } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
                 startHls(koolFallback);
@@ -37685,8 +37718,30 @@ function resumeChannel(startTime) {
         })();
     } else if (isHlsUrl) {
         // http:// HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç (tüm ortamlar)
-        if (!isKoolTo && !isVavooWorker && !needsDirect && rawUrl.startsWith('http:')) {
+        if (!isKoolTo && !isVavooWorker && !isVavooRaw && !needsDirect && rawUrl.startsWith('http:')) {
             startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+        } else
+        if (isVavooRaw) {
+            // vavoo.to/oha.to/huhu.to ham URL → Vavoo Worker /play/<id> → direkt HLS
+            // UserAgent beklenmez, proxy yok, OkHttp kontrolü yok — Worker halleder
+            if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
+            startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
+            // Stall dedektörü — stall olunca aynı Worker URL'yi yenile (Worker her zaman taze resolve yapar)
+            let _vavooLastTime = -1, _vavooStallCount = 0;
+            window._koolReconnectTimer = setInterval(() => {
+                if (!video || video.paused || video.ended) return;
+                if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _vavooLastTime) {
+                    _vavooStallCount++;
+                    if (_vavooStallCount >= 3) {
+                        _vavooStallCount = 0;
+                        showToast('Vavoo yayını yenileniyor...');
+                        startHls(effectiveUrl);
+                    }
+                } else {
+                    _vavooStallCount = 0;
+                }
+                _vavooLastTime = video.currentTime;
+            }, 8000);
         } else
         if (isKoolTo) {
             // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan

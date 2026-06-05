@@ -28022,6 +28022,7 @@ function showNoConfigUI() {
 
         // 2. Tüm cache'leri temizle
         clearConfigCache();
+        try { localStorage.removeItem('_umittv_cfg_sig'); } catch(e) {} // imzayı sıfırla → sonraki açılışta yeniden fetch yapar
         try { localStorage.removeItem('quick_channels_cache_v2'); } catch(e) {}
 
         // 2b. Bildirim snap'ini sıfırla — refresh sonrası tüm kanallar yeni olarak karşılaştırılır
@@ -28127,6 +28128,72 @@ function clearConfigCache() {
 
         
 
+// ── JSON DEĞİŞİKLİK TESPİTİ ──
+// JSON config'i HEAD isteğiyle kontrol et (ETag / Content-Length karşılaştır).
+// Değişmişse M3U'ları yeniden parse et ve IDB'yi güncelle.
+// Değişmemişse IDB cache yeterli — ağdan parse yok.
+async function _checkAndRefreshIfChanged() {
+    try {
+        // 1. HEAD isteği — sadece header'ları al, body indirme
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        let headResp = null;
+        try {
+            headResp = await fetch(CONFIG_URL, {
+                method: 'HEAD',
+                signal: ctrl.signal,
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+        } catch(e) {}
+        clearTimeout(t);
+
+        // ETag ve Content-Length al
+        const newEtag   = headResp && headResp.headers.get('etag');
+        const newLen    = headResp && headResp.headers.get('content-length');
+        const newLastMod = headResp && headResp.headers.get('last-modified');
+        const newSig    = newEtag || newLen || newLastMod || null;
+
+        // Önceki imzayı oku
+        const prevSig = localStorage.getItem('_umittv_cfg_sig');
+
+        // HEAD başarısız veya sunucu header dönmüyorsa: JSON içeriğini hash'le
+        let contentSig = newSig;
+        if (!contentSig) {
+            // Tam GET yap ve içeriği hash'le
+            try {
+                const ctrl2 = new AbortController();
+                const t2 = setTimeout(() => ctrl2.abort(), 15000);
+                const getResp = await fetch(CONFIG_URL, {
+                    signal: ctrl2.signal,
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache, no-store' }
+                }).catch(() => null);
+                clearTimeout(t2);
+                if (getResp && getResp.ok) {
+                    const txt = await getResp.text().catch(() => '');
+                    // Basit hash: uzunluk + ilk/son 200 karakter
+                    contentSig = txt.length + '|' + txt.slice(0, 200) + txt.slice(-200);
+                }
+            } catch(e) { return; } // ağ hatası → sessizce çık, IDB cache geçerli
+        }
+
+        if (!contentSig) return; // hiç imza alınamadı
+
+        if (prevSig && prevSig === contentSig) {
+            // Değişmemiş — IDB cache yeterli, parse yok
+            return;
+        }
+
+        // Değişmiş (veya ilk açılış) → M3U'ları yeniden parse et
+        localStorage.setItem('_umittv_cfg_sig', contentSig);
+        showToast('Liste güncelleniyor...');
+        await loadFreshChannelsInBackground(true);
+    } catch(e) {
+        // Ağ hatası vb. → IDB cache geçerli, sessizce çık
+    }
+}
+
 let backgroundSyncInterval = null;
 window._backgroundSyncInterval = null; // goNavigate erişebilsin
 let isInitialLoadComplete = false;
@@ -28182,7 +28249,7 @@ async function loadAllChannels(forceRefresh = false) {
                     // Kanallar cache'den hazır — auto-play dinleyicilerini tetikle
                     try { document.dispatchEvent(new Event('umittv_channels_ready')); } catch(e) {}
 
-                    setTimeout(() => loadFreshChannelsInBackground(true), 2000); // IDB cache gösterdik, ağdan güncelle
+                    setTimeout(() => _checkAndRefreshIfChanged(), 3000); // IDB cache gösterdik, sadece değişiklik varsa yenile
                     setTimeout(() => {
                         updateLoadingProgress('Kanallar hazır!', 100);
                         setTimeout(hideLoadingOverlay, 600);
@@ -28197,76 +28264,14 @@ async function loadAllChannels(forceRefresh = false) {
 
     if (!forceRefresh) {
         try {
-            
-
+            // quick_channels_cache_v2 artık sadece metadata (timestamp, selectedM3U) tutuyor.
+            // Kanallar IDB'de — yukarıdaki IDB bloğu zaten handle etti.
+            // Bu blok sadece selectedM3U restore için kalıyor.
             const cachedChannelsData = localStorage.getItem('quick_channels_cache_v2');
             if (cachedChannelsData) {
                 const cacheInfo = JSON.parse(cachedChannelsData);
-                const cacheAge = Date.now() - (cacheInfo.timestamp || 0);
-                
-                
-
-                if (cacheAge < 2 * 60 * 60 * 1000 && cacheInfo.channels && cacheInfo.channels.length > 0) {
-                    
-                    
-
-                    const uniqueChannels = removeDuplicateChannels(cacheInfo.channels);
-                    state.channels = uniqueChannels; fixChannelNames(state.channels);
-
-                    
-
-                    try { const _s = localStorage.getItem('channel_sort_order'); if (_s) applySortOrderToChannels(JSON.parse(_s)); } catch(e2) {}
-
-                    
-
-                    
-
-                    if (cacheInfo.selectedM3U !== undefined && cacheInfo.selectedM3U !== null) {
-                        state.selectedM3U = cacheInfo.selectedM3U;
-                    }
-                    
-
-                    const panelChannels = state.selectedM3U === 'all'
-                        ? state.channels
-                        : state.channels.filter(c => c.listIdx == state.selectedM3U);
-
-                    
-
-                    const catSet = new Set(['Favoriler', 'Devam Et']);
-                    panelChannels.forEach(c => { if (c.group) catSet.add(c.group); });
-                    state.cats = ['Tümü', ...Array.from(catSet)].filter(c => c !== (window.RADIO_CATEGORY_NAME || 'Radyo'));
-                    state.activeCat = 'all';
-                    state.sidebar.currentCategory = 'all';
-                    state.filtered = panelChannels;
-                    
-                    
-
-                    state.selectedM3U = state.selectedM3U === undefined ? 'all' : state.selectedM3U;
-                    state.activeCat = 'all';
-                    state.sidebar.currentCategory = 'all';
-                    state.filtered = state.channels.filter(c => c.listIdx !== undefined);
-                    if (state.filtered.length === 0) state.filtered = [...state.channels];
-                    if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
-                    else if (typeof updateCategories === 'function') updateCategories();
-                    renderCats();
-                    window._channelsFullyLoaded = true;
-                    renderChannels();
-                    updateChannelCount(state.filtered.length);
-                    document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
-                    renderM3USelector();
-                    loadQuickUserData();
-                    try { document.dispatchEvent(new Event('umittv_channels_ready')); } catch(e) {}
-
-                    setTimeout(() => loadFreshChannelsInBackground(true), 2000); // Cache gösterdik, hemen ağdan güncelle
-                    
-                    
-
-                    setTimeout(() => {
-                        updateLoadingProgress('Kanallar hazır!', 100);
-                        setTimeout(hideLoadingOverlay, 800);
-                    }, 300);
-                    
-                    return;
+                if (cacheInfo.selectedM3U !== undefined && cacheInfo.selectedM3U !== null) {
+                    state.selectedM3U = cacheInfo.selectedM3U;
                 }
             }
         } catch (error) {
@@ -28417,9 +28422,8 @@ async function _DEPRECATED_loadFreshChannelsInBackground_v1(forceRefresh = false
 
             try {
                 localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
-                    channels: uniqueChannels,
                     timestamp: Date.now(),
-                    selectedM3U: state.selectedM3U  // ── DÜZELTİLDİ: Aktif paneli kaydet
+                    selectedM3U: state.selectedM3U
                 }));
             } catch(e) { console.warn('Cache kaydetme hatası:', e); }
             
@@ -28544,9 +28548,7 @@ async function _DEPRECATED_loadFreshChannelsQuick_v1(forceRefresh = false) {
             // Cache kaydet
             try {
                 const cacheObj = {
-                    channels: state.channels,
                     timestamp: Date.now(),
-                    version: 'v1.0',
                     selectedM3U: state.selectedM3U
                 };
                 localStorage.setItem('quick_channels_cache_v2', JSON.stringify(cacheObj));
@@ -28560,22 +28562,32 @@ async function _DEPRECATED_loadFreshChannelsQuick_v1(forceRefresh = false) {
         }
     } catch (error) {
         showToast('Kanallar yüklenemedi, lütfen tekrar deneyin');
-        
-        
 
-        const oldCache = localStorage.getItem('quick_channels_cache_v2');
-        if (oldCache) {
-            try {
-                const cacheInfo = JSON.parse(oldCache);
-                if (cacheInfo.channels && cacheInfo.channels.length > 0) {
-                    state.channels = removeDuplicateChannels(cacheInfo.channels);
-                    extractCategories(state.channels);
-                    immediateRenderChannels();
-                    loadQuickUserData();
+        // Hata durumu: IDB'den oku (localStorage'da channels yok artık)
+        try {
+            if (state.useIndexedDB && state.db && state.db.isReady()) {
+                const idbMetaRaw = localStorage.getItem('idb_m3u_list_meta');
+                if (idbMetaRaw) {
+                    const idbMeta = JSON.parse(idbMetaRaw);
+                    let fallbackChs = [];
+                    for (const m of (idbMeta.lists || [])) {
+                        if (!m.url) continue;
+                        try {
+                            const cached = await state.db.get(state.db.stores.M3U_CACHE, m.url);
+                            if (cached && cached.channels && cached.channels.length > 0)
+                                fallbackChs.push(...cached.channels);
+                        } catch(e2) {}
+                    }
+                    if (fallbackChs.length > 0) {
+                        state.channels = removeDuplicateChannels(fallbackChs);
+                        fixChannelNames && fixChannelNames(state.channels);
+                        extractCategories(state.channels);
+                        immediateRenderChannels();
+                        loadQuickUserData();
+                    }
                 }
-            } catch (fallbackError) {
             }
-        }
+        } catch (fallbackError) {}
     }
 }
 
@@ -28625,7 +28637,7 @@ async function loadRemainingM3UsInBackground(startIndex) {
                     }
                     // Cache güncelle
                     try {
-                        const cacheObj = { channels: state.channels, timestamp: Date.now(), version: 'v1.0', selectedM3U: state.selectedM3U };
+                        const cacheObj = { timestamp: Date.now(), selectedM3U: state.selectedM3U };
                         localStorage.setItem('quick_channels_cache_v2', JSON.stringify(cacheObj));
                     } catch(e) {}
                 }
@@ -29123,7 +29135,6 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                 // quick_channels_cache güncelle
                 try {
                     localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
-                        channels: state.channels,
                         selectedM3U: state.selectedM3U,
                         timestamp: Date.now()
                     }));
@@ -29160,7 +29171,6 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                     if (typeof filterChannels === 'function') filterChannels();
                     try {
                         localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
-                            channels: state.channels,
                             selectedM3U: state.selectedM3U,
                             timestamp: Date.now()
                         }));
@@ -31797,13 +31807,10 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     hideInlineLoading();
                     // Cache: sadece küçük listeler JSON'a yazılır (90MB yazılamaz zaten)
                     try {
-                        if (_finalChannels.length < 50000) {
-                            localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
-                                channels: _finalChannels,
-                                timestamp: Date.now(),
-                                selectedM3U: state.selectedM3U
-                            }));
-                        }
+                        localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
+                            timestamp: Date.now(),
+                            selectedM3U: state.selectedM3U
+                        }));
                     } catch(e2) {}
                     if (state.remote.active) {
                         state.remote.zone = 'channels';
@@ -31936,14 +31943,12 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
         renderChannels();
         
-        // Cache'i güncelle
+        // Cache meta güncelle (kanallar IDB'de)
         try {
-            const quickCache = {
-                channels: state.channels,
+            localStorage.setItem('quick_channels_cache_v2', JSON.stringify({
                 timestamp: Date.now(),
                 selectedM3U: state.selectedM3U
-            };
-            localStorage.setItem('quick_channels_cache_v2', JSON.stringify(quickCache));
+            }));
         } catch(e) {}
         
         showToast(`${parsed.length.toLocaleString()} içerik yüklendi`);
@@ -44270,12 +44275,9 @@ function optimizeVideoPlayer() {
 
     async function saveChannelsBatchOptimized(channels, batchSize = 500) {
         if (!useIndexedDB || !db) {
-            try {
-                localStorage.setItem('allChannels', JSON.stringify(channels));
-                return true;
-            } catch (error) {
-                return false;
-            }
+            // IDB yok — localStorage'a sığmayabilir, sadece count kaydet
+            try { localStorage.setItem('_ch_count', String(channels.length)); } catch(e) {}
+            return false;
         }
         
         
@@ -44315,26 +44317,12 @@ function optimizeVideoPlayer() {
                         transaction.onerror = () => res();
                     });
                 }
-                
-                
-                
-
-                try {
-                    localStorage.setItem('allChannels', JSON.stringify(channels));
-                } catch (e) {}
-                
                 resolve(true);
                 
             } catch (error) {
-                
-                
-
-                try {
-                    localStorage.setItem('allChannels', JSON.stringify(channels));
-                    resolve(true);
-                } catch (e) {
-                    reject(error);
-                }
+                // IDB hata — sadece sayı kaydet
+                try { localStorage.setItem('_ch_count', String(channels.length)); } catch(e) {}
+                reject(error);
             }
         });
     }

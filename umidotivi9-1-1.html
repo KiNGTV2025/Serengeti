@@ -9994,6 +9994,268 @@ body {
 }
 </style>
 
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TVBOX ULTRA OPTİMİZASYON PATCH v3 — Hızlı Çalışma / Kasma Önleme
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="tvbox-ultra-v3">
+
+/* ── TVBox: waveFocus animasyonunu sıfırla (en büyük kasma kaynağı) ── */
+body.tvbox-mode .channel-card.remote-focused,
+body.tvbox-mode .channel-card.focused {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+}
+
+body.tvbox-mode .header-btn.remote-focused,
+body.tvbox-mode .player-action-btn.remote-focused,
+body.tvbox-mode .m3u-pill.remote-focused,
+body.tvbox-mode .cat-pill.remote-focused,
+body.tvbox-mode .sidebar-category-pill.remote-focused,
+body.tvbox-mode .category-list-item.remote-focused,
+body.tvbox-mode .vod-season-btn.remote-focused,
+body.tvbox-mode .vod-episode-card.remote-focused,
+body.tvbox-mode .modal-back-btn.remote-focused,
+body.tvbox-mode .fav-toggle.remote-focused,
+body.tvbox-mode [role="button"].remote-focused {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
+}
+
+/* ── TVBox: backdrop-filter tamamen kapat ── */
+body.tvbox-mode * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ── TVBox: CSS gradient sayısını azalt ── */
+body.tvbox-mode .login-bg,
+body.tvbox-mode .login-card::after,
+body.tvbox-mode .login-logo-wrap::before,
+body.tvbox-mode #exitConfirmModal .exit-card::after {
+    display: none !important;
+}
+
+/* ── TVBox: Sonsuz animasyonları kapat ── */
+body.tvbox-mode .login-logo-wrap::before,
+body.tvbox-mode .login-logo-img,
+body.tvbox-mode #exitConfirmModal .exit-icon-ring,
+body.tvbox-mode #exitConfirmModal .exit-icon-ring-outer,
+body.tvbox-mode #exitConfirmModal .exit-logo-img,
+body.tvbox-mode .ban-icon,
+body.tvbox-mode .sidebar-epg-live-dot::before {
+    animation: none !important;
+}
+
+/* ── TVBox: exit modal transform scale kaldır ── */
+body.tvbox-mode #exitConfirmNo.remote-focused,
+body.tvbox-mode #exitConfirmYes.remote-focused {
+    transform: none !important;
+}
+
+/* ── TVBox: box-shadow sayısını sınırla ── */
+body.tvbox-mode .login-card {
+    box-shadow: 0 2px 20px rgba(0,0,0,0.8) !important;
+}
+body.tvbox-mode #exitConfirmModal .exit-card {
+    box-shadow: 0 8px 40px rgba(0,0,0,0.9) !important;
+}
+
+/* ── TVBox: Kanal kartı contain güçlendir ── */
+body.tvbox-mode .channel-card {
+    contain: strict !important;
+    isolation: isolate !important;
+}
+
+/* ── TVBox: img rendering ── */
+body.tvbox-mode img {
+    image-rendering: auto !important;
+}
+
+/* ── TVBox: Orbitron/Exo2 yerine sistem fontu kullan ── */
+body.tvbox-mode .login-title,
+body.tvbox-mode .ban-title,
+body.tvbox-mode .exit-title,
+body.tvbox-mode .step-number {
+    font-family: sans-serif !important;
+}
+
+/* ── TVBox: EPG pulse animasyonunu durdur ── */
+body.tvbox-mode .sidebar-epg-live-dot,
+body.tvbox-mode .sidebar-epg-live-dot::before {
+    animation: none !important;
+}
+
+/* ── TVBox: katman limitini zorla ── */
+body.tvbox-mode .channels-grid,
+body.tvbox-mode .sidebar-list,
+body.tvbox-mode .category-bar {
+    transform: none !important;
+    will-change: auto !important;
+    backface-visibility: visible !important;
+}
+
+/* ── TVBox: scroll snap kapat ── */
+body.tvbox-mode .channels-viewport,
+body.tvbox-mode .sidebar-list,
+body.tvbox-mode .category-bar {
+    scroll-snap-type: none !important;
+    overscroll-behavior: contain !important;
+}
+
+/* ── TVBox: filter kaldır ── */
+body.tvbox-mode .login-title,
+body.tvbox-mode .ban-title {
+    filter: none !important;
+    -webkit-text-fill-color: var(--accent-primary, #FFD700) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    color: var(--accent-primary, #FFD700) !important;
+}
+
+/* ── TVBox: login card animasyonu sıfırla ── */
+body.tvbox-mode .login-card {
+    animation: none !important;
+}
+
+/* ── TVBox: low-performance-mode daha agresif hale getir ── */
+body.tvbox-mode.low-performance-mode *:not(.loading-overlay):not(.loading-overlay *) {
+    text-shadow: none !important;
+    filter: none !important;
+}
+
+</style>
+
+<script id="tvbox-ultra-js-v3">
+/* TVBox Ultra JS Optimizasyonu */
+(function() {
+'use strict';
+
+/* ── 1. TVBox tespiti (geliştirilmiş) ── */
+var ua = navigator.userAgent || '';
+var isTVBox = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
+    || (/Android/i.test(ua) && (window.screen.width >= 1280 || navigator.maxTouchPoints === 0))
+    || (!('ontouchstart' in window) && navigator.maxTouchPoints === 0 && window.screen.width >= 1280);
+
+if (!isTVBox) return; /* PC/telefon ise bu patch çalışmaz */
+
+/* ── 2. Body class hemen ekle ── */
+function addTVClasses() {
+    var b = document.body || document.documentElement;
+    if (b) {
+        b.classList.add('tvbox-mode');
+        b.classList.add('fast-mode');
+        b.classList.add('low-performance-mode');
+    }
+}
+addTVClasses();
+document.addEventListener('DOMContentLoaded', addTVClasses);
+
+/* ── 3. setInterval sıklığını sınırla (≥100ms altına inme) ── */
+var _origSetInterval = window.setInterval;
+window.setInterval = function(fn, delay) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    if (typeof delay === 'number' && delay > 0 && delay < 100) {
+        delay = 100; /* TVBox'ta 100ms altı setInterval çok CPU yer */
+    }
+    return _origSetInterval.apply(window, [fn, delay].concat(args));
+};
+
+/* ── 4. requestAnimationFrame throttle (30fps) ── */
+var _origRAF = window.requestAnimationFrame;
+var _lastRAF = 0;
+var RAF_MIN = 33; /* ~30fps */
+window.requestAnimationFrame = function(cb) {
+    var now = performance.now ? performance.now() : Date.now();
+    var elapsed = now - _lastRAF;
+    if (elapsed >= RAF_MIN) {
+        _lastRAF = now;
+        return _origRAF.call(window, cb);
+    } else {
+        return setTimeout(function() {
+            _lastRAF = performance.now ? performance.now() : Date.now();
+            cb(_lastRAF);
+        }, RAF_MIN - elapsed);
+    }
+};
+
+/* ── 5. Gereksiz MutationObserver gözlemlerini azalt ── */
+/* CSS transition/animation değişimlerini yoksay */
+var _origMO = window.MutationObserver;
+window.MutationObserver = function(cb) {
+    return new _origMO(function(mutations) {
+        /* style attribute değişimlerini filtrele — çok sık tetiklenir */
+        var filtered = mutations.filter(function(m) {
+            if (m.type === 'attributes' && m.attributeName === 'style') {
+                return false; /* style attr değişimlerini yoksay */
+            }
+            return true;
+        });
+        if (filtered.length > 0) cb(filtered);
+    });
+};
+window.MutationObserver.prototype = _origMO.prototype;
+
+/* ── 6. Image decode async zorla ── */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('img').forEach(function(img) {
+        if (!img.getAttribute('decoding')) img.setAttribute('decoding', 'async');
+        if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
+    });
+});
+
+/* ── 7. Scroll event debounce — passive listeners ── */
+['wheel', 'touchmove', 'pointermove'].forEach(function(ev) {
+    window.addEventListener(ev, function() {}, { passive: true, capture: false });
+});
+
+/* ── 8. Font yükleme engelini kaldır ── */
+/* Orbitron/Exo2 fontları ağdan yüklenmeden devam et */
+if (document.fonts) {
+    document.fonts.ready.then(function() {
+        var b = document.body;
+        if (b) b.classList.add('fonts-ready');
+    });
+    /* 500ms içinde font gelmezse devam et */
+    setTimeout(function() {
+        var b = document.body;
+        if (b && !b.classList.contains('fonts-ready')) {
+            b.classList.add('fonts-ready');
+            b.classList.add('icons-ready');
+        }
+    }, 500);
+}
+
+/* ── 9. Console temizle — TVBox'ta console çıktısı yavaşlatır ── */
+if (window.console && typeof console.log === 'function') {
+    var _noop = function() {};
+    /* debug logları kapat, error/warn bırak */
+    console.log  = _noop;
+    console.debug = _noop;
+    console.info  = _noop;
+}
+
+/* ── 10. GPU katman baskısını azalt — will-change: auto zorunlu ── */
+document.addEventListener('DOMContentLoaded', function() {
+    /* will-change: transform/opacity olan elementleri sıfırla */
+    document.querySelectorAll('[style*="will-change"]').forEach(function(el) {
+        el.style.willChange = 'auto';
+    });
+    /* channels-grid translateZ sıfırla */
+    var grid = document.querySelector('.channels-grid');
+    if (grid) grid.style.transform = 'none';
+});
+
+})();
+</script>
+
 </head>
 <body class="fast-mode low-performance-mode"> 
 <style id="ultimate-player-style">
@@ -13195,6 +13457,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnNotifTest" onclick="umitNotifToggleDemo()" title="Bildirimler" style="position:relative;" tabindex="0">
                 <span class="material-symbols-outlined">notifications</span>
                 <span id="notifBadge" style="display:none;position:absolute;top:3px;right:3px;min-width:16px;height:16px;background:#ff4757;border-radius:8px;border:1.5px solid #000;font-size:9px;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;line-height:1;"></span>
+            </button>
+            <button class="header-btn" id="btnProfile" onclick="openProfileModal()" title="Profil" tabindex="-1" style="position:relative;padding:4px;">
+                <div id="headerProfileAvatar" style="width:32px;height:32px;border-radius:50%;background:rgba(255,215,0,0.15);border:2px solid rgba(255,215,0,0.5);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:13px;font-weight:700;color:#FFD700;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">account_circle</span>
+                </div>
             </button>
             <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;" tabindex="-1">
                 <span class="material-symbols-outlined">power_settings_new</span>
@@ -16943,7 +17210,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnNotifTest', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -43202,7 +43469,7 @@ function handleFavoriteChannelSelect(key) {
             'btnTheme': 'Tema', 'btnSettings': 'Ayarlar', 'btnRefresh': 'Yenile',
             'btnControlSettings': 'Kontrol Ayarları', 'btnAddM3U': 'M3U Ekle',
             'btnUrlKopi': 'URL Kopi', 'btnDestek': 'Destek', 'btnStore': 'Store',
-            'btnWatchParty': 'Watch Party', 'btnNotifTest': 'Bildirimler', 'btnExitHeader': 'Çıkış'
+            'btnWatchParty': 'Watch Party', 'btnNotifTest': 'Bildirimler', 'btnProfile': 'Profil', 'btnExitHeader': 'Çıkış'
         };
         hint = _hbHints2[_hbId2] || (el && el.title) || 'Menü';
     }
@@ -48834,6 +49101,848 @@ function _favIcons(ch, isFav) {
 })();
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     PROFİL SİSTEMİ v1.0 — Telegram ID + Profil Resmi + İsim
+     • Profil butonu header'da
+     • Telegram ID ve profil resmi URL girilir
+     • Şans kodu kullanıcıları bir kez isim yazabilir, sonra değiştirilemez
+     • Oda chat ve VOD yorumlarında profil resmi gösterilir
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="profile-system-css">
+/* ── Profil Modal Overlay ── */
+#profileModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 999990;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+#profileModal.open { display: flex; }
+
+.profile-modal-card {
+    background: linear-gradient(160deg,rgba(14,16,26,0.99) 0%,rgba(10,12,22,1) 60%,rgba(16,14,24,0.99) 100%);
+    border: 1.5px solid rgba(255,215,0,0.28);
+    border-top: 2px solid rgba(255,215,0,0.55);
+    border-radius: 20px;
+    padding: 28px 28px 22px;
+    width: 420px;
+    max-width: 96vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-shadow: 0 0 80px rgba(255,170,0,0.1), 0 40px 100px rgba(0,0,0,0.85);
+    position: relative;
+}
+.profile-modal-card::-webkit-scrollbar { display: none; }
+
+.profile-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.profile-modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: #FFD700;
+    letter-spacing: 2px;
+    flex: 1;
+}
+.profile-modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s;
+}
+.profile-modal-close:hover { background: rgba(231,76,60,0.3); color: #fff; }
+
+/* ── Profil Avatar Büyük ── */
+.profile-avatar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 22px;
+}
+.profile-avatar-big {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,215,0,0.5);
+    background: rgba(255,215,0,0.08);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #FFD700;
+    margin-bottom: 10px;
+    box-shadow: 0 0 20px rgba(255,215,0,0.2);
+    flex-shrink: 0;
+}
+.profile-avatar-big img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    background: rgba(0,0,0,0.4);
+    display: block;
+}
+.profile-tg-id-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,215,0,0.5);
+    background: rgba(255,215,0,0.06);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 8px;
+    padding: 4px 12px;
+    letter-spacing: 1px;
+}
+
+/* ── Form Alanları ── */
+.profile-field {
+    margin-bottom: 14px;
+}
+.profile-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.profile-label::before {
+    content: '';
+    width: 3px; height: 3px;
+    background: rgba(255,215,0,0.6);
+    border-radius: 50%;
+}
+.profile-input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: 'Exo 2', 'Rajdhani', sans-serif;
+    font-weight: 600;
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+    caret-color: #FFD700;
+    transition: border-color 0.15s, background 0.15s;
+    -webkit-appearance: none;
+    -webkit-text-fill-color: #fff;
+}
+.profile-input:focus {
+    border-color: rgba(255,215,0,0.5);
+    background: rgba(255,215,0,0.04);
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
+}
+.profile-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0,0,0,0.2);
+}
+.profile-input::placeholder { color: rgba(255,255,255,0.2); -webkit-text-fill-color: rgba(255,255,255,0.2); }
+
+/* ── Şans kodu isim kilidi info kutusu ── */
+.profile-lock-info {
+    background: rgba(255,140,0,0.08);
+    border: 1px solid rgba(255,140,0,0.25);
+    border-left: 3px solid rgba(255,140,0,0.6);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: rgba(255,200,100,0.85);
+    margin-bottom: 14px;
+    line-height: 1.6;
+    display: none;
+}
+.profile-lock-info.show { display: block; }
+
+/* ── Kaydet Butonu ── */
+.profile-save-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #FFD700 0%, #F0A800 60%, #E09500 100%);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-top: 6px;
+    box-shadow: 0 4px 20px rgba(255,180,0,0.25);
+    transition: filter 0.15s;
+}
+.profile-save-btn:hover { filter: brightness(1.08); }
+.profile-save-btn:active { filter: brightness(0.95); }
+.profile-save-btn.remote-focused, .profile-save-btn.dpad-focused {
+    outline: 3px solid rgba(255,215,0,0.9) !important;
+    outline-offset: 3px !important;
+}
+
+/* ── Header Avatar küçük ── */
+#headerProfileAvatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+}
+#btnProfile.remote-focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 1px !important;
+    background: rgba(255,215,0,0.18) !important;
+}
+
+/* ── Yorum ve Oda chat'te profil resmi ── */
+.wp-chat-avatar-img, .vr-comment-avatar-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+/* ── Rütbe badge ── */
+.rutbe-badge {
+    display:inline-flex;align-items:center;gap:3px;
+    font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;
+    border-radius:5px;padding:1px 6px;letter-spacing:0.5px;
+    vertical-align:middle;flex-shrink:0;
+}
+.rutbe-yorumcu-basi  { background:rgba(100,200,255,0.12);border:1px solid rgba(100,200,255,0.35);color:#64c8ff; }
+.rutbe-yorumcu-sapi  { background:rgba(180,100,255,0.12);border:1px solid rgba(180,100,255,0.35);color:#b464ff; }
+.rutbe-yorumcu-krali { background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.4); color:#FFD700; }
+
+/* ── Kullanıcı profil görüntüleme modal ── */
+#userProfileViewModal {
+    display:none;position:fixed;inset:0;z-index:9900;
+    background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+    align-items:center;justify-content:center;
+}
+#userProfileViewModal.open { display:flex; }
+.upv-card {
+    background:linear-gradient(160deg,rgba(20,20,35,0.98) 0%,rgba(10,10,20,0.99) 100%);
+    border:1px solid rgba(255,215,0,0.18);border-radius:18px;
+    width:min(480px,92vw);max-height:82vh;overflow-y:auto;
+    padding:0 0 18px;scrollbar-width:none;position:relative;
+}
+.upv-card::-webkit-scrollbar{display:none;}
+.upv-header {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.07);
+    position:sticky;top:0;background:rgba(10,10,20,0.97);z-index:2;border-radius:18px 18px 0 0;
+}
+.upv-title { font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:rgba(255,215,0,0.85);letter-spacing:1px; }
+.upv-close { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+    color:rgba(255,255,255,0.5);font-size:16px;cursor:pointer;width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;font-family:monospace;transition:all 0.15s; }
+.upv-close:hover { background:rgba(231,76,60,0.25);color:#fff;border-color:rgba(231,76,60,0.4); }
+.upv-hero {
+    display:flex;align-items:center;gap:14px;padding:16px 16px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.upv-avatar-big {
+    width:56px;height:56px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;
+}
+.upv-info-col { flex:1;min-width:0; }
+.upv-nick { font-family:'Exo 2',sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:4px; }
+.upv-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+.upv-comment-count { font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif; }
+.upv-section-title {
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;
+    color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;
+    padding:10px 16px 6px;
+}
+.upv-review-item {
+    display:flex;flex-direction:column;gap:4px;
+    padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.upv-review-content-title {
+    font-size:12px;font-weight:700;color:rgba(255,215,0,0.75);
+    font-family:'Exo 2',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.upv-review-stars { color:#FFD700;font-size:11px; }
+.upv-review-text { font-size:12px;color:rgba(220,220,240,0.75);line-height:1.4; }
+.upv-review-date { font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px; }
+.upv-empty { text-align:center;color:rgba(255,255,255,0.25);font-size:12px;padding:24px 16px; }
+.upv-loading { text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:20px 16px; }
+</style>
+
+<!-- Kullanıcı Profil Görüntüleme Modal HTML -->
+<div id="userProfileViewModal">
+  <div class="upv-card">
+    <div class="upv-header">
+      <div class="upv-title">👤 KULLANICI PROFİLİ</div>
+      <button class="upv-close" onclick="closeUserProfileView()">&#x2715;</button>
+    </div>
+    <div class="upv-hero">
+      <div class="upv-avatar-big" id="upvAvatarBig"></div>
+      <div class="upv-info-col">
+        <div class="upv-nick" id="upvNick">&#x2014;</div>
+        <div class="upv-meta">
+          <span class="upv-comment-count" id="upvCommentCount"></span>
+          <span id="upvRutveBadge"></span>
+        </div>
+      </div>
+    </div>
+    <div class="upv-section-title">YORUMLARI</div>
+    <div id="upvReviewsList"></div>
+    <div id="upvReviewsLoading" class="upv-loading">Yorumlar y&#x00FC;kleniyor...</div>
+    <div id="upvReviewsEmpty" class="upv-empty" style="display:none;">Hen&#x00FC;z yorum yapmam&#x0131;&#x015F; &#x1F3AC;</div>
+  </div>
+</div>
+
+<!-- Profil Modal HTML -->
+<div id="profileModal">
+    <div class="profile-modal-card" role="dialog" aria-label="Profil Ayarları">
+        <div class="profile-modal-header">
+            <div class="profile-modal-title">👤 PROFİLİM</div>
+            <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Kapat">✕</button>
+        </div>
+
+        <!-- Avatar Büyük -->
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar-big" id="profileAvatarBig">
+                <span class="material-symbols-outlined" style="font-size:44px;">account_circle</span>
+            </div>
+            <div class="profile-tg-id-badge" id="profileTgIdBadge">ID: —</div>
+        </div>
+
+        <!-- Şans kodu kullanıcısına isim uyarısı -->
+        <div class="profile-lock-info" id="profileLockInfo">
+            🔒 Şans kodu ile giriş yaptınız. İsminizi <strong>bir kez</strong> girebilirsiniz; daha sonra değiştirilemez.
+        </div>
+
+        <!-- İsim alanı -->
+        <div class="profile-field">
+            <div class="profile-label">Görünen İsim</div>
+            <input type="text" id="profileNameInput" class="profile-input wp-remote-focus"
+                placeholder="İsminizi girin..."
+                maxlength="30"
+                autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+        </div>
+
+        <!-- Profil resmi URL -->
+        <div class="profile-field">
+            <div class="profile-label">Profil Resmi URL (Telegram linki veya herhangi resim)</div>
+            <input type="url" id="profileAvatarInput" class="profile-input wp-remote-focus"
+                placeholder="https://..."
+                autocomplete="off" spellcheck="false">
+        </div>
+
+        <!-- Cihazdan resim yükle -->
+        <div class="profile-field">
+            <div class="profile-label">veya Cihazdan Yükle</div>
+            <input type="file" id="profileAvatarFileInput" accept="image/*"
+                style="display:none;" onchange="handleProfileAvatarFile(this)">
+            <button type="button" onclick="document.getElementById('profileAvatarFileInput').click()"
+                style="width:100%;padding:11px 16px;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.35);border-radius:10px;color:rgba(255,215,0,0.8);font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
+                onmouseover="this.style.background='rgba(255,215,0,0.12)'" onmouseout="this.style.background='rgba(255,215,0,0.06)'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Galeriden Seç
+            </button>
+        </div>
+
+        <!-- Kaydet -->
+        <button class="profile-save-btn wp-remote-focus" id="profileSaveBtn" onclick="saveProfile()">
+            KAYDET
+        </button>
+
+        <!-- Bilgi alanı -->
+        <div id="profileStatusMsg" style="text-align:center;font-size:13px;margin-top:10px;min-height:20px;color:rgba(255,215,0,0.7);"></div>
+    </div>
+</div>
+
+<script id="profile-system-js">
+/* ═══════════════════════════════════════════
+   PROFİL SİSTEMİ — Tüm JS
+   ═══════════════════════════════════════════ */
+(function() {
+'use strict';
+
+/* ── Storage anahtarları ── */
+const PROF_NAME_KEY    = 'umittv_profile_name';
+const PROF_AVATAR_KEY  = 'umittv_profile_avatar';
+const PROF_NAME_LOCKED = 'umittv_profile_name_locked'; // şans kodu için kilit
+
+/* ── Profil oku ── */
+function profGet() {
+    try {
+        return {
+            name:   localStorage.getItem(PROF_NAME_KEY) || '',
+            avatar: localStorage.getItem(PROF_AVATAR_KEY) || '',
+            locked: localStorage.getItem(PROF_NAME_LOCKED) === '1'
+        };
+    } catch(e) {
+        return { name: '', avatar: '', locked: false };
+    }
+}
+
+/* ── Profil kaydet ── */
+function profSave(name, avatar, lock) {
+    try {
+        if (name !== null) localStorage.setItem(PROF_NAME_KEY, name);
+        if (avatar !== null) localStorage.setItem(PROF_AVATAR_KEY, avatar);
+        if (lock) localStorage.setItem(PROF_NAME_LOCKED, '1');
+    } catch(e) {}
+}
+
+/* ── Telegram ID al ── */
+function getTelegramId() {
+    try {
+        const authRaw = localStorage.getItem('umittv_auth');
+        if (!authRaw) return null;
+        // Hem düz JSON hem de eski format
+        try {
+            const auth = JSON.parse(authRaw);
+            if (auth && auth.telegram_id) return String(auth.telegram_id);
+        } catch(e) {}
+    } catch(e) {}
+    return null;
+}
+
+/* ── Şans kodu girişi mi? ── */
+function isSansKoduLogin() {
+    try {
+        const authRaw = localStorage.getItem('umittv_auth');
+        if (!authRaw) return false;
+        const auth = JSON.parse(authRaw);
+        return auth && String(auth.telegram_id) === 'SANS_KODU';
+    } catch(e) { return false; }
+}
+
+/* ── Profil adını al (yorumlar ve oda için) ── */
+window.getProfileDisplayName = function() {
+    const prof = profGet();
+    if (prof.name && prof.name.trim()) return prof.name.trim();
+    // Fallback: tg nick veya id
+    try {
+        const tgNick = localStorage.getItem('umittv_tg_nick');
+        if (tgNick && tgNick.trim()) return tgNick.trim();
+    } catch(e) {}
+    const tgId = getTelegramId();
+    if (tgId && tgId !== 'SANS_KODU') return 'Kullanici_' + tgId;
+    // Şans kodu kullanıcısı isim girmediyse
+    return localStorage.getItem('umittv_guest_uid') || 'Misafir';
+};
+
+/* ── Profil avatar URL'ini al ── */
+window.getProfileAvatarUrl = function() {
+    const prof = profGet();
+    return prof.avatar || '';
+};
+
+/* ── Header avatar güncelle ── */
+function updateHeaderAvatar() {
+    const wrap = document.getElementById('headerProfileAvatar');
+    if (!wrap) return;
+    const { name, avatar } = profGet();
+    const initial = (name || getProfileDisplayName() || '?')[0].toUpperCase();
+    if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
+        wrap.innerHTML = `<img src="${avatar}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:20px>account_circle</span>'">`;
+    } else {
+        wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:#FFD700;">${initial}</span>`;
+    }
+}
+
+/* ── Modal aç ── */
+window.openProfileModal = function() {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    modal.classList.add('open');
+
+    const prof     = profGet();
+    const tgId     = getTelegramId();
+    const isSans   = isSansKoduLogin();
+
+    // ID badge
+    const badge = document.getElementById('profileTgIdBadge');
+    if (badge) {
+        if (tgId && tgId !== 'SANS_KODU') {
+            badge.textContent = 'TG ID: ' + tgId;
+        } else if (isSans) {
+            badge.textContent = '🎟 Şans Kodu Kullanıcısı';
+        } else {
+            badge.textContent = 'ID: —';
+        }
+    }
+
+    // Şans kodu kilit uyarısı
+    const lockInfo = document.getElementById('profileLockInfo');
+    const nameInput = document.getElementById('profileNameInput');
+    if (isSans) {
+        if (lockInfo) lockInfo.classList.add('show');
+        if (nameInput) {
+            nameInput.disabled = prof.locked; // kilitliyse disable
+            nameInput.value = prof.name || '';
+        }
+    } else {
+        if (lockInfo) lockInfo.classList.remove('show');
+        if (nameInput) {
+            nameInput.disabled = false;
+            nameInput.value = prof.name || '';
+        }
+    }
+
+    // Avatar input — data: URL ise text input'a koyma (dosyadan yüklendi)
+    const avatarInput = document.getElementById('profileAvatarInput');
+    if (avatarInput) avatarInput.value = (prof.avatar && prof.avatar.startsWith('http')) ? prof.avatar : '';
+
+    // Avatar önizleme
+    _updateModalAvatar(prof.avatar, prof.name || getProfileDisplayName());
+
+    // Status temizle
+    const statusMsg = document.getElementById('profileStatusMsg');
+    if (statusMsg) statusMsg.textContent = '';
+
+    // D-pad desteği
+    if (window.state && window.state.remote) {
+        window.state.remote.active = true;
+        // profil modal için zone yok ama focus ver
+    }
+    if (typeof playKeySound === 'function') playKeySound('click');
+};
+
+/* ── Modal kapat ── */
+window.closeProfileModal = function() {
+    const modal = document.getElementById('profileModal');
+    if (modal) modal.classList.remove('open');
+    if (typeof playKeySound === 'function') playKeySound('back');
+};
+
+/* ── Modal avatar önizle ── */
+function _updateModalAvatar(url, name) {
+    const wrap = document.getElementById('profileAvatarBig');
+    if (!wrap) return;
+    const initial = (name || '?')[0].toUpperCase();
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+        wrap.innerHTML = `<img src="${url}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:44px>account_circle</span>'">`;
+    } else {
+        wrap.innerHTML = `<span style="font-size:36px;font-weight:700;color:#FFD700;">${initial}</span>`;
+    }
+}
+
+/* ── Profil kaydet ── */
+window.saveProfile = function() {
+    const isSans = isSansKoduLogin();
+    const prof   = profGet();
+
+    const nameInput   = document.getElementById('profileNameInput');
+    const avatarInput = document.getElementById('profileAvatarInput');
+    const statusMsg   = document.getElementById('profileStatusMsg');
+
+    const newName   = nameInput   ? nameInput.value.trim()   : '';
+    // Önce URL inputuna bak; boşsa ve galeri resmi seçildiyse onu kullan
+    let newAvatar = avatarInput ? avatarInput.value.trim() : '';
+    if (!newAvatar && window._pendingLocalAvatar) {
+        newAvatar = window._pendingLocalAvatar;
+    }
+    // Kaydettikten sonra pending temizle
+    window._pendingLocalAvatar = null;
+
+    // Şans kodu: isim sadece 1 kez yazılabilir
+    if (isSans && prof.locked && newName !== prof.name) {
+        if (statusMsg) { statusMsg.style.color = '#ff6b6b'; statusMsg.textContent = '❌ İsim değiştirilemez (şans kodu kullanıcıları bir kez belirler).'; }
+        return;
+    }
+
+    // İsim doğrulama
+    if (!newName) {
+        if (statusMsg) { statusMsg.style.color = '#ff6b6b'; statusMsg.textContent = '⚠ İsim boş olamaz.'; }
+        return;
+    }
+
+    // Kaydet
+    const shouldLock = isSans && !prof.locked && newName;
+    profSave(newName, newAvatar, shouldLock);
+
+    // Şans kodu kullanıcısına isim kitleniyor — input disable et
+    if (shouldLock && nameInput) {
+        nameInput.disabled = true;
+        const lockInfo = document.getElementById('profileLockInfo');
+        if (lockInfo) {
+            lockInfo.innerHTML = '🔒 İsminiz <strong>"' + newName + '"</strong> olarak kilitlendi. Artık değiştirilemez.';
+        }
+    }
+
+    // Watch Party nickini de güncelle
+    try { localStorage.setItem('wp_nick', newName); } catch(e) {}
+
+    // Avatar önizle
+    _updateModalAvatar(newAvatar, newName);
+
+    // Header güncelle
+    updateHeaderAvatar();
+
+    // WP modülü nick güncelle
+    if (window._WP && window._WP.inRoom) {
+        window._WP.myNick = newName;
+    }
+
+    if (statusMsg) { statusMsg.style.color = '#4dbb7a'; statusMsg.textContent = '✅ Profil kaydedildi!'; }
+    if (typeof showToast === 'function') showToast('✅ Profil güncellendi');
+    if (typeof playKeySound === 'function') playKeySound('confirm');
+
+    setTimeout(() => { closeProfileModal(); }, 800);
+};
+
+/* ── Cihazdan resim yükle (FileReader → base64 → önizle) ── */
+window.handleProfileAvatarFile = function(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+        if (typeof showToast === 'function') showToast('⚠ Lütfen bir resim dosyası seçin');
+        return;
+    }
+    // Max 2MB limit (base64 ~2.7x büyür, localStorage ~5MB)
+    if (file.size > 2 * 1024 * 1024) {
+        if (typeof showToast === 'function') showToast('⚠ Resim 2 MB\'dan küçük olmalı');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        // URL inputunu temizle (data: URL kullanılacak)
+        const avatarInput = document.getElementById('profileAvatarInput');
+        if (avatarInput) avatarInput.value = '';
+        // Preview güncelle
+        const nameInput = document.getElementById('profileNameInput');
+        const name = (nameInput ? nameInput.value.trim() : '') || getProfileDisplayName();
+        const wrap = document.getElementById('profileAvatarBig');
+        if (wrap) {
+            wrap.innerHTML = '<img src="' + dataUrl + '" alt="' + (name[0]||'?').toUpperCase() + '" style="width:100%;height:100%;object-fit:contain;background:rgba(0,0,0,0.4);display:block;">';
+        }
+        // Geçici olarak _pendingLocalAvatar'a sakla (kaydet butonuna basılınca profSave'e gidecek)
+        window._pendingLocalAvatar = dataUrl;
+        if (typeof showToast === 'function') showToast('📷 Resim seçildi — Kaydet\'e basın');
+    };
+    reader.onerror = function() {
+        if (typeof showToast === 'function') showToast('⚠ Resim okunamadı');
+    };
+    reader.readAsDataURL(file);
+    // Input reset et (aynı dosyayı tekrar seçmeye izin ver)
+    input.value = '';
+};
+
+/* ── Avatar URL input değişince önizle ── */
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('profileAvatarInput');
+    if (avatarInput) {
+        avatarInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            const nameInput = document.getElementById('profileNameInput');
+            const name = (nameInput ? nameInput.value.trim() : '') || getProfileDisplayName();
+            _updateModalAvatar(val, name);
+        });
+    }
+
+    // Modal ESC ile kapat
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('profileModal');
+        if (!modal || !modal.classList.contains('open')) return;
+        if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack' || e.key === 'Back') {
+            // Eğer input aktifse blur et, değilse modalı kapat
+            if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+                document.activeElement.blur();
+            } else {
+                e.preventDefault();
+                closeProfileModal();
+            }
+        }
+    });
+
+    // İlk yükleme: header avatarı güncelle
+    setTimeout(updateHeaderAvatar, 500);
+});
+
+/* ── Login sonrası header güncelle ── */
+document.addEventListener('umittv_login_ok', function() {
+    setTimeout(updateHeaderAvatar, 300);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   WATCH PARTY ENTEGRASYONU: chat mesajlarında profil resmi
+   ══════════════════════════════════════════════════════════════ */
+
+/* wpInitials fonksiyonunu genişlet — önizlemede profil resmi kullan */
+(function() {
+    function _isValidAvatarUrl(url) {
+        return url && (url.startsWith('http') || url.startsWith('data:'));
+    }
+    function _makeAvatarHtml(nick, color) {
+        const initial = (nick || '?')[0].toUpperCase();
+        const myName = getProfileDisplayName();
+        const myAvatar = getProfileAvatarUrl();
+        // Kendi mesajımızsa profil resmimizi kullan
+        if (nick === myName && _isValidAvatarUrl(myAvatar)) {
+            return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;overflow:hidden;flex-shrink:0;margin-top:1px;">` +
+                   `<img src="${myAvatar}" class="vr-comment-avatar-img" alt="${initial}" onerror="this.parentNode.innerHTML='<span style=font-size:12px;font-weight:700;color:${color};display:flex;align-items:center;justify-content:center;height:100%>${initial}</span>'">` +
+                   `</div>`;
+        }
+        return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">${initial}</div>`;
+    }
+
+    /* wpAddComment patch — profil resmi destekli */
+    var _origWpAddComment = window.wpAddComment;
+    window.wpAddComment = function(msg) {
+        if (!_origWpAddComment) return;
+        // msg.nick kendi kullanıcımızsa profil resmimizi kullan
+        const { nick, color, text, stars, isSystem } = msg;
+        const myName = getProfileDisplayName();
+        const myAvatar = getProfileAvatarUrl();
+        const isMe = nick === myName && _isValidAvatarUrl(myAvatar);
+
+        const list = document.getElementById('wpCommentsList');
+        if (!list) { _origWpAddComment.call(this, msg); return; }
+
+        const starsHtml = stars ? `<div style="color:#FFD700;font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
+        const avatarHtml = _makeAvatarHtml(nick, color);
+        const el = document.createElement('div');
+        el.style.cssText = 'display:flex;gap:8px;animation:wpMsgIn 0.2s ease;';
+        el.innerHTML = avatarHtml +
+            `<div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:baseline;gap:6px;">
+                    <span style="font-size:12px;font-weight:700;color:${isSystem?'#FFD700':color}">${nick}</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.25);">${(function(){ return new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); })()}</span>
+                </div>
+                <div style="font-size:13px;color:${isSystem?'rgba(255,255,255,0.5)':'#e8e8f0'};line-height:1.4;${isSystem?'font-style:italic;':''}">${text}</div>
+                ${starsHtml}
+            </div>`;
+        list.appendChild(el);
+        list.scrollTop = list.scrollHeight;
+        if (window._WP) window._WP.comments = (window._WP.comments || []).concat([{nick,text,stars}]);
+    };
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   WP myNick: otomatik olarak profil adını kullan
+   ══════════════════════════════════════════════════════════════ */
+(function() {
+    var _origOpenWpLobby = window.openWatchPartyLobby;
+    if (typeof _origOpenWpLobby === 'function') {
+        window.openWatchPartyLobby = function() {
+            // Nick inputa profil adını yaz
+            var result = _origOpenWpLobby.apply(this, arguments);
+            setTimeout(function() {
+                var nickInput = document.getElementById('wpNickInput');
+                if (nickInput && !nickInput.value.trim()) {
+                    nickInput.value = getProfileDisplayName();
+                }
+            }, 150);
+            return result;
+        };
+    }
+
+    // wpEnterRoom hook: profil adı ile nick ver
+    var _origEnterRoom = window.wpEnterRoom;
+    if (typeof _origEnterRoom === 'function') {
+        window.wpEnterRoom = function(opts) {
+            if (!opts.nick || !opts.nick.trim()) {
+                opts = Object.assign({}, opts, { nick: getProfileDisplayName() });
+            }
+            return _origEnterRoom.call(this, opts);
+        };
+    }
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   VOD yorum sistemi — profil resmi destekli
+   ══════════════════════════════════════════════════════════════ */
+(function() {
+    // vrGetUserName override
+    var origVrGetUserName = window.vrGetUserName;
+    window.vrGetUserName = function() {
+        var profName = getProfileDisplayName();
+        if (profName && profName.trim()) return profName.trim();
+        if (typeof origVrGetUserName === 'function') return origVrGetUserName();
+        return 'Misafir';
+    };
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   D-PAD: Profil modal klavye navigasyonu
+   ══════════════════════════════════════════════════════════════ */
+(function() {
+    var _profFocusItems = ['profileNameInput', 'profileAvatarInput', 'profileSaveBtn'];
+    var _profIdx = 0;
+
+    function _updateProfFocus() {
+        _profFocusItems.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.classList.remove('dpad-focused', 'remote-focused');
+        });
+        var el = document.getElementById(_profFocusItems[_profIdx]);
+        if (el) {
+            el.classList.add('dpad-focused');
+            if (el.tagName === 'INPUT') { el.focus(); }
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        var modal = document.getElementById('profileModal');
+        if (!modal || !modal.classList.contains('open')) return;
+
+        var active = document.activeElement;
+        var isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+        if (isTyping) {
+            if (e.key === 'Enter') {
+                active.blur();
+                e.preventDefault();
+                _profIdx = Math.min(_profIdx + 1, _profFocusItems.length - 1);
+                _updateProfFocus();
+            }
+            if (e.key === 'Escape') { active.blur(); e.preventDefault(); }
+            return;
+        }
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            _profIdx = Math.min(_profIdx + 1, _profFocusItems.length - 1);
+            _updateProfFocus();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            _profIdx = Math.max(_profIdx - 1, 0);
+            _updateProfFocus();
+        } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
+            e.preventDefault();
+            var el = document.getElementById(_profFocusItems[_profIdx]);
+            if (el) {
+                if (el.tagName === 'INPUT') { el.focus(); }
+                else { el.click(); }
+            }
+        } else if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
+            e.preventDefault();
+            closeProfileModal();
+        }
+    }, true);
+
+    // Modal açılınca idx sıfırla
+    var origOpen = window.openProfileModal;
+    window.openProfileModal = function() {
+        origOpen();
+        _profIdx = 0;
+        setTimeout(_updateProfFocus, 200);
+    };
+})();
+
+})(); // profile-system IIFE
+</script>
+
 </body>
 </html>
 
@@ -53664,11 +54773,15 @@ function vrDeviceFingerprint() {
 
 // ── Kullanıcı adı al: telegram_id > wp_nick > cihaz parmak izi ──
 function vrGetUserName() {
+  // 0) Her zaman önce profil görünen ismi — şans kodu dahil tüm kullanıcılar
+  try {
+    const profName = localStorage.getItem('umittv_profile_name');
+    if (profName && profName.trim()) return profName.trim();
+  } catch(e) {}
   // 1) Giriş yapmış kullanıcı → önce nick, yoksa telegram_id
   try {
     const auth = JSON.parse(localStorage.getItem('umittv_auth') || 'null');
     if (auth && auth.telegram_id && String(auth.telegram_id) !== 'SANS_KODU') {
-      // auth.nick varsa onu kullan, yoksa umittv_tg_nick'e bak, son çare ID
       const tgNick = auth.nick
         || localStorage.getItem('umittv_tg_nick')
         || ('Kullanici_' + String(auth.telegram_id));
@@ -53830,16 +54943,33 @@ function vodRenderReview(key, rev, myName) {
     ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
     : '';
 
+  // Kendi yorumumsa profil resmimizi göster
+  const myAvatarUrl = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
+  const hasAvatar = myAvatarUrl && (myAvatarUrl.startsWith('http') || myAvatarUrl.startsWith('data:'));
+  const avatarHtml = hasAvatar
+    ? '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;">' +
+      '<img src="' + myAvatarUrl + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
+      '</div>'
+    : '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + initial + '</div>';
+
+  const displayNick = rev.nick || rev.userId || '?';
+  const meLabel = isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '';
+  const safeNick = displayNick.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const nickHtml = '<span onclick="openUserProfileView(\'' + safeNick + '\')" '
+    + 'style="font-size:12px;font-weight:700;color:' + color + ';cursor:pointer;'
+    + 'text-decoration-line:underline;text-decoration-style:dotted;text-underline-offset:2px;" '
+    + 'title="Profili g\u00f6r\u00fcntle">' + displayNick + '</span>';
+
   const el = document.createElement('div');
   el.id = 'vr_' + key;
   el.style.cssText = 'display:flex;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px;';
   el.innerHTML =
-    '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + initial + '</div>' +
+    avatarHtml +
     '<div style="flex:1;min-width:0;">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;">' +
-        '<div style="display:flex;align-items:baseline;gap:6px;">' +
-          '<span style="font-size:12px;font-weight:700;color:' + color + ';">' + (rev.nick || rev.userId || '?') + '</span>' +
-          (isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '') +
+        '<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">' +
+          nickHtml +
+          meLabel +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
           '<span style="font-size:10px;color:rgba(255,255,255,0.2);">' + dateStr + '</span>' +
@@ -56618,9 +57748,19 @@ function _fmtTime(ts) {
 /* Oturum açmış kullanıcının görünen adını döndürür:
    Öncelik: auth.telegram_name > auth.nick > umittv_tg_nick > WP.myNick > 'Kullanıcı' */
 function _getMyNick() {
+    // 1) Önce profil görünen ismi — şans kodu dahil tüm kullanıcılar için
+    try {
+        var profName = localStorage.getItem('umittv_profile_name');
+        if (profName && profName.trim()) return profName.trim();
+    } catch(e) {}
     try {
         var auth = JSON.parse(localStorage.getItem('umittv_auth') || 'null');
         if (auth) {
+            if (String(auth.telegram_id) === 'SANS_KODU') {
+                var guestUid = localStorage.getItem('umittv_guest_uid');
+                if (guestUid && guestUid.trim()) return guestUid.trim();
+                return 'Misafir';
+            }
             var n = auth.telegram_name || auth.nick || auth.first_name || auth.username;
             if (n && String(n).trim()) return String(n).trim();
         }
@@ -58156,3 +59296,143 @@ window._umitSnapClearBaseline = function() { _snapHasBaseline = false; };
 
 })(); // UmitNewContent IIFE
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   KULLANICI PROFİL GÖRÜNTÜLEME + RÜTBE SİSTEMİ
+   ═══════════════════════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
+function getRutbe(count) {
+  if (count >= 20) return { label: '\u0027\u0100 Yorumcu Kral\u0131', cls: 'rutbe-yorumcu-krali' };
+  if (count >= 10) return { label: '\uD83D\uDD25 Yorumcu Sap\u0131',  cls: 'rutbe-yorumcu-sapi'  };
+  if (count >= 5)  return { label: '\uD83D\uDCAC Yorumcu Ba\u015F\u0131', cls: 'rutbe-yorumcu-basi' };
+  return null;
+}
+
+async function getAllReviewKeys() {
+  try {
+    var r = await fetch(VOD_REVIEWS_FB + '/reviews.json?shallow=true');
+    if (!r.ok) return [];
+    var data = await r.json();
+    return data ? Object.keys(data) : [];
+  } catch(e) { return []; }
+}
+
+async function getReviewsForKey(k) {
+  try {
+    var r = await fetch(VOD_REVIEWS_FB + '/reviews/' + k + '.json');
+    if (!r.ok) return {};
+    return (await r.json()) || {};
+  } catch(e) { return {}; }
+}
+
+async function fetchUserAllReviews(userName) {
+  var keys = await getAllReviewKeys();
+  var userReviews = [];
+  var limited = keys.slice(0, 40);
+  var results = await Promise.all(limited.map(function(k) {
+    return getReviewsForKey(k).then(function(d) { return { k: k, d: d }; });
+  }));
+  for (var i = 0; i < results.length; i++) {
+    var k = results[i].k, d = results[i].d;
+    var entries = Object.entries(d || {});
+    for (var j = 0; j < entries.length; j++) {
+      var rev = entries[j][1];
+      if (!rev) continue;
+      if ((rev.userId || rev.nick || '') === userName) {
+        userReviews.push(Object.assign({ contentKey: k, revKey: entries[j][0] }, rev));
+      }
+    }
+  }
+  userReviews.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+  return userReviews;
+}
+
+window.openUserProfileView = async function(userName) {
+  if (!userName) return;
+  var modal   = document.getElementById('userProfileViewModal');
+  if (!modal) return;
+  var nickEl  = document.getElementById('upvNick');
+  var countEl = document.getElementById('upvCommentCount');
+  var badgeEl = document.getElementById('upvRutveBadge');
+  var listEl  = document.getElementById('upvReviewsList');
+  var loadEl  = document.getElementById('upvReviewsLoading');
+  var emptyEl = document.getElementById('upvReviewsEmpty');
+  var avatarEl= document.getElementById('upvAvatarBig');
+
+  if (nickEl)  nickEl.textContent   = userName;
+  if (countEl) countEl.textContent  = '';
+  if (badgeEl) badgeEl.innerHTML    = '';
+  if (listEl)  listEl.innerHTML     = '';
+  if (loadEl)  loadEl.style.display = 'block';
+  if (emptyEl) emptyEl.style.display= 'none';
+
+  var color = (typeof vrUserColor === 'function') ? vrUserColor(userName) : '#FFD700';
+  var initial = userName[0].toUpperCase();
+  if (avatarEl) {
+    avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;'
+      + 'display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;'
+      + 'background:' + color + '22;border:2px solid ' + color + '55;color:' + color + ';';
+    avatarEl.textContent = initial;
+  }
+
+  modal.classList.add('open');
+  if (typeof playKeySound === 'function') playKeySound('click');
+
+  var reviews = await fetchUserAllReviews(userName);
+  if (loadEl) loadEl.style.display = 'none';
+
+  var total = reviews.length;
+  if (countEl) countEl.textContent = total + ' yorum';
+
+  var rutbe = getRutbe(total);
+  if (badgeEl && rutbe) {
+    badgeEl.innerHTML = '<span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span>';
+  }
+
+  if (total === 0) { if (emptyEl) emptyEl.style.display = 'block'; return; }
+
+  for (var ri = 0; ri < reviews.length; ri++) {
+    var rev = reviews[ri];
+    var starsHtml = rev.stars
+      ? '<span class="upv-review-stars">' + '\u2605'.repeat(rev.stars)
+        + '<span style="color:rgba(255,255,255,0.1)">' + '\u2605'.repeat(5 - rev.stars) + '</span></span>'
+      : '';
+    var dateStr = rev.ts ? new Date(rev.ts).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    var contentName = rev.contentTitle || rev.contentKey || '\u2014';
+    var item = document.createElement('div');
+    item.className = 'upv-review-item';
+    item.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+      + '<div class="upv-review-content-title">' + contentName + '</div>'
+      + (starsHtml ? '<div>' + starsHtml + '</div>' : '')
+      + '</div>'
+      + (rev.text ? '<div class="upv-review-text">' + String(rev.text).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' : '')
+      + '<div class="upv-review-date">' + dateStr + '</div>';
+    if (listEl) listEl.appendChild(item);
+  }
+};
+
+window.closeUserProfileView = function() {
+  var modal = document.getElementById('userProfileViewModal');
+  if (modal) modal.classList.remove('open');
+  if (typeof playKeySound === 'function') playKeySound('back');
+};
+
+document.addEventListener('keydown', function(e) {
+  var modal = document.getElementById('userProfileViewModal');
+  if (modal && modal.classList.contains('open') &&
+      (e.key === 'Escape' || e.keyCode === 27 || e.keyCode === 8)) {
+    window.closeUserProfileView();
+  }
+}, true);
+
+(function() {
+  var m = document.getElementById('userProfileViewModal');
+  if (m) m.addEventListener('click', function(e) {
+    if (e.target === m) window.closeUserProfileView();
+  });
+})();
+
+})(); // UserProfileView IIFE

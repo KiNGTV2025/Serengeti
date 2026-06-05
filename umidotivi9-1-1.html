@@ -14823,7 +14823,23 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     
     <div class="cache-indicator" id="cacheIndicator">Önbellek: 0</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js" onerror="window._hlsCdnFailed=true"></script>
+    <script>
+    // CDN yüklenemezse (App24 offline/bloke): unpkg yedek kaynak dene
+    if (window._hlsCdnFailed || typeof Hls === 'undefined') {
+        (function() {
+            var s = document.createElement('script');
+            s.src = 'https://unpkg.com/hls.js@1.5.13/dist/hls.min.js';
+            s.onerror = function() {
+                // unpkg de başarısız → cdnjs dene
+                var s2 = document.createElement('script');
+                s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js';
+                document.head.appendChild(s2);
+            };
+            document.head.appendChild(s);
+        })();
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script>
         
@@ -16327,8 +16343,10 @@ const HIGH_RES_DIRECT_DOMAINS = [
     'nimble',
 ];
 
+// App Creator 24 WebView'da Web Worker desteği yok → enableWorker: false
+const _isApp24WebView = (navigator.userAgent || '').toLowerCase().includes('okhttp');
 const HLS_CONFIG = {
-    enableWorker: true,
+    enableWorker: !_isApp24WebView,   // App24'te false: Web Worker crash önle
     debug: false,
 
     subtitleDisplay: true,
@@ -16385,7 +16403,8 @@ const HLS_CONFIG = {
 
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
-        xhr.timeout = 20000;             // XHR zaman aşımı: segment ve manifest için güvenlik ağı
+        // App24 WebView'da uzun timeout = takılı bağlantı temizlenmiyor → 12sn yeterli
+        xhr.timeout = _isApp24WebView ? 12000 : 20000;
     }
 };
 
@@ -27797,7 +27816,8 @@ function openPasswordModal(m3uIndex, m3uName) {
             'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
             'https://api.allorigins.win/raw?url='
         ];
-        const _isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:');
+        const _isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:')
+                          || (typeof _isApp24WebView !== 'undefined' && _isApp24WebView);
         
         async function _tryFetchCfg(url) {
             try {
@@ -28462,7 +28482,8 @@ async function _DEPRECATED_loadFreshChannelsQuick_v1(forceRefresh = false) {
             'https://proxy.umitmodpremiumtr.workers.dev/?stream=',
             'https://api.allorigins.win/raw?url='
         ];
-        const _bgIsFile = (typeof location !== 'undefined' && location.protocol === 'file:');
+        const _bgIsFile = (typeof location !== 'undefined' && location.protocol === 'file:')
+                       || (typeof _isApp24WebView !== 'undefined' && _isApp24WebView);
         async function _bgFetchCfg(url) {
             try {
                 const ctrl = new AbortController();
@@ -31653,6 +31674,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             };
 
             const _isFileProtocol = (typeof location !== 'undefined' && location.protocol === 'file:');
+            // App24 WebView: file: veya http: protokolünde açılabilir, her iki durumda
+            // http:// M3U URL'leri Android Cleartext engeline takılır → proxy önce
+            const _needsProxyFirst = _isFileProtocol || (typeof _isApp24WebView !== 'undefined' && _isApp24WebView && fetchUrl.startsWith('http:'));
             const _tryFetchProxy = async (url, timeoutMs) => {
                 const ctrl = new AbortController();
                 const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -31682,8 +31706,8 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     response = await _tryFetchProxy(fetchUrl, 30000);
                 }
             } else {
-                if (_isFileProtocol) {
-                    // file:// ortamında CORS: proxy önce
+                if (_needsProxyFirst) {
+                    // file:// veya App24 http:// → proxy önce (CORS / Cleartext engeli aşılır)
                     showInlineLoading(25, `${m3u.name} Proxy ile yükleniyor...`);
                     response = await _tryFetchProxy(fetchUrl, 20000); // 😄 60s→20s
                     if (!response) {
@@ -37412,7 +37436,8 @@ function resumeChannel(startTime) {
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
-        if (!Hls.isSupported()) {
+        // HLS.js yüklenmediyse (CDN erişim sorunu vb.) → native video ile dene
+        if (typeof Hls === 'undefined' || !Hls.isSupported()) {
             video.src = streamUrl;
             video.load();
             video.play().catch(e => console.warn('Native play hatası:', e));
@@ -37847,7 +37872,10 @@ function resumeChannel(startTime) {
     } else {
         // MP4 / MKV / diğer direkt medya
         // http:// mixed content → proxy üzerinden aç (tüm ortamlar)
-        const _isMixedContent = rawUrl.startsWith('http:') && location.protocol === 'https:';
+        // App24 WebView file:// protokolünde açılır → _isMixedContent hesabı yanlış (false) gelir.
+        // OkHttp UA ise Android Cleartext HTTP engeli var → http:// URL'ler her zaman proxy.
+        const _isMixedContent = rawUrl.startsWith('http:') &&
+            (location.protocol === 'https:' || location.protocol === 'file:' || _isApp24WebView);
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
@@ -45110,7 +45138,8 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
         var isCodebergUrl = /codeberg\.org/i.test(url);
 
-        var _isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:');
+        var _isFileProto = (typeof location !== 'undefined' && location.protocol === 'file:')
+                        || (typeof _isApp24WebView !== 'undefined' && _isApp24WebView);
         var response = null;
         if (isCodebergUrl) {
             response = await tryFetch(PROXY + encodeURIComponent(targetUrl), 60000);

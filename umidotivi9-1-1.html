@@ -31674,9 +31674,8 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             };
 
             const _isFileProtocol = (typeof location !== 'undefined' && location.protocol === 'file:');
-            // App24 WebView: file: veya http: protokolünde açılabilir, her iki durumda
-            // http:// M3U URL'leri Android Cleartext engeline takılır → proxy önce
-            const _needsProxyFirst = _isFileProtocol || (typeof _isApp24WebView !== 'undefined' && _isApp24WebView && fetchUrl.startsWith('http:'));
+            // http:// M3U → direkt önce dene, başarısız olursa proxy
+            const _needsProxyFirst = _isFileProtocol;
             const _tryFetchProxy = async (url, timeoutMs) => {
                 const ctrl = new AbortController();
                 const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -37871,22 +37870,22 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
-        // http:// mixed content → proxy üzerinden aç (tüm ortamlar)
-        // App24 WebView file:// protokolünde açılır → _isMixedContent hesabı yanlış (false) gelir.
-        // OkHttp UA ise Android Cleartext HTTP engeli var → http:// URL'ler her zaman proxy.
-        const _isMixedContent = rawUrl.startsWith('http:') &&
-            (location.protocol === 'https:' || location.protocol === 'file:' || _isApp24WebView);
+        // http:// MKV/MP4 → direkt aç (tarayıcıda çalışıyor, sunucu HTTP'ye izin veriyor)
+        // App24'te açılmıyorsa sorun Cleartext Traffic ayarı → App24 manifest ayarından çözülmeli
+        const _isMixedContent = false; // proxy'ye gönderme, direkt dene
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
-        // Mixed content varsa mutlaka proxy kullan
-        // STREAM_PROXY2 (sadecenjoy) raw video proxy'si — MKV için daha uygun
+        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → STREAM_PROXY3 → direkt ──
+        // http:// → direkt açma, mutlaka proxy üzerinden geç (Android Cleartext + mixed content)
         const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
             ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
             : null;
         const _proxy1Url = STREAM_PROXY + encodeURIComponent(rawUrl);
+        const _proxy3Url = (typeof STREAM_PROXY3 !== 'undefined')
+            ? STREAM_PROXY3 + encodeURIComponent(rawUrl)
+            : null;
         const _directMediaUrl = _isMixedContent
             ? (_proxy2Url || _proxy1Url)
             : rawUrl;
@@ -37925,13 +37924,19 @@ function resumeChannel(startTime) {
         // Fallback zinciri oluştur
         const _fallbacks = [];
         if (_isMixedContent) {
-            // Mixed content: proxy1 → proxy2 → (proxy ile sınırlı)
-            if (_directMediaUrl === _proxy2Url && _proxy1Url) _fallbacks.push(_proxy1Url);
-            else if (_proxy2Url) _fallbacks.push(_proxy2Url);
+            // http:// → proxy zinciri: proxy2 → proxy1 → proxy3 (hepsi proxy, direkt yok)
+            if (_directMediaUrl === _proxy2Url) {
+                if (_proxy1Url) _fallbacks.push(_proxy1Url);
+                if (_proxy3Url) _fallbacks.push(_proxy3Url);
+            } else {
+                if (_proxy2Url) _fallbacks.push(_proxy2Url);
+                if (_proxy3Url) _fallbacks.push(_proxy3Url);
+            }
         } else {
-            // Direkt: hata olursa proxy dene
+            // https:// → direkt önce, hata olursa proxy zinciri
             if (_proxy2Url) _fallbacks.push(_proxy2Url);
             _fallbacks.push(_proxy1Url);
+            if (_proxy3Url) _fallbacks.push(_proxy3Url);
         }
 
         _tryPlayMkv(_directMediaUrl, _fallbacks);

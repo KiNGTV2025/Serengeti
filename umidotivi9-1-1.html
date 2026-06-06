@@ -37509,6 +37509,13 @@ function resumeChannel(startTime) {
         if (state.series && state.series.currentSeries) {
             startAutoNextTimer();
         }
+        // ── YAYIM BAŞLADI: Dekoratif efektleri durdur (CPU/GPU tasarrufu) ──
+        if (typeof window.stopLogoGlow === 'function') window.stopLogoGlow();
+        // El yazısı canvas interval'ini durdur
+        (function() {
+            var canvas = document.getElementById('headerUsernameCurve');
+            if (canvas) canvas.style.opacity = '0';
+        })();
     };
     
     // Donma önleme — TEK merkezi recovery sistemi
@@ -39368,6 +39375,11 @@ function closePlayer() {
     playKeySound('back');
     // Başa dön butonu güncelle
     setTimeout(() => { typeof window._umkGoTopUpdate === 'function' && window._umkGoTopUpdate(); }, 100);
+    // Player kapandı → el yazısı + logo efektlerini yeniden başlat
+    setTimeout(function() {
+        if (typeof window.startLogoGlow === 'function') window.startLogoGlow();
+        if (typeof window.updateHeaderUsername === 'function') window.updateHeaderUsername();
+    }, 300);
 }
 
 
@@ -50201,21 +50213,20 @@ window.getProfileAvatarUrlAsync = async function() {
         var p = _unameLastP || '#FFD700';
         var s = _unameLastS || '#F1C40F';
 
-        _unamePhase += 0.018;
+        _unamePhase += 0.10; // büyük adım: 0.018 → 0.10 (daha az frame, aynı görsel)
         var pulse = 0.5 + 0.5 * Math.sin(_unamePhase);
 
-        var dpr = window.devicePixelRatio || 1;
+        var dpr = 1; // TVBox'ta dpr=1 zorunlu — 2x canvas = 4x bellek/bant
         var h = 30, fontSize = 17;
-        ctx.font = 'bold '+fontSize+'px \"Caveat\",\"Dancing Script\",\"Segoe Script\",cursive';
+        ctx.font = 'bold '+fontSize+'px "Caveat","Dancing Script","Segoe Script",cursive';
         var textW = ctx.measureText(name).width;
         var w = Math.min(Math.ceil(textW + 10), 130);
 
-        if (canvas.width !== Math.round(w*dpr) || canvas.height !== Math.round(h*dpr)) {
-            canvas.width  = Math.round(w*dpr);
-            canvas.height = Math.round(h*dpr);
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width  = w;
+            canvas.height = h;
             canvas.style.width  = w+'px';
             canvas.style.height = h+'px';
-            ctx.scale(dpr, dpr);
         }
         ctx.clearRect(0,0,w,h);
         ctx.save();
@@ -50230,16 +50241,15 @@ window.getProfileAvatarUrlAsync = async function() {
         grd.addColorStop(1, gradC2);
 
         var rgb = _h2rgb(p);
-        var glowA = 0.3 + pulse*0.55;
+        var glowA = 0.3 + pulse*0.45;
         ctx.shadowColor = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+glowA+')';
-        ctx.shadowBlur  = 4 + pulse*10;
-        ctx.font = 'bold '+fontSize+'px \"Caveat\",\"Dancing Script\",\"Segoe Script\",cursive';
+        ctx.shadowBlur  = 3 + pulse*6; // 4+pulse*10 → 3+pulse*6: daha hafif blur
+        ctx.font = 'bold '+fontSize+'px "Caveat","Dancing Script","Segoe Script",cursive';
         ctx.fillStyle = grd;
         ctx.textBaseline = 'middle';
         ctx.fillText(name, 4, h/2);
         ctx.restore();
-
-        _unameRaf = requestAnimationFrame(_drawFrame);
+        // RAF kaldırıldı — interval ile çağrılıyor
     }
 
     window.updateHeaderUsername = function() {
@@ -50248,7 +50258,7 @@ window.getProfileAvatarUrlAsync = async function() {
         var name = localStorage.getItem('umittv_profile_name') || (typeof getProfileDisplayName==='function' ? getProfileDisplayName() : '') || '';
         if (!name) {
             canvas.style.opacity='0';
-            if(_unameRaf){ cancelAnimationFrame(_unameRaf); _unameRaf=null; }
+            if(_unameRaf){ clearInterval(_unameRaf); _unameRaf=null; }
             return;
         }
         var root = document.documentElement;
@@ -50256,7 +50266,11 @@ window.getProfileAvatarUrlAsync = async function() {
         _unameLastS = (root.style.getPropertyValue('--accent-secondary')||getComputedStyle(root).getPropertyValue('--accent-secondary')||'#F1C40F').trim();
         _unameLastName = name;
         canvas.style.opacity = '1';
-        if (!_unameRaf) _drawFrame();
+        // RAF → interval: 500ms aralık (2fps) TVBox için yeterli, sürekli RAF = jank
+        if (!_unameRaf) {
+            _drawFrame(); // ilk frame hemen çiz
+            _unameRaf = setInterval(_drawFrame, 500);
+        }
     };
 })();
 
@@ -50277,49 +50291,40 @@ window.getProfileAvatarUrlAsync = async function() {
 
     function _logoFrame() {
         var logo = document.querySelector('.neon-logo-img');
-        if (!logo) { _logoRaf = null; return; }
+        if (!logo) { if(_logoRaf){clearInterval(_logoRaf);_logoRaf=null;} return; }
 
-        _logoPhase += 0.022;
-        /* 0→1→0  ~2.8s periyot */
+        _logoPhase += 0.12; /* 0.022 → 0.12: daha az adım, aynı efekt */
         var pulse = 0.5 + 0.5 * Math.sin(_logoPhase);
 
-        /* Glow büyüklüğü: 4px → 18px */
-        var glow1 = Math.round(3 + pulse * 10);
-        var glow2 = Math.round(8 + pulse * 20);
-        /* Brightness: 1.05 → 1.30 */
-        var bright = (1.05 + pulse * 0.25).toFixed(3);
-        /* Opacity: 0.82 → 1.0 */
-        var opac = (0.82 + pulse * 0.18).toFixed(3);
+        var glow1 = Math.round(3 + pulse * 8);
+        var glow2 = Math.round(6 + pulse * 14);
+        var bright = (1.05 + pulse * 0.20).toFixed(2);
+        var opac = (0.85 + pulse * 0.15).toFixed(2);
 
-        /* İki rengi pulse'a göre karıştır */
         var rgb1 = _h2rgb(_logoP);
-        var rgb2 = _h2rgb(_logoS);
-        var r = Math.round(rgb1[0] + (rgb2[0]-rgb1[0]) * pulse);
-        var g = Math.round(rgb1[1] + (rgb2[1]-rgb1[1]) * pulse);
-        var b = Math.round(rgb1[2] + (rgb2[2]-rgb1[2]) * pulse);
-        var glowColor = 'rgba('+r+','+g+','+b+',0.9)';
-        var glowColor2 = 'rgba('+r+','+g+','+b+',0.5)';
+        var r = rgb1[0], g = rgb1[1], b = rgb1[2];
+        var glowColor  = 'rgba('+r+','+g+','+b+',0.85)';
+        var glowColor2 = 'rgba('+r+','+g+','+b+',0.40)';
 
         logo.style.filter =
             'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
             'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
             'brightness(' + bright + ')';
         logo.style.opacity = opac;
-
-        _logoRaf = requestAnimationFrame(_logoFrame);
+        // RAF kaldırıldı — interval ile çağrılıyor
     }
 
     window.startLogoGlow = function() {
         var root = document.documentElement;
         _logoP = (root.style.getPropertyValue('--accent-primary')   || getComputedStyle(root).getPropertyValue('--accent-primary')   || '#FFD700').trim();
         _logoS = (root.style.getPropertyValue('--accent-secondary') || getComputedStyle(root).getPropertyValue('--accent-secondary') || '#F1C40F').trim();
-        /* RAF zaten çalışıyorsa sadece rengi güncelle, yeniden başlatma */
-        if (_logoRaf) return;
-        _logoFrame();
+        if (_logoRaf) return; /* zaten çalışıyor */
+        _logoFrame(); /* ilk kare hemen */
+        _logoRaf = setInterval(_logoFrame, 600); /* ~1.6fps — glow için fazlasıyla yeterli */
     };
 
     window.stopLogoGlow = function() {
-        if (_logoRaf) { cancelAnimationFrame(_logoRaf); _logoRaf = null; }
+        if (_logoRaf) { clearInterval(_logoRaf); _logoRaf = null; }
         var logo = document.querySelector('.neon-logo-img');
         if (logo) {
             logo.style.filter  = 'drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15)';
@@ -50327,13 +50332,23 @@ window.getProfileAvatarUrlAsync = async function() {
         }
     };
 
-    /* Sayfa yüklenince otomatik başlat */
+    /* Sayfa yüklenince otomatik başlat — sadece player kapalıysa */
     document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(window.startLogoGlow, 800);
+        setTimeout(function() {
+            var pv = document.getElementById('playerView');
+            if (!pv || pv.style.display === 'none' || pv.style.display === '') {
+                window.startLogoGlow();
+            }
+        }, 800);
     });
     /* DOMContentLoaded geçtiyse hemen başlat */
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(window.startLogoGlow, 800);
+        setTimeout(function() {
+            var pv = document.getElementById('playerView');
+            if (!pv || pv.style.display === 'none' || pv.style.display === '') {
+                window.startLogoGlow();
+            }
+        }, 800);
     }
 })();
 

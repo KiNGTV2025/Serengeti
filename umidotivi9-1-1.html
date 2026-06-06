@@ -5196,66 +5196,84 @@ body {
         }
 
          
+        /* ── Ses / Parlaklık / Çözünürlük OSD'leri ────────────────────────
+           • Ses    → sağ kenar, dikey orta
+           • Parlaklık → sol kenar, dikey orta
+           • Çözünürlük → sağ üst köşe
+           • Küçük, şeffaf, dokunulmaz
+           ─────────────────────────────────────────────────────────────── */
         .volume-indicator, .resolution-indicator, .brightness-indicator {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(20,20,30,0.95));
-            color: white;
-            padding: 20px 30px;
-            border-radius: 16px;
+            background: rgba(0,0,0,0.72);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 10px;
             display: none;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 700;
             z-index: 2100;
             text-align: center;
-            min-width: 280px;
-            border: 2px solid;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 1.5px solid;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
             pointer-events: none;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            min-width: 0;
+            white-space: nowrap;
         }
-        
-        @keyframes indicator-appear {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        /* Ses → sağ kenar, dikey orta */
+        .volume-indicator {
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            left: auto;
+            border-color: var(--accent-primary, #FFD700);
         }
-        
-        .volume-indicator { 
-            border-color: var(--accent-primary); 
+        /* Parlaklık → sol kenar, dikey orta */
+        .brightness-indicator {
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            right: auto;
+            border-color: #4ade80;
         }
-        
-        .brightness-indicator { 
-            border-color: #00FF00; 
+        /* Çözünürlük → sağ üst */
+        .resolution-indicator {
+            right: 12px;
+            top: 60px;
+            left: auto;
+            border-color: #60a5fa;
         }
-        
-        .resolution-indicator { 
-            border-color: #007BFF; 
-        }
-        
         .resolution-indicator .quality-label {
-            color: #00FF00;
-            font-size: 16px;
-            margin-top: 10px;
+            color: #4ade80;
+            font-size: 11px;
+            margin-top: 4px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 4px;
         }
-        
         .indicator-icon {
-            font-size: 24px;
-            margin-right: 12px;
+            font-size: 15px;
+            margin-right: 6px;
+            vertical-align: middle;
+            opacity: 0.85;
+        }
+        .indicator-value {
+            color: var(--accent-primary, #FFD700);
+            font-size: 15px;
+            font-weight: 800;
             vertical-align: middle;
         }
-        
-        .indicator-value {
-            color: var(--accent-primary);
-            font-size: 24px;
-            font-weight: 800;
-            text-shadow: 0 2px 10px rgba(255,215,0,0.5);
+        .brightness-indicator .indicator-value {
+            color: #4ade80;
         }
+        .resolution-indicator .indicator-value {
+            color: #93c5fd;
+            font-size: 12px;
+        }
+
  
 .performance-critical {
      
@@ -5312,23 +5330,25 @@ body {
          
         .resolution-change-indicator {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 55px;
+            right: 12px;
             left: auto;
             transform: none;
-            background: rgba(0, 0, 0, 0.82);
+            background: rgba(0, 0, 0, 0.72);
             color: #fff;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 9px;
+            font-size: 12px;
             font-weight: bold;
             z-index: 2101;
             display: none;
             text-align: center;
             min-width: 0;
-            border: 2px solid #007BFF;
+            border: 1.5px solid #60a5fa;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             pointer-events: none;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
         .resolution-change-indicator .res-value {
             color: #FFD700;
@@ -8977,7 +8997,7 @@ body.sidebar-open {
         .resolution-indicator,
         .brightness-indicator,
         .volume-indicator {
-            z-index: 9998 !important;
+            z-index: 2100;
         }
         
          
@@ -14237,24 +14257,24 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="touch-zone-indicator" id="touchZoneCenter"></div>
 
     
+    <!-- Ses OSD — sağ kenar -->
     <div class="volume-indicator" id="volumeIndicator">
-        <span class="material-symbols-outlined indicator-icon">volume_up</span>
-        <span class="indicator-value" id="volumeValue">50%</span>
+        <svg class="indicator-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:5px;opacity:0.8;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg><span class="indicator-value" id="volumeValue">50%</span>
     </div>
+    <!-- Parlaklık OSD — sol kenar -->
     <div class="brightness-indicator" id="brightnessIndicator">
-        <span class="material-symbols-outlined indicator-icon">brightness_6</span>
-        <span class="indicator-value" id="brightnessValue">100%</span>
+        <svg class="indicator-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:5px;opacity:0.8;color:#4ade80;"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg><span class="indicator-value" id="brightnessValue">100%</span>
     </div>
+    <!-- Çözünürlük OSD — sağ üst -->
     <div class="resolution-indicator" id="resolutionIndicator">
         <div id="resolutionText">
-            <span class="material-symbols-outlined indicator-icon">high_quality</span>
-            <span class="indicator-value" id="resolutionValue">1920x1080</span>
+            <svg class="indicator-icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:4px;opacity:0.8;color:#93c5fd;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z"/></svg><span class="indicator-value" id="resolutionValue">1080p</span>
         </div>
         <div class="quality-label" id="qualityLabel">
-            <span class="material-symbols-outlined" style="font-size:16px;">star</span>
-            <span id="qualityText">Yüksek Kalite</span>
+            <span id="qualityText">Full HD</span>
         </div>
     </div>
+
 
 <div class="player-container" id="playerContainer" style="background: none !important;">
     
@@ -24391,7 +24411,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const indicator = document.getElementById('resolutionChangeIndicator');
             const quality = getQualityLabel(width, height);
             
-            document.getElementById('resChangeValue').textContent = `${width}x${height}`;
+            document.getElementById('resChangeValue').textContent = `${height}p`;
             document.getElementById('resChangeQuality').textContent = quality;
             
             indicator.style.display = 'block';
@@ -24439,30 +24459,32 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         function showVolumeIndicator(volume) {
             const indicator = document.getElementById('volumeIndicator');
             document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
-            indicator.style.display = 'block';
+            indicator.style.display = 'flex';
+            indicator.style.alignItems = 'center';
             
             clearTimeout(window.volumeIndicatorTimer);
             window.volumeIndicatorTimer = setTimeout(() => {
                 indicator.style.display = 'none';
-            }, 2000);
+            }, 1500);
         }
 
         function showBrightnessIndicator(brightness) {
             const indicator = document.getElementById('brightnessIndicator');
             document.getElementById('brightnessValue').textContent = `${Math.round(brightness)}%`;
-            indicator.style.display = 'block';
+            indicator.style.display = 'flex';
+            indicator.style.alignItems = 'center';
             
             clearTimeout(window.brightnessIndicatorTimer);
             window.brightnessIndicatorTimer = setTimeout(() => {
                 indicator.style.display = 'none';
-            }, 2000);
+            }, 1500);
         }
 
         function showResolutionIndicator(width, height) {
             const indicator = document.getElementById('resolutionIndicator');
             const quality = getQualityLabel(width, height);
             
-            document.getElementById('resolutionValue').textContent = `${width}x${height}`;
+            document.getElementById('resolutionValue').textContent = `${height}p`;
             document.getElementById('qualityText').textContent = quality;
             
             indicator.style.display = 'block';
@@ -24470,7 +24492,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             clearTimeout(window.resolutionIndicatorTimer);
             window.resolutionIndicatorTimer = setTimeout(() => {
                 indicator.style.display = 'none';
-            }, 3000);
+            }, 2500);
         }
 
         function getQualityLabel(width, height) {
@@ -25038,13 +25060,101 @@ document.addEventListener('touchstart', cancelSleepShutdown);
     });
 }
        
-        
-        
-        
-        
-document.addEventListener('DOMContentLoaded', async () => {
+/* ══════════════════════════════════════════════════════════════
+   2 PARMAK DİKEY SWIPE → TAM EKRAN  |  ÇİFT DOKUNUŞ → ÇIKIŞ
+   playerView üzerindeki tüm touch olaylarını dinler.
+   playerContainer zaten e.touches.length!==1 ile 2 parmağı reddeder,
+   bu yüzden listener doğrudan playerView'e bağlanır.
+   ══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+    var _pvEl = document.getElementById('playerView');
+    if (!_pvEl) return;
 
-    // ── LOGIN BEKLEMESİ ──────────────────────────────────────
+    var _tf2StartY  = null;   // 2 parmak orta nokta başlangıç Y
+    var _tf2Fired   = false;  // Bu gesture'da zaten tetiklendi mi
+    var SWIPE_THR   = 50;     // px — ne kadar sürününce tetiklensin
+
+    /* Çift dokunuş (çıkış için) */
+    var _dblLastTap = 0;
+    var _dblTimer   = null;
+    var DBL_MS      = 350;
+
+    /* ── Tam ekrana gir ── */
+    function _fsEnter() {
+        var el = _pvEl; // playerView'i tam ekran yap
+        var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+        if (req) {
+            req.call(el).then(function() {
+                /* Yönü kilitle */
+                try {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(function(){});
+                    }
+                } catch(e) {}
+            }).catch(function(){});
+        }
+    }
+
+    /* ── Tam ekrandan çık ── */
+    function _fsExit() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) return;
+        var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        if (ex) ex.call(document);
+        try {
+            if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+        } catch(e) {}
+    }
+
+    /* ── 2 parmak touchstart ── */
+    _pvEl.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            var y1 = e.touches[0].clientY;
+            var y2 = e.touches[1].clientY;
+            _tf2StartY = (y1 + y2) / 2;
+            _tf2Fired  = false;
+        }
+    }, { passive: true, capture: false });
+
+    /* ── 2 parmak touchmove → tam ekrana al ── */
+    _pvEl.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2 && _tf2StartY !== null && !_tf2Fired) {
+            var y1   = e.touches[0].clientY;
+            var y2   = e.touches[1].clientY;
+            var curY = (y1 + y2) / 2;
+            if (Math.abs(curY - _tf2StartY) > SWIPE_THR) {
+                _tf2Fired = true;
+                _fsEnter();
+            }
+        }
+    }, { passive: true, capture: false });
+
+    /* ── touchend: 2 parmak bitti → sıfırla; çift dokunuş → çık ── */
+    _pvEl.addEventListener('touchend', function(e) {
+        /* 2 parmak bitti */
+        if (e.touches.length < 2) {
+            _tf2StartY = null;
+            _tf2Fired  = false;
+        }
+
+        /* Çift dokunuş tespiti — tek parmak, tam ekrandayken */
+        var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (isFS && e.changedTouches.length === 1 && e.touches.length === 0) {
+            var now = Date.now();
+            if (now - _dblLastTap < DBL_MS) {
+                clearTimeout(_dblTimer);
+                _dblLastTap = 0;
+                _fsExit();
+            } else {
+                _dblLastTap = now;
+                clearTimeout(_dblTimer);
+                _dblTimer = setTimeout(function() { _dblLastTap = 0; }, DBL_MS + 50);
+            }
+        }
+    }, { passive: true, capture: false });
+
+}); /* 2 parmak tam ekran */
+
+document.addEventListener('DOMContentLoaded', async () => {
     // Login overlay açıksa (ilk giriş), kullanıcı doğrulanana kadar uygulama başlamasın.
     // Eğer daha önce giriş yapıldıysa overlay zaten hidden — login_ok anında gelir.
     await new Promise(function(resolve) {
@@ -33155,21 +33265,30 @@ setTimeout(_vhsInit, 1200);
 
             case 'ArrowUp':
                 e.preventDefault();
-                // Yukarı → continueCards varsa ona, yoksa categories'e
+                // Zincir: recentCards → continueCards → heroSlider → categories
                 {
                     const continueCards = document.querySelectorAll('.continue-card');
+                    document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                     if (continueCards.length > 0 && state.activeCat === 'all') {
                         state.remote.zone = 'continueCards';
                         if (!state.remote.continueCards) state.remote.continueCards = { selectedCardIndex: 0, selectedButtonIndex: 0, cards: [] };
                         state.remote.continueCards.selectedCardIndex = 0;
                         state.remote.continueCards.selectedButtonIndex = 0;
-                        document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                         if (typeof updateContinueCardsFocus === 'function') updateContinueCardsFocus();
                     } else {
-                        state.remote.zone = 'categories';
-                        state.remote.catIndex = 0;
+                        const _rcHeroSl = document.getElementById('vodHeroSlider');
+                        const _rcSlVis = _rcHeroSl && _rcHeroSl.style.display !== 'none' && _rcHeroSl.offsetParent !== null;
+                        if (_rcSlVis) {
+                            state.remote.zone = 'heroSlider';
+                            state.remote.heroSliderBtnIdx = 0;
+                            setTimeout(function() { if (_rcHeroSl) _rcHeroSl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }, 30);
+                            updateRemoteFocus();
+                        } else {
+                            state.remote.zone = 'categories';
+                            state.remote.catIndex = 0;
+                            updateRemoteFocus();
+                        }
                     }
-                    updateRemoteFocus();
                 }
                 break;
 
@@ -42748,9 +42867,19 @@ function cleanupDeleteContinueModalRemote() {
     const recentCards = document.querySelectorAll('.recent-card');
     const hasRecentCards = recentCards.length > 0 && state.activeCat === 'all';
 
-    if (state.remote.zone === 'channels' && e.key === 'ArrowUp' && state.remote.index < 3) {
+    if (state.remote.zone === 'channels' && e.key === 'ArrowUp' && state.remote.index < (state.currentGridCols || 4)) {
         e.preventDefault();
-        if (hasRecentCards) {
+        // Zincir: channels → recentCards → continueCards → heroSlider → categories
+        // İlk satırdan ↑ basıldığında sırayla geç
+        const _heroSlEr = document.getElementById('vodHeroSlider');
+        const _sliderVisibleEr = _heroSlEr && _heroSlEr.style.display !== 'none' && _heroSlEr.offsetParent !== null;
+        var _goTopBtnEr = document.getElementById('umkGoTop');
+        if (_goTopBtnEr && _goTopBtnEr.classList.contains('umk-show')) {
+            state.remote.zone = 'umkGoTop';
+            _goTopBtnEr.classList.add('umk-focused');
+            _goTopBtnEr.setAttribute('tabindex', '0');
+            _goTopBtnEr.focus({ preventScroll: true });
+        } else if (hasRecentCards) {
             // Önce recentCards zone'una gir
             state.remote.zone = 'recentCards';
             if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
@@ -42763,6 +42892,14 @@ function cleanupDeleteContinueModalRemote() {
             state.remote.continueCards.selectedButtonIndex = 0;
             document.querySelectorAll('.continue-card').forEach(c => { if (!c.getAttribute('tabindex')) c.setAttribute('tabindex', '0'); });
             updateContinueCardsFocus();
+        } else if (_sliderVisibleEr) {
+            state.remote.zone = 'heroSlider';
+            state.remote.heroSliderBtnIdx = 0;
+            setTimeout(function() {
+                var _sl = document.getElementById('vodHeroSlider');
+                if (_sl) _sl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }, 30);
+            updateRemoteFocus();
         } else {
             state.remote.zone = 'categories';
             state.remote.catIndex = 0;
@@ -42891,40 +43028,42 @@ function cleanupDeleteContinueModalRemote() {
                 /* Gerçek sütun sayısını cache'den al */
                 var _realColsUp = realCols;
                 if(state.remote.index < _realColsUp) {
-                    /* İlk satırdayken ↑ → Slider varsa slider'a, sonra Başa Dön/categories */
-                    const _heroSlUp = document.getElementById('vodHeroSlider');
-                    const _sliderVisible = _heroSlUp && _heroSlUp.style.display !== 'none' && _heroSlUp.offsetParent !== null;
-                    var _goTopBtn = document.getElementById('umkGoTop');
-                    if (_goTopBtn && _goTopBtn.classList.contains('umk-show')) {
-                        state.remote.zone = 'umkGoTop';
-                        _goTopBtn.classList.add('umk-focused');
-                        _goTopBtn.setAttribute('tabindex', '0');
-                        _goTopBtn.focus({ preventScroll: true });
-                    } else if (_sliderVisible) {
-                        state.remote.zone = 'heroSlider';
-                        state.remote.heroSliderBtnIdx = 0;
-                        // Slider'ı görünür yap
-                        setTimeout(function() {
-                            var _sl = document.getElementById('vodHeroSlider');
-                            if (_sl) _sl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-                        }, 30);
-                    } else {
-                        state.remote.zone='categories'; 
-                        state.remote.catIndex = 0;
-                    }
+                    /* İlk satırdayken ↑ → erken-dönüş bloğu bu durumu zaten yakalıyor,
+                       buraya sadece umkGoTop show olmayan durumlarda düşebilir — güvenli fallback */
+                    state.remote.zone='categories'; 
+                    state.remote.catIndex = 0;
                 }
                 else {
                     state.remote.index = Math.max(0, state.remote.index - _realColsUp);
                 }
             } 
             else if(state.remote.zone==='heroSlider') {
-                // Slider'dan yukarı → categories
-                state.remote.zone = 'categories';
-                state.remote.catIndex = 0;
-                setTimeout(function() {
-                    var _vp = document.getElementById('channelsViewport');
-                    if (_vp) _vp.scrollTop = 0;
-                }, 30);
+                // Zincir: heroSlider → continueCards → recentCards → categories
+                const _hsUpConCards = document.querySelectorAll('.continue-card');
+                const _hsUpHasCont = _hsUpConCards.length > 0 && state.activeCat === 'all';
+                const _hsUpRecCards = document.querySelectorAll('.recent-card');
+                const _hsUpHasRec = _hsUpRecCards.length > 0 && state.activeCat === 'all';
+                if (_hsUpHasCont) {
+                    state.remote.zone = 'continueCards';
+                    if (!state.remote.continueCards) state.remote.continueCards = { selectedCardIndex: 0, selectedButtonIndex: 0, cards: [] };
+                    state.remote.continueCards.selectedCardIndex = 0;
+                    state.remote.continueCards.selectedButtonIndex = 0;
+                    document.querySelectorAll('.continue-card').forEach(c => { if (!c.getAttribute('tabindex')) c.setAttribute('tabindex', '0'); });
+                    updateContinueCardsFocus();
+                } else if (_hsUpHasRec) {
+                    state.remote.zone = 'recentCards';
+                    if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
+                    state.remote.recentCards.cards = Array.from(_hsUpRecCards);
+                    state.remote.recentCards.selectedIndex = 0;
+                    updateRecentCardsFocus();
+                } else {
+                    state.remote.zone = 'categories';
+                    state.remote.catIndex = 0;
+                    setTimeout(function() {
+                        var _vp = document.getElementById('channelsViewport');
+                        if (_vp) _vp.scrollTop = 0;
+                    }, 30);
+                }
             }
             else if(state.remote.zone==='categories') { 
                 state.remote.zone='m3u'; 
@@ -42977,16 +43116,26 @@ function cleanupDeleteContinueModalRemote() {
                 }
             }
             else if(state.remote.zone==='heroSlider') {
-                // Slider'dan aşağı → channels
-                state.remote.zone = 'channels';
-                state.remote.index = 0;
-                // Viewport'u kaydır ki ilk kart görünsün
-                setTimeout(function() {
-                    var _vp = document.getElementById('channelsViewport');
-                    if (_vp) _vp.scrollTop = 0;
-                    var _cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
-                    if (_cards[0]) _cards[0].scrollIntoView({ block: 'start', behavior: 'auto' });
-                }, 50);
+                // Zincir: heroSlider → recentCards → channels
+                const _hsDnRecCards = document.querySelectorAll('.recent-card');
+                const _hsDnHasRec = _hsDnRecCards.length > 0 && state.activeCat === 'all';
+                if (_hsDnHasRec) {
+                    state.remote.zone = 'recentCards';
+                    if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
+                    state.remote.recentCards.cards = Array.from(_hsDnRecCards);
+                    state.remote.recentCards.selectedIndex = 0;
+                    updateRecentCardsFocus();
+                } else {
+                    state.remote.zone = 'channels';
+                    state.remote.index = 0;
+                    // Viewport'u kaydır ki ilk kart görünsün
+                    setTimeout(function() {
+                        var _vp = document.getElementById('channelsViewport');
+                        if (_vp) _vp.scrollTop = 0;
+                        var _cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+                        if (_cards[0]) _cards[0].scrollIntoView({ block: 'start', behavior: 'auto' });
+                    }, 50);
+                }
             }
             else if(state.remote.zone==='catManageBtn') {
                 state.remote.zone='channels'; 
@@ -43337,16 +43486,28 @@ function handleContinueCardsRemote(e) {
             
         case 'ArrowUp':
             e.preventDefault();
-            // YENİ: Continue cards'tan direkt kategorilere geç
-            state.remote.zone = 'categories';
-            state.remote.catIndex = state.cats.findIndex(c => c === 'Tümü');
-            if (state.remote.catIndex === -1) state.remote.catIndex = 0;
-            
-            // Kumanda sesi
-            playKeySound('navigate');
-            
-            // Focus'u güncelle
-            updateRemoteFocus();
+            // Zincir: continueCards → heroSlider → categories
+            {
+                const _ccHeroSl = document.getElementById('vodHeroSlider');
+                const _ccSlVis = _ccHeroSl && _ccHeroSl.style.display !== 'none' && _ccHeroSl.offsetParent !== null;
+                if (_ccSlVis) {
+                    // Tüm continueCard odaklarını temizle
+                    document.querySelectorAll('.continue-card').forEach(c => c.classList.remove('remote-focused'));
+                    document.querySelectorAll('.continue-action-btn').forEach(b => b.classList.remove('remote-focused'));
+                    state.remote.zone = 'heroSlider';
+                    state.remote.heroSliderBtnIdx = 0;
+                    setTimeout(function() { if (_ccHeroSl) _ccHeroSl.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }, 30);
+                    updateRemoteFocus();
+                } else {
+                    state.remote.zone = 'categories';
+                    state.remote.catIndex = state.cats.findIndex(c => c === 'Tümü');
+                    if (state.remote.catIndex === -1) state.remote.catIndex = 0;
+                    // Kumanda sesi
+                    playKeySound('navigate');
+                    // Focus'u güncelle
+                    updateRemoteFocus();
+                }
+            }
             break;
             
         case 'ArrowDown':

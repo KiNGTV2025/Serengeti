@@ -9995,16 +9995,12 @@ body {
 </style>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     TVBox DERİN OPTİMİZASYON PATCH v4 — Detaylı İnceleme Sonuçları
-     Tespit edilen 12 kritik sorun için kapsamlı çözümler
-═══════════════════════════════════════════════════════════════════ -->
-<style id="tvbox-deep-patch-v4">
+<!-- ═══════════════════════════════════════════════════════════════
+     TVBOX ULTRA OPTİMİZASYON PATCH v3 — Hızlı Çalışma / Kasma Önleme
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="tvbox-ultra-v3">
 
-/* ════════════════════════════════════════════
-   CSS SORUN 1: waveFocus scale(1.18) — TVBox'ta çizim fırtınası
-   Çözüm: body.tvbox-mode'da tamamen kapat, sadece border göster
-════════════════════════════════════════════ */
+/* ── TVBox: waveFocus animasyonunu sıfırla (en büyük kasma kaynağı) ── */
 body.tvbox-mode .channel-card.remote-focused,
 body.tvbox-mode .channel-card.focused {
     animation: none !important;
@@ -10012,10 +10008,19 @@ body.tvbox-mode .channel-card.focused {
     will-change: auto !important;
     box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
     border-color: var(--accent-primary, #FFD700) !important;
-    z-index: auto !important;
 }
 
-body.tvbox-mode [class].remote-focused:not(.channel-card):not(.channel-list-item) {
+body.tvbox-mode .header-btn.remote-focused,
+body.tvbox-mode .player-action-btn.remote-focused,
+body.tvbox-mode .m3u-pill.remote-focused,
+body.tvbox-mode .cat-pill.remote-focused,
+body.tvbox-mode .sidebar-category-pill.remote-focused,
+body.tvbox-mode .category-list-item.remote-focused,
+body.tvbox-mode .vod-season-btn.remote-focused,
+body.tvbox-mode .vod-episode-card.remote-focused,
+body.tvbox-mode .modal-back-btn.remote-focused,
+body.tvbox-mode .fav-toggle.remote-focused,
+body.tvbox-mode [role="button"].remote-focused {
     animation: none !important;
     transform: none !important;
     will-change: auto !important;
@@ -10023,41 +10028,90 @@ body.tvbox-mode [class].remote-focused:not(.channel-card):not(.channel-list-item
     outline-offset: 2px !important;
 }
 
-/* ════════════════════════════════════════════
-   CSS SORUN 2: backdrop-filter her yerde — TVBox WebView bunu softta render eder
-   Sadece kritik UI elementlerinde tut
-════════════════════════════════════════════ */
-body.tvbox-mode *:not(.loading-overlay):not(.loading-overlay *) {
+/* ── TVBox: backdrop-filter tamamen kapat ── */
+body.tvbox-mode * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
 
-/* ════════════════════════════════════════════
-   CSS SORUN 3: Sonsuz döngü animasyonlar — her kare CPU döngüsü tüketir
-   Kapatılacaklar: exitRingPulse, exitLogoFloat, logoPulse, banPulse, epgLivePulse
-════════════════════════════════════════════ */
-body.tvbox-mode [style*="animation"],
+/* ── TVBox: CSS gradient sayısını azalt ── */
+body.tvbox-mode .login-bg,
+body.tvbox-mode .login-card::after,
 body.tvbox-mode .login-logo-wrap::before,
+body.tvbox-mode #exitConfirmModal .exit-card::after {
+    display: none !important;
+}
+
+/* ── TVBox: Sonsuz animasyonları kapat ── */
+body.tvbox-mode .login-logo-wrap::before,
+body.tvbox-mode .login-logo-img,
 body.tvbox-mode #exitConfirmModal .exit-icon-ring,
 body.tvbox-mode #exitConfirmModal .exit-icon-ring-outer,
 body.tvbox-mode #exitConfirmModal .exit-logo-img,
 body.tvbox-mode .ban-icon,
-body.tvbox-mode .sidebar-epg-live-dot::before,
-body.tvbox-mode .login-card,
-body.tvbox-mode .login-step.active {
+body.tvbox-mode .sidebar-epg-live-dot::before {
     animation: none !important;
 }
 
-/* ════════════════════════════════════════════
-   CSS SORUN 4: filter: drop-shadow — GPU paint tetikler
-   TVBox'ta filter çok ağır, SVG logo için bile
-════════════════════════════════════════════ */
-body.tvbox-mode .login-logo-img,
+/* ── TVBox: exit modal transform scale kaldır ── */
+body.tvbox-mode #exitConfirmNo.remote-focused,
+body.tvbox-mode #exitConfirmYes.remote-focused {
+    transform: none !important;
+}
+
+/* ── TVBox: box-shadow sayısını sınırla ── */
+body.tvbox-mode .login-card {
+    box-shadow: 0 2px 20px rgba(0,0,0,0.8) !important;
+}
+body.tvbox-mode #exitConfirmModal .exit-card {
+    box-shadow: 0 8px 40px rgba(0,0,0,0.9) !important;
+}
+
+/* ── TVBox: Kanal kartı contain güçlendir ── */
+body.tvbox-mode .channel-card {
+    contain: strict !important;
+    isolation: isolate !important;
+}
+
+/* ── TVBox: img rendering ── */
+body.tvbox-mode img {
+    image-rendering: auto !important;
+}
+
+/* ── TVBox: Orbitron/Exo2 yerine sistem fontu kullan ── */
 body.tvbox-mode .login-title,
 body.tvbox-mode .ban-title,
 body.tvbox-mode .exit-title,
-body.tvbox-mode .neon-logo-img,
-body.tvbox-mode .modern-logo {
+body.tvbox-mode .step-number {
+    font-family: sans-serif !important;
+}
+
+/* ── TVBox: EPG pulse animasyonunu durdur ── */
+body.tvbox-mode .sidebar-epg-live-dot,
+body.tvbox-mode .sidebar-epg-live-dot::before {
+    animation: none !important;
+}
+
+/* ── TVBox: katman limitini zorla ── */
+body.tvbox-mode .channels-grid,
+body.tvbox-mode .sidebar-list,
+body.tvbox-mode .category-bar {
+    transform: none !important;
+    will-change: auto !important;
+    backface-visibility: visible !important;
+}
+
+/* ── TVBox: scroll snap kapat ── */
+body.tvbox-mode .channels-viewport,
+body.tvbox-mode .sidebar-list,
+body.tvbox-mode .category-bar {
+    scroll-snap-type: none !important;
+    overscroll-behavior: contain !important;
+}
+
+/* ── TVBox: filter kaldır ── */
+body.tvbox-mode .login-title,
+body.tvbox-mode .ban-title {
     filter: none !important;
     -webkit-text-fill-color: var(--accent-primary, #FFD700) !important;
     background: none !important;
@@ -10066,354 +10120,140 @@ body.tvbox-mode .modern-logo {
     color: var(--accent-primary, #FFD700) !important;
 }
 
-/* ════════════════════════════════════════════
-   CSS SORUN 5: box-shadow çok katmanlı — her gölge repaint
-   Login card, exit modal — basitleştir
-════════════════════════════════════════════ */
+/* ── TVBox: login card animasyonu sıfırla ── */
 body.tvbox-mode .login-card {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.8) !important;
-    animation: none !important;
-}
-body.tvbox-mode #exitConfirmModal .exit-card {
-    box-shadow: 0 8px 32px rgba(0,0,0,0.9) !important;
-}
-body.tvbox-mode .channel-card,
-body.tvbox-mode .cat-pill,
-body.tvbox-mode .m3u-pill,
-body.tvbox-mode .recent-card {
-    box-shadow: none !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 6: content-visibility: auto — TVBox'ta iyi desteklenmiyor
-   Yan etkiler: kanal logoları görünmüyor, contain hesaplama takılıyor
-   Çözüm: Sidebar için visible zorla, grid için auto bırak
-════════════════════════════════════════════ */
-body.tvbox-mode #sidebarChannelsList img,
-body.tvbox-mode #sidebarChannelsList li,
-body.tvbox-mode .channel-logo-small,
-body.tvbox-mode .channel-logo-small img {
-    content-visibility: visible !important;
-    contain: none !important;
-}
-body.tvbox-mode .channels-grid .channel-card {
-    contain: layout style !important;
-    content-visibility: auto !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 7: Orbitron/Exo2/Share Tech Mono fontları — ağdan yüklenince
-   ilk render bloke edilir. TVBox'ta sistem fontu kullan.
-════════════════════════════════════════════ */
-body.tvbox-mode .login-title,
-body.tvbox-mode .ban-title,
-body.tvbox-mode .exit-title,
-body.tvbox-mode .step-number,
-body.tvbox-mode .login-label,
-body.tvbox-mode .login-subtitle {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    letter-spacing: 1px !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 8: z-index stack yoğunluğu — 999999'a kadar çıkıyor
-   TVBox compositor için gereksiz; sadece kritikler
-════════════════════════════════════════════ */
-body.tvbox-mode #loginOverlay { z-index: 1000 !important; }
-body.tvbox-mode .app-header { z-index: 100 !important; }
-body.tvbox-mode .sidebar { z-index: 200 !important; }
-body.tvbox-mode #exitConfirmModal { z-index: 500 !important; }
-
-/* ════════════════════════════════════════════
-   CSS SORUN 9: scale transform üst scroll container'a taşar
-   grid'in overflow:hidden kırılmasına neden olur
-   Çözüm: channel-card focused için scale YOK, sadece ring
-════════════════════════════════════════════ */
-body.tvbox-mode .vod-episode-card.remote-focused,
-body.tvbox-mode .vod-episode-card.focused {
-    animation: none !important;
-    transform: none !important;
-    box-shadow: 0 0 0 2px var(--accent-primary, #FFD700) !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 10: Exit modal buton scale(1.05) hover
-   TVBox'ta hover olmaz, ama style rule varsa stil hesaplanır
-════════════════════════════════════════════ */
-body.tvbox-mode #exitConfirmNo.remote-focused,
-body.tvbox-mode #exitConfirmYes.remote-focused {
-    transform: none !important;
-}
-body.tvbox-mode #exitConfirmNo:hover,
-body.tvbox-mode #exitConfirmYes:hover {
-    transform: none !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 11: will-change: scroll-position aşırı kullanımı
-   TVBox'ta compositor memory baskısı yaratıyor
-════════════════════════════════════════════ */
-body.tvbox-mode .channels-viewport,
-body.tvbox-mode .sidebar-list,
-body.tvbox-mode .category-bar,
-body.tvbox-mode .m3u-selector-bar {
-    will-change: auto !important;
-}
-
-/* ════════════════════════════════════════════
-   CSS SORUN 12: EPG bar animasyonu + canlı yayın noktası pulse
-   Sürekli animasyon = sürekli repaint = kanal kartları kasması
-════════════════════════════════════════════ */
-body.tvbox-mode .sidebar-epg-live-dot,
-body.tvbox-mode .sidebar-epg-live-dot::before,
-body.tvbox-mode .live-epg-badge {
     animation: none !important;
 }
 
-/* ════════════════════════════════════════════
-   Genel TVBox hız CSS bloğu
-════════════════════════════════════════════ */
-body.tvbox-mode * {
-    scroll-behavior: auto !important;
-}
-body.tvbox-mode img {
-    decoding: async !important;
-}
-body.tvbox-mode ::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
-    display: none !important;
+/* ── TVBox: low-performance-mode daha agresif hale getir ── */
+body.tvbox-mode.low-performance-mode *:not(.loading-overlay):not(.loading-overlay *) {
+    text-shadow: none !important;
+    filter: none !important;
 }
 
 </style>
 
-<script id="tvbox-deep-js-v4">
+<script id="tvbox-ultra-js-v3">
+/* TVBox Ultra JS Optimizasyonu */
 (function() {
 'use strict';
 
-/* ── TVBox Tespiti ── */
+/* ── 1. TVBox tespiti (geliştirilmiş) ── */
 var ua = navigator.userAgent || '';
-var isTVBox = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|BuzzTV|Minix|Google TV|Fire TV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA|SmartTV/i.test(ua)
-    || (/Android/i.test(ua) && window.screen && (window.screen.width >= 1280 || navigator.maxTouchPoints === 0))
-    || (!('ontouchstart' in window) && navigator.maxTouchPoints === 0 && window.screen && window.screen.width >= 1280);
+var isTVBox = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
+    || (/Android/i.test(ua) && (window.screen.width >= 1280 || navigator.maxTouchPoints === 0))
+    || (!('ontouchstart' in window) && navigator.maxTouchPoints === 0 && window.screen.width >= 1280);
 
-if (!isTVBox) return;
+if (!isTVBox) return; /* PC/telefon ise bu patch çalışmaz */
 
-/* ── 1. BODY CLASS — hemen uygula ── */
-function applyTVClass() {
+/* ── 2. Body class hemen ekle ── */
+function addTVClasses() {
     var b = document.body || document.documentElement;
     if (b) {
-        b.classList.add('tvbox-mode', 'fast-mode', 'low-performance-mode');
-        window._tvBoxMode = true;
-        window._isAndroidTV = true;
+        b.classList.add('tvbox-mode');
+        b.classList.add('fast-mode');
+        b.classList.add('low-performance-mode');
     }
 }
-applyTVClass();
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyTVClass);
-}
+addTVClasses();
+document.addEventListener('DOMContentLoaded', addTVClasses);
 
-/* ── 2. setInterval throttle — 578 timer var, %60'ı 100ms altı ── */
+/* ── 3. setInterval sıklığını sınırla (≥100ms altına inme) ── */
 var _origSetInterval = window.setInterval;
-window.setInterval = function(fn, ms) {
-    var args = [].slice.call(arguments, 2);
-    if (typeof ms === 'number' && ms > 0 && ms < 100) {
-        ms = 100; // 100ms altı → 100ms (TVBox için en düşük güvenli değer)
-    } else if (typeof ms === 'number' && ms >= 100 && ms < 500) {
-        // 100-500ms arası — kritik olanları koru
-        var fnStr = (typeof fn === 'function') ? fn.toString().substring(0, 200) : '';
-        var isCritical = fnStr.indexOf('hls') > -1 || fnStr.indexOf('video') > -1 ||
-                         fnStr.indexOf('stall') > -1 || fnStr.indexOf('recover') > -1 ||
-                         fnStr.indexOf('_secLeft') > -1 || fnStr.indexOf('countdown') > -1 ||
-                         fnStr.indexOf('skipCount') > -1 || fnStr.indexOf('_skipGen') > -1;
-        if (!isCritical) ms = 500;
+window.setInterval = function(fn, delay) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    if (typeof delay === 'number' && delay > 0 && delay < 100) {
+        delay = 100; /* TVBox'ta 100ms altı setInterval çok CPU yer */
     }
-    return _origSetInterval.apply(window, [fn, ms].concat(args));
+    return _origSetInterval.apply(window, [fn, delay].concat(args));
 };
 
-/* ── 3. RAF throttle — 30fps (TVBox için yeterli) ── */
+/* ── 4. requestAnimationFrame throttle (30fps) ── */
 var _origRAF = window.requestAnimationFrame;
 var _lastRAF = 0;
-var RAF_MIN = 33; // 30fps
+var RAF_MIN = 33; /* ~30fps */
 window.requestAnimationFrame = function(cb) {
-    var now = (window.performance && performance.now) ? performance.now() : Date.now();
+    var now = performance.now ? performance.now() : Date.now();
     var elapsed = now - _lastRAF;
     if (elapsed >= RAF_MIN) {
         _lastRAF = now;
         return _origRAF.call(window, cb);
+    } else {
+        return setTimeout(function() {
+            _lastRAF = performance.now ? performance.now() : Date.now();
+            cb(_lastRAF);
+        }, RAF_MIN - elapsed);
     }
-    return setTimeout(function() {
-        _lastRAF = (window.performance && performance.now) ? performance.now() : Date.now();
-        cb(_lastRAF);
-    }, RAF_MIN - elapsed);
 };
 
-/* ── 4. localStorage debounce — eMMC yavaş yazma ── */
-if (window.Storage && Storage.prototype.setItem) {
-    var _origLsSet = Storage.prototype.setItem;
-    var _lsQueue = Object.create(null);
-    var _lsFlushTimer = null;
-    var CRITICAL_KEYS = ['king_tv_settings', 'loginToken', 'loginUser', 'playlist_url', 'umittv_recent', '__umit_fp_login'];
+/* ── 5. Gereksiz MutationObserver gözlemlerini azalt ── */
+/* CSS transition/animation değişimlerini yoksay */
+var _origMO = window.MutationObserver;
+window.MutationObserver = function(cb) {
+    return new _origMO(function(mutations) {
+        /* style attribute değişimlerini filtrele — çok sık tetiklenir */
+        var filtered = mutations.filter(function(m) {
+            if (m.type === 'attributes' && m.attributeName === 'style') {
+                return false; /* style attr değişimlerini yoksay */
+            }
+            return true;
+        });
+        if (filtered.length > 0) cb(filtered);
+    });
+};
+window.MutationObserver.prototype = _origMO.prototype;
 
-    Storage.prototype.setItem = function(key, value) {
-        // Kritik key'ler anında yaz
-        for (var i = 0; i < CRITICAL_KEYS.length; i++) {
-            if (key === CRITICAL_KEYS[i]) {
-                return _origLsSet.call(this, key, value);
-            }
+/* ── 6. Image decode async zorla ── */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('img').forEach(function(img) {
+        if (!img.getAttribute('decoding')) img.setAttribute('decoding', 'async');
+        if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
+    });
+});
+
+/* ── 7. Scroll event debounce — passive listeners ── */
+['wheel', 'touchmove', 'pointermove'].forEach(function(ev) {
+    window.addEventListener(ev, function() {}, { passive: true, capture: false });
+});
+
+/* ── 8. Font yükleme engelini kaldır ── */
+/* Orbitron/Exo2 fontları ağdan yüklenmeden devam et */
+if (document.fonts) {
+    document.fonts.ready.then(function() {
+        var b = document.body;
+        if (b) b.classList.add('fonts-ready');
+    });
+    /* 500ms içinde font gelmezse devam et */
+    setTimeout(function() {
+        var b = document.body;
+        if (b && !b.classList.contains('fonts-ready')) {
+            b.classList.add('fonts-ready');
+            b.classList.add('icons-ready');
         }
-        // Canlı yayın sırasında ağır JSON key'lerini atla
-        var LIVE_SKIP = ['continueWatching', 'series_cache', 'vod_cache'];
-        var isLive = window.state && window.state.player && window.state.player.isLiveStream;
-        if (isLive) {
-            for (var j = 0; j < LIVE_SKIP.length; j++) {
-                if (key.indexOf(LIVE_SKIP[j]) > -1) return;
-            }
-        }
-        _lsQueue[key] = value;
-        if (!_lsFlushTimer) {
-            _lsFlushTimer = setTimeout(function() {
-                _lsFlushTimer = null;
-                var isLiveNow = window.state && window.state.player && window.state.player.isLiveStream;
-                for (var k in _lsQueue) {
-                    if (!Object.prototype.hasOwnProperty.call(_lsQueue, k)) continue;
-                    if (isLiveNow) {
-                        var skip = false;
-                        for (var m = 0; m < LIVE_SKIP.length; m++) {
-                            if (k.indexOf(LIVE_SKIP[m]) > -1) { skip = true; break; }
-                        }
-                        if (skip) continue;
-                    }
-                    try { _origLsSet.call(localStorage, k, _lsQueue[k]); } catch(e) {}
-                }
-                _lsQueue = Object.create(null);
-            }, 2000); // 2sn batch yazma
-        }
-    };
+    }, 500);
 }
 
-/* ── 5. Console log kapatma — TVBox logstream yavaşlatır ── */
-if (window.console) {
+/* ── 9. Console temizle — TVBox'ta console çıktısı yavaşlatır ── */
+if (window.console && typeof console.log === 'function') {
     var _noop = function() {};
-    console.log   = _noop;
+    /* debug logları kapat, error/warn bırak */
+    console.log  = _noop;
     console.debug = _noop;
     console.info  = _noop;
-    // warn ve error aktif kalıyor
 }
 
-/* ── 6. Gereksiz DOM elementleri kaldır ── */
+/* ── 10. GPU katman baskısını azalt — will-change: auto zorunlu ── */
 document.addEventListener('DOMContentLoaded', function() {
-    // Login orb/bg elementleri kaldır
-    var removeSelectors = ['.login-orb', '.login-orb-1', '.login-orb-2', '.orbit-ring', '.logo-glow-layer', '.logo-particle'];
-    removeSelectors.forEach(function(sel) {
-        document.querySelectorAll(sel).forEach(function(el) {
-            el.style.cssText = 'display:none!important;visibility:hidden!important;';
-        });
-    });
-
-    // img lazy + async decode zorla
-    document.querySelectorAll('img').forEach(function(img) {
-        if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
-        if (!img.getAttribute('decoding')) img.setAttribute('decoding', 'async');
-    });
-
-    // will-change: transform olanları sıfırla (GPU baskısı)
+    /* will-change: transform/opacity olan elementleri sıfırla */
     document.querySelectorAll('[style*="will-change"]').forEach(function(el) {
-        if (el.style.willChange !== 'scroll-position') {
-            el.style.willChange = 'auto';
-        }
+        el.style.willChange = 'auto';
     });
+    /* channels-grid translateZ sıfırla */
+    var grid = document.querySelector('.channels-grid');
+    if (grid) grid.style.transform = 'none';
 });
 
-/* ── 7. MutationObserver: style attr değişimlerini filtrele ── */
-var _origMO = window.MutationObserver;
-if (_origMO) {
-    var MO_wrapper = function(cb) {
-        return new _origMO(function(mutations) {
-            var filtered = [];
-            for (var i = 0; i < mutations.length; i++) {
-                var m = mutations[i];
-                // style attribute değişimleri çok sık — sadece class/content değişimlerine bak
-                if (m.type === 'attributes' && m.attributeName === 'style' && m.target.className && m.target.className.indexOf('channel-card') > -1) {
-                    continue; // kanal kartı style değişimlerini atla
-                }
-                filtered.push(m);
-            }
-            if (filtered.length > 0) cb(filtered);
-        });
-    };
-    MO_wrapper.prototype = _origMO.prototype;
-    // Global override yap
-    try { window.MutationObserver = MO_wrapper; } catch(e) {}
-}
-
-/* ── 8. Scroll event throttle ── */
-var _scrollThrottle = false;
-document.addEventListener('scroll', function() {
-    if (_scrollThrottle) return;
-    _scrollThrottle = true;
-    setTimeout(function() { _scrollThrottle = false; }, 50);
-}, { passive: true, capture: false });
-
-/* ── 9. Font yükleme timeout — 600ms içinde gelmeyen font → sistem fontu ── */
-if (document.fonts && document.fonts.ready) {
-    var _fontTimeout = setTimeout(function() {
-        var b = document.body;
-        if (b) { b.classList.add('fonts-ready', 'icons-ready'); }
-    }, 600);
-    document.fonts.ready.then(function() {
-        clearTimeout(_fontTimeout);
-        var b = document.body;
-        if (b) { b.classList.add('fonts-ready', 'icons-ready'); }
-    });
-}
-
-/* ── 10. IntersectionObserver rootMargin küçült — TVBox'ta 200px buffer fazla ── */
-if (window.IntersectionObserver) {
-    var _origIO = window.IntersectionObserver;
-    window.IntersectionObserver = function(cb, opts) {
-        if (opts && opts.rootMargin === '200px') {
-            opts.rootMargin = '80px'; // TVBox: 200px → 80px
-        }
-        return new _origIO(cb, opts);
-    };
-    window.IntersectionObserver.prototype = _origIO.prototype;
-}
-
-/* ── 11. playKeySound ve triggerVibration'ı kapat ── */
-document.addEventListener('DOMContentLoaded', function() {
-    // WebAudio context overhead TVBox'ta önemli
-    if (typeof window.playKeySound !== 'undefined') window.playKeySound = function() {};
-    if (typeof window.triggerVibration !== 'undefined') window.triggerVibration = function() {};
-});
-
-/* ── 12. _tvBoxCardMap invalidation hook ── */
-// renderChannels çağrıldığında card map'i invalidate et
-var _origRenderChannels = null;
-var _cardMapHookInstalled = false;
-function _installCardMapHook() {
-    if (_cardMapHookInstalled || typeof window.renderChannels !== 'function') return;
-    _cardMapHookInstalled = true;
-    var _orig = window.renderChannels;
-    window.renderChannels = function() {
-        window._tvBoxCardMap = null; // map geçersiz — yeni render
-        window._lastRemoteFocusedEl = null;
-        return _orig.apply(this, arguments);
-    };
-}
-// DOMContentLoaded + 1 saniye sonra hook kur
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(_installCardMapHook, 1000);
-    setTimeout(_installCardMapHook, 3000);
-});
-
-/* ── 13. Passive listeners global ── */
-['touchstart', 'touchmove', 'wheel', 'pointermove'].forEach(function(ev) {
-    document.addEventListener(ev, function() {}, { passive: true });
-    window.addEventListener(ev, function() {}, { passive: true });
-});
-
-})(); // TVBox Deep Patch v4
+})();
 </script>
 
 </head>
@@ -13056,15 +12896,7 @@ function doLogin() {
                     setTimeout(function() {
                         const card = document.querySelector('#channelsGrid .channel-card, #channelsGrid .vod-card-wrap');
                         if (card && window.state && window.state.remote) {
-                            // TVBox-OPT: querySelectorAll('.remote-focused') yerine cached ref
-    if (window._lastRemoteFocusedEl && window._lastRemoteFocusedEl.classList) {
-        window._lastRemoteFocusedEl.classList.remove('remote-focused');
-        window._lastRemoteFocusedEl = null;
-    } else {
-        // fallback: ilk çağrıda veya kayıp referansta tam tarama
-        var _rfEls = document.querySelectorAll('.remote-focused');
-        for (var _ri = 0; _ri < _rfEls.length; _ri++) _rfEls[_ri].classList.remove('remote-focused');
-    }
+                            document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
                             state.remote.active = true;
                             state.remote.zone = 'channels';
                             state.remote.index = 0;
@@ -16019,7 +15851,7 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
     });
 
     // Periyodik kontrol başlat
-    UmitSecurityManager.startWatch(30000); // TVBox-OPT: 8sn→30sn
+    UmitSecurityManager.startWatch(8000);
 
     // ── VPN anlık tespiti: ağ değişince veya uygulama öne gelince anında kontrol ──
     function _immediateProxyCheck() {
@@ -16158,7 +15990,7 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
 
         // Hemen bir kez kontrol et, sonra her 5sn
         _tick();
-        _vpnWatchTimer = setInterval(_tick, 60000); // TVBox-OPT: 5sn→60sn (RTCPeer CPU yükü)
+        _vpnWatchTimer = setInterval(_tick, 5000);
     }
 
     // Login başarılı olunca izlemeyi başlat
@@ -16781,8 +16613,7 @@ const HIGH_RES_DIRECT_DOMAINS = [
 // App Creator 24 WebView'da Web Worker desteği yok → enableWorker: false
 const _isApp24WebView = (navigator.userAgent || '').toLowerCase().includes('okhttp');
 const HLS_CONFIG = {
-    // TVBox-OPT: Worker TVBox'ta yavaş başlatma yapıyor, UA tespiti eklendi
-    enableWorker: !_isApp24WebView && !/Android/i.test(navigator.userAgent),
+    enableWorker: !_isApp24WebView,   // App24'te false: Web Worker crash önle
     debug: false,
 
     subtitleDisplay: true,
@@ -16799,7 +16630,7 @@ const HLS_CONFIG = {
     backBufferLength: 0,                 // Geri buffer sıfır — RAM tamamen öne
     maxBufferLength: 10,                 // 12→10sn: TVBox RAM tasarrufu — canlı için yeterli
     maxMaxBufferLength: 30,              // 60→30sn: TVBox'ta 60sn buffer RAM'i doldurur, kasma yapar
-    maxBufferSize: 20 * 1024 * 1024,    // TVBox-OPT: 30MB→20MB: düşük RAM TVBox için (Amlogic S905/S912)
+    maxBufferSize: 30 * 1024 * 1024,    // 60MB→30MB: TVBox düşük RAM — dolup taşma = UI donması önlenir
     maxBufferHole: 0.5,                  // 0.8→0.5: çok geniş delik toleransı kare atlamaya yol açar
     maxLoadingDelay: 4,                  // 6→4sn: fazla bekleme = takılma hissi
 
@@ -19984,9 +19815,9 @@ function applyAndroidTVOptimizations() {
             font-size: 22px !important;
         }
         
-        /* TVBox-OPT: hover transform kaldırıldı — TVBox'ta hover olmaz, gereksiz */
+         
         .channel-card:hover, .cat-pill:hover {
-            transform: none !important;
+            transform: scale(1.05) !important;
         }
     `;
     document.head.appendChild(style);
@@ -20013,7 +19844,11 @@ function applyiOSOptimizations() {
             -webkit-overflow-scrolling: touch !important;
         }
         
-        /* TVBox-OPT: tüm * translateZ(0) KALDIRILDI — composite layer patlaması önlendi */
+         
+        * {
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
         
          
         video::-webkit-media-controls {
@@ -20033,10 +19868,17 @@ function applyMiboxOptimizations() {
     // Animasyonları optimize et
     const style = document.createElement('style');
     style.textContent = `
-        /* TVBox-OPT: tüm * animation override kaldırıldı - GPU katman baskısı önlendi */
-        .channel-card, .player-action-btn {
-            animation: none !important;
-            transition: none !important;
+         
+        * {
+            animation-duration: 0.25s !important;
+            transition-duration: 0.15s !important;
+        }
+        
+         
+        .channel-card, .player-action-btn, .sidebar {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
          
@@ -20601,19 +20443,9 @@ function createOptimizedChannelCard(index) {
             let cols = state.currentGridCols || 4;
             
             const activeCont = state.activeCat === 'cont';
-            // TVBox-OPT: cached cards map kullan
-            let cards;
-            if (activeCont) {
-                cards = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
-            } else {
-                // _tvBoxCardMap geçerliyse kullan
-                if (window._tvBoxCardMap && window._tvBoxCardMap.length > 0 && document.contains(window._tvBoxCardMap[0])) {
-                    cards = window._tvBoxCardMap;
-                } else {
-                    cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
-                    window._tvBoxCardMap = cards;
-                }
-            }
+            let cards = activeCont ? 
+                document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card') : 
+                document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
             
             if (state.remote.isLongPress && (e.key === 'Enter' || e.key === 'OK')) return;
             if (state.remote.preventClick) return;
@@ -20718,15 +20550,16 @@ function createOptimizedChannelCard(index) {
         }
 
         function scrollToCard(index) {
-            // TVBox-OPT: DOM'a doğrudan data-index ile eriş — querySelectorAll YOK
-            var card = document.querySelector('.channel-card[data-index="' + index + '"]');
-            if (!card && window._tvBoxCardMap) card = window._tvBoxCardMap[index];
-            if (!card) {
-                var cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
-                window._tvBoxCardMap = cards;
-                card = cards[index];
+            // TVBox: cached card map kullan — querySelectorAll pahalı
+            var cards = window._tvBoxCardMap || document.querySelectorAll('.channel-card');
+            if (!window._tvBoxCardMap) window._tvBoxCardMap = cards;
+            if (cards[index]) {
+                cards[index].scrollIntoView({
+                    behavior: 'instant',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
             }
-            if (card) card.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
         }
 
         function openChannelOptions(channelName, index) {
@@ -25080,16 +24913,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     renderSidebarChannels();
                 }
             }, 500);
-            // TVBox-OPT: EPG grid render 700ms→2000ms — player yokken
+            // EPG yüklendi — kanal grid'ini yenile (EPG overlay kartlara yansısın)
             setTimeout(() => {
                 const pv = document.getElementById('playerView');
                 const isPlayerOpen = pv && pv.style.display === 'flex';
                 if (!isPlayerOpen && typeof renderChannels === 'function') {
-                    // requestIdleCallback varsa kullan — main thread'i bloke etme
-                    if (window.requestIdleCallback) { requestIdleCallback(() => renderChannels(), { timeout: 3000 }); }
-                    else renderChannels();
+                    renderChannels();
                 }
-            }, 2000);
+            }, 700);
             // EPG yüklendi — state hazır olunca banner'ı güncelle
             function _epgBannerUpdate() {
                 try {
@@ -27485,9 +27316,7 @@ function playDirectChannel(channel) {
             setTimeout(() => {
                 const btn = document.getElementById('btnCloseEmbed');
                 if (btn) {
-                    // TVBox-OPT: cached ref
-                if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused'); window._lastRemoteFocusedEl = null; }
-                else { document.querySelectorAll('.remote-focused').forEach(function(el){ el.classList.remove('remote-focused'); }); }
+                    document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
                     btn.classList.add('remote-focused');
                     btn.focus();
                 }
@@ -28788,7 +28617,7 @@ function lazyLoadRemainingChannels(startIndex) {
         grid.appendChild(frag);
         
         if (endIndex < totalChannels) {
-            setTimeout(() => lazyLoadRemainingChannels(endIndex), 60); // TVBox-OPT: 16→60ms
+            setTimeout(() => lazyLoadRemainingChannels(endIndex), 16);
         } else {
             updateSeriesCards();
         }
@@ -43659,23 +43488,23 @@ function handleFavoriteChannelSelect(key) {
     else if(state.remote.zone==='channels') {
         const activeCont = state.activeCat === 'cont';
         if (activeCont) {
-            // TVBox-OPT: data-index ile direkt seç
-            el = document.querySelector('.continue-card-in-grid[data-index="' + state.remote.index + '"], .channel-card.clear-card[data-index="' + state.remote.index + '"]');
-            if (!el) {
-                const _cc = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
-                el = _cc[state.remote.index] || null;
-            }
-            if (el) {
-                hint = el.classList.contains('clear-card') ? 'Tüm izleme geçmişini temizle' : ('Devam Et: ' + (el.dataset.channelName || 'Kanal'));
+            const cards = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
+            if (cards.length > 0 && state.remote.index < cards.length) {
+                el = cards[state.remote.index];
+                if (state.remote.index === 0 && el.classList.contains('clear-card')) {
+                    hint = 'Tüm izleme geçmişini temizle';
+                } else {
+                    const channelName = el.dataset.channelName;
+                    hint = `Devam Et: ${channelName || 'Kanal'}`;
+                }
             }
         } else {
-            // TVBox-OPT: data-index ile direkt seç — querySelectorAll YOK
-            el = document.querySelector('.channel-card[data-index="' + state.remote.index + '"]:not(.continue-card-in-grid)');
-            if (!el && window._tvBoxCardMap && window._tvBoxCardMap[state.remote.index]) {
-                el = window._tvBoxCardMap[state.remote.index];
-            }
-            if (el) {
-                hint = 'Kanal: ' + (el.dataset.channelName || 'Kanal') + ' (' + (el.dataset.isVod === 'true' ? 'VOD' : 'CANLI') + ')';
+            const cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+            if (cards.length > 0 && state.remote.index < cards.length) {
+                el = cards[state.remote.index];
+                const channelName = el.dataset.channelName;
+                const isVod = el.dataset.isVod === 'true';
+                hint = `Kanal: ${channelName || 'Kanal'} (${isVod ? 'VOD' : 'CANLI'})`;
             }
         }
     }
@@ -43807,7 +43636,6 @@ function handleFavoriteChannelSelect(key) {
 
     if(el) {
         el.classList.add('remote-focused');
-        window._lastRemoteFocusedEl = el; // TVBox-OPT: cache for fast removal
         if(el.scrollIntoView && state.remote.zone !== 'sidebar' && state.remote.zone !== 'continueCards' && state.remote.zone !== 'header' && state.remote.zone !== 'heroSlider') {
             el.scrollIntoView({block:'nearest',inline:'nearest', behavior: 'auto'});
         }
@@ -49735,12 +49563,6 @@ function updateHeaderAvatar() {
 window.openProfileModal = function() {
     const modal = document.getElementById('profileModal');
     if (!modal) return;
-
-    // Arkaplandaki tüm remote-focused / dpad-focused temizle — kumanda odağı modalda kalmalı
-    document.querySelectorAll('.remote-focused, .dpad-focused').forEach(function(el) {
-        el.classList.remove('remote-focused', 'dpad-focused');
-    });
-
     modal.classList.add('open');
 
     const prof     = profGet();
@@ -55121,15 +54943,12 @@ function vodRenderReview(key, rev, myName) {
     ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
     : '';
 
-  // Avatar: önce Firebase'deki kayıtlı avatar, kendi yorumumsa yerel profil resmi de kontrol et
-  const _fbAvatar = rev.avatar && rev.avatar.startsWith('http') ? rev.avatar : '';
-  const _myLocalAvatar = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
-  const _myLocalAvatarOk = _myLocalAvatar && (_myLocalAvatar.startsWith('http') || _myLocalAvatar.startsWith('data:'));
-  const avatarUrl = _fbAvatar || (_myLocalAvatarOk ? _myLocalAvatar : '');
-  const hasAvatar = !!avatarUrl;
+  // Kendi yorumumsa profil resmimizi göster
+  const myAvatarUrl = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
+  const hasAvatar = myAvatarUrl && (myAvatarUrl.startsWith('http') || myAvatarUrl.startsWith('data:'));
   const avatarHtml = hasAvatar
     ? '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;">' +
-      '<img src="' + avatarUrl + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
+      '<img src="' + myAvatarUrl + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
       '</div>'
     : '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + initial + '</div>';
 
@@ -55195,15 +55014,13 @@ window.vodSubmitReview = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
-  const _myAvatarForReview = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
   const reviewData = {
     userId: userName,
     nick: userName,
     text: text,
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
-    ts: Date.now(),
-    avatar: (_myAvatarForReview && _myAvatarForReview.startsWith('http')) ? _myAvatarForReview : ''
+    ts: Date.now()
   };
 
   // Mevcut yorumu sil (güncelleme)
@@ -59536,12 +59353,6 @@ window.openUserProfileView = async function(userName) {
   if (!userName) return;
   var modal   = document.getElementById('userProfileViewModal');
   if (!modal) return;
-
-  // Arkaplandaki tüm remote-focused / dpad-focused temizle
-  document.querySelectorAll('.remote-focused, .dpad-focused').forEach(function(el) {
-    el.classList.remove('remote-focused', 'dpad-focused');
-  });
-
   var nickEl  = document.getElementById('upvNick');
   var countEl = document.getElementById('upvCommentCount');
   var badgeEl = document.getElementById('upvRutveBadge');
@@ -59571,21 +59382,6 @@ window.openUserProfileView = async function(userName) {
 
   var reviews = await fetchUserAllReviews(userName);
   if (loadEl) loadEl.style.display = 'none';
-
-  // En güncel avatarı Firebase yorumlarından al ve göster
-  var _upvFoundAvatar = '';
-  for (var ai = 0; ai < reviews.length; ai++) {
-    if (reviews[ai].avatar && reviews[ai].avatar.startsWith('http')) {
-      _upvFoundAvatar = reviews[ai].avatar;
-      break;
-    }
-  }
-  if (_upvFoundAvatar && avatarEl) {
-    avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;'
-      + 'background:' + color + '22;border:2px solid ' + color + '55;';
-    avatarEl.innerHTML = '<img src="' + _upvFoundAvatar + '" style="width:100%;height:100%;object-fit:cover;" '
-      + 'alt="' + initial + '" onerror="this.parentNode.style.overflow=\'visible\';this.parentNode.innerHTML=\'<span style=font-size:22px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">';
-  }
 
   var total = reviews.length;
   if (countEl) countEl.textContent = total + ' yorum';

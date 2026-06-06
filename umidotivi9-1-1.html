@@ -5018,7 +5018,69 @@ body {
         }
         
          
-        @media (orientation: landscape) {
+        
+/* ── ÇİFT DOK. TAM EKRAN: CSS-tabanlı rotate (Android WebView uyumlu) ── */
+/*
+  Portre: vw=dar kenar, vh=uzun kenar.
+  90° döndürünce: element genişliği → vh (uzun) doldurmali,
+                  element yüksekliği → vw (dar) doldurmalı.
+  top = (vh-vw)/2, left = (vw-vh)/2  → elementi tam ortalar.
+*/
+#playerView.dbl-tap-fullscreen {
+    position: fixed !important;
+    top: calc((100vh - 100vw) / 2) !important;
+    left: calc((100vw - 100vh) / 2) !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: rotate(90deg) !important;
+    transform-origin: center center !important;
+    z-index: 999999 !important;
+    background: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#playerView.dbl-tap-fullscreen .player-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    background: #000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+#playerView.dbl-tap-fullscreen video {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}
+/* Çift dokunma tam ekran rozeti */
+#dblTapFsToast {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #FFD700;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px; font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,215,0,0.4);
+    pointer-events: none;
+    z-index: 9999999;
+    display: none;
+    white-space: nowrap;
+    /* Tam ekran rotate modunda toastın da doğru görünmesi için */
+    will-change: transform;
+}
+
+@media (orientation: landscape) {
             .player-overlay {
                 background: var(--player-bg) !important;
             }
@@ -5162,66 +5224,169 @@ body {
         }
 
          
-        .volume-indicator, .resolution-indicator, .brightness-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(20,20,30,0.95));
-            color: white;
-            padding: 20px 30px;
-            border-radius: 16px;
-            display: none;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 2100;
-            text-align: center;
-            min-width: 280px;
-            border: 2px solid;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            pointer-events: none;
+        /* ── MODERN KÖŞELİ GÖSTERGELER ── */
+        @keyframes indicator-slidein-left {
+            from { opacity: 0; transform: translateX(-16px) scale(0.92); }
+            to   { opacity: 1; transform: translateX(0)     scale(1); }
         }
-        
+        @keyframes indicator-slidein-right {
+            from { opacity: 0; transform: translateX(16px) scale(0.92); }
+            to   { opacity: 1; transform: translateX(0)    scale(1); }
+        }
         @keyframes indicator-appear {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            from { opacity: 0; transform: translate(-50%,-50%) scale(0.9); }
+            to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
         }
-        
-        .volume-indicator { 
-            border-color: var(--accent-primary); 
-        }
-        
-        .brightness-indicator { 
-            border-color: #00FF00; 
-        }
-        
-        .resolution-indicator { 
-            border-color: #007BFF; 
-        }
-        
-        .resolution-indicator .quality-label {
-            color: #00FF00;
-            font-size: 16px;
-            margin-top: 10px;
-            font-weight: 600;
-            display: flex;
+
+        /* Parlaklık — sol alt köşe */
+        .brightness-indicator {
+            position: absolute;
+            bottom: 220px;
+            left: 18px;
+            display: none;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            z-index: 9998;
+            pointer-events: none;
+            animation: indicator-slidein-left 0.22s cubic-bezier(0.22,1,0.36,1) both;
         }
-        
-        .indicator-icon {
-            font-size: 24px;
-            margin-right: 12px;
-            vertical-align: middle;
+        .brightness-indicator .ind-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
         }
-        
-        .indicator-value {
-            color: var(--accent-primary);
-            font-size: 24px;
+        .brightness-indicator .ind-icon-wrap {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(80,200,120,0.12);
+            border: 1.5px solid rgba(80,200,120,0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brightness-indicator .indicator-icon {
+            font-size: 20px; color: #50c878;
+            margin: 0;
+        }
+        .brightness-indicator .ind-bar-wrap {
+            width: 36px;
+            height: 140px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+        .brightness-indicator .ind-bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, #50c878, #a8ffba);
+            border-radius: 18px;
+            transition: height 0.12s ease;
+            min-height: 4px;
+        }
+        .brightness-indicator .indicator-value {
+            font-family: 'Orbitron', 'Rajdhani', sans-serif;
+            font-size: 13px;
             font-weight: 800;
-            text-shadow: 0 2px 10px rgba(255,215,0,0.5);
+            color: #50c878;
+            text-shadow: 0 0 10px rgba(80,200,120,0.5);
         }
+
+        /* Ses — sağ alt köşe */
+        .volume-indicator {
+            position: absolute;
+            bottom: 220px;
+            right: 18px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 9998;
+            pointer-events: none;
+            animation: indicator-slidein-right 0.22s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .volume-indicator .ind-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
+        }
+        .volume-indicator .ind-icon-wrap {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255,215,0,0.12);
+            border: 1.5px solid rgba(255,215,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .volume-indicator .indicator-icon {
+            font-size: 20px; color: var(--accent-primary, #FFD700);
+            margin: 0;
+        }
+        .volume-indicator .ind-bar-wrap {
+            width: 36px;
+            height: 140px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+        .volume-indicator .ind-bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, #FFD700, #fff176);
+            border-radius: 18px;
+            transition: height 0.12s ease;
+            min-height: 4px;
+        }
+        .volume-indicator .indicator-value {
+            font-family: 'Orbitron', 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--accent-primary, #FFD700);
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        /* Çözünürlük — ortada küçük pill */
+        .resolution-indicator {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0,8,30,0.96), rgba(0,20,60,0.96));
+            border: 1.5px solid #007BFF;
+            border-radius: 16px;
+            padding: 18px 28px;
+            display: none;
+            text-align: center;
+            z-index: 9997;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0,100,255,0.25);
+            animation: indicator-appear 0.2s ease both;
+        }
+        .resolution-indicator .quality-label {
+            color: #50c878;
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .resolution-indicator .indicator-icon {
+            font-size: 22px; color: #60aaff;
+            margin-right: 10px; vertical-align: middle;
+        }
+        .resolution-indicator .indicator-value {
+            color: #60aaff;
+            font-size: 22px; font-weight: 800;
+        }
+
+        /* Ortak fallback (eski .indicator-icon, .indicator-value) */
+        .indicator-icon { font-size: 22px; margin-right: 10px; vertical-align: middle; }
+        .indicator-value { color: var(--accent-primary, #FFD700); font-size: 22px; font-weight: 800; }
  
 .performance-critical {
      
@@ -8276,6 +8441,7 @@ body.sidebar-open {
     inset: 0;
     z-index: 0;
     overflow: hidden;
+    pointer-events: none;
 }
 .vod-backdrop-img {
     width: 100%;
@@ -8296,6 +8462,7 @@ body.sidebar-open {
         rgba(10,10,15,0.92) 65%,
         #0a0a0f 100%
     );
+    pointer-events: none;
 }
 
 /* ── Header bar (geri butonu) ── */
@@ -8944,6 +9111,11 @@ body.sidebar-open {
         .brightness-indicator,
         .volume-indicator {
             z-index: 9998 !important;
+        }
+        /* Corner indicators: bottom offset adapts if player controls are visible */
+        .player-container.show-controls .volume-indicator,
+        .player-container.show-controls .brightness-indicator {
+            bottom: 280px;
         }
         
          
@@ -14022,13 +14194,26 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 
     
     <div class="volume-indicator" id="volumeIndicator">
-        <span class="material-symbols-outlined indicator-icon">volume_up</span>
+        <div class="ind-label">SES</div>
+        <div class="ind-icon-wrap">
+            <span class="material-symbols-outlined indicator-icon" id="volumeIcon">volume_up</span>
+        </div>
+        <div class="ind-bar-wrap">
+            <div class="ind-bar-fill" id="volumeBarFill" style="height:50%;"></div>
+        </div>
         <span class="indicator-value" id="volumeValue">50%</span>
     </div>
     <div class="brightness-indicator" id="brightnessIndicator">
-        <span class="material-symbols-outlined indicator-icon">brightness_6</span>
+        <div class="ind-label">IŞIK</div>
+        <div class="ind-icon-wrap">
+            <span class="material-symbols-outlined indicator-icon" id="brightnessIcon">brightness_6</span>
+        </div>
+        <div class="ind-bar-wrap">
+            <div class="ind-bar-fill" id="brightnessBarFill" style="height:100%;"></div>
+        </div>
         <span class="indicator-value" id="brightnessValue">100%</span>
     </div>
+    <div id="dblTapFsToast"></div>
     <div class="resolution-indicator" id="resolutionIndicator">
         <div id="resolutionText">
             <span class="material-symbols-outlined indicator-icon">high_quality</span>
@@ -20934,7 +21119,44 @@ listSeriesChannels();
         /bölüm|bolum|sezon|season|^TR:/i.test(channelName) ||
         /\bS\d+\s*[EB]\d+/i.test(channelName)
     );
-    
+
+    // ── HIZLI AÇILIŞ: Cache'de yoksa önce skeleton göster, TMDB'yi arka planda çek ──
+    const _hasCached = !!(state.vodCache[tmdbName] || state.vodCache[channelName]);
+    if (!_hasCached) {
+        // Skeleton state: logo varsa arka plana koy, başlık yaz, modalı hemen aç
+        const _skelModal = document.getElementById('vodModal');
+        const _skelLogo = chObj ? (chObj.logo || '') : '';
+        const _skelPosterWrap = document.getElementById('vodPosterWrapper');
+        const _skelBd = document.getElementById('vodBackdropImg');
+        if (_skelBd) _skelBd.src = _skelLogo || '';
+        if (_skelPosterWrap) {
+            _skelPosterWrap.innerHTML = _skelLogo
+                ? `<img loading="lazy" id="vodModalPoster" class="vod-poster" src="${_skelLogo}" alt="${channelName}" onerror="this.style.display='none'">`
+                : `<div style="width:100%;height:200px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;"><span style="font-size:40px;opacity:0.2;">🎬</span></div>`;
+        }
+        const _skelTitle = document.getElementById('vodModalTitle');
+        if (_skelTitle) _skelTitle.textContent = channelName;
+        const _skelMeta = document.getElementById('vodModalMeta');
+        if (_skelMeta) _skelMeta.innerHTML = '<div class="vod-meta-item" style="opacity:0.4;font-style:italic;">Bilgi yükleniyor...</div>';
+        const _skelOv = document.getElementById('vodModalOverview');
+        if (_skelOv) _skelOv.textContent = '';
+        ['vodModalGenresContainer','vodModalCastContainer','vodModalDirectorContainer'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.style.display = 'none';
+        });
+        const _skelPlay = document.getElementById('vodModalPlayBtn');
+        if (_skelPlay) _skelPlay.style.display = '';
+        const _skelCont = document.getElementById('vodModalContinueBtn');
+        if (_skelCont) _skelCont.style.display = 'none';
+        if (_skelModal) {
+            _skelModal.style.display = 'flex';
+            _skelModal.style.zIndex = '10000';
+            if (!state.remote) state.remote = {};
+            state.remote.active = true;
+            state.remote.zone = 'vodModal';
+            if (typeof setupVodModalRemote === 'function') setupVodModalRemote();
+        }
+    }
+
     const vodInfo = state.vodCache[tmdbName] || state.vodCache[channelName] || await fetchVodInfo(tmdbName, _preferTV);
     if (!vodInfo) {
         // TMDB bulunamadı — yine de modalı aç (poster olmadan)
@@ -24222,25 +24444,45 @@ document.addEventListener('touchstart', cancelSleepShutdown);
 
         // SES, ÇÖZÜNÜRLÜK ve PARLAKLIK GÖSTERGELERİ
         function showVolumeIndicator(volume) {
-            const indicator = document.getElementById('volumeIndicator');
-            document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
-            indicator.style.display = 'block';
-            
+            var indicator = document.getElementById('volumeIndicator');
+            var pct = Math.round(volume * 100);
+            document.getElementById('volumeValue').textContent = pct + '%';
+            // Bar fill
+            var fill = document.getElementById('volumeBarFill');
+            if (fill) fill.style.height = Math.max(2, pct) + '%';
+            // Icon: muted vs low vs normal
+            var icon = document.getElementById('volumeIcon');
+            if (icon) icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
+            // Reset animation
+            indicator.style.animation = 'none';
+            indicator.offsetHeight; // reflow
+            indicator.style.animation = '';
+            indicator.style.display = 'flex';
             clearTimeout(window.volumeIndicatorTimer);
-            window.volumeIndicatorTimer = setTimeout(() => {
+            window.volumeIndicatorTimer = setTimeout(function() {
                 indicator.style.display = 'none';
-            }, 2000);
+            }, 1800);
         }
 
         function showBrightnessIndicator(brightness) {
-            const indicator = document.getElementById('brightnessIndicator');
-            document.getElementById('brightnessValue').textContent = `${Math.round(brightness)}%`;
-            indicator.style.display = 'block';
-            
+            var indicator = document.getElementById('brightnessIndicator');
+            var pct = Math.round(brightness);
+            document.getElementById('brightnessValue').textContent = pct + '%';
+            // Bar fill
+            var fill = document.getElementById('brightnessBarFill');
+            if (fill) fill.style.height = Math.max(2, pct) + '%';
+            // Icon: dim vs mid vs bright
+            var icon = document.getElementById('brightnessIcon');
+            if (icon) icon.textContent = pct < 30 ? 'brightness_2' : pct < 65 ? 'brightness_5' : 'brightness_7';
+            // Reset animation
+            indicator.style.animation = 'none';
+            indicator.offsetHeight; // reflow
+            indicator.style.animation = '';
+            indicator.style.display = 'flex';
             clearTimeout(window.brightnessIndicatorTimer);
-            window.brightnessIndicatorTimer = setTimeout(() => {
+            window.brightnessIndicatorTimer = setTimeout(function() {
                 indicator.style.display = 'none';
-            }, 2000);
+            }, 1800);
         }
 
         function showResolutionIndicator(width, height) {
@@ -24687,18 +24929,28 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 const _nowHid = Date.now();
                 const _DTAP_HID = 350;
                 if (_nowHid - (window._hiddenLastTapTime || 0) < _DTAP_HID) {
-                    // Çift dokunma → kontrolleri aç
+                    // Çift dokunma → kontrolleri aç (veya tam ekrandan çık)
                     window._hiddenLastTapTime = 0;
                     clearTimeout(window._hiddenTapTimer);
-                    window._controlsHidden = false;
-                    const pc2 = document.getElementById('playerContainer');
-                    if (pc2) pc2.classList.remove('controls-hidden');
-                    const icon  = document.getElementById('hideControlsIcon');
-                    const label = document.getElementById('hideControlsLabel');
-                    if (icon)  icon.textContent  = 'visibility_off';
-                    if (label) label.textContent = 'Gizle';
-                    showControls(5000);
-                    showToast('Kontroller Açıldı');
+                    // Eğer CSS tam ekran açıksa önce kapat
+                    var _pvH = document.getElementById('playerView');
+                    if (_pvH && _pvH.classList.contains('dbl-tap-fullscreen')) {
+                        _pvH.classList.remove('dbl-tap-fullscreen');
+                        document.body.style.overflow = '';
+                        document.documentElement.style.overflow = '';
+                        var _tH = document.getElementById('dblTapFsToast');
+                        if (_tH) { _tH.textContent = '⊠ Normal Mod'; _tH.style.display = 'block'; setTimeout(function(){ _tH.style.display = 'none'; }, 1200); }
+                    } else {
+                        window._controlsHidden = false;
+                        var pc2 = document.getElementById('playerContainer');
+                        if (pc2) pc2.classList.remove('controls-hidden');
+                        var icon  = document.getElementById('hideControlsIcon');
+                        var label = document.getElementById('hideControlsLabel');
+                        if (icon)  icon.textContent  = 'visibility_off';
+                        if (label) label.textContent = 'Gizle';
+                        showControls(5000);
+                        showToast('Kontroller Açıldı');
+                    }
                 } else {
                     // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
                     window._hiddenLastTapTime = _nowHid;
@@ -24777,14 +25029,63 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     }, DOUBLE_TAP_MS);
                 }
             } else {
-                // Orta bölge veya canlı → normal tap
-                const playerContainer = document.getElementById('playerContainer');
-                const isVisible = playerContainer.classList.contains('show-controls');
-                if (isVisible) {
-                    playerContainer.classList.remove('show-controls');
-                } else if (!window._controlsHidden) {
-                    playerContainer.classList.add('show-controls');
-                    showControls(5000);
+                // Orta bölge — çift dokunma: CSS tam ekran yatay, tek dokunma: kontrol göster/gizle
+                var _cNow = Date.now();
+                var _cZone = currentTouchZone;
+                var CDTAP_MS = 320;
+                if (_cZone === TOUCH_ZONES.CENTER) {
+                    if (_cNow - (window._centerDtapLast || 0) < CDTAP_MS) {
+                        // ── ÇİFT DOKUNMA → CSS Rotate Tam Ekran ──
+                        window._centerDtapLast = 0;
+                        clearTimeout(window._centerDtapTimer);
+                        var pv = document.getElementById('playerView');
+                        var toast = document.getElementById('dblTapFsToast');
+                        if (pv) {
+                            var isFs = pv.classList.contains('dbl-tap-fullscreen');
+                            if (isFs) {
+                                pv.classList.remove('dbl-tap-fullscreen');
+                                document.body.style.overflow = '';
+                                document.documentElement.style.overflow = '';
+                                if (toast) { toast.textContent = '⊠ Normal Mod'; toast.style.display = 'block'; setTimeout(function(){ toast.style.display = 'none'; }, 1200); }
+                            } else {
+                                pv.classList.add('dbl-tap-fullscreen');
+                                document.body.style.overflow = 'hidden';
+                                document.documentElement.style.overflow = 'hidden';
+                                // Video boyutlarını sıfırla — CSS üstlensin
+                                var _vid = document.getElementById('videoPlayer');
+                                if (_vid) { _vid.style.width = ''; _vid.style.height = ''; }
+                                if (toast) { toast.textContent = '⛶ Tam Ekran'; toast.style.display = 'block'; setTimeout(function(){ toast.style.display = 'none'; }, 1200); }
+                            }
+                        }
+                        if (typeof playKeySound === 'function') playKeySound('click');
+                    } else {
+                        // İlk dokunma — bekle
+                        window._centerDtapLast = _cNow;
+                        clearTimeout(window._centerDtapTimer);
+                        window._centerDtapTimer = setTimeout(function() {
+                            window._centerDtapLast = 0;
+                            // Tek dokunma eylemi: kontrol göster/gizle
+                            var pc = document.getElementById('playerContainer');
+                            if (!pc) return;
+                            var isVis = pc.classList.contains('show-controls');
+                            if (isVis) {
+                                pc.classList.remove('show-controls');
+                            } else if (!window._controlsHidden) {
+                                pc.classList.add('show-controls');
+                                showControls(5000);
+                            }
+                        }, CDTAP_MS);
+                    }
+                } else {
+                    // Canlı, sol/sağ — normal tap
+                    var playerContainer2 = document.getElementById('playerContainer');
+                    var isVisible2 = playerContainer2.classList.contains('show-controls');
+                    if (isVisible2) {
+                        playerContainer2.classList.remove('show-controls');
+                    } else if (!window._controlsHidden) {
+                        playerContainer2.classList.add('show-controls');
+                        showControls(5000);
+                    }
                 }
             }
         }
@@ -49380,6 +49681,27 @@ function _favIcons(ch, isFav) {
 .upv-review-date { font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px; }
 .upv-empty { text-align:center;color:rgba(255,255,255,0.25);font-size:12px;padding:24px 16px; }
 .upv-loading { text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:20px 16px; }
+.upv-close { touch-action:manipulation;-webkit-tap-highlight-color:transparent; }
+.upv-dpad-item {
+    outline:none;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    transition:background 0.12s,border-color 0.12s;
+}
+.upv-dpad-item.upv-dpad-focused,
+.upv-dpad-item.remote-focused {
+    background:rgba(255,215,0,0.07) !important;
+    border-color:rgba(255,215,0,0.35) !important;
+    outline:2px solid rgba(255,215,0,0.5);
+}
+.upv-close.upv-dpad-focused,
+.upv-close.remote-focused {
+    background:rgba(255,215,0,0.18) !important;
+    border-color:rgba(255,215,0,0.5) !important;
+    color:#FFD700 !important;
+    outline:2px solid rgba(255,215,0,0.7);
+    outline-offset:2px;
+}
 </style>
 
 <!-- Kullanıcı Profil Görüntüleme Modal HTML -->
@@ -49411,7 +49733,7 @@ function _favIcons(ch, isFav) {
     <div class="profile-modal-card" role="dialog" aria-label="Profil Ayarları">
         <div class="profile-modal-header">
             <div class="profile-modal-title">👤 PROFİLİM</div>
-            <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Kapat">✕</button>
+            <button class="profile-modal-close" id="profileModalCloseBtn" onclick="closeProfileModal()" aria-label="Kapat">✕</button>
         </div>
 
         <!-- Avatar Büyük -->
@@ -49449,7 +49771,7 @@ function _favIcons(ch, isFav) {
             <div class="profile-label">veya Cihazdan Yükle</div>
             <input type="file" id="profileAvatarFileInput" accept="image/*"
                 style="display:none;" onchange="handleProfileAvatarFile(this)">
-            <button type="button" onclick="document.getElementById('profileAvatarFileInput').click()"
+            <button type="button" id="profileGalleryBtn" onclick="document.getElementById('profileAvatarFileInput').click()"
                 style="width:100%;padding:11px 16px;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.35);border-radius:10px;color:rgba(255,215,0,0.8);font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
                 onmouseover="this.style.background='rgba(255,215,0,0.12)'" onmouseout="this.style.background='rgba(255,215,0,0.06)'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -49666,9 +49988,17 @@ window.saveProfile = function() {
         return;
     }
 
-    // Kaydet
+    // Kaydet — newAvatar boşsa null geç (mevcut avatarı silme)
     const shouldLock = isSans && !prof.locked && newName;
-    profSave(newName, newAvatar, shouldLock);
+    profSave(newName, newAvatar || null, shouldLock);
+
+    // Yorumlar görünüyorsa yeniden yükle (avatar güncellemesi yansısın)
+    try {
+        var _vrs = document.getElementById('vodReviewsSection');
+        if (_vrs && _vrs.style.display !== 'none' && typeof vodLoadReviews === 'function') {
+            setTimeout(vodLoadReviews, 350);
+        }
+    } catch(e) {}
 
     // Şans kodu kullanıcısına isim kitleniyor — input disable et
     if (shouldLock && nameInput) {
@@ -49874,21 +50204,49 @@ document.addEventListener('umittv_login_ok', function() {
 })();
 
 /* ══════════════════════════════════════════════════════════════
-   D-PAD: Profil modal klavye navigasyonu
+   D-PAD: Profil modal klavye navigasyonu — TAM KUMANDA DESTEĞİ
+   Sıra: Kapat → İsim → AvatarURL → GaleridanSec → Kaydet
    ══════════════════════════════════════════════════════════════ */
 (function() {
-    var _profFocusItems = ['profileNameInput', 'profileAvatarInput', 'profileSaveBtn'];
+    // Navigasyon sırası: id → type → selector (buton için)
+    var PROF_ITEMS = [
+        { id: 'profileModalCloseBtn', type: 'btn'   },
+        { id: 'profileNameInput',     type: 'input' },
+        { id: 'profileAvatarInput',   type: 'input' },
+        { id: 'profileGalleryBtn',    type: 'btn'   },
+        { id: 'profileSaveBtn',       type: 'btn'   }
+    ];
     var _profIdx = 0;
+    var _profActive = false;
 
-    function _updateProfFocus() {
-        _profFocusItems.forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) el.classList.remove('dpad-focused', 'remote-focused');
+    function _getEl(item) { return document.getElementById(item.id); }
+
+    function _clearAll() {
+        PROF_ITEMS.forEach(function(item) {
+            var el = _getEl(item);
+            if (el) el.classList.remove('dpad-focused', 'remote-focused', 'prof-dpad-focused');
         });
-        var el = document.getElementById(_profFocusItems[_profIdx]);
-        if (el) {
-            el.classList.add('dpad-focused');
-            if (el.tagName === 'INPUT') { el.focus(); }
+    }
+
+    function _setFocus(idx) {
+        _clearAll();
+        var item = PROF_ITEMS[idx];
+        var el = _getEl(item);
+        if (!el) return;
+        el.classList.add('dpad-focused', 'remote-focused', 'prof-dpad-focused');
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (typeof playKeySound === 'function') playKeySound('move');
+    }
+
+    function _activate(idx) {
+        var item = PROF_ITEMS[idx];
+        var el = _getEl(item);
+        if (!el) return;
+        if (item.type === 'input') {
+            el.focus();
+            if (typeof playKeySound === 'function') playKeySound('click');
+        } else {
+            el.click();
         }
     }
 
@@ -49896,47 +50254,100 @@ document.addEventListener('umittv_login_ok', function() {
         var modal = document.getElementById('profileModal');
         if (!modal || !modal.classList.contains('open')) return;
 
+        var kc = e.keyCode || e.which;
+        var key = e.key;
         var active = document.activeElement;
-        var isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+        var isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
+                    && active.id !== 'profileSaveBtn' && active.id !== 'profileGalleryBtn' && active.id !== 'profileModalCloseBtn';
 
+        // Input içindeyken: Enter → blur + aşağı git, Escape → blur
         if (isTyping) {
-            if (e.key === 'Enter') {
+            if (key === 'Enter' || kc === 13) {
                 active.blur();
-                e.preventDefault();
-                _profIdx = Math.min(_profIdx + 1, _profFocusItems.length - 1);
-                _updateProfFocus();
+                e.preventDefault(); e.stopPropagation();
+                _profIdx = Math.min(_profIdx + 1, PROF_ITEMS.length - 1);
+                _setFocus(_profIdx);
+                return;
             }
-            if (e.key === 'Escape') { active.blur(); e.preventDefault(); }
-            return;
+            if (key === 'Escape' || kc === 27) {
+                active.blur(); e.preventDefault(); return;
+            }
+            if (key === 'ArrowDown' || kc === 40) {
+                active.blur();
+                e.preventDefault(); e.stopPropagation();
+                _profIdx = Math.min(_profIdx + 1, PROF_ITEMS.length - 1);
+                _setFocus(_profIdx);
+                return;
+            }
+            if (key === 'ArrowUp' || kc === 38) {
+                active.blur();
+                e.preventDefault(); e.stopPropagation();
+                _profIdx = Math.max(_profIdx - 1, 0);
+                _setFocus(_profIdx);
+                return;
+            }
+            return; // Diğer tuşlar input'a gitsin
         }
 
-        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-            e.preventDefault();
-            _profIdx = Math.min(_profIdx + 1, _profFocusItems.length - 1);
-            _updateProfFocus();
-        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-            e.preventDefault();
+        var isDown  = key === 'ArrowDown'  || kc === 40;
+        var isUp    = key === 'ArrowUp'    || kc === 38;
+        var isEnter = key === 'Enter'      || kc === 13 || kc === 23;
+        var isOK    = key === 'OK'         || key === ' ';
+        var isBack  = key === 'Escape'     || key === 'Backspace' || key === 'GoBack' || key === 'Back' || kc === 27 || kc === 8;
+
+        if (isDown) {
+            e.preventDefault(); e.stopPropagation();
+            _profIdx = Math.min(_profIdx + 1, PROF_ITEMS.length - 1);
+            _setFocus(_profIdx);
+        } else if (isUp) {
+            e.preventDefault(); e.stopPropagation();
             _profIdx = Math.max(_profIdx - 1, 0);
-            _updateProfFocus();
-        } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
-            e.preventDefault();
-            var el = document.getElementById(_profFocusItems[_profIdx]);
-            if (el) {
-                if (el.tagName === 'INPUT') { el.focus(); }
-                else { el.click(); }
-            }
-        } else if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
-            e.preventDefault();
-            closeProfileModal();
+            _setFocus(_profIdx);
+        } else if (isEnter || isOK) {
+            e.preventDefault(); e.stopPropagation();
+            _activate(_profIdx);
+        } else if (isBack) {
+            e.preventDefault(); e.stopPropagation();
+            // Eğer focus input'taysa önce blur et
+            if (active && active.tagName === 'INPUT') { active.blur(); }
+            else { closeProfileModal(); }
         }
     }, true);
 
-    // Modal açılınca idx sıfırla
+    // CSS: prof-dpad-focused stili
+    (function() {
+        var s = document.createElement('style');
+        s.textContent = [
+            '.prof-dpad-focused {',
+            '    outline: 3px solid rgba(255,215,0,0.95) !important;',
+            '    outline-offset: 3px !important;',
+            '    box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 18px rgba(255,215,0,0.2) !important;',
+            '}',
+            'input.prof-dpad-focused {',
+            '    outline: none !important;',
+            '    border-color: rgba(255,215,0,0.8) !important;',
+            '    background: rgba(255,215,0,0.06) !important;',
+            '    box-shadow: 0 0 0 3px rgba(255,215,0,0.2) !important;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(s);
+    })();
+
+    // Modal açılınca idx sıfırla ve ilk elemente odaklan
     var origOpen = window.openProfileModal;
     window.openProfileModal = function() {
-        origOpen();
+        if (typeof origOpen === 'function') origOpen.apply(this, arguments);
         _profIdx = 0;
-        setTimeout(_updateProfFocus, 200);
+        _profActive = true;
+        setTimeout(function() { _setFocus(0); }, 250);
+    };
+
+    // Modal kapanınca temizle
+    var origClose = window.closeProfileModal;
+    window.closeProfileModal = function() {
+        _clearAll();
+        _profActive = false;
+        if (typeof origClose === 'function') origClose.apply(this, arguments);
     };
 })();
 
@@ -54929,7 +55340,8 @@ function vodRenderReview(key, rev, myName) {
   const listEl = document.getElementById('vodReviewsList');
   if (!listEl) return;
 
-  const isMe = rev.userId === myName;
+  // isMe: hem userId hem nick karşılaştır (override sonrası mismatch önle)
+  const isMe = rev.userId === myName || rev.nick === myName;
   const color = vrUserColor(rev.userId || rev.nick || '?');
   const initial = (rev.nick || rev.userId || '?')[0].toUpperCase();
   const starsHtml = rev.stars
@@ -54944,22 +55356,26 @@ function vodRenderReview(key, rev, myName) {
     : '';
 
   // Kendi yorumumsa profil resmimizi göster
+  // Avatar: kendi yorumsa localStorage'dan, diğerleri için rev.avatar'dan
   const myAvatarUrl = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
-  const hasAvatar = myAvatarUrl && (myAvatarUrl.startsWith('http') || myAvatarUrl.startsWith('data:'));
+  const otherAvatarUrl = !isMe && rev.avatar && (rev.avatar.startsWith('http') || rev.avatar.startsWith('data:')) ? rev.avatar : '';
+  // Kendi yorumuysa önce localStorage'dan al (data: dahil), değilse Firebase'den
+  const resolvedAvatar = isMe ? (myAvatarUrl || otherAvatarUrl) : otherAvatarUrl;
+  const hasAvatar = resolvedAvatar && (resolvedAvatar.startsWith('http') || resolvedAvatar.startsWith('data:'));
+  const safeNickForAvatar = (rev.nick || rev.userId || '?').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   const avatarHtml = hasAvatar
-    ? '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;">' +
-      '<img src="' + myAvatarUrl + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
+    ? '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' +
+      '<img src="' + resolvedAvatar + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
       '</div>'
-    : '<div style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + initial + '</div>';
+    : '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' + initial + '</div>';
 
   const displayNick = rev.nick || rev.userId || '?';
   const meLabel = isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '';
   const safeNick = displayNick.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   const nickHtml = '<span onclick="openUserProfileView(\'' + safeNick + '\')" '
-    + 'style="font-size:12px;font-weight:700;color:' + color + ';cursor:pointer;'
-    + 'text-decoration-line:underline;text-decoration-style:dotted;text-underline-offset:2px;" '
+    + 'style="font-size:12px;font-weight:700;color:' + color + ';cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
+    + 'text-decoration-line:underline;text-decoration-style:dotted;text-underline-offset:2px;padding:6px 2px;display:inline-block;" '
     + 'title="Profili g\u00f6r\u00fcntle">' + displayNick + '</span>';
-
   const el = document.createElement('div');
   el.id = 'vr_' + key;
   el.style.cssText = 'display:flex;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px;';
@@ -55014,13 +55430,17 @@ window.vodSubmitReview = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
+  const _myAvatarRaw = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
+  // data: URL'leri Firebase'e kaydetme — cok buyuk, quota tuketir. Sadece http/https URL'lerini sakla.
+  const _myAvatarToSave = (_myAvatarRaw && _myAvatarRaw.startsWith('http')) ? _myAvatarRaw : '';
   const reviewData = {
     userId: userName,
     nick: userName,
     text: text,
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
-    ts: Date.now()
+    ts: Date.now(),
+    avatar: _myAvatarToSave
   };
 
   // Mevcut yorumu sil (güncelleme)
@@ -55069,18 +55489,18 @@ window._vodReviews = { openReviews: window.vodOpenReviews, getKey: vrSafeKey };
 // ── Unhandled fetch / network hatalarını yakala — konsolu temizle ──
 window.addEventListener('unhandledrejection', function(e) {
     var reason = e.reason;
+    // DOMException ve TypeError'u instance olarak yakala (message'dan bağımsız)
+    if (reason instanceof DOMException || reason instanceof TypeError) {
+        e.preventDefault(); return;
+    }
     var msg = (reason && reason.message) ? reason.message : String(reason || '');
     var silent = [
         'fetch', 'Failed', 'abort', 'Abort', 'NetworkError',
         'net::', 'Load failed', 'ERR_', 'DOMException', 'TypeError',
-        'style', 'null', 'undefined'
+        'style', 'null', 'undefined', 'interrupted', 'request was'
     ];
     for (var i = 0; i < silent.length; i++) {
         if (msg.indexOf(silent[i]) !== -1) { e.preventDefault(); return; }
-    }
-    // TypeError (null.style gibi) de yakala
-    if (reason instanceof TypeError || reason instanceof DOMException) {
-        e.preventDefault();
     }
 });
 
@@ -59303,6 +59723,9 @@ window._umitSnapClearBaseline = function() { _snapHasBaseline = false; };
 (function() {
 'use strict';
 
+// Firebase URL — VodReview IIFE'sinden erişilemiyor, burada tekrar tanımla
+var VOD_REVIEWS_FB = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
+
 function getRutbe(count) {
   if (count >= 20) return { label: '\u0027\u0100 Yorumcu Kral\u0131', cls: 'rutbe-yorumcu-krali' };
   if (count >= 10) return { label: '\uD83D\uDD25 Yorumcu Sap\u0131',  cls: 'rutbe-yorumcu-sapi'  };
@@ -59330,7 +59753,7 @@ async function getReviewsForKey(k) {
 async function fetchUserAllReviews(userName) {
   var keys = await getAllReviewKeys();
   var userReviews = [];
-  var limited = keys.slice(0, 40);
+  var limited = keys.slice(0, 100);
   var results = await Promise.all(limited.map(function(k) {
     return getReviewsForKey(k).then(function(d) { return { k: k, d: d }; });
   }));
@@ -59340,7 +59763,10 @@ async function fetchUserAllReviews(userName) {
     for (var j = 0; j < entries.length; j++) {
       var rev = entries[j][1];
       if (!rev) continue;
-      if ((rev.userId || rev.nick || '') === userName) {
+      // userId VEYA nick eşleşsin (her iki alan da kontrol et)
+      var revUser = (rev.userId || '').trim();
+      var revNick = (rev.nick || '').trim();
+      if (revUser === userName || revNick === userName) {
         userReviews.push(Object.assign({ contentKey: k, revKey: entries[j][0] }, rev));
       }
     }
@@ -59369,7 +59795,7 @@ window.openUserProfileView = async function(userName) {
   if (emptyEl) emptyEl.style.display= 'none';
 
   var color = (typeof vrUserColor === 'function') ? vrUserColor(userName) : '#FFD700';
-  var initial = userName[0].toUpperCase();
+  var initial = (userName[0] || '?').toUpperCase();
   if (avatarEl) {
     avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;'
       + 'display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;'
@@ -59378,10 +59804,30 @@ window.openUserProfileView = async function(userName) {
   }
 
   modal.classList.add('open');
+  setTimeout(function() {
+    var cb = modal.querySelector('.upv-close');
+    if (cb) { cb.focus(); upvSetDpadFocus(cb); }
+  }, 80);
   if (typeof playKeySound === 'function') playKeySound('click');
 
   var reviews = await fetchUserAllReviews(userName);
   if (loadEl) loadEl.style.display = 'none';
+
+  // Avatarı ilk bulunan yorumdan al (rev.avatar)
+  var foundAvatar = '';
+  for (var ai = 0; ai < reviews.length; ai++) {
+    var au = reviews[ai] && reviews[ai].avatar;
+    if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+  }
+  if (avatarEl && foundAvatar) {
+    avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;border:2px solid ' + color + '55;';
+    avatarEl.innerHTML = '<img src="' + foundAvatar + '" '
+      + 'style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" '
+      + 'alt="' + initial + '" '
+      + 'onerror="var p=this.parentNode;p.innerHTML=\'\';'
+      + 'p.style.cssText=\'width:56px;height:56px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:' + color + '22;border:2px solid ' + color + '55;color:' + color + '\';'
+      + 'p.textContent=\'' + initial + '\';">';
+  }
 
   var total = reviews.length;
   if (countEl) countEl.textContent = total + ' yorum';
@@ -59402,7 +59848,9 @@ window.openUserProfileView = async function(userName) {
     var dateStr = rev.ts ? new Date(rev.ts).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
     var contentName = rev.contentTitle || rev.contentKey || '\u2014';
     var item = document.createElement('div');
-    item.className = 'upv-review-item';
+    item.className = 'upv-review-item upv-dpad-item';
+    item.setAttribute('tabindex','0');
+    item.setAttribute('data-upv-index', String(ri));
     item.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
       + '<div class="upv-review-content-title">' + contentName + '</div>'
@@ -59412,20 +59860,56 @@ window.openUserProfileView = async function(userName) {
       + '<div class="upv-review-date">' + dateStr + '</div>';
     if (listEl) listEl.appendChild(item);
   }
+  _upvDpadReady();
 };
 
 window.closeUserProfileView = function() {
   var modal = document.getElementById('userProfileViewModal');
   if (modal) modal.classList.remove('open');
+  var prev = modal && modal.querySelector('.upv-dpad-focused');
+  if (prev) prev.classList.remove('upv-dpad-focused','remote-focused');
   if (typeof playKeySound === 'function') playKeySound('back');
 };
 
+/* ── D-PAD NAVİGASYON ── */
+var _upvFocusedEl = null;
+function upvSetDpadFocus(el) {
+  if (_upvFocusedEl && _upvFocusedEl !== el)
+    _upvFocusedEl.classList.remove('upv-dpad-focused','remote-focused');
+  _upvFocusedEl = el;
+  if (el) {
+    el.classList.add('upv-dpad-focused','remote-focused');
+    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+}
+function _upvDpadReady() {
+  _upvFocusedEl = null;
+  var cb = document.querySelector('#userProfileViewModal .upv-close');
+  if (cb) upvSetDpadFocus(cb);
+}
+
 document.addEventListener('keydown', function(e) {
   var modal = document.getElementById('userProfileViewModal');
-  if (modal && modal.classList.contains('open') &&
-      (e.key === 'Escape' || e.keyCode === 27 || e.keyCode === 8)) {
-    window.closeUserProfileView();
+  if (!modal || !modal.classList.contains('open')) return;
+  var kc = e.keyCode || e.which, key = e.key;
+  if (key === 'Escape' || kc === 27 || kc === 8) {
+    e.preventDefault(); e.stopPropagation();
+    window.closeUserProfileView(); return;
   }
+  var isUp    = key === 'ArrowUp'    || kc === 38;
+  var isDown  = key === 'ArrowDown'  || kc === 40;
+  var isEnter = key === 'Enter'      || kc === 13 || kc === 23;
+  if (!isUp && !isDown && !isEnter) return;
+  e.preventDefault(); e.stopPropagation();
+  var items = Array.from(modal.querySelectorAll('.upv-dpad-item'));
+  var cb = modal.querySelector('.upv-close');
+  var all = cb ? [cb].concat(items) : items;
+  if (!all.length) return;
+  var ci = _upvFocusedEl ? all.indexOf(_upvFocusedEl) : -1;
+  if (isDown)  upvSetDpadFocus(all[Math.min(ci+1, all.length-1)]);
+  else if (isUp) upvSetDpadFocus(all[Math.max(ci-1, 0)]);
+  else if (isEnter && _upvFocusedEl) _upvFocusedEl.click();
+  if (typeof playKeySound === 'function') playKeySound(isEnter ? 'click' : 'move');
 }, true);
 
 (function() {
@@ -59436,3 +59920,7 @@ document.addEventListener('keydown', function(e) {
 })();
 
 })(); // UserProfileView IIFE
+
+</script>
+</body>
+</html>

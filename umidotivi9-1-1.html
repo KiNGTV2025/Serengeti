@@ -639,10 +639,44 @@
     outline: 3px solid var(--accent-primary, #FFD700) !important;
     background: rgba(255,215,0,0.20) !important;
 }
+/* ══════════════════════════════════════════════════════════
+   TVBox KUMANDA ODAĞI — Güçlü, belirgin, lag-free
+   ══════════════════════════════════════════════════════════ */
 /* Tüm remote-focused — geçiş yok ama animasyon (dalga) serbest */
 .remote-focused, .focused {
     transition: none !important;
-    /* animation: none — kaldırıldı; waveFocus için serbest bırakıldı */
+    outline: 2.5px solid #FFD700 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.35), 0 0 14px rgba(255,215,0,0.25) !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+/* Küçük butonlar için daha sıkı odak */
+.header-btn.remote-focused,
+.icon-btn.remote-focused,
+.upv-close.remote-focused {
+    outline: 2px solid #FFD700 !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.4) !important;
+}
+/* Kanal kartı — belirgin altın çerçeve */
+.channel-card.remote-focused {
+    outline: 2.5px solid #FFD700 !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 4px rgba(255,215,0,0.30), 0 4px 20px rgba(255,215,0,0.2) !important;
+    transform: scale(1.03) !important;
+    z-index: 5 !important;
+}
+/* Liste öğeleri */
+.channel-list-item.remote-focused,
+.sidebar-category-pill.remote-focused,
+.category-list-item.remote-focused,
+.cat-pill.remote-focused,
+.m3u-pill.remote-focused {
+    outline: 2px solid #FFD700 !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.35) !important;
+    background-color: rgba(255,215,0,0.15) !important;
 }
 /* ODAK-FIX: remote-focused KALDIRILINCA outline anında silinsin — TVBox gecikmeli render önle */
 :not(.remote-focused):not(.focused) {
@@ -12335,11 +12369,29 @@ const focusables = () => {
 let dpadIndex = 0;
 let _dpadFocusLock = false;
 
+/* ── TVBox-OPT: Global odak temizleme yardımcısı ──────────────────────
+   querySelectorAll('.remote-focused') DOM taraması yerine cache kullan.
+   Bu fonksiyon tüm modal açılış/kapanışlarından çağrılır.
+   ──────────────────────────────────────────────────────────────────── */
+window._clearRemoteFocus = function() {
+    if (window._lastRemoteFocusedEl)     { window._lastRemoteFocusedEl.classList.remove('remote-focused');     window._lastRemoteFocusedEl = null; }
+    if (window._lastRemoteFocusedParent) { window._lastRemoteFocusedParent.classList.remove('remote-focused'); window._lastRemoteFocusedParent = null; }
+    if (window._lastDpadFocusedEl)       { window._lastDpadFocusedEl.classList.remove('dpad-focused');         window._lastDpadFocusedEl = null; }
+};
+window._setRemoteFocusEl = function(el) {
+    window._clearRemoteFocus();
+    if (el) { el.classList.add('remote-focused'); window._lastRemoteFocusedEl = el; }
+};
+
 function dpadFocus(el) {
     if (_dpadFocusLock) return;
-    document.querySelectorAll('.dpad-focused').forEach(e => e.classList.remove('dpad-focused'));
-    if (!el) return;
+    // TVBox-OPT: cache kullan
+    if (window._lastDpadFocusedEl && window._lastDpadFocusedEl !== el) {
+        window._lastDpadFocusedEl.classList.remove('dpad-focused');
+    }
+    if (!el) { window._lastDpadFocusedEl = null; return; }
     el.classList.add('dpad-focused');
+    window._lastDpadFocusedEl = el;
     try { el.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
     if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
         try { el.focus({ preventScroll: true }); } catch(e) {}
@@ -13031,18 +13083,14 @@ function doLogin() {
             window.state.remote.zone = null;
             window.state.remote.index = 0;
         }
-        document.querySelectorAll('.dpad-focused, .remote-focused').forEach(el => {
-            el.classList.remove('dpad-focused', 'remote-focused');
-        });
+        if (window._clearRemoteFocus) window._clearRemoteFocus();
         
 
         (function _waitChannelsAfterLogin() {
             if (!window.state || !window.state.remote) {
                 setTimeout(_waitChannelsAfterLogin, 100); return;
             }
-            document.querySelectorAll('.dpad-focused, .remote-focused').forEach(el => {
-                el.classList.remove('dpad-focused', 'remote-focused');
-            });
+            if (window._clearRemoteFocus) window._clearRemoteFocus();
             state.remote.active = true;
             state.remote.zone = 'channels';
             state.remote.index = 0;
@@ -19440,10 +19488,11 @@ function setInitialRemoteFocus() {
     state.remote.index = 0;
 
     // Önceki tüm odakları temizle
-    document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
 
     // İlk karta odak ver
     firstCard.classList.add('remote-focused');
+    window._lastRemoteFocusedEl = firstCard;
     firstCard.scrollIntoView({ behavior: 'auto', block: 'nearest' });
 
     // Ekranda görünür kanal adını toast ile bildir
@@ -21477,11 +21526,10 @@ listSeriesChannels();
     setTimeout(() => {
         if (focusableElements.length > 0) {
             // Önceki odakları temizle
-            document.querySelectorAll('.remote-focused').forEach(el => 
-                el.classList.remove('remote-focused')
-            );
+            if (window._clearRemoteFocus) window._clearRemoteFocus();
             // Yeni odağı ekle
             focusableElements[0].classList.add('remote-focused');
+            window._lastRemoteFocusedEl = focusableElements[0];
             focusableElements[0].focus();
         }
         updateRemoteFocus();
@@ -25721,8 +25769,15 @@ function applyLowEndOptimizations() {
         }
         
         .low-end-mode .remote-focused {
-            outline: 2px solid var(--accent-primary) !important;
+            outline: 3px solid var(--accent-primary, #FFD700) !important;
+            outline-offset: 2px !important;
             box-shadow: none !important;
+            background-color: rgba(255,215,0,0.12) !important;
+        }
+        .low-end-mode .channel-card.remote-focused {
+            transform: none !important;
+            outline: 3px solid var(--accent-primary, #FFD700) !important;
+            outline-offset: 1px !important;
         }
         
         .low-end-mode video {
@@ -26687,9 +26742,7 @@ function openSidebar() {
     // ODAK-FIX: Sidebar açılırken skip overlay gizle + tüm odak kalıntılarını temizle
     var _skipOvSb = document.getElementById('skipCountdownOverlay');
     if (_skipOvSb) _skipOvSb.style.display = 'none';
-    document.querySelectorAll('.remote-focused, .focused').forEach(function(el) {
-        el.classList.remove('remote-focused', 'focused');
-    });
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
 
     // TVBox: Sidebar açılırken player kontrollerini ANINDA gizle — kasma önleme
     const _pc = document.getElementById('playerContainer');
@@ -27487,8 +27540,9 @@ function playDirectChannel(channel) {
                 if (btn) {
                     // TVBox-OPT: cached ref
                 if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused'); window._lastRemoteFocusedEl = null; }
-                else { document.querySelectorAll('.remote-focused').forEach(function(el){ el.classList.remove('remote-focused'); }); }
+                else { if (window._clearRemoteFocus) window._clearRemoteFocus(); }
                     btn.classList.add('remote-focused');
+                    window._lastRemoteFocusedEl = btn;
                     btn.focus();
                 }
             }, 200);
@@ -28216,15 +28270,10 @@ function openPasswordModal(m3uIndex, m3uName) {
 
             setTimeout(() => {
                 if (passwordInput) {
-                    
-
-                    document.querySelectorAll('.remote-focused').forEach(el => {
-                        el.classList.remove('remote-focused');
-                    });
-                    
-                    
+                    if (window._clearRemoteFocus) window._clearRemoteFocus();
 
                     passwordInput.classList.add('remote-focused');
+                    window._lastRemoteFocusedEl = passwordInput;
                     passwordInput.focus();
                     passwordInput.select();
                     
@@ -33054,11 +33103,10 @@ setTimeout(_vhsInit, 1200);
     }
 
     function updateRecentCardsFocus() {
-        // Önceki focus'ları temizle
-        document.querySelectorAll('.recent-card').forEach(c => {
-            c.classList.remove('remote-focused');
-        });
-        document.querySelectorAll('#btnClearRecentChannels').forEach(b => b.classList.remove('remote-focused'));
+        // Önceki focus'ları temizle — cache kullan
+        if (window._clearRemoteFocus) window._clearRemoteFocus();
+        var _clearBtn2 = document.getElementById('btnClearRecentChannels');
+        if (_clearBtn2) _clearBtn2.classList.remove('remote-focused');
 
         const rc = state.remote.recentCards;
         if (!rc || !rc.cards || !rc.cards.length) return;
@@ -33089,8 +33137,9 @@ setTimeout(_vhsInit, 1200);
                     // En soldayken: Temizle butonuna git
                     const cb = document.getElementById('btnClearRecentChannels');
                     if (cb) {
-                        document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
+                        if (window._clearRemoteFocus) window._clearRemoteFocus();
                         cb.classList.add('remote-focused');
+                        window._lastRemoteFocusedEl = cb;
                         cb.focus({ preventScroll: true });
                     }
                 }
@@ -33418,16 +33467,15 @@ function updateContinueCardsFocus() {
     const currentCard = state.remote.continueCards;
     if (!currentCard || currentCard.cards.length === 0) return;
     
-    // Önceki odakları temizle
-    document.querySelectorAll('.remote-focused').forEach(el => {
-        el.classList.remove('remote-focused');
-    });
+    // Önceki odakları temizle — TVBox-OPT: cache kullan
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
     
     const card = currentCard.cards[currentCard.selectedCardIndex];
     if (!card) return;
     
     // Kartı remote-focused yap
     card.classList.add('remote-focused');
+    window._lastRemoteFocusedEl = card;
     
     // DOM focus ver — kumanda olaylarının ulaşması için zorunlu
     try { card.focus({ preventScroll: true }); } catch(e) {}
@@ -33436,10 +33484,11 @@ function updateContinueCardsFocus() {
     const actionButtons = card.querySelectorAll('.continue-action-btn');
     if (currentCard.selectedButtonIndex >= 0 && actionButtons.length > currentCard.selectedButtonIndex) {
         actionButtons[currentCard.selectedButtonIndex].classList.add('remote-focused');
+        window._lastRemoteFocusedParent = actionButtons[currentCard.selectedButtonIndex];
     } else if (currentCard.selectedButtonIndex === -1) {
         // X butonu seçili → onu highlight et
         const closeBtn = card.querySelector('.continue-options-btn');
-        if (closeBtn) closeBtn.classList.add('remote-focused');
+        if (closeBtn) { closeBtn.classList.add('remote-focused'); window._lastRemoteFocusedParent = closeBtn; }
     }
     
     // Kartı görünür alana getir
@@ -33457,18 +33506,22 @@ function updateContinueCardsFocus() {
     showRemoteHint(`Kaldığın Yerden: ${channelName} (${actionText})`);
 }
 function updateContinueCardsFocusWithClose(card, actionButtons, closeBtn, showClose) {
-    // Tüm focus'ları temizle — hem iç elemanlar hem üst .continue-card'ın kendisi
-    document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
-    document.querySelectorAll('.continue-options-btn.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    // Tüm focus'ları temizle — cache kullan
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
     
     card.classList.add('remote-focused');
+    window._lastRemoteFocusedEl = card;
     
     if (showClose && closeBtn) {
         closeBtn.classList.add('remote-focused');
+        window._lastRemoteFocusedParent = closeBtn;
         closeBtn.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
     } else if (actionButtons && actionButtons.length > 0) {
         const idx = Math.max(0, state.remote.continueCards.selectedButtonIndex);
-        if (actionButtons[idx]) actionButtons[idx].classList.add('remote-focused');
+        if (actionButtons[idx]) {
+            actionButtons[idx].classList.add('remote-focused');
+            window._lastRemoteFocusedParent = actionButtons[idx];
+        }
     }
     
     card.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
@@ -35516,9 +35569,7 @@ function addContinueCardStyles() {
             document.body.style.pointerEvents = '';
             document.body.style.overflow = '';
             document.documentElement.style.pointerEvents = '';
-            document.querySelectorAll('.remote-focused,.dpad-focused').forEach(el => {
-                el.classList.remove('remote-focused','dpad-focused');
-            });
+            if (window._clearRemoteFocus) window._clearRemoteFocus();
 
             // ── 5) Login ekranını aç + yükleme sonrası player'ı yeniden kur ──
             setTimeout(() => {
@@ -35556,9 +35607,7 @@ function addContinueCardStyles() {
                             el.removeAttribute('aria-hidden');
                         });
                         document.body.classList.remove('__umd_modal_open');
-                        document.querySelectorAll('.remote-focused,.dpad-focused').forEach(el => {
-                            el.classList.remove('remote-focused','dpad-focused');
-                        });
+                        if (window._clearRemoteFocus) window._clearRemoteFocus();
 
                         // playerView gizli ve temiz olmalı
                         const pv = document.getElementById('playerView');
@@ -41550,11 +41599,10 @@ function updateEpisodeFocus() {
         // ODAK GÜNCELLE
         const newActive = document.getElementById(visibleElements[state.remote.addM3UIndex]);
         if (newActive) {
-            document.querySelectorAll('.remote-focused').forEach(el => {
-                el.classList.remove('remote-focused');
-            });
+            if (window._clearRemoteFocus) window._clearRemoteFocus();
             
             newActive.classList.add('remote-focused');
+            window._lastRemoteFocusedEl = newActive;
             newActive.focus({ preventScroll: true });
             
             if (newActive.tagName === 'INPUT') {
@@ -41653,11 +41701,10 @@ function handlePasswordModalRemote(e) {
         
         const newActive = document.getElementById(visibleElements[state.remote.passwordModalIndex]);
         if (newActive) {
-            document.querySelectorAll('.remote-focused').forEach(el => {
-                el.classList.remove('remote-focused');
-            });
+            if (window._clearRemoteFocus) window._clearRemoteFocus();
             
             newActive.classList.add('remote-focused');
+            window._lastRemoteFocusedEl = newActive;
             newActive.focus({ preventScroll: true });
             
             if (newActive.tagName === 'INPUT') {
@@ -42213,9 +42260,7 @@ function cleanupContinueModalRemote() {
     }
     
     // Tüm remote-focused class'larını kaldır
-    document.querySelectorAll('.remote-focused').forEach(el => {
-        el.classList.remove('remote-focused');
-    });
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
 }
 
 function handleContinueModalRemote(e) {
@@ -42594,10 +42639,8 @@ function cleanupDeleteContinueModalRemote() {
     }
 }
      function updateSidebarFocus() {
-    // Önceki odak noktalarını temizle
-    document.querySelectorAll('.remote-focused').forEach(el => {
-        el.classList.remove('remote-focused');
-    });
+    // Önceki odak noktalarını temizle — cache kullan
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
     
     const categories = state.sidebar.categories;
     const categoryTabs = document.querySelectorAll('.category-tab');
@@ -42662,6 +42705,7 @@ function cleanupDeleteContinueModalRemote() {
     // Odak noktasını uygula
     if (focusedElement) {
         focusedElement.classList.add('remote-focused');
+        window._lastRemoteFocusedEl = focusedElement; // TVBox-OPT: cache
         
         // Görünür alana getir (input hariç)
         if (focusedElement !== filterInput) {
@@ -43250,9 +43294,9 @@ function handleContinueCardsRemote(e) {
                 } else if (clearBtn) {
                     // ← İlk kartta Devam Et'teyken → Tümünü Temizle'ye geçiş + zone güncelle
                     state.remote.zone = 'clearAllContinue';
-                    document.querySelectorAll('.continue-card, .continue-action-btn, .continue-options-btn')
-                        .forEach(function(el) { el.classList.remove('remote-focused'); });
+                    if (window._clearRemoteFocus) window._clearRemoteFocus();
                     clearBtn.classList.add('remote-focused');
+                    window._lastRemoteFocusedEl = clearBtn;
                     showRemoteHint('Tümünü Temizle (Enter)');
                 }
             }
@@ -43273,9 +43317,9 @@ function handleContinueCardsRemote(e) {
                         updateContinueCardsFocus();
                     } else if (clearBtn) {
                         state.remote.zone = 'clearAllContinue';
-                        document.querySelectorAll('.continue-card, .continue-action-btn, .continue-options-btn')
-                            .forEach(function(el) { el.classList.remove('remote-focused'); });
+                        if (window._clearRemoteFocus) window._clearRemoteFocus();
                         clearBtn.classList.add('remote-focused');
+                        window._lastRemoteFocusedEl = clearBtn;
                         showRemoteHint('Tümünü Temizle (Enter)');
                     }
                 } else if (currentCard.selectedButtonIndex < _cwActionBtns.length - 1) {
@@ -43569,7 +43613,16 @@ function handleFavoriteChannelSelect(key) {
             _skipOvUrf.style.display = 'none';
         }
     }
-    document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    // TVBox-OPT: querySelectorAll YOK — sadece cache'teki elementi temizle
+    if (window._lastRemoteFocusedEl) {
+        window._lastRemoteFocusedEl.classList.remove('remote-focused');
+        window._lastRemoteFocusedEl = null;
+    }
+    // toggle-container gibi parent odakları da temizle (max 1 adet)
+    if (window._lastRemoteFocusedParent) {
+        window._lastRemoteFocusedParent.classList.remove('remote-focused');
+        window._lastRemoteFocusedParent = null;
+    }
     // Hero slider dpad-active temizle (heroSlider zone değilse)
     if (state.remote.zone !== 'heroSlider') {
         const _sl = document.getElementById('vodHeroSlider');
@@ -43628,7 +43681,7 @@ function handleFavoriteChannelSelect(key) {
         hint = '← → Değiştir | OK: Aç/Kapat';
         if (el && (el.type === 'checkbox' || el.type === 'range')) {
             const _tc = el.closest('.toggle-container');
-            if (_tc) _tc.classList.add('remote-focused');
+            if (_tc) { _tc.classList.add('remote-focused'); window._lastRemoteFocusedParent = _tc; }
         }
     }
     else if(state.remote.zone==='header') {
@@ -43725,7 +43778,7 @@ function handleFavoriteChannelSelect(key) {
         hint='← → Değiştir | OK: Aç/Kapat';
         if (el && (el.type === 'checkbox' || el.type === 'range')) {
             const _tc = el.closest('.toggle-container');
-            if (_tc) _tc.classList.add('remote-focused');
+            if (_tc) { _tc.classList.add('remote-focused'); window._lastRemoteFocusedParent = _tc; }
         }
     }
     else if(state.remote.zone==='themeModal') {
@@ -43830,7 +43883,8 @@ function handleFavoriteChannelSelect(key) {
         if (window._isAndroidTV) return; /* Android TV + TV Box: touch kumandayı kapatmasın */
         if (state.remote.active) {
             state.remote.active = false;
-            document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+            // TVBox-OPT: cache kullan, querySelectorAll YOK
+            if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused'); window._lastRemoteFocusedEl = null; }
         }
     }, { passive: true });
     document.addEventListener('mousedown', (e) => {
@@ -43838,7 +43892,8 @@ function handleFavoriteChannelSelect(key) {
         if (e.sourceCapabilities && !e.sourceCapabilities.firesTouchEvents) {
             if (state.remote.active) {
                 state.remote.active = false;
-                document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+                // TVBox-OPT: cache kullan, querySelectorAll YOK
+                if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused'); window._lastRemoteFocusedEl = null; }
             }
         }
     });
@@ -44116,8 +44171,9 @@ function handleFavoriteChannelSelect(key) {
             // Her tuş baskısında kapat butonunun odaklı göründüğünden emin ol
             const btn = document.getElementById('btnCloseEmbed');
             if (btn && !btn.classList.contains('remote-focused')) {
-                document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+                if (window._clearRemoteFocus) window._clearRemoteFocus();
                 btn.classList.add('remote-focused');
+                window._lastRemoteFocusedEl = btn;
                 btn.focus();
             }
         }
@@ -45410,8 +45466,13 @@ function tvNav(key){
     if(key==='ArrowLeft')  idx=Math.max(0,idx-1);
     if(key==='ArrowRight') idx=Math.min(cards.length-1,idx+1);
     st.remote.index=idx;
-    cards.forEach(function(c){c.classList.remove('remote-focused','focused');});
-    if(cards[idx]){ cards[idx].classList.add('remote-focused'); cards[idx].scrollIntoView({behavior:'instant',block:'nearest'}); }
+    // TVBox-OPT: sadece önceki odaklanmış elementi temizle
+    if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused','focused'); }
+    if(cards[idx]){
+        cards[idx].classList.add('remote-focused');
+        window._lastRemoteFocusedEl = cards[idx];
+        cards[idx].scrollIntoView({behavior:'instant',block:'nearest'});
+    }
 }
 
 document.addEventListener('keydown', function(e){
@@ -49498,6 +49559,71 @@ function _favIcons(ch, isFav) {
 .rutbe-yorumcu-sapi  { background:rgba(180,100,255,0.12);border:1px solid rgba(180,100,255,0.35);color:#b464ff; }
 .rutbe-yorumcu-krali { background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.4); color:#FFD700; }
 
+/* ── Takip sistemi ── */
+.upv-follow-btn {
+    display:inline-flex;align-items:center;gap:5px;
+    padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;
+    font-family:'Rajdhani',sans-serif;letter-spacing:0.5px;cursor:pointer;
+    transition:all 0.18s;border:none;outline:none;
+}
+.upv-follow-btn.following {
+    background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.4);color:#FFD700;
+}
+.upv-follow-btn.following:active { background:rgba(255,215,0,0.22); }
+.upv-follow-btn.not-following {
+    background:rgba(255,215,0,0.85);border:1px solid rgba(255,215,0,0.9);color:#000;
+}
+.upv-follow-btn.not-following:active { background:#FFD700; }
+.upv-follow-btn.self-view {
+    display:none;
+}
+.upv-follow-stats {
+    display:flex;gap:12px;margin-top:6px;
+}
+.upv-stat-item {
+    display:flex;flex-direction:column;align-items:center;gap:0px;
+    min-width:44px;
+}
+.upv-stat-num {
+    font-family:'Exo 2',sans-serif;font-weight:700;font-size:14px;color:#fff;line-height:1;
+}
+.upv-stat-label {
+    font-family:'Rajdhani',sans-serif;font-size:9px;color:rgba(255,255,255,0.35);
+    letter-spacing:0.5px;text-transform:uppercase;margin-top:1px;
+}
+.upv-followers-list {
+    padding:0 16px 8px;
+}
+.upv-follower-row {
+    display:flex;align-items:center;gap:8px;padding:7px 0;
+    border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;
+}
+.upv-follower-row:last-child { border-bottom:none; }
+.upv-follower-avatar {
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;overflow:hidden;
+}
+.upv-follower-nick {
+    font-size:12px;font-weight:700;color:rgba(255,215,0,0.85);
+    font-family:'Exo 2',sans-serif;flex:1;
+}
+.upv-tab-bar {
+    display:flex;border-bottom:1px solid rgba(255,255,255,0.07);
+    padding:0 16px;gap:0;
+}
+.upv-tab {
+    padding:8px 14px;font-size:11px;font-weight:700;
+    font-family:'Rajdhani',sans-serif;letter-spacing:0.8px;
+    color:rgba(255,255,255,0.35);cursor:pointer;border-bottom:2px solid transparent;
+    transition:all 0.15s;
+}
+.upv-tab.active {
+    color:#FFD700;border-bottom-color:#FFD700;
+}
+.upv-tab-panel { display:none; }
+.upv-tab-panel.active { display:block; }
+
 /* ── Kullanıcı profil görüntüleme modal ── */
 #userProfileViewModal {
     display:none;position:fixed;inset:0;z-index:9900;
@@ -49565,16 +49691,55 @@ function _favIcons(ch, isFav) {
       <div class="upv-avatar-big" id="upvAvatarBig"></div>
       <div class="upv-info-col">
         <div class="upv-nick" id="upvNick">&#x2014;</div>
-        <div class="upv-meta">
-          <span class="upv-comment-count" id="upvCommentCount"></span>
+        <div class="upv-meta" style="margin-bottom:6px;">
           <span id="upvRutveBadge"></span>
         </div>
+        <div class="upv-follow-stats">
+          <div class="upv-stat-item">
+            <span class="upv-stat-num" id="upvFollowerCount">0</span>
+            <span class="upv-stat-label">Takipçi</span>
+          </div>
+          <div class="upv-stat-item">
+            <span class="upv-stat-num" id="upvFollowingCount">0</span>
+            <span class="upv-stat-label">Takip</span>
+          </div>
+          <div class="upv-stat-item">
+            <span class="upv-stat-num" id="upvCommentCount">0</span>
+            <span class="upv-stat-label">Yorum</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex-shrink:0;">
+        <button class="upv-follow-btn not-following" id="upvFollowBtn" onclick="upvToggleFollow()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Takip Et
+        </button>
       </div>
     </div>
-    <div class="upv-section-title">YORUMLARI</div>
-    <div id="upvReviewsList"></div>
-    <div id="upvReviewsLoading" class="upv-loading">Yorumlar y&#x00FC;kleniyor...</div>
-    <div id="upvReviewsEmpty" class="upv-empty" style="display:none;">Hen&#x00FC;z yorum yapmam&#x0131;&#x015F; &#x1F3AC;</div>
+    <!-- Tab bar -->
+    <div class="upv-tab-bar">
+      <div class="upv-tab active" id="upvTabYorumlar" onclick="upvSwitchTab('yorumlar')">YORUMLAR</div>
+      <div class="upv-tab" id="upvTabTakipciler" onclick="upvSwitchTab('takipciler')">TAKİPÇİLER</div>
+      <div class="upv-tab" id="upvTabTakip" onclick="upvSwitchTab('takip')">TAKİP</div>
+    </div>
+    <!-- Yorumlar paneli -->
+    <div class="upv-tab-panel active" id="upvPanelYorumlar">
+      <div id="upvReviewsList"></div>
+      <div id="upvReviewsLoading" class="upv-loading">Yorumlar yükleniyor...</div>
+      <div id="upvReviewsEmpty" class="upv-empty" style="display:none;">Henüz yorum yapmamış 🎬</div>
+    </div>
+    <!-- Takipçiler paneli -->
+    <div class="upv-tab-panel" id="upvPanelTakipciler">
+      <div id="upvFollowersList" class="upv-followers-list"></div>
+      <div id="upvFollowersEmpty" class="upv-empty" style="display:none;">Henüz takipçisi yok 👥</div>
+      <div id="upvFollowersLoading" class="upv-loading" style="display:none;">Yükleniyor...</div>
+    </div>
+    <!-- Takip edilenler paneli -->
+    <div class="upv-tab-panel" id="upvPanelTakip">
+      <div id="upvFollowingList" class="upv-followers-list"></div>
+      <div id="upvFollowingEmpty" class="upv-empty" style="display:none;">Henüz kimseyi takip etmiyor 👥</div>
+      <div id="upvFollowingLoading" class="upv-loading" style="display:none;">Yükleniyor...</div>
+    </div>
   </div>
 </div>
 
@@ -49737,9 +49902,7 @@ window.openProfileModal = function() {
     if (!modal) return;
 
     // Arkaplandaki tüm remote-focused / dpad-focused temizle — kumanda odağı modalda kalmalı
-    document.querySelectorAll('.remote-focused, .dpad-focused').forEach(function(el) {
-        el.classList.remove('remote-focused', 'dpad-focused');
-    });
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
 
     modal.classList.add('open');
 
@@ -53038,9 +53201,9 @@ window.showControls = function(duration) {
 
     var _origURF = window.updateRemoteFocus;
     window.updateRemoteFocus = function() {
-        // a) Önceki odak kalıntılarını temizle (native QSA — güvenli)
-        var prev = _nativeQSA('.remote-focused');
-        for (var i = 0; i < prev.length; i++) prev[i].classList.remove('remote-focused');
+        // a) TVBox-OPT: querySelectorAll YOK — sadece cache'teki elementi temizle
+        if (window._lastRemoteFocusedEl) { window._lastRemoteFocusedEl.classList.remove('remote-focused'); window._lastRemoteFocusedEl = null; }
+        if (window._lastRemoteFocusedParent) { window._lastRemoteFocusedParent.classList.remove('remote-focused'); window._lastRemoteFocusedParent = null; }
         // a2) continueCards zone dışına çıkınca kart odak kalıntısı temizle
         var zone = window.state && window.state.remote && window.state.remote.zone;
         if (zone !== 'continueCards') {
@@ -55121,9 +55284,17 @@ function vodRenderReview(key, rev, myName) {
     ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
     : '';
 
-  // Avatar: önce Firebase'deki kayıtlı avatar, kendi yorumumsa yerel profil resmi de kontrol et
-  const _fbAvatar = rev.avatar && rev.avatar.startsWith('http') ? rev.avatar : '';
-  const _myLocalAvatar = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
+  // Avatar: önce Firebase'deki kayıtlı avatar
+  // Yoksa: nick veya userId profil adıyla eşleşiyorsa (isMe'den bağımsız) yerel profil resmini kullan
+  const _fbAvatar = rev.avatar && (rev.avatar.startsWith('http') || rev.avatar.startsWith('data:')) ? rev.avatar : '';
+  var _myLocalAvatar = '';
+  if (!_fbAvatar && typeof getProfileAvatarUrl === 'function' && typeof getProfileDisplayName === 'function') {
+    var _profName = getProfileDisplayName();
+    var _revNick = rev.nick || rev.userId || '';
+    if (_profName && _revNick && _revNick.trim().toLowerCase() === _profName.trim().toLowerCase()) {
+      _myLocalAvatar = getProfileAvatarUrl();
+    }
+  }
   const _myLocalAvatarOk = _myLocalAvatar && (_myLocalAvatar.startsWith('http') || _myLocalAvatar.startsWith('data:'));
   const avatarUrl = _fbAvatar || (_myLocalAvatarOk ? _myLocalAvatar : '');
   const hasAvatar = !!avatarUrl;
@@ -55195,7 +55366,37 @@ window.vodSubmitReview = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
-  const _myAvatarForReview = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
+  const _myAvatarRaw = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
+
+  // Avatar'ı Firebase'e uygun hale getir:
+  // http URL ise doğrudan kullan, data: URL ise canvas ile 40x40 JPEG'e sıkıştır
+  async function _prepareAvatarForFb(url) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('data:image/')) {
+      try {
+        return await new Promise(function(resolve) {
+          var img = new Image();
+          img.onload = function() {
+            var c = document.createElement('canvas');
+            c.width = 40; c.height = 40;
+            var ctx = c.getContext('2d');
+            // Kare kırpma
+            var s = Math.min(img.width, img.height);
+            var ox = (img.width - s) / 2, oy = (img.height - s) / 2;
+            ctx.drawImage(img, ox, oy, s, s, 0, 0, 40, 40);
+            resolve(c.toDataURL('image/jpeg', 0.7));
+          };
+          img.onerror = function() { resolve(''); };
+          img.src = url;
+        });
+      } catch(e) { return ''; }
+    }
+    return '';
+  }
+
+  const _myAvatarForReview = await _prepareAvatarForFb(_myAvatarRaw);
+
   const reviewData = {
     userId: userName,
     nick: userName,
@@ -55203,7 +55404,7 @@ window.vodSubmitReview = async function() {
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
     ts: Date.now(),
-    avatar: (_myAvatarForReview && _myAvatarForReview.startsWith('http')) ? _myAvatarForReview : ''
+    avatar: _myAvatarForReview || ''
   };
 
   // Mevcut yorumu sil (güncelleme)
@@ -55667,7 +55868,7 @@ function closeWpLobby_internal() {
 
 function closeWpLobby() {
   document.getElementById('wpLobbyModal').classList.remove('wp-open');
-  document.querySelectorAll('#wpLobbyModal .remote-focused').forEach(el => el.classList.remove('remote-focused'));
+  if (window._clearRemoteFocus) window._clearRemoteFocus();
   // Remote zone'u header'a geri döndür
   if (typeof state !== 'undefined' && state.remote) {
     state.remote.zone = 'header';
@@ -56119,7 +56320,7 @@ window.hideWpPanel = function() {
   panel.classList.remove('wp-open');
   panel.classList.remove('wp-video-mode');
   document.body.classList.remove('wp-panel-open');
-  panel.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+  if (window._clearRemoteFocus) window._clearRemoteFocus();
   // Aktif nokta KALSIN (hâlâ odadayız)
   document.getElementById('wpActiveDot').style.display = 'block';
   const playerView = document.getElementById('playerView');
@@ -56803,7 +57004,7 @@ function handleWpLobbyRemote(e) {
             if (typeof playKeySound === 'function') playKeySound('back');
             return;
         }
-        container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+        if (window._clearRemoteFocus) window._clearRemoteFocus();
         if (typeof closeWpLobby === 'function') closeWpLobby();
         if (typeof playKeySound === 'function') playKeySound('back');
         return;
@@ -56837,9 +57038,10 @@ function handleWpLobbyRemote(e) {
         return;
     } else { return; }
 
-    container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
     const nextEl = focusables[next];
     nextEl.classList.add('remote-focused');
+    window._lastRemoteFocusedEl = nextEl;
     nextEl.focus();
     nextEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     if (typeof playKeySound === 'function') playKeySound('navigate');
@@ -56856,7 +57058,7 @@ function handleWpPanelRemote(e) {
 
     if (isBack) {
         e.preventDefault(); e.stopPropagation(); e._backHandled = true;
-        container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+        if (window._clearRemoteFocus) window._clearRemoteFocus();
         if (typeof hideWpPanel === 'function') hideWpPanel();
         if (typeof playKeySound === 'function') playKeySound('back');
         return;
@@ -56887,8 +57089,9 @@ function handleWpPanelRemote(e) {
         return;
     } else { return; }
 
-    container.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+    if (window._clearRemoteFocus) window._clearRemoteFocus();
     focusables[next].classList.add('remote-focused');
+    window._lastRemoteFocusedEl = focusables[next];
     focusables[next].focus();
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
@@ -59532,31 +59735,208 @@ async function fetchUserAllReviews(userName) {
   return userReviews;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   TAKİP SİSTEMİ — Firebase /follows/{follower}/{following} = true
+   ══════════════════════════════════════════════════════════════ */
+var _upvCurrentUser = ''; // Şu an görüntülenen profil
+var _upvMyName = '';      // Kendi adımız
+var _upvCurrentTab = 'yorumlar';
+
+/* Güvenli anahtar — nokta/diyez/köşeli parantez/$ Firebase'de geçersiz */
+function _upvSafeKey(str) {
+  return (str || '').replace(/[.#$\[\]/]/g, '_').trim() || 'unknown';
+}
+
+/* Firebase helpers */
+async function _upvFbGet(path) {
+  try {
+    var r = await fetch(VOD_REVIEWS_FB + path + '.json');
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function _upvFbSet(path, val) {
+  try {
+    await fetch(VOD_REVIEWS_FB + path + '.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(val)
+    });
+  } catch(e) {}
+}
+async function _upvFbDelete(path) {
+  try {
+    await fetch(VOD_REVIEWS_FB + path + '.json', { method: 'DELETE' });
+  } catch(e) {}
+}
+
+/* Takipçi sayısı */
+async function _upvGetFollowerCount(userName) {
+  var data = await _upvFbGet('/follows_by/' + _upvSafeKey(userName));
+  return data ? Object.keys(data).length : 0;
+}
+/* Takip edilen sayısı */
+async function _upvGetFollowingCount(userName) {
+  var data = await _upvFbGet('/follows_to/' + _upvSafeKey(userName));
+  return data ? Object.keys(data).length : 0;
+}
+/* Takip ediyor mu */
+async function _upvIsFollowing(follower, target) {
+  var v = await _upvFbGet('/follows_by/' + _upvSafeKey(target) + '/' + _upvSafeKey(follower));
+  return !!v;
+}
+
+/* Takip et / bırak toggle */
+window.upvToggleFollow = async function() {
+  if (!_upvMyName || !_upvCurrentUser) return;
+  if (_upvMyName === _upvCurrentUser) return;
+  var btn = document.getElementById('upvFollowBtn');
+  var isFollowing = btn && btn.classList.contains('following');
+
+  if (isFollowing) {
+    // Takibi bırak
+    await _upvFbDelete('/follows_by/' + _upvSafeKey(_upvCurrentUser) + '/' + _upvSafeKey(_upvMyName));
+    await _upvFbDelete('/follows_to/' + _upvSafeKey(_upvMyName) + '/' + _upvSafeKey(_upvCurrentUser));
+    if (btn) {
+      btn.classList.remove('following'); btn.classList.add('not-following');
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Takip Et';
+    }
+    if (typeof showToast === 'function') showToast('Takipten çıkıldı');
+  } else {
+    // Takip et
+    await _upvFbSet('/follows_by/' + _upvSafeKey(_upvCurrentUser) + '/' + _upvSafeKey(_upvMyName), true);
+    await _upvFbSet('/follows_to/' + _upvSafeKey(_upvMyName) + '/' + _upvSafeKey(_upvCurrentUser), true);
+    if (btn) {
+      btn.classList.remove('not-following'); btn.classList.add('following');
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Takip Ediliyor';
+    }
+    if (typeof showToast === 'function') showToast('✅ Takip edildi!');
+  }
+  // Sayıları güncelle
+  _upvRefreshStats();
+};
+
+/* İstatistikleri yenile */
+async function _upvRefreshStats() {
+  var fc = await _upvGetFollowerCount(_upvCurrentUser);
+  var fg = await _upvGetFollowingCount(_upvCurrentUser);
+  var fcEl = document.getElementById('upvFollowerCount');
+  var fgEl = document.getElementById('upvFollowingCount');
+  if (fcEl) fcEl.textContent = fc;
+  if (fgEl) fgEl.textContent = fg;
+}
+
+/* Takipçi/takip listesini render et */
+async function _upvRenderUserList(listEl, emptyEl, loadEl, names) {
+  if (loadEl) loadEl.style.display = 'none';
+  if (!names || names.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  names.forEach(function(nick) {
+    var color = (typeof vrUserColor === 'function') ? vrUserColor(nick) : '#FFD700';
+    var initial = (nick || '?')[0].toUpperCase();
+    var row = document.createElement('div');
+    row.className = 'upv-follower-row';
+    row.innerHTML =
+      '<div class="upv-follower-avatar" style="background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';">'
+      + initial + '</div>'
+      + '<span class="upv-follower-nick">' + nick + '</span>'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.25)" style="flex-shrink:0;"><path d="M8 5v14l11-7z"/></svg>';
+    row.addEventListener('click', function() {
+      closeUserProfileView();
+      setTimeout(function() { openUserProfileView(nick); }, 180);
+    });
+    listEl.appendChild(row);
+  });
+}
+
+/* Tab geçişi */
+window.upvSwitchTab = async function(tab) {
+  _upvCurrentTab = tab;
+  ['yorumlar','takipciler','takip'].forEach(function(t) {
+    var tabEl = document.getElementById('upvTab' + (t.charAt(0).toUpperCase() + t.slice(1)));
+    var panelId = 'upvPanel' + (t.charAt(0).toUpperCase() + t.slice(1));
+    var panel = document.getElementById(panelId);
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
+    if (panel) panel.classList.toggle('active', t === tab);
+  });
+
+  if (tab === 'takipciler') {
+    var listEl   = document.getElementById('upvFollowersList');
+    var emptyEl  = document.getElementById('upvFollowersEmpty');
+    var loadEl   = document.getElementById('upvFollowersLoading');
+    if (listEl && listEl.innerHTML === '') {
+      if (loadEl) loadEl.style.display = 'block';
+      var data = await _upvFbGet('/follows_by/' + _upvSafeKey(_upvCurrentUser));
+      var names = data ? Object.keys(data) : [];
+      await _upvRenderUserList(listEl, emptyEl, loadEl, names);
+    }
+  } else if (tab === 'takip') {
+    var listEl2  = document.getElementById('upvFollowingList');
+    var emptyEl2 = document.getElementById('upvFollowingEmpty');
+    var loadEl2  = document.getElementById('upvFollowingLoading');
+    if (listEl2 && listEl2.innerHTML === '') {
+      if (loadEl2) loadEl2.style.display = 'block';
+      var data2 = await _upvFbGet('/follows_to/' + _upvSafeKey(_upvCurrentUser));
+      var names2 = data2 ? Object.keys(data2) : [];
+      await _upvRenderUserList(listEl2, emptyEl2, loadEl2, names2);
+    }
+  }
+};
+
 window.openUserProfileView = async function(userName) {
   if (!userName) return;
-  var modal   = document.getElementById('userProfileViewModal');
+  var modal = document.getElementById('userProfileViewModal');
   if (!modal) return;
 
   // Arkaplandaki tüm remote-focused / dpad-focused temizle
-  document.querySelectorAll('.remote-focused, .dpad-focused').forEach(function(el) {
-    el.classList.remove('remote-focused', 'dpad-focused');
+  if (window._clearRemoteFocus) window._clearRemoteFocus();
+
+  _upvCurrentUser = userName;
+  _upvMyName = (typeof vrGetUserName === 'function') ? vrGetUserName() : '';
+  _upvCurrentTab = 'yorumlar';
+
+  var nickEl     = document.getElementById('upvNick');
+  var countEl    = document.getElementById('upvCommentCount');
+  var badgeEl    = document.getElementById('upvRutveBadge');
+  var listEl     = document.getElementById('upvReviewsList');
+  var loadEl     = document.getElementById('upvReviewsLoading');
+  var emptyEl    = document.getElementById('upvReviewsEmpty');
+  var avatarEl   = document.getElementById('upvAvatarBig');
+  var followBtn  = document.getElementById('upvFollowBtn');
+  var fcEl       = document.getElementById('upvFollowerCount');
+  var fgEl       = document.getElementById('upvFollowingCount');
+  var flList     = document.getElementById('upvFollowersList');
+  var foList     = document.getElementById('upvFollowingList');
+  var flEmpty    = document.getElementById('upvFollowersEmpty');
+  var foEmpty    = document.getElementById('upvFollowingEmpty');
+
+  if (nickEl)  nickEl.textContent  = userName;
+  if (countEl) countEl.textContent = '...';
+  if (badgeEl) badgeEl.innerHTML   = '';
+  if (listEl)  listEl.innerHTML    = '';
+  if (flList)  flList.innerHTML    = '';
+  if (foList)  foList.innerHTML    = '';
+  if (flEmpty) flEmpty.style.display = 'none';
+  if (foEmpty) foEmpty.style.display = 'none';
+  if (loadEl)  loadEl.style.display  = 'block';
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (fcEl)    fcEl.textContent    = '…';
+  if (fgEl)    fgEl.textContent    = '…';
+
+  // Tab'ları sıfırla
+  ['Yorumlar','Takipciler','Takip'].forEach(function(t) {
+    var te = document.getElementById('upvTab' + t);
+    var pe = document.getElementById('upvPanel' + t);
+    if (te) te.classList.toggle('active', t === 'Yorumlar');
+    if (pe) pe.classList.toggle('active', t === 'Yorumlar');
   });
 
-  var nickEl  = document.getElementById('upvNick');
-  var countEl = document.getElementById('upvCommentCount');
-  var badgeEl = document.getElementById('upvRutveBadge');
-  var listEl  = document.getElementById('upvReviewsList');
-  var loadEl  = document.getElementById('upvReviewsLoading');
-  var emptyEl = document.getElementById('upvReviewsEmpty');
-  var avatarEl= document.getElementById('upvAvatarBig');
-
-  if (nickEl)  nickEl.textContent   = userName;
-  if (countEl) countEl.textContent  = '';
-  if (badgeEl) badgeEl.innerHTML    = '';
-  if (listEl)  listEl.innerHTML     = '';
-  if (loadEl)  loadEl.style.display = 'block';
-  if (emptyEl) emptyEl.style.display= 'none';
-
+  // Avatar başlangıç
   var color = (typeof vrUserColor === 'function') ? vrUserColor(userName) : '#FFD700';
   var initial = userName[0].toUpperCase();
   if (avatarEl) {
@@ -59566,35 +59946,65 @@ window.openUserProfileView = async function(userName) {
     avatarEl.textContent = initial;
   }
 
+  // Takip butonu
+  var isSelf = (_upvMyName && _upvMyName === userName);
+  if (followBtn) {
+    if (isSelf) {
+      followBtn.style.display = 'none';
+    } else {
+      followBtn.style.display = '';
+      followBtn.className = 'upv-follow-btn not-following';
+      followBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Takip Et';
+    }
+  }
+
   modal.classList.add('open');
   if (typeof playKeySound === 'function') playKeySound('click');
 
-  var reviews = await fetchUserAllReviews(userName);
+  // Paralel yükle: yorumlar + istatistikler + takip durumu
+  var [reviews, followerCount, followingCount] = await Promise.all([
+    fetchUserAllReviews(userName),
+    _upvGetFollowerCount(userName),
+    _upvGetFollowingCount(userName)
+  ]);
+
   if (loadEl) loadEl.style.display = 'none';
 
-  // En güncel avatarı Firebase yorumlarından al ve göster
+  // Takip durumu güncelle
+  if (!isSelf && _upvMyName && followBtn) {
+    _upvIsFollowing(_upvMyName, userName).then(function(isF) {
+      if (isF) {
+        followBtn.classList.remove('not-following'); followBtn.classList.add('following');
+        followBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Takip Ediliyor';
+      }
+    });
+  }
+
+  // İstatistikler
+  if (fcEl) fcEl.textContent = followerCount;
+  if (fgEl) fgEl.textContent = followingCount;
+
+  // Avatar (yorumlardan al)
   var _upvFoundAvatar = '';
   for (var ai = 0; ai < reviews.length; ai++) {
-    if (reviews[ai].avatar && reviews[ai].avatar.startsWith('http')) {
-      _upvFoundAvatar = reviews[ai].avatar;
-      break;
+    if (reviews[ai].avatar && (reviews[ai].avatar.startsWith('http') || reviews[ai].avatar.startsWith('data:'))) {
+      _upvFoundAvatar = reviews[ai].avatar; break;
     }
   }
   if (_upvFoundAvatar && avatarEl) {
     avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;'
       + 'background:' + color + '22;border:2px solid ' + color + '55;';
-    avatarEl.innerHTML = '<img src="' + _upvFoundAvatar + '" style="width:100%;height:100%;object-fit:cover;" '
-      + 'alt="' + initial + '" onerror="this.parentNode.style.overflow=\'visible\';this.parentNode.innerHTML=\'<span style=font-size:22px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">';
+    avatarEl.innerHTML = '<img src="' + _upvFoundAvatar + '" style="width:100%;height:100%;object-fit:cover;" alt="' + initial + '" '
+      + 'onerror="this.parentNode.style.cssText=\'width:56px;height:56px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:' + color + '22;border:2px solid ' + color + '55;color:' + color + '\';this.parentNode.textContent=\'' + initial + '\'">';
   }
 
+  // Yorum sayısı & rütbe
   var total = reviews.length;
-  if (countEl) countEl.textContent = total + ' yorum';
-
+  if (countEl) countEl.textContent = total;
   var rutbe = getRutbe(total);
-  if (badgeEl && rutbe) {
-    badgeEl.innerHTML = '<span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span>';
-  }
+  if (badgeEl && rutbe) badgeEl.innerHTML = '<span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span>';
 
+  // Yorumlar listesi
   if (total === 0) { if (emptyEl) emptyEl.style.display = 'block'; return; }
 
   for (var ri = 0; ri < reviews.length; ri++) {
@@ -59640,3 +60050,4 @@ document.addEventListener('keydown', function(e) {
 })();
 
 })(); // UserProfileView IIFE
+

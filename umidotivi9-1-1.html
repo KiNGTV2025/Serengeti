@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=optional" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
     <style>
      
     /* ═══════════════════════════════════════════
@@ -594,15 +594,15 @@
     }
     .ban-link a { color: #FFD700; text-decoration: none; font-weight: 600; }
     .login-focusable.dpad-focused {
-        outline: 2.5px solid rgba(255,215,0,0.95) !important;
-        outline-offset: 3px !important;
-        box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 20px rgba(255,215,0,0.12) !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.70),
+                    0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;
     }
      
     input.login-focusable.dpad-focused {
-        border-color: rgba(255,215,0,0.7) !important;
-        background: rgba(255,215,0,0.07) !important;
-        box-shadow: 0 0 0 3px rgba(255,215,0,0.18) !important;
+        border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.7) !important;
+        background: rgba(var(--accent-primary-rgb,255,215,0), 0.07) !important;
+        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
         outline: none !important;
     }
     </style>
@@ -634,10 +634,9 @@
 .player-action-btn.remote-focused,
 .player-action-btn.focused {
     transform: none !important;
-    box-shadow: none !important;
     transition: none !important;
-    outline: 3px solid var(--accent-primary, #FFD700) !important;
-    background: rgba(255,215,0,0.20) !important;
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
 }
 /* Tüm remote-focused — geçiş yok ama animasyon (dalga) serbest */
 .remote-focused, .focused {
@@ -674,15 +673,14 @@
 .player-actions-row {
     will-change: scroll-position;
 }
-/* focus/hover'da box-shadow yerine outline kullan — shadow GPU paint tetikler */
+/* focus/hover'da box-shadow kullan — glow blink ile uyumlu */
 .header-btn:hover, .header-btn.remote-focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 1px !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.7) !important;
+    outline: none !important;
 }
 .header-btn:focus { outline: none !important; box-shadow: none !important; }
 .header-btn.remote-focused {
-    background: rgba(255,215,0,0.18) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
 }
 </style>
 
@@ -722,13 +720,12 @@
     box-shadow: none !important;
     border-color: var(--accent-primary) !important;
 }
-/* Odak efekti: box-shadow kullan — overflow:hidden'dan etkilenmez, border-radius'u takip eder */
+/* Odak efekti: focusPulse animasyonu — box-shadow sarı hard-kod yok */
 .channel-card.remote-focused,
 .channel-card.focused {
     transform: none !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     transition: none !important;
     will-change: auto !important;
 }
@@ -876,10 +873,8 @@ img {
 .cat-pill.remote-focused,
 .m3u-pill.focused,
 .cat-pill.focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 1px !important;
-    box-shadow: none !important;
-    /* transform: none — kaldırıldı; waveFocus için serbest */
+    outline: none !important;
+    /* transform: none — kaldırıldı; focusEnter için serbest */
     transition: none !important;
 }
 
@@ -920,8 +915,36 @@ img {
 /* ── 14. ODAK RENK GÖSTERGESİ — Hızlı Geri Bildirim ── */
 /* remote-focused sınıfı eklenir eklenmez anında görünsün */
 .remote-focused {
-    outline-color: var(--accent-primary, #FFD700) !important;
-    transition: outline-color 0ms, background-color 60ms linear !important;
+    outline: none !important;
+    transition: background-color 60ms linear !important;
+}
+
+
+/* ── Header El Yazısı Kullanıcı Adı ── */
+#headerUsernameTag {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: 4px;
+    pointer-events: none;
+    user-select: none;
+    min-width: 0;
+    max-width: 120px;
+    overflow: hidden;
+}
+#headerUsernameCurve {
+    display: block;
+    max-width: 120px;
+    height: 28px;
+    transition: opacity 0.4s ease;
+    vertical-align: middle;
+}
+@media (max-width: 480px) {
+    #headerUsernameTag { max-width: 72px; }
+    #headerUsernameCurve { max-width: 72px; height: 24px; }
+}
+@media (max-width: 360px) {
+    #headerUsernameTag { display: none !important; }
 }
 
 /* ═══ SON İZLENENLER — MODERN TV TASARIMI ═══ */
@@ -1058,13 +1081,9 @@ img {
 
 /* Kumanda odağı */
 .recent-card.remote-focused {
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.08) !important;
-    outline: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5) !important;
-    outline-offset: 2px !important;
-    box-shadow:
-        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),0.12),
-        0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.15) !important;
+    outline: none !important;
 }
 
 /* Badge: CANLI / VOD */
@@ -1401,16 +1420,46 @@ img {
    Kumandada odak geçişinde buton büyüyüp küçülür
    scale(1.18) → dalga etkisi — TVBox uyumlu
    ══════════════════════════════════════════════ */
-@keyframes waveFocus {
-    0%   { transform: scale(1);    }
-    35%  { transform: scale(1.18); }
-    65%  { transform: scale(1.13); }
-    100% { transform: scale(1.16); }
+/* ══════════════════════════════════════════════
+   ── 18 + 19. ODAK ANİMASYONU — 1.3 BÜYÜT + TEMA RENGİ YANIP SÖNSİN ──
+   Kumandada odak olan kart/buton 1.3x büyür,
+   seçili tema rengiyle saydam glow olarak yanıp söner.
+   Sarı hard-kod renk yok — tamamen var(--accent-primary) bazlı.
+   ══════════════════════════════════════════════ */
+
+/* Giriş: 1.3'e snap, sonra glow blink */
+@keyframes focusEnter {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.33); }
+    70%  { transform: scale(1.28); }
+    100% { transform: scale(1.3); }
 }
 
-/* Tüm odaklanabilir buton/pill/kart türleri */
+/* Sürekli yanıp sönme — shadow opacity değişimi */
+@keyframes focusPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.85),
+            0 0 14px rgba(var(--accent-primary-rgb, 255,215,0), 0.35);
+    }
+    50% {
+        box-shadow:
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.40),
+            0 0 30px rgba(var(--accent-primary-rgb, 255,215,0), 0.80),
+            0 0 55px rgba(var(--accent-primary-rgb, 255,215,0), 0.30);
+    }
+}
+
+/* Kartlar için — grid kırılmasın diye scale biraz daha kısık */
+@keyframes focusEnterCard {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.14); }
+    70%  { transform: scale(1.09); }
+    100% { transform: scale(1.1); }
+}
+
+/* ── Buton / Pill / Modal öğeleri — 1.3x odak ── */
 .header-btn.remote-focused,
-.player-action-btn.remote-focused,
 .m3u-pill.remote-focused,
 .cat-pill.remote-focused,
 .sidebar-category-pill.remote-focused,
@@ -1443,39 +1492,53 @@ img {
 .login-btn-secondary.dpad-focused,
 .login-btn.focused,
 .login-btn-secondary.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
+    animation:
+        focusEnter 200ms cubic-bezier(0.22,1,0.36,1) forwards,
+        focusPulse 1.4s ease-in-out 200ms infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    will-change: transform, box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
 }
 
-/* Kanal kartı — biraz daha ölçülü büyüsün (grid kırılmasın) */
+/* ── Kanal kartı — ızgara kırılmasın, scale daha kısık ── */
 .channel-card.remote-focused,
 .channel-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.10) !important;
+    animation:
+        focusEnterCard 200ms cubic-bezier(0.22,1,0.36,1) forwards,
+        focusPulse 1.4s ease-in-out 200ms infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    border-color: var(--accent-primary) !important;
+    will-change: transform, box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                0 6px 24px rgba(0,0,0,0.5) !important;
 }
 
-/* VOD episode kart */
+/* ── VOD episode kart ── */
 .vod-episode-card.remote-focused,
 .vod-episode-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.08) !important;
+    animation:
+        focusEnterCard 200ms cubic-bezier(0.22,1,0.36,1) forwards,
+        focusPulse 1.4s ease-in-out 200ms infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    will-change: transform, box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
-    box-shadow: 0 0 0 2px var(--accent-primary, #FFD700) !important;
 }
 
-/* Odak gidince anında sıfırla */
+/* ── Player butonları — scale YOK, sadece glow blink ── */
+.player-action-btn.remote-focused,
+.player-action-btn.focused {
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+    transform: none !important;
+    outline: none !important;
+    will-change: box-shadow !important;
+}
+
+/* ── Odak gidince anında sıfırla ── */
 .channel-card:not(.remote-focused):not(.focused),
 .vod-episode-card:not(.remote-focused):not(.focused) {
     transform: none !important;
@@ -1483,53 +1546,12 @@ img {
     z-index: auto !important;
 }
 
-/* ══════════════════════════════════════════════
-   ── 19. TEMA RENGİNDE YANIP SÖNEN ODAK (BLINK) ──
-   Kumandada odaklanan kart, seçili temanın rengiyle
-   glow olarak yanıp söner — odak asla kaybolmaz
-   ══════════════════════════════════════════════ */
-@keyframes focusBlink {
-    0%,100% { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                          0 0 10px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
-    50%      { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                          0 0 28px rgba(var(--accent-primary-rgb,255,215,0), 0.9),
-                          0 0 50px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
-}
-@keyframes focusBlinkOutline {
-    0%,100% { outline-color: var(--accent-primary, #FFD700); opacity: 1; }
-    50%      { outline-color: var(--accent-primary, #FFD700); opacity: 0.55; }
-}
-
-/* Kanal kartı — tema rengi blink — PC'de aktif, TVBox'ta JS ile override edilir */
-.channel-card.remote-focused,
-.channel-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.10) !important;
-    transform-origin: center center !important;
-    will-change: transform !important;
-    z-index: 2 !important;
-    position: relative !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                0 0 18px rgba(255,215,0,0.45) !important;
-}
-
-/* Buton/pill odağı — outline blink — PC'de aktif, TVBox'ta JS ile override edilir */
-.header-btn.remote-focused,
-.player-action-btn.remote-focused,
-.m3u-pill.remote-focused,
-.cat-pill.remote-focused,
-.sidebar-category-pill.remote-focused,
-.category-list-item.remote-focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-}
-
-/* Odak KORUNUMU — remote-focused class varken outline hiç kaybolmasın */
+/* ── Genel odak koruması — outline YOK, sadece blink ── */
 .remote-focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 2px !important;
+    outline: none !important;
 }
 .channel-card.remote-focused {
-    outline: none !important; /* kanal kartı box-shadow kullanıyor */
+    outline: none !important;
 }
 
 </style>
@@ -2237,12 +2259,11 @@ body {
  
 #btnCloseEmbed.remote-focused,
 #btnCloseEmbed:focus {
-    outline: 3px solid #FFD700 !important;
-    outline-offset: 3px !important;
-    background: rgba(255,215,0,0.35) !important;
-    border-color: #FFD700 !important;
-    color: #FFD700 !important;
-    box-shadow: none !important;
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80) !important;
     transform: none !important;
 }
 
@@ -2262,8 +2283,8 @@ body {
     transform: none !important;
 }
 #vodInfoScroll.remote-focused {
-    outline: 2px solid rgba(255,215,0,0.5) !important;
-    outline-offset: 4px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
     border-radius: 8px !important;
 }
 
@@ -2370,9 +2391,8 @@ body {
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-             
             filter: drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15);
-            animation: none !important;  
+            /* animasyon JS RAF ile yönetilir — CSS animation yok */
         }
 
          
@@ -2385,8 +2405,8 @@ body {
          
         body.low-performance-mode .neon-logo-img,
         body.fast-mode .neon-logo-img {
-            animation: none !important;  
-            filter: drop-shadow(0 0 5px var(--accent-primary)) brightness(1.12) !important;
+            /* RAF animasyonu JS tarafında low-perf modda yavaşlatılır */
+            filter: drop-shadow(0 0 5px var(--accent-primary)) brightness(1.12);
         }
         
         .header-controls {
@@ -4126,9 +4146,9 @@ body {
     transform:translateY(-1px);
 }
 .vhs-btn-info.remote-focused {
-    outline:3px solid #FFD700 !important; outline-offset:3px;
+    outline: none !important;
     background:rgba(255,255,255,0.22);
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.2) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 12px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;
     transform:scale(1.05);
 }
 @media (max-width:480px) {
@@ -4925,10 +4945,10 @@ body {
 }
  
 .sub-adj-btn.sub-dpad-focused {
-    background: rgba(255,215,0,0.35) !important;
-    border-color: #FFD700 !important;
-    outline: 2px solid #FFD700;
-    box-shadow: none;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    border-color: var(--accent-primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85);
     transform: none !important;
 }
 .sub-adj-btn.sub-adj-reset {
@@ -4980,7 +5000,8 @@ body {
     background: rgba(255, 215, 0, 0.15) !important;
     border-color: var(--accent-primary) !important;
     animation: none !important;  
-    outline: 2px solid rgba(255,215,0,0.5) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
 }
 #btnPlayerFav.fav-active .material-symbols-outlined {
     color: var(--accent-primary) !important;
@@ -5262,12 +5283,12 @@ body {
         .brightness-indicator .ind-icon-wrap {
             width: 40px; height: 40px;
             border-radius: 50%;
-            background: rgba(80,200,120,0.12);
-            border: 1.5px solid rgba(80,200,120,0.4);
+            background: rgba(var(--accent-primary-rgb,255,215,0),0.12);
+            border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);
             display: flex; align-items: center; justify-content: center;
         }
         .brightness-indicator .indicator-icon {
-            font-size: 20px; color: #50c878;
+            font-size: 20px; color: var(--accent-primary, #FFD700);
             margin: 0;
         }
         .brightness-indicator .ind-bar-wrap {
@@ -5282,7 +5303,7 @@ body {
         }
         .brightness-indicator .ind-bar-fill {
             width: 100%;
-            background: linear-gradient(to top, #50c878, #a8ffba);
+            background: linear-gradient(to top, var(--accent-primary, #FFD700), color-mix(in srgb, var(--accent-primary, #FFD700) 60%, white));
             border-radius: 18px;
             transition: height 0.12s ease;
             min-height: 4px;
@@ -5291,8 +5312,8 @@ body {
             font-family: 'Orbitron', 'Rajdhani', sans-serif;
             font-size: 13px;
             font-weight: 800;
-            color: #50c878;
-            text-shadow: 0 0 10px rgba(80,200,120,0.5);
+            color: var(--accent-primary, #FFD700);
+            text-shadow: 0 0 10px rgba(var(--accent-primary-rgb,255,215,0),0.5);
         }
 
         /* Ses — sağ alt köşe */
@@ -5305,8 +5326,9 @@ body {
             align-items: center;
             gap: 10px;
             z-index: 9998;
-            pointer-events: none;
+            pointer-events: auto;
             animation: indicator-slidein-right 0.22s cubic-bezier(0.22,1,0.36,1) both;
+            cursor: pointer;
         }
         .volume-indicator .ind-label {
             font-family: 'Rajdhani', sans-serif;
@@ -5319,12 +5341,12 @@ body {
         .volume-indicator .ind-icon-wrap {
             width: 40px; height: 40px;
             border-radius: 50%;
-            background: rgba(255,215,0,0.12);
-            border: 1.5px solid rgba(255,215,0,0.45);
+            background: rgba(var(--accent-secondary-rgb,255,215,0),0.12);
+            border: 1.5px solid rgba(var(--accent-secondary-rgb,255,215,0),0.45);
             display: flex; align-items: center; justify-content: center;
         }
         .volume-indicator .indicator-icon {
-            font-size: 20px; color: var(--accent-primary, #FFD700);
+            font-size: 20px; color: var(--accent-secondary, #FFD700);
             margin: 0;
         }
         .volume-indicator .ind-bar-wrap {
@@ -5339,7 +5361,7 @@ body {
         }
         .volume-indicator .ind-bar-fill {
             width: 100%;
-            background: linear-gradient(to top, #FFD700, #fff176);
+            background: linear-gradient(to top, var(--accent-secondary, #FFD700), color-mix(in srgb, var(--accent-secondary, #FFD700) 60%, white));
             border-radius: 18px;
             transition: height 0.12s ease;
             min-height: 4px;
@@ -5348,8 +5370,8 @@ body {
             font-family: 'Orbitron', 'Rajdhani', sans-serif;
             font-size: 13px;
             font-weight: 800;
-            color: var(--accent-primary, #FFD700);
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            color: var(--accent-secondary, #FFD700);
+            text-shadow: 0 0 10px rgba(var(--accent-secondary-rgb,255,215,0),0.5);
         }
 
         /* Çözünürlük — ortada küçük pill */
@@ -10745,19 +10767,18 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
 <!-- ═══ ÜMİT TV — MODERN TV LOGIN v2.0 ═══ -->
 <style>
-/* Kumanda odak: altın halka + parlama */
+/* Kumanda odak: tema rengi halka + parlama */
 #loginOverlay .login-focusable.dpad-focused,
 #loginOverlay .login-focusable:focus {
-    outline: 2.5px solid #FFD700 !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
 }
 #loginOverlay input.login-focusable.dpad-focused,
 #loginOverlay input.login-focusable:focus {
-    border-color: rgba(255,215,0,0.65) !important;
-    background: rgba(255,215,0,0.06) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.06) !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.18), 0 0 16px rgba(255,215,0,0.1) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.18), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.10) !important;
 }
 /* Kumanda gezinme ipucu - TV'ye yakışır */
 .tv-nav-hint {
@@ -11227,9 +11248,8 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .tut-btn-next.tut-dpad,
 .tut-btn-back.tut-dpad,
 .tut-btn-skip.tut-dpad {
-    outline: 2.5px solid rgba(255,215,0,0.95) !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.18), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.15) !important;
     transition: none !important;
 }
 .tut-btn-next.tut-dpad {
@@ -13638,6 +13658,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;" tabindex="-1">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
+            <div id="headerUsernameTag" style="display:flex;align-items:center;pointer-events:none;user-select:none;flex-shrink:0;margin-left:4px;">
+                <canvas id="headerUsernameCurve" width="0" height="28" style="display:block;opacity:0;transition:opacity 0.4s ease;vertical-align:middle;"></canvas>
+            </div>
 
         </div>
         </header>
@@ -14193,7 +14216,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="touch-zone-indicator" id="touchZoneCenter"></div>
 
     
-    <div class="volume-indicator" id="volumeIndicator">
+    <div class="volume-indicator" id="volumeIndicator" onclick="toggleVideoMute()" style="cursor:pointer;" title="Sesi Aç/Kapat">
         <div class="ind-label">SES</div>
         <div class="ind-icon-wrap">
             <span class="material-symbols-outlined indicator-icon" id="volumeIcon">volume_up</span>
@@ -14512,6 +14535,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                         <button class="player-action-btn" id="btnSubtitle" onclick="toggleSubtitleModal()" title="Altyazı & Ses">
                             <span class="material-symbols-outlined">closed_caption</span>
                             <span class="btn-label">Altyazı</span>
+                        </button>
+                        <button class="player-action-btn" id="btnMuteToggle" onclick="toggleVideoMute()" title="Sesi Aç/Kapat">
+                            <span class="material-symbols-outlined" id="muteToggleIcon">volume_up</span>
+                            <span class="btn-label" id="muteToggleLabel">Ses</span>
                         </button>
                         
                         <button class="player-action-btn" id="btnHideLiveProgress" onclick="toggleLiveProgressBar()" title="Canlı'da Progress Bar Gizle/Göster" style="display:none;">
@@ -17289,7 +17316,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -17405,7 +17432,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
         
         
 
@@ -22068,8 +22095,8 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
                 state.remote.vodEpisodeIndex = 0;
                 const focusEl = els[targetIdx];
                 focusEl.classList.add('remote-focused', 'tv-focused', 'focused');
-                focusEl.style.outline = '4px solid var(--accent-primary, #FFD700)';
-                focusEl.style.boxShadow = getComputedStyle(document.documentElement).getPropertyValue('--focus-glow').trim() || '0 0 20px rgba(255,215,0,0.6)';
+                focusEl.style.outline = '';
+                focusEl.style.boxShadow = '';
                 focusEl.scrollIntoView({ behavior: 'auto', block: 'nearest' });
                 focusEl.focus({ preventScroll: true });
             }
@@ -22322,14 +22349,18 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
         var textarea = document.getElementById('vodReviewInput');
         var btn = document.querySelector('[onclick="vodSubmitReview()"]');
 
-        if (stars) stars.style.outline = zone === 'stars' ? '2px solid #FFD700' : 'none';
+        if (stars) {
+            stars.style.outline = '';
+            stars.style.boxShadow = zone === 'stars' ? '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.80)' : '';
+        }
         if (textarea) {
-            textarea.style.borderColor = zone === 'textarea' ? '#FFD700' : 'rgba(255,255,255,0.1)';
-            textarea.style.outline = zone === 'textarea' ? '2px solid rgba(255,215,0,0.4)' : 'none';
+            textarea.style.borderColor = zone === 'textarea' ? 'var(--accent-primary,#FFD700)' : 'rgba(255,255,255,0.1)';
+            textarea.style.outline = '';
+            textarea.style.boxShadow = zone === 'textarea' ? '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.35)' : '';
         }
         if (btn) {
             btn.style.transform = zone === 'submit' ? 'scale(1.08)' : '';
-            btn.style.boxShadow = zone === 'submit' ? '0 0 14px rgba(255,215,0,0.5)' : '';
+            btn.style.boxShadow = zone === 'submit' ? '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.40)' : '';
         }
     }
 
@@ -24443,14 +24474,35 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         window.stopResolutionMonitoring = stopResolutionMonitoring;
 
         // SES, ÇÖZÜNÜRLÜK ve PARLAKLIK GÖSTERGELERİ
+        // Yardımcı: CSS değişkeninden renk al
+        function _getThemeColor(varName, fallback) {
+            var r = document.documentElement;
+            return (r.style.getPropertyValue(varName) || getComputedStyle(r).getPropertyValue(varName) || '').trim() || fallback;
+        }
+
         function showVolumeIndicator(volume) {
             var indicator = document.getElementById('volumeIndicator');
             var pct = Math.round(volume * 100);
             document.getElementById('volumeValue').textContent = pct + '%';
             var fill = document.getElementById('volumeBarFill');
-            if (fill) fill.style.height = Math.max(2, pct) + '%';
+            // Bar rengi: --accent-secondary (Galatasaray'da kırmızı)
+            var secColor = _getThemeColor('--accent-secondary', '#FFD700');
+            if (fill) {
+                fill.style.height = Math.max(2, pct) + '%';
+                fill.style.background = 'linear-gradient(to top, ' + secColor + ', ' + secColor + 'aa)';
+            }
             var icon = document.getElementById('volumeIcon');
-            if (icon) icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
+            if (icon) {
+                icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
+                icon.style.color = secColor;
+            }
+            var val = document.getElementById('volumeValue');
+            if (val) val.style.color = secColor;
+            var iconWrap = indicator.querySelector('.ind-icon-wrap');
+            if (iconWrap) {
+                iconWrap.style.background = 'rgba(' + _getThemeColor('--accent-secondary-rgb','255,215,0') + ',0.15)';
+                iconWrap.style.borderColor = 'rgba(' + _getThemeColor('--accent-secondary-rgb','255,215,0') + ',0.5)';
+            }
             indicator.style.animation = 'none';
             indicator.offsetHeight;
             indicator.style.animation = '';
@@ -24461,17 +24513,57 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             }, 1800);
         }
 
+        /* ── SES İKONU DOKUNMA: Mute Aç/Kapat ── */
+        window.toggleVideoMute = function() {
+            var video = document.getElementById('videoPlayer');
+            if (!video) return;
+            var muteIcon   = document.getElementById('muteToggleIcon');
+            var muteLabel  = document.getElementById('muteToggleLabel');
+            var volIcon    = document.getElementById('volumeIcon');
+            var btn        = document.getElementById('btnMuteToggle');
+
+            if (video.muted || video.volume === 0) {
+                video.muted = false;
+                if (video.volume === 0) video.volume = 0.8;
+                var iconName = video.volume < 0.4 ? 'volume_down' : 'volume_up';
+                if (muteIcon)  muteIcon.textContent  = iconName;
+                if (muteLabel) muteLabel.textContent = 'Ses';
+                if (volIcon)   volIcon.textContent   = iconName;
+                if (btn) btn.classList.remove('btn-active');
+                if (typeof showToast === 'function') showToast('🔊 Ses Açık');
+            } else {
+                video.muted = true;
+                if (muteIcon)  muteIcon.textContent  = 'volume_off';
+                if (muteLabel) muteLabel.textContent = 'Sessiz';
+                if (volIcon)   volIcon.textContent   = 'volume_off';
+                if (btn) btn.classList.add('btn-active');
+                if (typeof showToast === 'function') showToast('🔇 Ses Kapalı');
+            }
+        };
+
         function showBrightnessIndicator(brightness) {
             var indicator = document.getElementById('brightnessIndicator');
             var pct = Math.round(brightness);
             document.getElementById('brightnessValue').textContent = pct + '%';
-            // Bar fill
             var fill = document.getElementById('brightnessBarFill');
-            if (fill) fill.style.height = Math.max(2, pct) + '%';
-            // Icon: dim vs mid vs bright
+            // Bar rengi: --accent-primary (Galatasaray'da sarı)
+            var primColor = _getThemeColor('--accent-primary', '#FFD700');
+            if (fill) {
+                fill.style.height = Math.max(2, pct) + '%';
+                fill.style.background = 'linear-gradient(to top, ' + primColor + ', ' + primColor + 'aa)';
+            }
             var icon = document.getElementById('brightnessIcon');
-            if (icon) icon.textContent = pct < 30 ? 'brightness_2' : pct < 65 ? 'brightness_5' : 'brightness_7';
-            // Reset animation
+            if (icon) {
+                icon.textContent = pct < 30 ? 'brightness_2' : pct < 65 ? 'brightness_5' : 'brightness_7';
+                icon.style.color = primColor;
+            }
+            var val = document.getElementById('brightnessValue');
+            if (val) val.style.color = primColor;
+            var iconWrap = indicator.querySelector('.ind-icon-wrap');
+            if (iconWrap) {
+                iconWrap.style.background = 'rgba(' + _getThemeColor('--accent-primary-rgb','255,215,0') + ',0.15)';
+                iconWrap.style.borderColor = 'rgba(' + _getThemeColor('--accent-primary-rgb','255,215,0') + ',0.5)';
+            }
             indicator.style.animation = 'none';
             indicator.offsetHeight; // reflow
             indicator.style.animation = '';
@@ -40268,6 +40360,11 @@ function updateSidebarFavIcons(channelName) {
             localStorage.setItem('theme', id); 
             playKeySound('confirm');
             closeThemeModal();
+            /* Tema değişince header kullanıcı adı rengini güncelle */
+            setTimeout(function() {
+                if (typeof updateHeaderUsername === 'function') updateHeaderUsername();
+                if (typeof startLogoGlow === 'function') startLogoGlow();
+            }, 60);
         }
         
         function darkenColor(color, factor) {
@@ -40691,18 +40788,19 @@ function _updateSearchRemoteFocus() {
 
     focusEl.classList.add('remote-focused', 'search-remote-focused');
     if (focusEl.tagName === 'INPUT') {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
-        focusEl.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.25)';
+        focusEl.style.outline = '';
+        focusEl.style.borderColor = 'var(--accent-primary)';
+        focusEl.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.30)';
     } else if (focusEl.classList.contains('toggle-container') || focusEl.id === 'vodToggleContainer' || focusEl.id === 'liveToggleContainer') {
-        focusEl.style.outline = '2px solid var(--accent-primary, #FFD700)';
-        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
     } else if (focusEl.classList.contains('search-result-item')) {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.background = 'rgba(255,215,0,0.15)';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
+        focusEl.style.background = 'rgba(var(--accent-primary-rgb,255,215,0), 0.12)';
     } else {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.outlineOffset = '2px';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
     }
     try { focusEl.focus({ preventScroll: true }); } catch(e) {}
     focusEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
@@ -41414,8 +41512,8 @@ function deleteContinueWatchingRecord(name) {
             el.style.boxShadow = '';
         });
         newEl.classList.add('remote-focused', 'tv-focused');
-        newEl.style.outline = '4px solid #FFD700';
-        newEl.style.boxShadow = '0 0 20px #FFD700';
+        newEl.style.outline = '';
+        newEl.style.boxShadow = '';
         newEl.focus({ preventScroll: false });
         // vodInfoScroll'a odaklanırken scrollIntoView yapma (zaten scroll alanının içi kayıyor)
         if (newEl.id !== 'vodInfoScroll') {
@@ -45806,8 +45904,9 @@ s.textContent=`
 .player-action-btn.remote-focused,
 .player-action-btn.focused {
   outline: 3px solid var(--accent-primary, #FFD700) !important;
-  filter: drop-shadow(0 0 6px var(--accent-primary, #FFD700)) !important;
+  filter: none !important;
   transform: none !important;
+  animation: none !important;
 }
 `;
 document.head.appendChild(s);
@@ -46140,18 +46239,17 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
         /* ── TV Box odak ── */
         .tv-focused {
-            outline: 4px solid #FFD700 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 20px #FFD700 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.40) !important;
             border-radius: 8px !important;
             z-index: 10 !important;
         }
         .vod-season-btn.tv-focused {
-            background: #FFD700 !important;
+            background: var(--accent-primary) !important;
             color: #000 !important;
         }
         .vod-episode-card.tv-focused {
-            background: rgba(255, 215, 0, 0.25) !important;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
             border-color: #FFD700 !important;
         }
     `;
@@ -47842,8 +47940,8 @@ function updateSubtitleDpad() {
     if (target.type === 'btn') {
         // Butonu vurgula + bağlı satırı hafifçe göster
         target.el.classList.add('sub-dpad-focused');
-        target.el.style.outline = '2px solid var(--accent-primary, #FFD700)';
-        target.el.style.boxShadow = '0 0 8px rgba(255,215,0,0.5)';
+        target.el.style.outline = '';
+        target.el.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 10px rgba(var(--accent-primary-rgb,255,215,0), 0.35)';
         target.row.classList.add('remote-focused');
     } else {
         target.el.classList.add('remote-focused');
@@ -48345,8 +48443,8 @@ document.addEventListener('umittv_channels_ready', function() {
         if (!el) return;
         _clearFocus();
         el.classList.add('remote-focused','tv-focused','focused');
-        el.style.outline = '3px solid #FFD700';
-        el.style.boxShadow = '0 0 15px rgba(255,215,0,0.5)';
+        el.style.outline = '';
+        el.style.boxShadow = '';
         el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
         try { el.focus({ preventScroll: true }); } catch(e) {}
     }
@@ -48446,19 +48544,19 @@ document.addEventListener('umittv_channels_ready', function() {
         const scrollUpBtn = document.getElementById('vodScrollUpBtn');
 
         // Tümünü sıfırla
-        if (starPicker) starPicker.style.outline = 'none';
-        if (textarea) { textarea.style.borderColor = 'rgba(255,255,255,0.1)'; textarea.style.outline = 'none'; }
+        if (starPicker) { starPicker.style.outline = ''; starPicker.style.boxShadow = ''; }
+        if (textarea) { textarea.style.borderColor = 'rgba(255,255,255,0.1)'; textarea.style.outline = ''; textarea.style.boxShadow = ''; }
         if (btn) { btn.style.transform = ''; btn.style.boxShadow = ''; btn.style.outline = ''; }
         if (scrollUpBtn) { scrollUpBtn.style.transform = ''; scrollUpBtn.style.boxShadow = ''; scrollUpBtn.style.outline = ''; }
 
         if (zone === 'stars') {
-            if (starPicker) { starPicker.style.outline = '3px solid #FFD700'; starPicker.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (starPicker) { starPicker.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8)'; starPicker.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'textarea') {
-            if (textarea) { textarea.style.borderColor = '#FFD700'; textarea.style.outline = '3px solid rgba(255,215,0,0.4)'; textarea.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (textarea) { textarea.style.borderColor = 'var(--accent-primary,#FFD700)'; textarea.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.3)'; textarea.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'submit') {
-            if (btn) { btn.style.outline = '3px solid #FFD700'; btn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (btn) { btn.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.4)'; btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'scrollup') {
-            if (scrollUpBtn) { scrollUpBtn.style.outline = '3px solid #FFD700'; scrollUpBtn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; scrollUpBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (scrollUpBtn) { scrollUpBtn.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.4)'; scrollUpBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         }
 
         // Hint güncelle
@@ -48646,7 +48744,7 @@ document.addEventListener('umittv_channels_ready', function() {
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                     // Yıldız outline'ı koru (vodPickStar sıfırlamaz)
                     const sp = document.getElementById('vodStarPicker');
-                    if (sp) sp.style.outline = '3px solid #FFD700';
+                    if (sp) { sp.style.outline = ''; sp.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80)'; }
                 }
                 break;
 
@@ -48672,7 +48770,7 @@ document.addEventListener('umittv_channels_ready', function() {
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                     // Yıldız outline'ı koru
                     const sp2 = document.getElementById('vodStarPicker');
-                    if (sp2) sp2.style.outline = '3px solid #FFD700';
+                    if (sp2) { sp2.style.outline = ''; sp2.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80)'; }
                 }
                 break;
 
@@ -49335,7 +49433,8 @@ _ready(function() {
         '}',
         '/* remote-focused outline */',
         '#progressBarContainer.remote-focused {',
-        '    outline: 3px solid rgba(255,215,0,0.6) !important;',
+        '    outline: none !important;',
+        '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;',
         '    border-radius: 6px !important;',
         '    height: 10px !important;',
         '}',
@@ -49731,8 +49830,8 @@ function _favIcons(ch, isFav) {
 .profile-save-btn:hover { filter: brightness(1.08); }
 .profile-save-btn:active { filter: brightness(0.95); }
 .profile-save-btn.remote-focused, .profile-save-btn.dpad-focused {
-    outline: 3px solid rgba(255,215,0,0.9) !important;
-    outline-offset: 3px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80) !important;
 }
 
 /* ── Header Avatar küçük ── */
@@ -49830,17 +49929,18 @@ function _favIcons(ch, isFav) {
 }
 .upv-dpad-item.upv-dpad-focused,
 .upv-dpad-item.remote-focused {
-    background:rgba(255,215,0,0.07) !important;
-    border-color:rgba(255,215,0,0.35) !important;
-    outline:2px solid rgba(255,215,0,0.5);
+    background:rgba(var(--accent-primary-rgb,255,215,0), 0.07) !important;
+    border-color:rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55);
 }
 .upv-close.upv-dpad-focused,
 .upv-close.remote-focused {
-    background:rgba(255,215,0,0.18) !important;
-    border-color:rgba(255,215,0,0.5) !important;
-    color:#FFD700 !important;
-    outline:2px solid rgba(255,215,0,0.7);
-    outline-offset:2px;
+    background:rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
+    border-color:rgba(var(--accent-primary-rgb,255,215,0), 0.5) !important;
+    color: var(--accent-primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75);
 }
 </style>
 
@@ -50079,6 +50179,175 @@ window.getProfileAvatarUrlAsync = async function() {
     return await _profAvatarIDB.get();
 };
 
+/* ── Header username tag güncelle (el yazısı, tema rengi) ── */
+/* ── Header kullanıcı adı — Canvas tabanlı, tema renkli, yanıp sönen ── */
+(function() {
+    var _unameRaf = null;
+    var _unamePhase = 0;
+    var _unameLastName = '';
+    var _unameLastP = '';
+    var _unameLastS = '';
+
+    function _h2rgb(hex) {
+        hex = (hex || '#FFD700').replace('#','').trim();
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        if (hex.length !== 6) return [255,215,0];
+        return [parseInt(hex.substring(0,2),16), parseInt(hex.substring(2,4),16), parseInt(hex.substring(4,6),16)];
+    }
+    function _mix(h1, h2, t) {
+        var a=_h2rgb(h1), b=_h2rgb(h2);
+        return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')';
+    }
+    function _bright(h, t) {
+        var c=_h2rgb(h);
+        return 'rgb('+Math.round(c[0]+(255-c[0])*t)+','+Math.round(c[1]+(255-c[1])*t)+','+Math.round(c[2]+(255-c[2])*t)+')';
+    }
+
+    function _drawFrame() {
+        var canvas = document.getElementById('headerUsernameCurve');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        var name = _unameLastName;
+        var p = _unameLastP || '#FFD700';
+        var s = _unameLastS || '#F1C40F';
+
+        _unamePhase += 0.018;
+        var pulse = 0.5 + 0.5 * Math.sin(_unamePhase);
+
+        var dpr = window.devicePixelRatio || 1;
+        var h = 30, fontSize = 17;
+        ctx.font = 'bold '+fontSize+'px \"Caveat\",\"Dancing Script\",\"Segoe Script\",cursive';
+        var textW = ctx.measureText(name).width;
+        var w = Math.min(Math.ceil(textW + 10), 130);
+
+        if (canvas.width !== Math.round(w*dpr) || canvas.height !== Math.round(h*dpr)) {
+            canvas.width  = Math.round(w*dpr);
+            canvas.height = Math.round(h*dpr);
+            canvas.style.width  = w+'px';
+            canvas.style.height = h+'px';
+            ctx.scale(dpr, dpr);
+        }
+        ctx.clearRect(0,0,w,h);
+        ctx.save();
+        ctx.translate(w/2,h/2); ctx.rotate(-0.05); ctx.translate(-w/2,-h/2);
+
+        var gradC1 = pulse>0.5 ? _bright(p,(pulse-0.5)*0.6) : _mix(p,s,(0.5-pulse)*1.2);
+        var gradC2 = pulse>0.5 ? _bright(s,(pulse-0.5)*0.4) : _mix(s,p,(0.5-pulse)*0.8);
+        var gradC3 = _bright(p, pulse*0.5);
+        var grd = ctx.createLinearGradient(0,0,w,0);
+        grd.addColorStop(0, gradC1);
+        grd.addColorStop(0.5, gradC3);
+        grd.addColorStop(1, gradC2);
+
+        var rgb = _h2rgb(p);
+        var glowA = 0.3 + pulse*0.55;
+        ctx.shadowColor = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+glowA+')';
+        ctx.shadowBlur  = 4 + pulse*10;
+        ctx.font = 'bold '+fontSize+'px \"Caveat\",\"Dancing Script\",\"Segoe Script\",cursive';
+        ctx.fillStyle = grd;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name, 4, h/2);
+        ctx.restore();
+
+        _unameRaf = requestAnimationFrame(_drawFrame);
+    }
+
+    window.updateHeaderUsername = function() {
+        var canvas = document.getElementById('headerUsernameCurve');
+        if (!canvas) return;
+        var name = localStorage.getItem('umittv_profile_name') || (typeof getProfileDisplayName==='function' ? getProfileDisplayName() : '') || '';
+        if (!name) {
+            canvas.style.opacity='0';
+            if(_unameRaf){ cancelAnimationFrame(_unameRaf); _unameRaf=null; }
+            return;
+        }
+        var root = document.documentElement;
+        _unameLastP = (root.style.getPropertyValue('--accent-primary')||getComputedStyle(root).getPropertyValue('--accent-primary')||'#FFD700').trim();
+        _unameLastS = (root.style.getPropertyValue('--accent-secondary')||getComputedStyle(root).getPropertyValue('--accent-secondary')||'#F1C40F').trim();
+        _unameLastName = name;
+        canvas.style.opacity = '1';
+        if (!_unameRaf) _drawFrame();
+    };
+})();
+
+/* ── Header Logo — RAF tabanlı tema renkli yanıp sönme ── */
+(function() {
+    var _logoRaf = null;
+    var _logoPhase = 0;
+    var _logoP = '#FFD700';
+    var _logoS = '#F1C40F';
+    var _logoRgb = '255,215,0';
+
+    function _h2rgb(hex) {
+        hex = (hex || '#FFD700').replace('#','').trim();
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        if (hex.length !== 6) return [255,215,0];
+        return [parseInt(hex.substring(0,2),16), parseInt(hex.substring(2,4),16), parseInt(hex.substring(4,6),16)];
+    }
+
+    function _logoFrame() {
+        var logo = document.querySelector('.neon-logo-img');
+        if (!logo) { _logoRaf = null; return; }
+
+        _logoPhase += 0.022;
+        /* 0→1→0  ~2.8s periyot */
+        var pulse = 0.5 + 0.5 * Math.sin(_logoPhase);
+
+        /* Glow büyüklüğü: 4px → 18px */
+        var glow1 = Math.round(3 + pulse * 10);
+        var glow2 = Math.round(8 + pulse * 20);
+        /* Brightness: 1.05 → 1.30 */
+        var bright = (1.05 + pulse * 0.25).toFixed(3);
+        /* Opacity: 0.82 → 1.0 */
+        var opac = (0.82 + pulse * 0.18).toFixed(3);
+
+        /* İki rengi pulse'a göre karıştır */
+        var rgb1 = _h2rgb(_logoP);
+        var rgb2 = _h2rgb(_logoS);
+        var r = Math.round(rgb1[0] + (rgb2[0]-rgb1[0]) * pulse);
+        var g = Math.round(rgb1[1] + (rgb2[1]-rgb1[1]) * pulse);
+        var b = Math.round(rgb1[2] + (rgb2[2]-rgb1[2]) * pulse);
+        var glowColor = 'rgba('+r+','+g+','+b+',0.9)';
+        var glowColor2 = 'rgba('+r+','+g+','+b+',0.5)';
+
+        logo.style.filter =
+            'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
+            'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
+            'brightness(' + bright + ')';
+        logo.style.opacity = opac;
+
+        _logoRaf = requestAnimationFrame(_logoFrame);
+    }
+
+    window.startLogoGlow = function() {
+        var root = document.documentElement;
+        _logoP = (root.style.getPropertyValue('--accent-primary')   || getComputedStyle(root).getPropertyValue('--accent-primary')   || '#FFD700').trim();
+        _logoS = (root.style.getPropertyValue('--accent-secondary') || getComputedStyle(root).getPropertyValue('--accent-secondary') || '#F1C40F').trim();
+        /* RAF zaten çalışıyorsa sadece rengi güncelle, yeniden başlatma */
+        if (_logoRaf) return;
+        _logoFrame();
+    };
+
+    window.stopLogoGlow = function() {
+        if (_logoRaf) { cancelAnimationFrame(_logoRaf); _logoRaf = null; }
+        var logo = document.querySelector('.neon-logo-img');
+        if (logo) {
+            logo.style.filter  = 'drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15)';
+            logo.style.opacity = '1';
+        }
+    };
+
+    /* Sayfa yüklenince otomatik başlat */
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(window.startLogoGlow, 800);
+    });
+    /* DOMContentLoaded geçtiyse hemen başlat */
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(window.startLogoGlow, 800);
+    }
+})();
+
+
 /* ── Header avatar güncelle ── */
 async function updateHeaderAvatar() {
     const wrap = document.getElementById('headerProfileAvatar');
@@ -50091,6 +50360,8 @@ async function updateHeaderAvatar() {
     } else {
         wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:#FFD700;">${initial}</span>`;
     }
+    /* Profil adını da güncelle */
+    updateHeaderUsername();
 }
 
 /* ── Modal aç ── */
@@ -50531,15 +50802,14 @@ document.addEventListener('umittv_login_ok', function() {
         var s = document.createElement('style');
         s.textContent = [
             '.prof-dpad-focused {',
-            '    outline: 3px solid rgba(255,215,0,0.95) !important;',
-            '    outline-offset: 3px !important;',
-            '    box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 18px rgba(255,215,0,0.2) !important;',
+            '    outline: none !important;',
+            '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;',
             '}',
             'input.prof-dpad-focused {',
             '    outline: none !important;',
-            '    border-color: rgba(255,215,0,0.8) !important;',
-            '    background: rgba(255,215,0,0.06) !important;',
-            '    box-shadow: 0 0 0 3px rgba(255,215,0,0.2) !important;',
+            '    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.8) !important;',
+            '    background: rgba(var(--accent-primary-rgb,255,215,0), 0.06) !important;',
+            '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.2) !important;',
             '}'
         ].join('\n');
         document.head.appendChild(s);
@@ -51087,25 +51357,22 @@ document.addEventListener('umittv_login_ok', function() {
 
          
         .__UMD_CITY_BUTTON.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.35) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
             transform: scale(1.04) !important;
-            background: rgba(255,204,0,0.18) !important;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
             color: #fff !important;
-            border-color: #ffcc00 !important;
+            border-color: var(--accent-primary) !important;
         }
         #__UMD_CITY_CANCEL.wrf, #__UMD_CITY_SELECT.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.35) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
             transform: scale(1.04) !important;
         }
         #__UMD_CITY_SEARCH.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.25) !important;
-            border-color: #ffcc00 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.70), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.15) !important;
+            border-color: var(--accent-primary) !important;
         }
 
         body.__umd_modal_open {
@@ -52319,6 +52586,8 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
             window.applyTheme = function() {
                 orig.apply(this, arguments);
                 setTimeout(applyThemeColor, 50);
+                setTimeout(function() { if (typeof startLogoGlow === 'function') startLogoGlow(); }, 70);
+                setTimeout(function() { if (typeof updateHeaderUsername === 'function') updateHeaderUsername(); }, 80);
             };
             window._umkThemeHooked = window.applyTheme;
         }
@@ -54904,8 +55173,7 @@ document.readyState === 'loading'
 .channel-card.focused,
 .channel-card:focus-visible {
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     transform: translateZ(0) !important;
     transition: none !important;
     contain: layout style paint !important;
@@ -54918,8 +55186,7 @@ document.readyState === 'loading'
 .channel-card[data-is-series="true"].remote-focused,
 .channel-card[data-is-series="true"].focused {
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
 }
 
 /* ══════════════════════════════════════
@@ -55507,8 +55774,8 @@ window.vodOpenReviews = async function(contentTitle) {
           window.state.remote.vodModalIndex = infoIdx;
           const el = els[infoIdx];
           el.classList.add('remote-focused', 'tv-focused');
-          el.style.outline = '4px solid #FFD700';
-          el.style.boxShadow = '0 0 20px #FFD700';
+          el.style.outline = '';
+          el.style.boxShadow = '';
           el.focus({ preventScroll: true });
         }
       }
@@ -58125,7 +58392,6 @@ html, body {
     border-top-color: rgba(var(--accent-primary-rgb,255,215,0), 0.75) !important;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.14),
-        0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.22),
         0 2px 8px rgba(0,0,0,0.3) !important;
     color: var(--accent-primary, #FFD700) !important;
 }
@@ -58137,37 +58403,24 @@ html, body {
         rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
     border-color: var(--accent-primary, #FFD700) !important;
     border-top-color: var(--accent-primary, #FFD700) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.12),
-        0 0 12px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
 }
 
-/* ── D-PAD / Remote focused — dokunulmaz, sadece görsel iyileştirme ── */
+/* ── D-PAD / Remote focused — outline YOK, glow blink animasyonu yeterli ── */
 .player-action-btn.remote-focused,
 .player-action-btn.focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 2px !important;
-    background: linear-gradient(160deg,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
     border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.5) !important;
-    color: var(--accent-primary, #FFD700) !important;
-    box-shadow:
-        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.12),
-        0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.22),
-        inset 0 1px 0 rgba(255,255,255,0.10) !important;
+    color: var(--accent-primary) !important;
     transform: none !important;
+    animation: focusPulse 1.4s ease-in-out infinite !important;
     z-index: 2;
 }
 
 /* btn-active + remote-focused birlikte */
 .player-action-btn.btn-active.remote-focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 2px !important;
-    box-shadow:
-        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.15),
-        0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.28),
-        inset 0 1px 0 rgba(255,255,255,0.12) !important;
+    outline: none !important;
 }
 
 /* ── Canlı (LIVE) butonu ── */
@@ -58697,14 +58950,14 @@ function _dpHighlight() {
     var all = _getFocusables();
     all.forEach(function(el, i) {
         if (i === _dpIdx) {
-            el.style.outline = '2px solid #FFD700';
-            el.style.outlineOffset = '2px';
+            el.style.outline = '';
+            el.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85)';
             el.style.background = el.classList.contains('unp-row')
-                ? 'rgba(255,215,0,0.13)' : 'rgba(255,215,0,0.2)';
+                ? 'rgba(var(--accent-primary-rgb,255,215,0), 0.13)' : 'rgba(var(--accent-primary-rgb,255,215,0), 0.20)';
             try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e) {}
         } else {
             el.style.outline = '';
-            el.style.outlineOffset = '';
+            el.style.boxShadow = '';
             if (el.classList.contains('unp-row')) {
                 var id = el.getAttribute('data-id');
                 var n  = _notifList.find(function(x) { return String(x.id) === id; });
@@ -60390,5 +60643,48 @@ document.addEventListener('keydown', function(e) {
 })(); // UserProfileView IIFE
 
 </script>
+
+<!-- ═══ PLAYER BUTON ODAK — NÜKLEer OVERRIDE (en son yüklenir, tüm çakışmaları iptal eder) ═══ -->
+<style>
+/* Player butonlarında odak: outline YOK, yalnızca tema rengi yanıp sönen glow */
+.player-action-btn.remote-focused,
+.player-action-btn.focused,
+.player-action-btn:focus,
+body .player-action-btn.remote-focused,
+body .player-action-btn.focused {
+    outline: none !important;
+    filter: none !important;
+    transform: none !important;
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+    will-change: box-shadow !important;
+    background: rgba(var(--accent-primary-rgb, 255,215,0), 0.18) !important;
+    color: var(--accent-primary) !important;
+    border-color: rgba(var(--accent-primary-rgb, 255,215,0), 0.5) !important;
+    transition: none !important;
+    z-index: 2 !important;
+    position: relative !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Odaksız durumda hiçbir pseudo-element efekti kalmasın */
+.player-action-btn:not(.remote-focused):not(.focused)::before,
+.player-action-btn:not(.remote-focused):not(.focused)::after {
+    opacity: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+/* Tüm player butonlarında tap highlight kapat */
+.player-action-btn {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Player konteyner - gereksiz composite layer oluşturma */
+.player-controls, .player-controls-box, .player-action-group {
+    transform: none !important;
+    will-change: auto !important;
+    filter: none !important;
+}
+</style>
 </body>
 </html>

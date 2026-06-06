@@ -129,8 +129,8 @@
     }
 
     @keyframes cardIn {
-        from { opacity: 0; transform: translateY(24px) scale(0.97); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     /* — Logo alanı — */
@@ -154,8 +154,8 @@
     }
 
     @keyframes logoPulse {
-        0%,100% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.15); opacity: 1; }
+        0%,100% { opacity: 0.7; }
+        50% { opacity: 1; }
     }
 
     .login-logo-img {
@@ -528,8 +528,8 @@
         animation: banPulse 1.5s ease-in-out infinite;
     }
     @keyframes banPulse {
-        0%, 100% { transform: scale(1);   opacity: 1; }
-        50%       { transform: scale(1.08); opacity: 0.85; }
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.75; }
     }
     .ban-title {
         font-family: 'Orbitron', sans-serif;
@@ -1140,11 +1140,9 @@ img {
     align-items: center;
     justify-content: center;
     font-family: 'Rajdhani', sans-serif;
-    /* Backdrop blur + koyu overlay */
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    animation: exitModalBgIn 0.25s ease both;
+    /* backdrop-filter kaldırıldı — TVBox WebView'da çok ağır */
+    background: rgba(0,0,0,0.75);
+    animation: exitModalBgIn 0.15s ease both;
 }
 @keyframes exitModalBgIn {
     from { opacity: 0; }
@@ -1172,8 +1170,8 @@ img {
     overflow: hidden;
 }
 @keyframes exitCardIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Üst tema çizgisi */
@@ -1226,8 +1224,8 @@ img {
     animation: exitRingPulse 2.4s ease-in-out infinite 0.6s;
 }
 @keyframes exitRingPulse {
-    0%,100% { opacity: 0.45; transform: scale(1); }
-    50%      { opacity: 1;    transform: scale(1.07); }
+    0%,100% { opacity: 0.45; }
+    50%      { opacity: 0.9; }
 }
 
 /* Logo img */
@@ -1245,8 +1243,8 @@ img {
     animation: exitLogoFloat 3s ease-in-out infinite;
 }
 @keyframes exitLogoFloat {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(-3px); }
+    0%,100% { transform: none; }
+    50%      { transform: none; }
 }
 
 /* — Başlık — */
@@ -1300,7 +1298,7 @@ img {
     font-weight: 700;
     letter-spacing: 0.5px;
     cursor: pointer;
-    transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    transition: background 0.18s, border-color 0.18s;
     position: relative;
     overflow: hidden;
 }
@@ -1332,7 +1330,7 @@ img {
     font-weight: 900;
     letter-spacing: 1.5px;
     cursor: pointer;
-    transition: filter 0.18s, transform 0.15s, box-shadow 0.18s;
+    transition: filter 0.18s, box-shadow 0.18s;
     box-shadow: 0 4px 20px rgba(var(--accent-primary-rgb,255,215,0),0.28);
     position: relative;
     overflow: hidden;
@@ -1359,7 +1357,7 @@ img {
     box-shadow:
         0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.3),
         0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.1) !important;
-    transform: scale(1.05);
+    transform: none !important;
     color: #fff !important;
 }
 #exitConfirmYes.remote-focused {
@@ -1368,7 +1366,7 @@ img {
     box-shadow:
         0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7),
         0 6px 32px rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
-    transform: scale(1.05);
+    transform: none !important;
 }
 
 /* — Kısayol ipucu — */
@@ -1427,35 +1425,29 @@ img {
    Sarı hard-kod renk yok — tamamen var(--accent-primary) bazlı.
    ══════════════════════════════════════════════ */
 
-/* Giriş: 1.3'e snap, sonra glow blink */
+/* Giriş: scale YOK — TVBox'ta scale her seferinde tam repaint tetikler */
 @keyframes focusEnter {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.33); }
-    70%  { transform: scale(1.28); }
-    100% { transform: scale(1.3); }
+    0%   { transform: none; }
+    100% { transform: none; }
 }
 
-/* Sürekli yanıp sönme — shadow opacity değişimi */
+/* Sürekli yanıp sönme — TVBox uyumlu: tek katman, düşük spread */
 @keyframes focusPulse {
     0%, 100% {
         box-shadow:
-            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.85),
-            0 0 14px rgba(var(--accent-primary-rgb, 255,215,0), 0.35);
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.80);
     }
     50% {
         box-shadow:
-            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.40),
-            0 0 30px rgba(var(--accent-primary-rgb, 255,215,0), 0.80),
-            0 0 55px rgba(var(--accent-primary-rgb, 255,215,0), 0.30);
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.35),
+            0 0 16px rgba(var(--accent-primary-rgb, 255,215,0), 0.55);
     }
 }
 
-/* Kartlar için — grid kırılmasın diye scale biraz daha kısık */
+/* Kartlar için — TVBox'ta scale repaint = kasma, sadece glow kullan */
 @keyframes focusEnterCard {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.14); }
-    70%  { transform: scale(1.09); }
-    100% { transform: scale(1.1); }
+    0%   { transform: none; }
+    100% { transform: none; }
 }
 
 /* ── Buton / Pill / Modal öğeleri — 1.3x odak ── */
@@ -1497,21 +1489,20 @@ img {
         focusPulse 1.4s ease-in-out 200ms infinite !important;
     transform-origin: center center !important;
     outline: none !important;
-    will-change: transform, box-shadow !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
 }
 
-/* ── Kanal kartı — ızgara kırılmasın, scale daha kısık ── */
+/* ── Kanal kartı — ızgara kırılmasın, scale YOK ── */
 .channel-card.remote-focused,
 .channel-card.focused {
     animation:
-        focusEnterCard 200ms cubic-bezier(0.22,1,0.36,1) forwards,
-        focusPulse 1.4s ease-in-out 200ms infinite !important;
+        focusPulse 1.4s ease-in-out infinite !important;
     transform-origin: center center !important;
     outline: none !important;
     border-color: var(--accent-primary) !important;
-    will-change: transform, box-shadow !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
 }
@@ -1520,11 +1511,10 @@ img {
 .vod-episode-card.remote-focused,
 .vod-episode-card.focused {
     animation:
-        focusEnterCard 200ms cubic-bezier(0.22,1,0.36,1) forwards,
-        focusPulse 1.4s ease-in-out 200ms infinite !important;
+        focusPulse 1.4s ease-in-out infinite !important;
     transform-origin: center center !important;
     outline: none !important;
-    will-change: transform, box-shadow !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
 }
@@ -4764,9 +4754,9 @@ body {
     background: rgba(255,60,60,0.35);
     border-color: rgba(255,80,80,0.8);
     color: #fff;
-    transform: scale(1.12);
+    transform: none;
 }
-#speedCloseBtn:active { transform: scale(0.88); }
+#speedCloseBtn:active { transform: none; }
 #seekAmountPanel > div {
     display: flex;
     gap: 4px;
@@ -13997,7 +13987,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="wpSendReaction('🔥')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">🔥</button>
     </div>
     <!-- Mesajlar — flex:1 + overflow-y:auto ile mesajlar kalır -->
-    <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth;"></div>
+    <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:auto;"></div>
     <!-- Giriş -->
     <div style="padding:8px 10px;border-top:1px solid rgba(255,215,0,0.1);display:flex;gap:7px;flex-shrink:0;background:#0f0f18;">
       <input id="wpChatInput" placeholder="Mesaj yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wpSendChat()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
@@ -38119,8 +38109,8 @@ function resumeChannel(startTime) {
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 10;
-            hlsInst.config.maxMaxBufferLength = 30;
+            hlsInst.config.maxBufferLength    = 6;
+            hlsInst.config.maxMaxBufferLength = 18;
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
@@ -48801,9 +48791,9 @@ document.addEventListener('umittv_channels_ready', function() {
                     } else if (_reviewSubZone === 'scrollup') {
                         // Asıl scroll eden vodModalBody — onu başa sar
                         const mb = document.getElementById('vodModalBody');
-                        if (mb) { try { mb.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { mb.scrollTop = 0; } }
+                        if (mb) { try { mb.scrollTo({ top: 0, behavior: 'instant' }); } catch(e) { mb.scrollTop = 0; } }
                         const sc = document.getElementById('vodInfoScroll');
-                        if (sc) { try { sc.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { sc.scrollTop = 0; } }
+                        if (sc) { try { sc.scrollTo({ top: 0, behavior: 'instant' }); } catch(e) { sc.scrollTop = 0; } }
                         // Buttons zone'una dön
                         _clearFocus();
                         _vodZone = VOD_ZONE.BUTTONS;
@@ -50717,7 +50707,7 @@ document.addEventListener('umittv_login_ok', function() {
         var el = _getEl(item);
         if (!el) return;
         el.classList.add('dpad-focused', 'remote-focused', 'prof-dpad-focused');
-        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
         if (typeof playKeySound === 'function') playKeySound('move');
     }
 
@@ -57581,7 +57571,7 @@ function handleWpLobbyRemote(e) {
     const nextEl = focusables[next];
     nextEl.classList.add('remote-focused');
     nextEl.focus();
-    nextEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    nextEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
 
@@ -58667,7 +58657,7 @@ html, body {
     ];
     targets.forEach(function(el) {
       if (!el) return;
-      try { el.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e2) {}
+      try { el.scrollTo({ top: 0, behavior: 'instant' }); } catch(e2) {}
       try { el.scrollTop = 0; } catch(e3) {}
     });
   }
@@ -58954,7 +58944,7 @@ function _dpHighlight() {
             el.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85)';
             el.style.background = el.classList.contains('unp-row')
                 ? 'rgba(var(--accent-primary-rgb,255,215,0), 0.13)' : 'rgba(var(--accent-primary-rgb,255,215,0), 0.20)';
-            try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e) {}
+            try { el.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
         } else {
             el.style.outline = '';
             el.style.boxShadow = '';
@@ -59618,12 +59608,12 @@ function _hookVodReview() {
                         var modalOpen = modal && (modal.style.display !== 'none' && modal.style.display !== '');
                         if (modalOpen) {
                             var sec = document.getElementById('vodReviewsSection');
-                            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                         } else if (typeof openVodModal === 'function' && contentName) {
                             openVodModal(contentName);
                             setTimeout(function() {
                                 var sec = document.getElementById('vodReviewsSection');
-                                if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                             }, 600);
                         }
                     }
@@ -59711,12 +59701,12 @@ function _handleFbNotif(n) {
                 var modalOpen = modal && (modal.style.display !== 'none' && modal.style.display !== '');
                 if (modalOpen) {
                     var sec = document.getElementById('vodReviewsSection');
-                    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                 } else if (contentName && typeof openVodModal === 'function') {
                     openVodModal(contentName);
                     setTimeout(function() {
                         var sec = document.getElementById('vodReviewsSection');
-                        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                     }, 600);
                 }
             }
@@ -60600,7 +60590,7 @@ function upvSetDpadFocus(el) {
   _upvFocusedEl = el;
   if (el) {
     el.classList.add('upv-dpad-focused','remote-focused');
-    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+    el.scrollIntoView({block:'nearest',behavior:'instant'});
   }
 }
 function _upvDpadReady() {

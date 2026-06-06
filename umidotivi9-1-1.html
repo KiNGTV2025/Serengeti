@@ -14932,7 +14932,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <span>Tuş Sesi Seviyesi</span>
                     <span id="keySoundLevelValue">%50</span>
                 </div>
-                <input type="range" min="0" max="100" value="50" class="slider" id="keySoundLevel">
+                <input type="range" min="0" max="200" value="80" class="slider" id="keySoundLevel">
             </div>
             
             <div class="toggle-container">
@@ -17317,7 +17317,7 @@ let state = {
     
     controlSettings: {
         keySoundEnabled: true, 
-        keySoundLevel: 0.5, 
+        keySoundLevel: 0.8, 
         touchSensitivity: 50, 
         vibrationEnabled: true,
         sleepModeEnabled: false,
@@ -20084,7 +20084,7 @@ function applyMiboxOptimizations() {
     state.imageCache.clear();
     
     // Mibox için özel kumanda ayarları
-    state.controlSettings.keySoundLevel = 0.3; // Daha düşük ses
+    state.controlSettings.keySoundLevel = 0.8; // Normal ses
     state.controlSettings.touchSensitivity = 40; // Daha az hassas
     
 }
@@ -24447,15 +24447,12 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             var indicator = document.getElementById('volumeIndicator');
             var pct = Math.round(volume * 100);
             document.getElementById('volumeValue').textContent = pct + '%';
-            // Bar fill
             var fill = document.getElementById('volumeBarFill');
             if (fill) fill.style.height = Math.max(2, pct) + '%';
-            // Icon: muted vs low vs normal
             var icon = document.getElementById('volumeIcon');
             if (icon) icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
-            // Reset animation
             indicator.style.animation = 'none';
-            indicator.offsetHeight; // reflow
+            indicator.offsetHeight;
             indicator.style.animation = '';
             indicator.style.display = 'flex';
             clearTimeout(window.volumeIndicatorTimer);
@@ -24584,12 +24581,11 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         // VOLUME CONTROL
         function changeVolume(delta) {
             hideAllIndicators();
-            
             const video = document.getElementById('videoPlayer');
+            if (!video) return;
             let newVolume = video.volume + (delta / 100);
             newVolume = Math.max(0, Math.min(1, newVolume));
             video.volume = newVolume;
-            
             showVolumeIndicator(newVolume);
         }
 
@@ -25824,7 +25820,7 @@ const storageManager = new LocalStorageManager();
 // Default ayarları tanımla
 const DEFAULT_CONTROL_SETTINGS = {
     keySoundEnabled: true,
-    keySoundLevel: 0.5,
+    keySoundLevel: 0.8,
     touchSensitivity: 50,
     vibrationEnabled: true,
     sleepModeEnabled: false,
@@ -26114,7 +26110,7 @@ window.testSettings = {
     save: () => {
         const testSettings = {
             keySoundEnabled: true,
-            keySoundLevel: 0.7,
+            keySoundLevel: 0.8,
             touchSensitivity: 70,
             vibrationEnabled: true,
             lowPerformanceMode: true,
@@ -44457,22 +44453,166 @@ function tryIframeRedirect(action) {
             if (!state.controlSettings.keySoundEnabled || !audioContext) return;
             try {
                 if (audioContext.state === 'suspended') audioContext.resume();
-                const oscillator = audioContext.createOscillator();
-                const envelope = audioContext.createGain();
-                oscillator.connect(envelope);
-                envelope.connect(gainNode);
-                switch(type) {
-                    case 'click': oscillator.frequency.setValueAtTime(800, audioContext.currentTime); break;
-                    case 'navigate': oscillator.frequency.setValueAtTime(600, audioContext.currentTime); break;
-                    case 'confirm': oscillator.frequency.setValueAtTime(1000, audioContext.currentTime); break;
-                    case 'back': oscillator.frequency.setValueAtTime(400, audioContext.currentTime); break;
-                    case 'ch_change': oscillator.frequency.setValueAtTime(700, audioContext.currentTime); break;
+                const now = audioContext.currentTime;
+                const vol = state.controlSettings.keySoundLevel;
+
+                // ── Modern Premium UI Ses Tasarımı ──
+                // Referans: Apple TV 4K, Google TV, Sonos UI
+                // Prensip: saf sine, keskin attack, hızlı decay, gürültüsüz, temiz
+
+                if (type === 'click') {
+                    // Apple TV remote tıklama: 1046 Hz (C6) — saf, net, kısa
+                    // Hafif 5. harmonik katkısı ile "cam" tınısı
+                    const o  = audioContext.createOscillator();
+                    const o2 = audioContext.createOscillator();
+                    const g  = audioContext.createGain();
+                    const g2 = audioContext.createGain();
+
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1046.5, now);   // C6
+
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(1046.5 * 5, now); // 5. harmonik (glass tınısı)
+
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.55, now + 0.003); // çok hızlı attack
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);  // temiz decay
+
+                    g2.gain.setValueAtTime(vol * 0.08, now);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+                    o.connect(g);   g.connect(gainNode);
+                    o2.connect(g2); g2.connect(gainNode);
+
+                    o.start(now);  o.stop(now + 0.08);
+                    o2.start(now); o2.stop(now + 0.03);
+
+                } else if (type === 'navigate') {
+                    // Google TV / tvOS menü geçişi: 1318 Hz (E6) — çok kısa, hafif
+                    // navigate click'ten 1/3 daha sessiz ve kısa olmalı (repeat tolerable)
+                    const o = audioContext.createOscillator();
+                    const g = audioContext.createGain();
+
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1318.5, now);  // E6
+
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.28, now + 0.002);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.042);
+
+                    o.connect(g); g.connect(gainNode);
+                    o.start(now); o.stop(now + 0.05);
+
+                } else if (type === 'confirm') {
+                    // Sonos / Apple TV onay: Do-Mi-Sol (C6-E6-G6) majör arpej
+                    // Temiz, premium, 3 nota — net aralıklar, hızlı tempo
+                    var notes  = [1046.5, 1318.5, 1568.0]; // C6, E6, G6
+                    var timing = [0.0,    0.085,   0.170 ];
+                    var durs   = [0.160,  0.160,   0.260 ];
+
+                    notes.forEach(function(freq, i) {
+                        var t = now + timing[i];
+                        var amp = (i === 2) ? vol * 0.75 : vol * 0.60;
+
+                        var o  = audioContext.createOscillator();
+                        var oh = audioContext.createOscillator(); // oktav üstü — derinlik
+                        var g  = audioContext.createGain();
+                        var gh = audioContext.createGain();
+
+                        o.type  = 'sine';
+                        oh.type = 'sine';
+                        o.frequency.setValueAtTime(freq, t);
+                        oh.frequency.setValueAtTime(freq * 2, t);
+
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(amp, t + 0.006);
+                        g.gain.setValueAtTime(amp, t + durs[i] * 0.4);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + durs[i] + 0.06);
+
+                        gh.gain.setValueAtTime(amp * 0.18, t);
+                        gh.gain.exponentialRampToValueAtTime(0.001, t + durs[i] * 0.5);
+
+                        o.connect(g);   g.connect(gainNode);
+                        oh.connect(gh); gh.connect(gainNode);
+
+                        o.start(t);  o.stop(t + durs[i] + 0.1);
+                        oh.start(t); oh.stop(t + durs[i] * 0.55);
+                    });
+
+                } else if (type === 'back') {
+                    // tvOS / Sonos geri: G5→E5 inen iki nota — "olumsuz ama nazik"
+                    // İki nota arası: majör 3'lü aşağı — net yönlü his
+                    var backNotes  = [783.99, 659.25]; // G5 → E5
+                    var backTiming = [0.0, 0.09];
+                    var backDurs   = [0.10, 0.16];
+
+                    backNotes.forEach(function(freq, i) {
+                        var t   = now + backTiming[i];
+                        var amp = (i === 0) ? vol * 0.52 : vol * 0.42;
+
+                        var o = audioContext.createOscillator();
+                        var g = audioContext.createGain();
+
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, t);
+
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(amp, t + 0.005);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + backDurs[i]);
+
+                        o.connect(g); g.connect(gainNode);
+                        o.start(t); o.stop(t + backDurs[i] + 0.02);
+                    });
+
+                } else if (type === 'ch_change') {
+                    // Hızlı "whoosh" + arrival ping — modern kanal geçişi
+                    // Aşama 1: pitch-rise sweep (300ms içinde 400→1200Hz) — geçiş hissi
+                    // Aşama 2: arrival ping (G5=784Hz) — "kanal geldi" konfirmasyonu
+
+                    // Sweep: hızlı yükselen tone, pitch-bend etkisi
+                    var sw = audioContext.createOscillator();
+                    var sg = audioContext.createGain();
+                    sw.type = 'sine';
+                    sw.frequency.setValueAtTime(380, now);
+                    sw.frequency.exponentialRampToValueAtTime(1100, now + 0.055);
+                    sg.gain.setValueAtTime(0, now);
+                    sg.gain.linearRampToValueAtTime(vol * 0.38, now + 0.008);
+                    sg.gain.exponentialRampToValueAtTime(0.001, now + 0.058);
+                    sw.connect(sg); sg.connect(gainNode);
+                    sw.start(now); sw.stop(now + 0.065);
+
+                    // Arrival ping: net, G5
+                    var ap = audioContext.createOscillator();
+                    var ag = audioContext.createGain();
+                    var ah = audioContext.createOscillator(); // hafif oktav harmonik
+                    var ahg = audioContext.createGain();
+                    ap.type = 'sine';
+                    ap.frequency.setValueAtTime(783.99, now + 0.05);
+                    ah.type = 'sine';
+                    ah.frequency.setValueAtTime(783.99 * 2, now + 0.05);
+                    ag.gain.setValueAtTime(0, now + 0.05);
+                    ag.gain.linearRampToValueAtTime(vol * 0.68, now + 0.062);
+                    ag.gain.setValueAtTime(vol * 0.68, now + 0.09);
+                    ag.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+                    ahg.gain.setValueAtTime(vol * 0.14, now + 0.05);
+                    ahg.gain.exponentialRampToValueAtTime(0.001, now + 0.10);
+                    ap.connect(ag);   ag.connect(gainNode);
+                    ah.connect(ahg); ahg.connect(gainNode);
+                    ap.start(now + 0.05); ap.stop(now + 0.20);
+                    ah.start(now + 0.05); ah.stop(now + 0.11);
+
+                } else {
+                    // Fallback
+                    const o = audioContext.createOscillator();
+                    const g = audioContext.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1046.5, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.5, now + 0.004);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                    o.connect(g); g.connect(gainNode);
+                    o.start(now); o.stop(now + 0.08);
                 }
-                envelope.gain.setValueAtTime(0, audioContext.currentTime);
-                envelope.gain.linearRampToValueAtTime(state.controlSettings.keySoundLevel, audioContext.currentTime + 0.01);
-                envelope.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
             } catch (e) {}
         }
 
@@ -49798,15 +49938,77 @@ function _favIcons(ch, isFav) {
 
 /* ── Storage anahtarları ── */
 const PROF_NAME_KEY    = 'umittv_profile_name';
-const PROF_AVATAR_KEY  = 'umittv_profile_avatar';
-const PROF_NAME_LOCKED = 'umittv_profile_name_locked'; // şans kodu için kilit
+const PROF_NAME_LOCKED = 'umittv_profile_name_locked';
+// NOT: Avatar artık IndexedDB'de (localStorage 5MB limiti aşılır)
 
-/* ── Profil oku ── */
+/* ── Avatar IDB ── */
+var _profAvatarIDB = (function() {
+    var DB_NAME = 'umittv_prof_db';
+    var DB_VER  = 1;
+    var STORE   = 'profile';
+    var KEY     = 'avatar';
+    var _db     = null;
+    var _cache  = null; // preload sonrası bellekte sakla
+
+    function _open() {
+        return new Promise(function(resolve, reject) {
+            if (_db) { resolve(_db); return; }
+            var req = indexedDB.open(DB_NAME, DB_VER);
+            req.onupgradeneeded = function(e) {
+                e.target.result.createObjectStore(STORE);
+            };
+            req.onsuccess = function(e) { _db = e.target.result; resolve(_db); };
+            req.onerror   = function(e) { reject(e); };
+        });
+    }
+
+    return {
+        get: function() {
+            if (_cache !== null) return Promise.resolve(_cache);
+            return _open().then(function(db) {
+                return new Promise(function(resolve) {
+                    var tx  = db.transaction(STORE, 'readonly');
+                    var req = tx.objectStore(STORE).get(KEY);
+                    req.onsuccess = function() {
+                        _cache = req.result || '';
+                        // localStorage migration: eski avatar varsa taşı
+                        if (!_cache) {
+                            try {
+                                var old = localStorage.getItem('umittv_profile_avatar');
+                                if (old) {
+                                    _cache = old;
+                                    localStorage.removeItem('umittv_profile_avatar');
+                                    _profAvatarIDB.set(old);
+                                }
+                            } catch(me) {}
+                        }
+                        resolve(_cache);
+                    };
+                    req.onerror = function() { resolve(''); };
+                });
+            }).catch(function() { return ''; });
+        },
+        set: function(val) {
+            _cache = val || '';
+            return _open().then(function(db) {
+                return new Promise(function(resolve) {
+                    var tx = db.transaction(STORE, 'readwrite');
+                    tx.objectStore(STORE).put(_cache, KEY);
+                    tx.oncomplete = function() { resolve(); };
+                    tx.onerror    = function() { resolve(); };
+                });
+            }).catch(function() {});
+        },
+        preload: function() { return this.get(); }
+    };
+})();
+
+/* ── Profil oku (isim/kilit sync, avatar önbellekten) ── */
 function profGet() {
     try {
         return {
             name:   localStorage.getItem(PROF_NAME_KEY) || '',
-            avatar: localStorage.getItem(PROF_AVATAR_KEY) || '',
+            avatar: _profAvatarIDB._cache || '',
             locked: localStorage.getItem(PROF_NAME_LOCKED) === '1'
         };
     } catch(e) {
@@ -49814,13 +50016,18 @@ function profGet() {
     }
 }
 
+/* Avatar async oku (garantili güncel değer) */
+async function profGetAvatar() {
+    return await _profAvatarIDB.get();
+}
+
 /* ── Profil kaydet ── */
 function profSave(name, avatar, lock) {
     try {
         if (name !== null) localStorage.setItem(PROF_NAME_KEY, name);
-        if (avatar !== null) localStorage.setItem(PROF_AVATAR_KEY, avatar);
-        if (lock) localStorage.setItem(PROF_NAME_LOCKED, '1');
+        if (lock)          localStorage.setItem(PROF_NAME_LOCKED, '1');
     } catch(e) {}
+    if (avatar !== null) _profAvatarIDB.set(avatar);
 }
 
 /* ── Telegram ID al ── */
@@ -49863,17 +50070,22 @@ window.getProfileDisplayName = function() {
 };
 
 /* ── Profil avatar URL'ini al ── */
+// Sync: önbellekten al (preload çağrıldıysa dolu)
 window.getProfileAvatarUrl = function() {
-    const prof = profGet();
-    return prof.avatar || '';
+    return _profAvatarIDB._cache || '';
+};
+// Async: IDB'den garantili güncel değer
+window.getProfileAvatarUrlAsync = async function() {
+    return await _profAvatarIDB.get();
 };
 
 /* ── Header avatar güncelle ── */
-function updateHeaderAvatar() {
+async function updateHeaderAvatar() {
     const wrap = document.getElementById('headerProfileAvatar');
     if (!wrap) return;
-    const { name, avatar } = profGet();
-    const initial = (name || getProfileDisplayName() || '?')[0].toUpperCase();
+    const name   = localStorage.getItem('umittv_profile_name') || getProfileDisplayName() || '?';
+    const avatar = await _profAvatarIDB.get();
+    const initial = name[0].toUpperCase();
     if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
         wrap.innerHTML = `<img src="${avatar}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:20px>account_circle</span>'">`;
     } else {
@@ -49920,12 +50132,12 @@ window.openProfileModal = function() {
         }
     }
 
-    // Avatar input — data: URL ise text input'a koyma (dosyadan yüklendi)
+    // Avatar input — IDB'den async oku
     const avatarInput = document.getElementById('profileAvatarInput');
-    if (avatarInput) avatarInput.value = (prof.avatar && prof.avatar.startsWith('http')) ? prof.avatar : '';
-
-    // Avatar önizleme
-    _updateModalAvatar(prof.avatar, prof.name || getProfileDisplayName());
+    _profAvatarIDB.get().then(function(av) {
+        if (avatarInput) avatarInput.value = (av && av.startsWith('http')) ? av : '';
+        _updateModalAvatar(av, prof.name || getProfileDisplayName());
+    });
 
     // Status temizle
     const statusMsg = document.getElementById('profileStatusMsg');
@@ -50095,13 +50307,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // İlk yükleme: header avatarı güncelle
-    setTimeout(updateHeaderAvatar, 500);
+    // İlk yükleme: IDB'yi preload et, sonra header'i güncelle
+    _profAvatarIDB.preload().then(function() { updateHeaderAvatar(); });
 });
 
 /* ── Login sonrası header güncelle ── */
 document.addEventListener('umittv_login_ok', function() {
-    setTimeout(updateHeaderAvatar, 300);
+    _profAvatarIDB.preload().then(function() { updateHeaderAvatar(); });
 });
 
 /* ══════════════════════════════════════════════════════════════
@@ -50116,7 +50328,7 @@ document.addEventListener('umittv_login_ok', function() {
     function _makeAvatarHtml(nick, color) {
         const initial = (nick || '?')[0].toUpperCase();
         const myName = getProfileDisplayName();
-        const myAvatar = getProfileAvatarUrl();
+        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
         // Kendi mesajımızsa profil resmimizi kullan
         if (nick === myName && _isValidAvatarUrl(myAvatar)) {
             return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;overflow:hidden;flex-shrink:0;margin-top:1px;">` +
@@ -50133,7 +50345,7 @@ document.addEventListener('umittv_login_ok', function() {
         // msg.nick kendi kullanıcımızsa profil resmimizi kullan
         const { nick, color, text, stars, isSystem } = msg;
         const myName = getProfileDisplayName();
-        const myAvatar = getProfileAvatarUrl();
+        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
         const isMe = nick === myName && _isValidAvatarUrl(myAvatar);
 
         const list = document.getElementById('wpCommentsList');
@@ -55357,7 +55569,7 @@ function vodRenderReview(key, rev, myName) {
 
   // Kendi yorumumsa profil resmimizi göster
   // Avatar: kendi yorumsa localStorage'dan, diğerleri için rev.avatar'dan
-  const myAvatarUrl = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
+  const myAvatarUrl = isMe ? (_profAvatarIDB._cache || '') : '';
   const otherAvatarUrl = !isMe && rev.avatar && (rev.avatar.startsWith('http') || rev.avatar.startsWith('data:')) ? rev.avatar : '';
   // Kendi yorumuysa önce localStorage'dan al (data: dahil), değilse Firebase'den
   const resolvedAvatar = isMe ? (myAvatarUrl || otherAvatarUrl) : otherAvatarUrl;
@@ -55430,9 +55642,33 @@ window.vodSubmitReview = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
-  const _myAvatarRaw = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
-  // data: URL'leri Firebase'e kaydetme — cok buyuk, quota tuketir. Sadece http/https URL'lerini sakla.
-  const _myAvatarToSave = (_myAvatarRaw && _myAvatarRaw.startsWith('http')) ? _myAvatarRaw : '';
+  const _myAvatarRaw = await _profAvatarIDB.get();
+
+  // Avatar küçült: data: URL'leri 48x48px JPEG thumbnail'e sikistir (~2KB), http dogrudan gec
+  async function _shrinkAvatar(src) {
+    if (!src) return '';
+    if (src.startsWith('http')) return src;
+    if (!src.startsWith('data:')) return '';
+    try {
+      return await new Promise(function(resolve) {
+        var img = new Image();
+        img.onload = function() {
+          var c = document.createElement('canvas');
+          var sz = 48; c.width = sz; c.height = sz;
+          var ctx = c.getContext('2d');
+          var s = Math.min(img.naturalWidth, img.naturalHeight);
+          var ox = (img.naturalWidth - s) / 2;
+          var oy = (img.naturalHeight - s) / 2;
+          ctx.drawImage(img, ox, oy, s, s, 0, 0, sz, sz);
+          resolve(c.toDataURL('image/jpeg', 0.72));
+        };
+        img.onerror = function() { resolve(''); };
+        img.src = src;
+      });
+    } catch(e) { return ''; }
+  }
+  const _myAvatarToSave = await _shrinkAvatar(_myAvatarRaw);
+
   const reviewData = {
     userId: userName,
     nick: userName,
@@ -57761,6 +57997,231 @@ html, body {
 }
 </style>
 
+<style>
+/* ══════════════════════════════════════════════════════
+   MODERN PLAYER BUTON SİSTEMİ — Tema rengi uyumlu
+   D-pad / remote-focused mantığına dokunulmaz
+   ══════════════════════════════════════════════════════ */
+
+/* ── Kontrol kutusu: cam/blur efekti ── */
+.player-controls-box {
+    background: rgba(6,5,2,0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.14) !important;
+    border-top: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.28) !important;
+    box-shadow:
+        0 -1px 0 rgba(var(--accent-primary-rgb,255,215,0), 0.10) inset,
+        0 24px 48px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(0,0,0,0.4) !important;
+    padding: 10px 10px 8px !important;
+    margin: 0 6px 6px !important;
+}
+
+/* ── Buton satırı ── */
+.player-actions-row {
+    gap: 6px !important;
+    padding: 2px 2px !important;
+}
+.player-action-group {
+    gap: 5px !important;
+}
+
+/* ── Ayırıcı ── */
+.action-sep {
+    width: 1px !important;
+    height: 28px !important;
+    background: linear-gradient(to bottom,
+        transparent,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.22) 30%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.22) 70%,
+        transparent) !important;
+    margin: 0 3px !important;
+}
+
+/* ── Ana buton stili ── */
+.player-action-btn {
+    position: relative !important;
+    min-width: 48px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    padding: 0 10px !important;
+    gap: 3px !important;
+    /* Cam efekti arka plan */
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.09) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.04) 100%) !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
+    border-top: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.32) !important;
+    border-bottom: 1px solid rgba(0,0,0,0.3) !important;
+    color: var(--accent-primary, #FFD700) !important;
+    /* İnce üst ışık çizgisi */
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 2px 8px rgba(0,0,0,0.25) !important;
+    transition: none !important;
+    overflow: hidden !important;
+}
+
+/* Buton iç parlaklık katmanı */
+.player-action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg,
+        rgba(255,255,255,0.06) 0%,
+        transparent 50%);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* İkon boyutu */
+.player-action-btn .material-symbols-outlined {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* Label */
+.player-action-btn .btn-label {
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    text-transform: uppercase !important;
+    opacity: 0.65 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Play/Pause — vurgulu ── */
+.player-action-btn.play-pause-btn {
+    min-width: 56px !important;
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.45) !important;
+    border-top-color: rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
+        0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.18),
+        0 4px 12px rgba(0,0,0,0.35) !important;
+}
+.player-action-btn.play-pause-btn .material-symbols-outlined {
+    font-size: 22px !important;
+}
+
+/* ── Aktif (açık) buton ── */
+.player-action-btn.btn-active {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.30) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.14) 100%) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
+    border-top-color: rgba(var(--accent-primary-rgb,255,215,0), 0.75) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.22),
+        0 2px 8px rgba(0,0,0,0.3) !important;
+    color: var(--accent-primary, #FFD700) !important;
+}
+
+/* ── Favori aktif ── */
+#btnPlayerFav.fav-active {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    border-top-color: var(--accent-primary, #FFD700) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        0 0 12px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
+}
+
+/* ── D-PAD / Remote focused — dokunulmaz, sadece görsel iyileştirme ── */
+.player-action-btn.remote-focused,
+.player-action-btn.focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.5) !important;
+    color: var(--accent-primary, #FFD700) !important;
+    box-shadow:
+        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.12),
+        0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.10) !important;
+    transform: none !important;
+    z-index: 2;
+}
+
+/* btn-active + remote-focused birlikte */
+.player-action-btn.btn-active.remote-focused {
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
+    box-shadow:
+        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.15),
+        0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.28),
+        inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+/* ── Canlı (LIVE) butonu ── */
+.live-btn {
+    height: 44px !important;
+    border-radius: 12px !important;
+    padding: 0 14px !important;
+    background: linear-gradient(160deg, rgba(220,30,30,0.88), rgba(140,0,0,0.65)) !important;
+    border: 1px solid rgba(255,80,80,0.40) !important;
+    border-top: 1px solid rgba(255,110,110,0.55) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
+        0 0 14px rgba(220,30,30,0.25),
+        0 3px 10px rgba(0,0,0,0.35) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.8px !important;
+    font-weight: 800 !important;
+}
+.live-btn.remote-focused {
+    outline: 2px solid #FF4444 !important;
+    outline-offset: 2px !important;
+    box-shadow:
+        0 0 0 4px rgba(255,60,60,0.18),
+        0 0 18px rgba(255,60,60,0.30) !important;
+}
+
+/* ── CH+/CH- butonları hafif farklı ── */
+.player-action-btn.ch-up-btn,
+.player-action-btn.ch-down-btn {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.07) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.03) 100%) !important;
+}
+
+/* ── Küçük ekran uyumu ── */
+@media (max-width: 380px) {
+    .player-action-btn {
+        min-width: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        padding: 0 7px !important;
+    }
+    .player-action-btn .material-symbols-outlined { font-size: 18px !important; }
+    .player-action-btn.play-pause-btn { min-width: 48px !important; }
+    .live-btn { height: 40px !important; border-radius: 10px !important; }
+}
+@media (max-width: 360px) {
+    .player-action-btn .btn-label { display: none !important; }
+    .player-action-btn { min-width: 36px !important; height: 36px !important; padding: 0 5px !important; }
+    .live-btn { height: 36px !important; }
+}
+</style>
+
 <!-- Tam Ekran butonu (mobilde görünür) -->
 <button id="mobileFullscreenBtn" title="Tam Ekran" onclick="enterAppFullscreen()">
     <span class="material-symbols-outlined" style="font-size:24px;line-height:1;">fullscreen</span>
@@ -59813,11 +60274,18 @@ window.openUserProfileView = async function(userName) {
   var reviews = await fetchUserAllReviews(userName);
   if (loadEl) loadEl.style.display = 'none';
 
-  // Avatarı ilk bulunan yorumdan al (rev.avatar)
+  // Avatar: once kendi localStorage'dan (kendi profilimizse), sonra Firebase yorumlarindan
   var foundAvatar = '';
-  for (var ai = 0; ai < reviews.length; ai++) {
-    var au = reviews[ai] && reviews[ai].avatar;
-    if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+  var myUserName = (typeof vrGetUserName === 'function') ? vrGetUserName() : '';
+  if (userName === myUserName) {
+    var _lsAv = await _profAvatarIDB.get();
+    if (_lsAv && (_lsAv.startsWith('http') || _lsAv.startsWith('data:'))) foundAvatar = _lsAv;
+  }
+  if (!foundAvatar) {
+    for (var ai = 0; ai < reviews.length; ai++) {
+      var au = reviews[ai] && reviews[ai].avatar;
+      if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+    }
   }
   if (avatarEl && foundAvatar) {
     avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;border:2px solid ' + color + '55;';

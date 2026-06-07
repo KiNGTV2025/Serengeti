@@ -22350,13 +22350,22 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
     }, true); // capture=true: vodModal handler'dan önce yakala
 
     // Yorum bölümü açıldığında zone'u sıfırla
-    var origOpen = window.vodOpenReviews;
-    window.vodOpenReviews = async function(t) {
+    // NOT: origOpen lazy alınıyor — vodOpenReviews bu kod çalışırken henüz tanımlı değil (satır 55852'de tanımlanıyor)
+    window._wpVodOpenReviewsWrapper = async function(t) {
         _reviewZone = 'stars';
         window._vrMyStarsLocal = 0;
-        if (typeof origOpen === 'function') await origOpen(t);
+        // Her çağrıda gerçek fonksiyonu al (lazy lookup)
+        var _realOpen = window._wpVodOpenReviewsReal;
+        if (typeof _realOpen === 'function') await _realOpen(t);
         setTimeout(function() { highlightReviewZone('stars'); }, 200);
     };
+    // Gerçek fonksiyon yüklendikten sonra (DOMContentLoaded sonrası) wrap et
+    window.addEventListener('load', function() {
+        if (typeof window.vodOpenReviews === 'function' && window.vodOpenReviews !== window._wpVodOpenReviewsWrapper) {
+            window._wpVodOpenReviewsReal = window.vodOpenReviews;
+            window.vodOpenReviews = window._wpVodOpenReviewsWrapper;
+        }
+    }, { once: true });
 })();
 
     // Player'a özel tuş kontrolleri
@@ -55895,6 +55904,12 @@ window.vodOpenReviews = async function(contentTitle) {
   }, 150);
 };
 
+// Wrapper'ı hemen kur (22354'teki override gerçek fonksiyonu bulamadan önce çalışmıştı)
+if (typeof window._wpVodOpenReviewsWrapper === 'function') {
+  window._wpVodOpenReviewsReal = window.vodOpenReviews;
+  window.vodOpenReviews = window._wpVodOpenReviewsWrapper;
+}
+
 // ── Yorumları Firebase'den yükle ──
 async function vodLoadReviews() {
   const listEl = document.getElementById('vodReviewsList');
@@ -55934,8 +55949,9 @@ async function vodLoadReviews() {
   // Mevcut kullanıcının yorumunu bul
   const myName = vrGetUserName();
   entries.forEach(([key, rev]) => {
-    if (rev.userId === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
-    vodRenderReview(key, rev, myName);
+    if (!rev || typeof rev !== 'object') return;
+    if (rev.userId === myName || rev.nick === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
+    try { vodRenderReview(key, rev, myName); } catch(e) { console.error('[vodLoadReviews] render hatası:', e); }
   });
 
   /* Yeni yorum eklendikten sonra listeyi en üste kaydır (yeni yorum en üstte) */
@@ -55944,71 +55960,67 @@ async function vodLoadReviews() {
   });
 }
 
-// ── Tek yorum kartı oluştur ──
+// ── Tek yorum kartı oluştur (sade versiyon) ──
 function vodRenderReview(key, rev, myName) {
-  let listEl = document.getElementById('vodReviewsList');
+  var listEl = document.getElementById("vodReviewsList");
   if (!listEl) return;
-  // Eğer liste "Henüz yorum yok" veya "yükleniyor" yazısı içeriyorsa temizle
-  if (listEl.children.length === 1 && listEl.firstElementChild &&
-      listEl.firstElementChild.style && listEl.firstElementChild.style.textAlign === 'center') {
-    listEl.innerHTML = '';
+
+  if (listEl.children.length === 1) {
+    var fc = listEl.firstElementChild;
+    if (fc && (fc.getAttribute("style") || "").indexOf("text-align") !== -1) {
+      listEl.innerHTML = "";
+    }
   }
 
-  // isMe: hem userId hem nick karşılaştır (override sonrası mismatch önle)
-  const isMe = rev.userId === myName || rev.nick === myName;
-  const color = vrUserColor(rev.userId || rev.nick || '?');
-  const initial = (rev.nick || rev.userId || '?')[0].toUpperCase();
-  const starsHtml = rev.stars
-    ? '<div style="color:#FFD700;font-size:13px;margin-top:3px;">' +
-      '★'.repeat(rev.stars) +
-      '<span style="color:rgba(255,255,255,0.15)">' + '★'.repeat(5 - rev.stars) + '</span></div>'
-    : '';
-  const dateStr = rev.ts ? new Date(rev.ts).toLocaleDateString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
-                            new Date(rev.ts).toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}) : '';
-  const deleteBtn = isMe
-    ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
-    : '';
+  var nick = rev.nick || rev.userId || "?";
+  var text = rev.text || "";
+  var stars = parseInt(rev.stars) || 0;
+  var ts = rev.ts ? new Date(rev.ts).toLocaleDateString("tr-TR") : "";
+  var isMe = (rev.userId === myName || rev.nick === myName);
 
-  // Kendi yorumumsa profil resmimizi göster
-  // Avatar: kendi yorumsa localStorage'dan, diğerleri için rev.avatar'dan
-  const myAvatarUrl = isMe ? (_profAvatarIDB._cache || '') : '';
-  const otherAvatarUrl = !isMe && rev.avatar && (rev.avatar.startsWith('http') || rev.avatar.startsWith('data:')) ? rev.avatar : '';
-  // Kendi yorumuysa önce localStorage'dan al (data: dahil), değilse Firebase'den
-  const resolvedAvatar = isMe ? (myAvatarUrl || otherAvatarUrl) : otherAvatarUrl;
-  const hasAvatar = resolvedAvatar && (resolvedAvatar.startsWith('http') || resolvedAvatar.startsWith('data:'));
-  const safeNickForAvatar = (rev.nick || rev.userId || '?').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const avatarHtml = hasAvatar
-    ? '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' +
-      '<img src="' + resolvedAvatar + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
-      '</div>'
-    : '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' + initial + '</div>';
+  var starsStr = "";
+  for (var si = 0; si < 5; si++) { starsStr += si < stars ? "\u2605" : "\u2606"; }
 
-  const displayNick = rev.nick || rev.userId || '?';
-  const meLabel = isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '';
-  const safeNick = displayNick.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const nickHtml = '<span onclick="openUserProfileView(\'' + safeNick + '\')" '
-    + 'style="font-size:12px;font-weight:700;color:' + color + ';cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
-    + 'text-decoration-line:underline;text-decoration-style:dotted;text-underline-offset:2px;padding:6px 2px;display:inline-block;" '
-    + 'title="Profili g\u00f6r\u00fcntle">' + displayNick + '</span>';
-  const el = document.createElement('div');
-  el.id = 'vr_' + key;
-  el.style.cssText = 'display:flex;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px;';
-  el.innerHTML =
-    avatarHtml +
-    '<div style="flex:1;min-width:0;">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;">' +
-        '<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">' +
-          nickHtml +
-          meLabel +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<span style="font-size:10px;color:rgba(255,255,255,0.2);">' + dateStr + '</span>' +
-          deleteBtn +
-        '</div>' +
-      '</div>' +
-      starsHtml +
-      (rev.text ? '<div style="font-size:13px;color:#dde0ee;line-height:1.45;margin-top:4px;">' + rev.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' : '') +
-    '</div>';
+  var el = document.createElement("div");
+  el.id = "vr_" + key;
+  el.style.cssText = "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;margin-bottom:2px;";
+
+  var nickSpan = document.createElement("span");
+  nickSpan.style.cssText = "font-size:13px;font-weight:700;color:#FFD700;";
+  nickSpan.textContent = nick + (isMe ? " (Ben)" : "");
+
+  var tsSpan = document.createElement("span");
+  tsSpan.style.cssText = "font-size:10px;color:rgba(255,255,255,0.4);";
+  tsSpan.textContent = ts;
+
+  var header = document.createElement("div");
+  header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;";
+  header.appendChild(nickSpan);
+  header.appendChild(tsSpan);
+  el.appendChild(header);
+
+  if (stars > 0) {
+    var starDiv = document.createElement("div");
+    starDiv.style.cssText = "color:#FFD700;font-size:14px;margin-bottom:4px;";
+    starDiv.textContent = starsStr;
+    el.appendChild(starDiv);
+  }
+
+  if (text) {
+    var textDiv = document.createElement("div");
+    textDiv.style.cssText = "font-size:13px;color:#dde0ee;line-height:1.5;";
+    textDiv.textContent = text;
+    el.appendChild(textDiv);
+  }
+
+  if (isMe) {
+    var delBtn = document.createElement("button");
+    delBtn.textContent = "Sil";
+    delBtn.style.cssText = "background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);border-radius:6px;color:#e74c3c;font-size:11px;padding:3px 10px;cursor:pointer;margin-top:6px;";
+    delBtn.onclick = (function(k) { return function() { window.vodDeleteReview(k); }; })(key);
+    el.appendChild(delBtn);
+  }
+
   listEl.appendChild(el);
 }
 
@@ -57498,22 +57510,18 @@ function wpStartNowPlayingListener(code) {
     if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
 
     // Odaya katılınca gelen eski nowPlaying'i işleme:
-    // ts joinTs'den önce ise → eski kayıt, sadece lastTs'i set et
+    // ts joinTs'den önce ise → eski kayıt AMA host şu an yayındaysa (playerState açık) oynat
     if(np.ts < joinTs) {
       lastTs = np.ts;
-      return;
-    }
-
-    // joinTs ile eş zamanlı veya sonrası — host player durumundan bağımsız işle
-    // (hostPlayerOpen async fbGet'e bağlıydı, race condition yaratıyordu)
-    // Yalnızca joinTs sonrası 500ms içindeki ilk snapshot'ı atla
-    if(np.ts <= joinTs + 500 && isFromPoll) {
-      lastTs = np.ts;
-      return;
+      // Eğer host şu an yayındaysa odaya yeni katılan misafir de otomatik başlatılsın
+      if(WP._hostPlayerOpen && !isFromPoll) {
+        // SSE ilk snapshot (isFromPoll=false) ve host açıksa oynat — devam et
+      } else {
+        return;
+      }
     }
 
     lastTs = np.ts;
-
     wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
     wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
 
@@ -57561,9 +57569,9 @@ function wpStartNowPlayingListener(code) {
       const d = JSON.parse(e.data);
       if(d.path === '/') {
         // İlk snapshot — SSE bağlanınca Firebase mevcut veriyi gönderir
-        // Bu joinTs'den önce yazılmış olabilir, wpHandleNowPlaying zaten ts kontrolü yapar
-        // Sadece hostPlayerOpen belirlenene kadar bekle (async fbGet tamamlanır)
-        setTimeout(() => wpHandleNowPlaying(d.data, true), 200);
+        // Eğer ts joinTs'den önce ise eski kayıt — ama host şu an yayındaysa oynat
+        // Kısa gecikme ile işle (fbGet'in playerState kontrolü tamamlansın)
+        setTimeout(() => wpHandleNowPlaying(d.data, false), 300);
         return;
       }
       // Gerçek yeni event (path !== '/') — anında işle

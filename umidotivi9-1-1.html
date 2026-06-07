@@ -16713,6 +16713,7 @@ const HIGH_RES_DIRECT_DOMAINS = [
     'trtworld.com',
     'cdn.trt',
     'umittv.sadecenjoy.workers.dev', // Vavoo HLS proxy Worker → direkt
+    'vavootobir.umitm0d.workers.dev',  // Vavoo HLS proxy Worker (tobir) → direkt
     
 
     'akamaihd.net',       // Akamai CDN
@@ -38095,7 +38096,7 @@ function resumeChannel(startTime) {
         '127.0.0.1', '192.168.', '10.0.', '172.16.',
         'umido.umitm0d.workers.dev',   // kool.to proxy Worker
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
-        'umitmod-farki.onrender.com',  // kool.to/vavoo birincil resolver
+        // 'umitmod-farki.onrender.com' → kapalı
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
 
@@ -38124,17 +38125,17 @@ function resumeChannel(startTime) {
                      _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
                      _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
                      _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
-                     _urlLower.includes('onrender.com') ||       // kool.to/vavoo resolver
                      _urlLower.includes('kool.to') ||            // kool.to → Worker ile HLS
                      _urlLower.includes('vavoo.to') ||           // vavoo.to → Vavoo Worker ile HLS
                      _urlLower.includes('oha.to') ||             // oha.to → Vavoo Worker ile HLS
                      _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
+                     _urlLower.includes('vavootobir.umitm0d.workers.dev') ||  // vavootobir Worker → HLS döner
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
     // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavoo.to/vavoo-iptv/play/ ham URL)
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev');
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev');
 
     // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
     const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
@@ -38148,10 +38149,9 @@ function resumeChannel(startTime) {
         Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
     }
 
-    // kool.to linki → umitmod-farki.onrender.com proxy'ye yönlendir (birincil)
-    // Yedek: umido.umitm0d.workers.dev
-    const KOOL_PROXY   = 'https://umitmod-farki.onrender.com/?url=';
-    const KOOL_PROXY_2 = 'https://umido.umitm0d.workers.dev/?url=';
+    // kool.to linki → umido.umitm0d.workers.dev proxy'ye yönlendir
+    const KOOL_PROXY   = 'https://umido.umitm0d.workers.dev/?url=';
+    const KOOL_PROXY_2 = 'https://umittv.sadecenjoy.workers.dev/?url=';
     // isKoolTo: artık SADECE kool.to ham URL'leri (vavoo.to isVavooRaw ile ayrı ele alındı)
     const isKoolTo = !isVavooRaw && (rawUrl.includes('kool.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to'));
     if (isKoolTo) {
@@ -38389,6 +38389,10 @@ function resumeChannel(startTime) {
                 // Vavoo Worker hata verdi → Worker'ı tekrar çağır (taze resolve yapar)
                 showToast('Vavoo yeniden bağlanıyor...');
                 startHls(effectiveUrl);
+            } else if (isVavooWorker) {
+                // Vavoo Worker (direkt) hata verdi → STREAM_PROXY üzerinden dene
+                showToast('Yedek bağlantı deneniyor...');
+                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
@@ -38498,7 +38502,7 @@ function resumeChannel(startTime) {
             }, 8000);
         } else
         if (isKoolTo) {
-            // kool.to → umitmod-farki.onrender.com → HLS, stall olunca otomatik yeniden bağlan
+            // kool.to → umido.umitm0d.workers.dev → HLS, stall olunca otomatik yeniden bağlan
             if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
             startHls(effectiveUrl);
             // Stall dedektörü — 10sn ilerleme yoksa yeniden bağlan
@@ -38510,7 +38514,7 @@ function resumeChannel(startTime) {
                     if (_koolStallCount >= 3) { // 2→3: daha az false positive
                         _koolStallCount = 0;
                         // Birincil proxy stall → yedek proxy ile dene
-                        const _koolFb = (state.player.hls && state.player.hls.url && state.player.hls.url.includes('onrender'))
+                        const _koolFb = (state.player.hls && state.player.hls.url && state.player.hls.url.includes('umido.umitm0d'))
                             ? KOOL_PROXY_2 + encodeURIComponent(rawUrl)
                             : effectiveUrl;
                         showToast('Yayın yenileniyor...');
@@ -38600,15 +38604,15 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
-        // http:// MKV/MP4 → direkt aç (tarayıcıda çalışıyor, sunucu HTTP'ye izin veriyor)
-        // App24'te açılmıyorsa sorun Cleartext Traffic ayarı → App24 manifest ayarından çözülmeli
-        const _isMixedContent = false; // proxy'ye gönderme, direkt dene
+        // http:// MKV/MP4 → App24 WebView'da Cleartext Traffic engeli → proxy üzerinden geç
+        // https:// → direkt aç, hata olursa proxy zinciri
+        const _isMixedContent = rawUrl.startsWith('http:'); // http:// → proxy zorunlu (Android Cleartext)
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → STREAM_PROXY3 → direkt ──
-        // http:// → direkt açma, mutlaka proxy üzerinden geç (Android Cleartext + mixed content)
+        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
+        // http:// → Cleartext engeli → https proxy üzerinden geç
         const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
             ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
             : null;
@@ -38617,7 +38621,7 @@ function resumeChannel(startTime) {
             ? STREAM_PROXY3 + encodeURIComponent(rawUrl)
             : null;
         const _directMediaUrl = _isMixedContent
-            ? (_proxy2Url || _proxy1Url)
+            ? (_proxy2Url || _proxy1Url)  // http:// → turk.sadecenjoy proxy
             : rawUrl;
 
         function _tryPlayMkv(url, fallbacks) {
@@ -38654,14 +38658,11 @@ function resumeChannel(startTime) {
         // Fallback zinciri oluştur
         const _fallbacks = [];
         if (_isMixedContent) {
-            // http:// → proxy zinciri: proxy2 → proxy1 → proxy3 (hepsi proxy, direkt yok)
-            if (_directMediaUrl === _proxy2Url) {
-                if (_proxy1Url) _fallbacks.push(_proxy1Url);
-                if (_proxy3Url) _fallbacks.push(_proxy3Url);
-            } else {
-                if (_proxy2Url) _fallbacks.push(_proxy2Url);
-                if (_proxy3Url) _fallbacks.push(_proxy3Url);
-            }
+            // http:// → proxy zinciri: Render → proxy2 → proxy1 → direkt
+            if (_proxy2Url) _fallbacks.push(_proxy2Url);
+            if (_proxy1Url) _fallbacks.push(_proxy1Url);
+            if (_proxy3Url) _fallbacks.push(_proxy3Url);
+            _fallbacks.push(rawUrl); // son çare: direkt (bazı App24 versiyonları http açar)
         } else {
             // https:// → direkt önce, hata olursa proxy zinciri
             if (_proxy2Url) _fallbacks.push(_proxy2Url);

@@ -3958,271 +3958,190 @@ body {
     position: relative;
     z-index: 10;
 }
-/* ═══ VOD HERO SLIDER CSS ═══ */
-/* ═══ VOD HERO SLIDER — Modern Netflix/Disney+ Style ═══ */
+/* ═══ VOD HERO SLIDER CSS — TOP 10 Netflix Style ═══ */
+/* ═══ VOD HERO SLIDER — Top 10 Listesi Stili ═══ */
 #vodHeroSlider {
     user-select:none; -webkit-user-select:none;
     position:relative; width:100%;
-    margin-bottom:16px;
-    border-radius:18px;
-    overflow:hidden;
-    background:#070710;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 2px 0 rgba(255,215,0,0.08);
+    margin-bottom:20px;
+    background:transparent;
+    overflow:visible;
 }
 #vodHeroSlider.dpad-active {
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.7), 0 8px 40px rgba(0,0,0,0.7);
+    outline: none;
 }
-#vodHeroTrack {
-    position:relative; width:100%; height:260px; overflow:hidden;
-}
-@media (max-width:700px) { #vodHeroTrack { height:200px !important; } }
-@media (max-width:480px) { #vodHeroTrack { height:170px !important; } }
 
-/* ── Slides ── */
-.vhs-slide {
-    position:absolute; inset:0;
-    opacity:0;
-    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1) !important;
-    cursor:pointer;
-    will-change: opacity;
+/* ── Section header ── */
+#vhsTop10Header {
+    display:flex; align-items:center; gap:8px;
+    padding: 0 2px 10px 2px;
 }
-.vhs-slide.active { opacity:1; z-index:2; }
-.vhs-slide.prev   { opacity:0; z-index:1; }
+#vhsTop10HeaderTitle {
+    font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:16px; font-weight:800; color:#fff; letter-spacing:0.3px;
+}
+.top10-flag {
+    background:linear-gradient(135deg,#E50914,#B20710);
+    color:#fff; font-family:'Orbitron',sans-serif;
+    font-size:8px; font-weight:900; letter-spacing:1.5px;
+    padding:3px 8px; border-radius:4px;
+    text-transform:uppercase;
+}
+
+/* ── Horizontal scroll track ── */
+#vodHeroTrack {
+    position:relative; width:100%;
+    display:flex; flex-direction:row;
+    gap:0px;
+    overflow-x:auto; overflow-y:visible;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:28px;
+    padding-top:6px;
+    height:auto !important;
+}
+#vodHeroTrack::-webkit-scrollbar { display:none; }
+
+/* ── Each Top 10 card ── */
+.vhs-slide {
+    position:relative !important;
+    inset:unset !important;
+    flex:0 0 auto;
+    width:116px;
+    cursor:pointer;
+    display:flex !important;
+    align-items:flex-end;
+    opacity:1 !important;
+    z-index:1;
+    transition:transform 0.2s ease;
+}
+.vhs-slide:hover {
+    transform: scale(1.07);
+    z-index:5;
+}
+.vhs-slide.active { opacity:1 !important; z-index:2; }
+/* Kumanda odağı */
+.vhs-slide.remote-focused {
+    transform: scale(1.1);
+    z-index:10;
+    outline: none;
+}
+.vhs-slide.remote-focused .vhs-poster-wrap {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 2.5px #FFD700, 0 8px 32px rgba(255,215,0,0.55) !important;
+}
+.vhs-slide.remote-focused .vhs-rank-num {
+    -webkit-text-stroke: 3px #FFD700 !important;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.7)) !important;
+}
+@media (max-width:480px) { .vhs-slide { width:96px; } }
+
+/* ── Rank number (big outline) ── */
+.vhs-rank-num {
+    font-family:'Orbitron','Rajdhani',sans-serif;
+    font-size:76px; font-weight:900; line-height:1;
+    color:transparent;
+    -webkit-text-stroke: 3px rgba(255,255,255,0.82);
+    letter-spacing:-6px;
+    flex-shrink:0;
+    align-self:flex-end;
+    margin-right:-12px;
+    position:relative; z-index:2;
+    text-shadow: -3px 3px 0 rgba(0,0,0,0.55);
+    padding-bottom:0;
+    min-width:54px; text-align:right;
+    display:block;
+}
+@media (max-width:480px) {
+    .vhs-rank-num { font-size:58px; -webkit-text-stroke:2.5px rgba(255,255,255,0.82); min-width:42px; letter-spacing:-5px; }
+}
+/* Rank 1 — altın rengi */
+.vhs-slide[data-vi="0"] .vhs-rank-num {
+    -webkit-text-stroke: 3px #FFD700;
+    color:transparent;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.55));
+}
+
+/* ── Poster image wrapper ── */
+.vhs-poster-wrap {
+    width:70px; flex-shrink:0;
+    border-radius:8px; overflow:hidden;
+    position:relative; z-index:3;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.06);
+    aspect-ratio: 2/3;
+    background:#111122;
+    border:1.5px solid rgba(255,255,255,0.07);
+    display:block;
+}
+.vhs-slide:hover .vhs-poster-wrap {
+    border-color:rgba(255,215,0,0.6);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.85), 0 0 0 1.5px rgba(255,215,0,0.5);
+}
+@media (max-width:480px) { .vhs-poster-wrap { width:58px; } }
 
 .vhs-bg-img {
     width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-    filter: brightness(0.72) saturate(1.1);
-    transform: scale(1.04);
-    transition: transform 6s ease-out;
+    object-fit:cover; display:block;
+    transition:transform 0.3s ease;
+    filter:brightness(0.9);
 }
-.vhs-slide.active .vhs-bg-img { transform: scale(1.0); }
+.vhs-slide:hover .vhs-bg-img { transform:scale(1.08); filter:brightness(1); }
 
-/* ── Gradient overlays — sinematik ── */
-.vhs-grad-side {
-    position:absolute; inset:0;
-    background:linear-gradient(to right,
-        rgba(4,4,14,0.97) 0%,
-        rgba(4,4,14,0.7) 32%,
-        rgba(4,4,14,0.2) 58%,
-        transparent 80%);
-    pointer-events:none; z-index:3;
-}
-.vhs-grad-bottom {
-    position:absolute; inset:0;
-    background:linear-gradient(to top,
-        rgba(4,4,14,1) 0%,
-        rgba(4,4,14,0.6) 30%,
-        transparent 60%);
-    pointer-events:none; z-index:3;
-}
-/* Üst karartma (başlık yazısı için) */
-.vhs-grad-top {
-    position:absolute; top:0; left:0; right:0; height:80px;
-    background:linear-gradient(to bottom, rgba(4,4,14,0.5) 0%, transparent 100%);
-    pointer-events:none; z-index:3;
-}
-
-/* ── Info panel ── */
-.vhs-info {
-    position:absolute; left:0; top:0; bottom:0;
-    width:62%; display:flex; flex-direction:column;
-    justify-content:flex-end;
-    padding:20px 20px 22px 20px;
-    z-index:6; pointer-events:none;
-}
-@media (max-width:700px) { .vhs-info { width:82%; padding:12px 12px 16px 14px; } }
-@media (max-width:480px) { .vhs-info { width:90%; padding:8px 8px 12px 10px; } }
-
-/* Slide-up animasyonu info için */
-.vhs-slide.active .vhs-info { animation: vhsInfoIn 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes vhsInfoIn {
-    from { transform:translateY(18px); opacity:0; }
-    to   { transform:translateY(0);    opacity:1; }
-}
-
-.vhs-badge-row {
-    display:flex; align-items:center; gap:6px; margin-bottom:10px; pointer-events:none; flex-wrap:wrap;
-}
-.vhs-badge {
-    font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
-    padding:3px 10px; border-radius:5px;
-    background:linear-gradient(135deg,#FFD700,#E8A000);
-    color:#000;
-    box-shadow: 0 2px 8px rgba(255,215,0,0.3);
-}
-.vhs-badge.series {
-    background:linear-gradient(135deg,#7c5fe6,#a78bfa);
-    color:#fff;
-    box-shadow: 0 2px 8px rgba(124,95,230,0.3);
-}
-.vhs-rating-badge {
-    font-size:9px; font-weight:700;
-    padding:3px 9px; border-radius:5px;
-    background:rgba(255,255,255,0.12);
-    border:1px solid rgba(255,255,255,0.2);
-    color:rgba(255,255,255,0.9);
-    display:flex; align-items:center; gap:3px;
-    backdrop-filter:blur(4px);
-}
-
-/* Kanal numarası / sıra badge */
-.vhs-rank-badge {
-    font-size:9px; font-weight:900; letter-spacing:1px;
-    padding:3px 8px; border-radius:5px;
-    background:rgba(0,0,0,0.5);
-    border:1px solid rgba(255,255,255,0.1);
-    color:rgba(255,255,255,0.5);
-}
-
-.vhs-title {
-    font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:22px; font-weight:800; line-height:1.15;
-    color:#fff;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.8);
-    margin-bottom:6px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    letter-spacing:0.3px;
-}
-@media (max-width:700px) { .vhs-title { font-size:16px; } }
-@media (max-width:480px) { .vhs-title { font-size:13px; margin-bottom:4px; } }
-
-.vhs-overview {
-    font-size:11px; color:rgba(255,255,255,0.65); line-height:1.5;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    margin-bottom:12px;
-    text-shadow:0 1px 4px rgba(0,0,0,0.8);
-}
-@media (max-width:600px) { .vhs-overview { display:none; } }
-
-/* ── Buttons ── */
-.vhs-btns {
-    display:flex; gap:8px; align-items:center; pointer-events:auto; flex-wrap:wrap;
-}
-.vhs-btn-play {
-    display:flex; align-items:center; gap:6px;
-    background:linear-gradient(135deg,#FFD700 0%,#E8A000 100%);
-    color:#000; font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:12px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase;
-    border:none; border-radius:10px;
-    padding:8px 18px; cursor:pointer;
-    box-shadow: 0 4px 16px rgba(255,215,0,0.35);
-    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-}
-.vhs-btn-play:hover, .vhs-btn-play:focus {
-    background:linear-gradient(135deg,#ffe550,#FFD700);
-    box-shadow: 0 6px 24px rgba(255,215,0,0.5);
-    transform:translateY(-1px);
-}
-.vhs-btn-play.remote-focused {
-    outline:3px solid #fff !important; outline-offset:3px;
-    box-shadow: 0 0 0 5px rgba(255,255,255,0.25), 0 4px 16px rgba(255,215,0,0.5) !important;
-    transform:scale(1.05);
-}
-.vhs-btn-info {
-    display:flex; align-items:center; gap:5px;
-    background:rgba(255,255,255,0.1);
-    border:1.5px solid rgba(255,255,255,0.25);
+/* ── "Yeni Eklendi" badge overlay ── */
+.vhs-new-badge {
+    position:absolute; bottom:0; left:0; right:0;
+    background:linear-gradient(0deg,rgba(229,9,20,1) 0%,rgba(229,9,20,0.88) 60%,transparent 100%);
     color:#fff; font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:12px; font-weight:700;
-    border-radius:10px; padding:8px 15px; cursor:pointer;
-    backdrop-filter:blur(8px);
-    transition: background 0.15s, border-color 0.15s, transform 0.15s;
-}
-.vhs-btn-info:hover, .vhs-btn-info:focus {
-    background:rgba(255,255,255,0.2);
-    border-color:rgba(255,255,255,0.4);
-    transform:translateY(-1px);
-}
-.vhs-btn-info.remote-focused {
-    outline: none !important;
-    background:rgba(255,255,255,0.22);
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 12px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;
-    transform:scale(1.05);
-}
-@media (max-width:480px) {
-    .vhs-btn-play, .vhs-btn-info { font-size:10px; padding:6px 12px; border-radius:8px; }
+    font-size:7px; font-weight:800; letter-spacing:0.9px; text-transform:uppercase;
+    text-align:center; padding:7px 2px 4px;
+    z-index:4; pointer-events:none;
+    display:flex; align-items:center; justify-content:center; gap:2px;
 }
 
-/* ── Thumbnail strip (right) ── */
-.vhs-thumbs {
-    position:absolute; right:0; top:0; bottom:0;
-    width:150px; display:flex; flex-direction:column;
-    justify-content:center; gap:5px;
-    padding:12px 12px 12px 0;
-    z-index:6;
-}
-@media (max-width:750px) { .vhs-thumbs { display:none; } }
-.vhs-thumb {
-    flex:1; border-radius:8px; overflow:hidden;
-    cursor:pointer; position:relative;
-    border:2px solid transparent;
-    opacity:0.45;
-    max-height:44px;
-    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
-}
-.vhs-thumb.active { border-color:#FFD700; opacity:1; transform:scaleX(1.04); }
-.vhs-thumb:hover  { opacity:0.8; }
-.vhs-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-.vhs-thumb-overlay {
-    position:absolute; inset:0;
-    background:linear-gradient(to right,rgba(0,0,0,0.5),transparent 50%);
+/* ── Title below card ── */
+.vhs-title {
+    position:absolute; bottom:-22px; left:52px; right:0;
+    font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:9px; font-weight:700; line-height:1.2;
+    color:rgba(255,255,255,0.55);
+    text-overflow:ellipsis; overflow:hidden; white-space:nowrap;
     pointer-events:none;
 }
-/* Aktif thumb'da altın sol çizgi */
-.vhs-thumb.active::before {
-    content:'';
-    position:absolute; left:0; top:0; bottom:0; width:3px;
-    background:linear-gradient(to bottom,#FFD700,#E8A000);
-    z-index:2;
-}
 
-/* ── Dots ── */
-#vodHeroDots {
-    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-    display:flex; gap:5px; z-index:20; align-items:center;
-}
-.vhs-dot {
-    height:3px; border-radius:3px;
-    background:rgba(255,255,255,0.25);
-    cursor:pointer;
-    width:14px;
-    transition: background 0.3s, width 0.3s;
-}
-.vhs-dot.active { background:#FFD700; width:30px; }
+/* Legacy overlay elements — gizle */
+.vhs-grad-side, .vhs-grad-bottom, .vhs-grad-top,
+.vhs-info, .vhs-btns, .vhs-btn-play, .vhs-btn-info,
+.vhs-overview, .vhs-badge-row, .vhs-thumbs,
+.vhs-rating-badge, .vhs-rank-badge, .vhs-badge { display:none !important; }
+
+/* ── Dots — Top10 modunda gizle ── */
+#vodHeroDots { display:none !important; }
 
 /* ── Nav arrows ── */
 .vhs-nav {
-    position:absolute; top:50%; transform:translateY(-50%);
+    position:absolute; top:45%; transform:translateY(-50%);
     z-index:20;
-    background:rgba(0,0,0,0.55);
-    border:1.5px solid rgba(255,255,255,0.15);
-    border-radius:50%; width:32px; height:32px;
+    background:rgba(0,0,0,0.78);
+    border:1.5px solid rgba(255,255,255,0.18);
+    border-radius:50%; width:30px; height:30px;
     display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:#fff; font-size:20px; line-height:1;
+    cursor:pointer; color:#fff; font-size:18px; line-height:1;
     opacity:0;
-    transition: opacity 0.2s, background 0.2s;
+    transition:opacity 0.2s, background 0.2s;
     backdrop-filter:blur(6px);
 }
-#vodHeroSlider:hover .vhs-nav { opacity:0.8; }
-.vhs-nav:hover { background:rgba(0,0,0,0.9); opacity:1 !important; }
-#vodHeroPrev { left:10px; }
-#vodHeroNext { right:10px; }
+#vodHeroSlider:hover .vhs-nav { opacity:0.88; }
+.vhs-nav:hover { background:rgba(0,0,0,0.96); opacity:1 !important; }
+#vodHeroPrev { left:-6px; }
+#vodHeroNext { right:-6px; }
 @media (max-width:600px) {
-    .vhs-nav { width:26px; height:26px; font-size:15px; opacity:0.5 !important; }
+    .vhs-nav { width:24px; height:24px; font-size:14px; opacity:0.55 !important; }
 }
 
-/* ── Progress bar ── */
-#vodHeroProgress {
-    position:absolute; bottom:0; left:0;
-    height:3px; width:0%;
-    background:linear-gradient(90deg,#FFD700,#E8A000);
-    z-index:25;
-    transition:width 0.1s linear;
-    border-radius:0 2px 2px 0;
-    box-shadow: 0 0 6px rgba(255,215,0,0.4);
-}
+/* ── Progress bar — Top10 modunda gizle ── */
+#vodHeroProgress { display:none !important; }
+
 /* ═══ /VOD HERO SLIDER CSS ═══ */
 
 #continueWatchingContainer {
@@ -13857,7 +13776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 onfocus="this.style.borderColor='rgba(255,215,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                                 <span id="vodReviewUser" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;"></span>
-                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gonder</button>
+                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gönder</button>
                             </div>
                         </div>
                         <div id="vodReviewsList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;scrollbar-width:none;padding-right:2px;"></div>
@@ -21224,6 +21143,10 @@ listSeriesChannels();
             modal.style.display = 'flex';
             modal.style.zIndex = '10000';
             if (typeof setupVodModalRemote === 'function') setupVodModalRemote();
+        }
+        // TMDB bulunamasa da yorumları aç (channelName ile)
+        if (typeof window.vodOpenReviews === 'function') {
+            window.vodOpenReviews(channelName);
         }
         return;
     }
@@ -32653,7 +32576,7 @@ var _vhs = {
     cur:     0,
     timer:   null,
     DELAY:   4500,
-    SLIDE_COUNT: 5,
+    SLIDE_COUNT: 10,
     lastM3U: undefined
 };
 
@@ -32699,124 +32622,236 @@ function _imgUrl(info, c) {
     return { img: bd || po, thumb: po || bd };
 }
 
-/* ── Build: shuffle + ilk 5 VOD ── */
+/* ── Dizi adı kökünü çıkar (bölüm/sezon suffix temizle) ── */
+function _vhsRootName(name) {
+    return String(name)
+        /* 1. On prefix temizle: "TR | ", "ATV | ", "ATVPanel | " vb.
+           Boru karakterinden once en fazla 20 karakter varsa prefix say */
+        .replace(/^[^|]{1,20}\|\s*/g, '')
+        /* 2. S01E02 / S1E2 / s01e02 */
+        .replace(/\s*[Ss]\d{1,3}[Ee]\d{1,4}.*/g, '')
+        /* 3. " - Bolum 1" / " - Sezon 2 Bolum 5" (tire + anahtar kelime) */
+        .replace(/\s*[-\u2013]\s*(B\u00f6l\u00fcm|Bolum|Sezon|Season|Episode)\b.*/gi, '')
+        /* 4. "1.Bolum" / "2.Sezon" formati */
+        .replace(/\s*\d+\s*\.\s*(B\u00f6l\u00fcm|Bolum|Sezon|Season)\b.*/gi, '')
+        /* 5. Bolum/Episode kelimesi + sayi */
+        .replace(/\s*(B\u00f6l\u00fcm|Bolum|Episode|Ep\.?|Part|Sezon|Season)\s*\d+.*/gi, '')
+        /* 6. Sonunda " - 05" */
+        .replace(/\s*[-\u2013]\s*\d{1,4}\s*$/g, '')
+        /* 7. Sonunda "HD" / "FHD" / "4K" / "1080p" */
+        .replace(/\s+(HD|FHD|4K|SD|720p|1080p)\s*$/gi, '')
+        /* 8. Sonunda parantez ici yil: (2024) */
+        .replace(/\s*\(\d{4}\)\s*$/g, '')
+        /* 9. Sonunda yalniz bolum numarasi (" 5" / " 115") */
+        .replace(/\s+\d{1,4}\s*$/g, '')
+        /* 10. Sonda kalan " -" veya " -" */
+        .replace(/\s*[-\u2013]\s*$/g, '')
+        .trim();
+}
+
+/* ── Build: TMDB Popularity + Rating + Favoriler + İzlenme + Yeni Eklendi ── */
 function _vhsBuild() {
     var slider = document.getElementById('vodHeroSlider');
     if (!slider) return;
 
     _vhs.lastM3U = window.state && window.state.selectedM3U;
 
-    var vods = _getVodPool();
-    if (!vods.length) { slider.style.display = 'none'; return; }
+    var allVods = _getVodPool();
+    if (!allVods.length) { slider.style.display = 'none'; return; }
 
-    /* Her çağrıda shuffle → farklı 5 içerik */
-    vods = vods.slice().sort(function() { return Math.random() - 0.5; });
+    /* ── "En son eklenen" tespiti: M3U array sonundaki %15 = yeni eklendi ──
+       M3U'da addedAt yok; array pozisyonu = ekleme sırası.
+       En sondaki kanallar en yeni. Eşik: son %15 veya minimum 20 kanal. */
+    var totalAll = allVods.length;
+    var NEW_THRESHOLD = Math.max(20, Math.floor(totalAll * 0.15));
+    /* allVods içinde her kanalın orijinal pool pozisyonunu kaydet */
+    var posMap = new Map();
+    for (var pi = 0; pi < allVods.length; pi++) {
+        posMap.set(allVods[pi].name, pi);
+    }
 
-    /* Posteri olanları öne al */
+    /* ── TEKİLLEŞTİRME: her dizi adı kökünden yalnızca 1 kanal tut ──
+       Aynı dizinin farklı bölümleri varsa, en yüksek array pozisyonunu (en yeni)
+       temsil eden bölümü al. */
+    var seenRoots = {};
+    var unique = [];
+    for (var ui = 0; ui < allVods.length; ui++) {
+        var root = _vhsRootName(allVods[ui].name).toLowerCase();
+        if (!root) root = allVods[ui].name.toLowerCase();
+        if (seenRoots[root] !== undefined) {
+            /* Aynı kök — daha yüksek (yani daha yeni) array pozisyonu kazanır */
+            var prevPos = posMap.get(unique[seenRoots[root]].name) || 0;
+            var curPos  = posMap.get(allVods[ui].name) || 0;
+            if (curPos > prevPos) {
+                unique[seenRoots[root]] = allVods[ui];
+            }
+            continue;
+        }
+        seenRoots[root] = unique.length;
+        unique.push(allVods[ui]);
+    }
+    var vods = unique;
+
+    /* ── Yardımcılar ── */
+    var st = window.state;
+    var favs      = (st && st.favs) ? st.favs : new Set();
+    var contWatch = (st && st.continueWatching) ? st.continueWatching : {};
+
+    /* ── Skoru hesapla (çok-sinyal) ──
+       TMDB Popularity  : 0 – ~1000  (ham değer, genellikle 10–500 arası)
+       TMDB Rating bonus: rating × 8  → 0 – 80  (ek puan)
+       Favori bonusu    : +60          (kullanıcı favoriledi)
+       Devam-et bonusu  : +40          (kullanıcı izlemeye başladı)
+       Yeni-eklendi     : +25          (son %15 array)
+       Fallback (TMDB yok): rating×10 veya array-oran×50
+    */
+    var totalUnique = vods.length;
+    vods = vods.map(function(c) {
+        var info    = st && st.vodCache && st.vodCache[c.name];
+        var origPos = posMap.get(c.name) || 0;
+        var isNew   = origPos >= (totalAll - NEW_THRESHOLD);
+        var isFav   = favs.has(c.name);
+        var hasCont = !!contWatch[c.name];
+
+        var score;
+        if (info && info.popularity && parseFloat(info.popularity) > 0) {
+            /* Ana sinyal: TMDB popularity */
+            score = parseFloat(info.popularity);
+            /* Rating ek puanı */
+            if (info.rating && parseFloat(info.rating) > 0) {
+                score += parseFloat(info.rating) * 8;
+            }
+        } else if (info && info.rating && parseFloat(info.rating) > 0) {
+            /* Popularity yok ama rating var */
+            score = parseFloat(info.rating) * 10;
+        } else {
+            /* TMDB verisi hiç yok → array pozisyonu bazlı fallback (0–50) */
+            score = (origPos / Math.max(totalAll - 1, 1)) * 50;
+        }
+
+        /* Kullanıcı davranışı bonusları */
+        if (isFav)   score += 60;
+        if (hasCont) score += 40;
+        if (isNew)   score += 25;
+
+        return { ch: c, score: score, isNew: isNew };
+    });
+
+    /* Büyükten küçüğe sırala */
+    vods.sort(function(a, b) { return b.score - a.score; });
+
+    /* Posteri olanları kesinlikle öne al (puan sırası korunarak) */
     var hasPoster = [], noPoster = [];
-    vods.forEach(function(c) {
-        var info = window.state.vodCache && window.state.vodCache[c.name];
-        ((info && (info.poster || info.backdrop)) || c.logo ? hasPoster : noPoster).push(c);
+    vods.forEach(function(x) {
+        var info = st && st.vodCache && st.vodCache[x.ch.name];
+        ((info && (info.poster || info.backdrop)) || x.ch.logo ? hasPoster : noPoster).push(x);
     });
     vods = hasPoster.concat(noPoster).slice(0, _vhs.SLIDE_COUNT);
 
-    _vhs.items = vods.map(function(c) {
-        var info = window.state.vodCache && window.state.vodCache[c.name];
+    _vhs.items = vods.map(function(x) {
+        var c    = x.ch;
+        var info = st && st.vodCache && st.vodCache[c.name];
         var urls = _imgUrl(info, c);
+        var displayName = _vhsRootName(c.name) || c.name;
         return {
-            name:     c.name,
-            imgSrc:   urls.img,
-            thumbSrc: urls.thumb,
-            isSeries: !!c.isSeries,
-            rating:   info && info.rating  ? parseFloat(info.rating).toFixed(1) : '',
-            year:     info && info.year    ? info.year    : '',
-            overview: info && info.overview ? info.overview : '',
-            chIdx:    window.state.channels.indexOf(c)
+            name:        c.name,
+            displayName: displayName,
+            imgSrc:      urls.img,
+            thumbSrc:    urls.thumb,
+            isSeries:    !!c.isSeries,
+            rating:      info && info.rating     ? parseFloat(info.rating).toFixed(1)    : '',
+            popularity:  info && info.popularity ? parseFloat(info.popularity).toFixed(0) : '',
+            year:        info && info.year       ? info.year    : '',
+            overview:    info && info.overview   ? info.overview : '',
+            chIdx:       (st && st.channels) ? st.channels.indexOf(c) : -1,
+            isNew:       x.isNew   /* "Yeni Eklendi" damgası için */
         };
     });
 
     _vhsRender();
 }
 
-/* ── Render HTML ── */
+/* ── Render HTML — TOP 10 Netflix Style ── */
 function _vhsRender() {
     var slider = document.getElementById('vodHeroSlider');
     var track  = document.getElementById('vodHeroTrack');
     var dots   = document.getElementById('vodHeroDots');
-    if (!slider || !track || !dots || !_vhs.items.length) return;
+    if (!slider || !track || !_vhs.items.length) return;
 
     _vhs.cur = 0;
     slider.style.display = 'block';
 
-    /* Slides */
+    /* ─── Header inject (bir kez) ─── */
+    var hdr = document.getElementById('vhsTop10Header');
+    if (!hdr) {
+        hdr = document.createElement('div');
+        hdr.id = 'vhsTop10Header';
+        hdr.innerHTML =
+            '<span class="top10-flag">TOP 10</span>' +
+            '<span id="vhsTop10HeaderTitle">En Popüler İçerikler</span>';
+        slider.insertBefore(hdr, track);
+    }
+
+    /* ─── Top 10 cards ─── */
     var slidesHtml = _vhs.items.map(function(item, i) {
-        var badge = item.isSeries
-            ? '<span class="vhs-badge series">Dizi</span>'
-            : '<span class="vhs-badge">Film</span>';
-        var meta = '';
-        if (item.rating) meta += '<span class="vhs-rating-badge">\u2B50 ' + item.rating + '</span>';
-        if (item.year)   meta += '<span class="vhs-rating-badge">' + item.year + '</span>';
-        var btnLabel = item.isSeries ? 'Sezonlar' : 'Oynat';
-        var bg = item.imgSrc
-            ? '<img class="vhs-bg-img" src="' + _e(item.imgSrc) + '" alt="" onerror="this.style.display=\'none\';this.parentNode.style.background=\'#0d0d1a\'">'
-            : '<div class="vhs-bg-img" style="background:#0d0d1a;"></div>';
-        return '<div class="vhs-slide' + (i === 0 ? ' active' : '') + '" data-vi="' + i + '">'
-            + bg
-            + '<div class="vhs-grad-top"></div>'
-            + '<div class="vhs-grad-side"></div>'
-            + '<div class="vhs-grad-bottom"></div>'
-            + '<div class="vhs-info">'
-            +   '<div class="vhs-badge-row">' + badge + meta + '</div>'
-            +   '<div class="vhs-title">' + _e(item.name) + '</div>'
-            +   (item.overview ? '<div class="vhs-overview">' + _e(item.overview) + '</div>' : '')
-            +   '<div class="vhs-btns">'
-            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg> ' + btnLabel + '</button>'
-            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Detay</button>'
-            +   '</div>'
+        var rank = i + 1;
+        /* Poster veya backdrop; dikey oran için poster tercih et */
+        var imgSrc = item.thumbSrc || item.imgSrc || '';
+        var imgEl = imgSrc
+            ? '<img class="vhs-bg-img" src="' + _e(imgSrc) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.style.background=\'#1a1a2e\'">'
+            : '<div style="width:100%;height:100%;background:#1a1a2e;"></div>';
+
+        /* Yeni eklendi badge — M3U array son %15'ine giren içerikler */
+        var newBadge = item.isNew
+            ? '<div class="vhs-new-badge"><svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>YENİ EKLENDİ</div>'
+            : '';
+
+        return '<div class="vhs-slide" data-vi="' + i + '" title="' + _e(item.displayName || item.name) + '">'
+            + '<span class="vhs-rank-num">' + rank + '</span>'
+            + '<div class="vhs-poster-wrap">'
+            +   imgEl
+            +   newBadge
             + '</div>'
+            + '<div class="vhs-title">' + _e(item.displayName || item.name) + '</div>'
             + '</div>';
     }).join('');
 
-    /* Thumbnail strip */
-    var thumbsHtml = _vhs.items.map(function(item, i) {
-        var src = item.thumbSrc
-            ? '<img src="' + _e(item.thumbSrc) + '" alt="" onerror="this.parentNode.style.background=\'#1a1a2e\';this.remove();">'
-            : '<div style="width:100%;height:100%;background:#1a1a2e;"></div>';
-        return '<div class="vhs-thumb' + (i === 0 ? ' active' : '') + '" onclick="_vhsNavTo(' + i + ')">'
-            + src + '<div class="vhs-thumb-overlay"></div></div>';
-    }).join('');
-
-    track.innerHTML = slidesHtml + '<div class="vhs-thumbs">' + thumbsHtml + '</div>';
+    track.innerHTML = slidesHtml;
 
     /* Slide tıklama → detay */
     track.querySelectorAll('.vhs-slide').forEach(function(s) {
-        s.addEventListener('click', function(e) {
-            if (e.target.closest('button')) return;
+        s.addEventListener('click', function() {
             _vhsDetail(parseInt(s.getAttribute('data-vi')));
         });
     });
 
-    /* Dots */
-    dots.innerHTML = _vhs.items.map(function(_, i) {
-        return '<div class="vhs-dot' + (i === 0 ? ' active' : '') + '" onclick="_vhsNavTo(' + i + ')"></div>';
-    }).join('');
+    /* Dots gizle */
+    if (dots) dots.innerHTML = '';
 
-    /* Progress bar */
-    var prog = document.getElementById('vodHeroProgress');
-    if (!prog) {
-        prog = document.createElement('div');
-        prog.id = 'vodHeroProgress';
-        slider.appendChild(prog);
+    /* Nav arrows: track kaydırma */
+    var prevBtn = document.getElementById('vodHeroPrev');
+    var nextBtn = document.getElementById('vodHeroNext');
+    if (prevBtn) {
+        prevBtn.onclick = function() {
+            track.scrollBy({ left: -220, behavior: 'smooth' });
+        };
+    }
+    if (nextBtn) {
+        nextBtn.onclick = function() {
+            track.scrollBy({ left: 220, behavior: 'smooth' });
+        };
     }
 
-    _vhsStart();
+    /* Top10 modunda otomatik timer yok */
+    _vhsStop();
 }
 
 /* ── Oynat ── */
 window._vhsPlay = function(vi) {
     var item = _vhs.items[vi];
     if (!item) return;
-    var chName = item.name;
+    var chName     = item.name;
+    var seriesRoot = item.displayName || _vhsRootName(chName) || chName;
     /* filtered içinde ara, yoksa geçici ekle */
     var idx = window.state.filtered.findIndex(function(c) { return c && c.name === chName; });
     if (idx === -1) {
@@ -32824,10 +32859,11 @@ window._vhsPlay = function(vi) {
         if (ch) { window.state.filtered.push(ch); idx = window.state.filtered.length - 1; }
     }
     if (idx === -1) return;
+    var chIdx = window.state.channels.findIndex(function(c) { return c && c.name === chName; });
     if (item.isSeries && typeof openSeriesModal === 'function') {
-        // Önce açık olabilecek vodModal'ı kapat
+        /* Dizi: root adıyla aç (bölüm numarasız) */
         if (typeof closeVodModal === 'function') closeVodModal();
-        openSeriesModal(chName, idx);
+        openSeriesModal(seriesRoot, chIdx >= 0 ? chIdx : idx);
     } else {
         // Film: açık vodModal ve dizi state'ini temizle
         if (typeof closeVodModal === 'function') closeVodModal();
@@ -32863,35 +32899,60 @@ window._vhsPlay = function(vi) {
     }
 };
 
-/* ── Detay (film bilgisi modalı) ── */
+/* ── Detay (film bilgisi modalı veya dizi modalı) ── */
 window._vhsDetail = function(vi) {
     var item = _vhs.items[vi];
     if (!item) return;
-    var chName = item.name;
+
+    /* item.name = orijinal kanal adı (örn. "Süper Baba 1")
+       item.displayName = root adı (örn. "Süper Baba")
+       item.isSeries = M3U parse'dan gelen ch.isSeries flag'i */
+    var chName     = item.name;
+    var seriesRoot = item.displayName || _vhsRootName(chName) || chName;
+
+    /* filtered'da ara; yoksa channels'dan ekle */
     var idx = window.state.filtered.findIndex(function(c) { return c && c.name === chName; });
     if (idx === -1) {
         var ch = window.state.channels.find(function(c) { return c && c.name === chName; });
         if (ch) { window.state.filtered.push(ch); idx = window.state.filtered.length - 1; }
     }
+    var chIdx = window.state.channels.findIndex(function(c) { return c && c.name === chName; });
 
-    /* Hero'dan bilinen poster/backdrop varsa — TMDB beklenmeden modal'a yükle */
-    var _vm = document.getElementById('vodModal');
-    var _pw = document.getElementById('vodPosterWrapper');
+    /* Poster'i önceden göster (hem film hem dizi için) */
     var _preSrc = item.imgSrc || item.thumbSrc || '';
-    if (_vm && _pw && _preSrc) {
-        _pw.innerHTML = '<img loading="lazy" id="vodModalPoster" class="vod-poster" src="' + _preSrc + '" alt="' + chName.replace(/"/g,'') + '" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+\'">';
-        if (document.getElementById('vodModalTitle')) document.getElementById('vodModalTitle').textContent = chName;
-        if (document.getElementById('vodModalMeta') && item.year) {
-            document.getElementById('vodModalMeta').innerHTML = '<div class="vod-meta-item">' + item.year + '</div>' + (item.rating ? '<div class="vod-meta-item tmdb-rating">&#9733; ' + item.rating + '</div>' : '');
+    if (_preSrc) {
+        var _pw = document.getElementById('vodPosterWrapper');
+        if (_pw) {
+            _pw.innerHTML = '<img loading="lazy" id="vodModalPoster" class="vod-poster" src="' + _preSrc
+                + '" alt="' + seriesRoot.replace(/"/g,'') + '"'
+                + ' onerror="this.style.display=\'none\'">';
         }
-        /* Modalı hemen göster — poster görünür */
-        _vm.style.display = 'flex';
-        _vm.style.zIndex = '10000';
+        var _t = document.getElementById('vodModalTitle');
+        if (_t) _t.textContent = seriesRoot;
+        var _m = document.getElementById('vodModalMeta');
+        if (_m && item.year) {
+            _m.innerHTML = '<div class="vod-meta-item">' + item.year + '</div>'
+                + (item.rating ? '<div class="vod-meta-item tmdb-rating">&#9733; ' + item.rating + '</div>' : '');
+        }
     }
 
     window.state.player.name = chName;
     window.state.player.isLiveStream = false;
-    if (typeof openVodModal === 'function') {
+
+    /* ── DİZİ / FİLM DALI: item.isSeries'e güven; openVodModal'ın
+       kırık tespitini bypass et ── */
+    if (item.isSeries && typeof openSeriesModal === 'function') {
+        /* Vodal'ı önce kapat/sıfırla, sonra dizi modalını aç */
+        var _vm2 = document.getElementById('vodModal');
+        if (_vm2) { _vm2.removeAttribute('data-channel-name'); _vm2.style.display = 'none'; }
+        openSeriesModal(seriesRoot, chIdx >= 0 ? chIdx : undefined);
+    } else if (typeof openVodModal === 'function') {
+        /* Film — openVodModal normal akışı */
+        var _vm3 = document.getElementById('vodModal');
+        if (_vm3) {
+            _vm3.style.display = 'flex';
+            _vm3.style.zIndex  = '10000';
+        }
         openVodModal(chName);
     } else if (typeof playVod === 'function' && idx >= 0) {
         playVod(idx);
@@ -32900,19 +32961,16 @@ window._vhsDetail = function(vi) {
 
 /* ── Navigasyon ── */
 function _setSlide(idx) {
-    document.querySelectorAll('.vhs-slide').forEach(function(s, i) { s.classList.toggle('active', i === idx); });
-    document.querySelectorAll('.vhs-dot').forEach(function(d, i)   { d.classList.toggle('active', i === idx); });
-    document.querySelectorAll('.vhs-thumb').forEach(function(t, i) { t.classList.toggle('active', i === idx); });
+    /* Top 10 modunda slide geçişi yok — scroll tabanlı */
     _vhs.cur = idx;
-    _vhsProgReset();
 }
 
 window._vhsNavTo = function(idx) { _vhsStop(); _setSlide(idx); _vhsStart(); };
 
 window.vodHeroNav = function(dir) {
-    _vhsStop();
-    _setSlide((_vhs.cur + dir + _vhs.items.length) % _vhs.items.length);
-    _vhsStart();
+    /* Top 10 modunda: track'i yatay kaydır */
+    var track = document.getElementById('vodHeroTrack');
+    if (track) track.scrollBy({ left: dir * 220, behavior: 'smooth' });
 };
 
 /* ── Progress bar ── */
@@ -32951,11 +33009,16 @@ function _vhsCatCheck() {
     if (cat === 'cont' || cat === 'fav') { slider.style.display = 'none'; _vhsStop(); return; }
     if (_isVodCat()) {
         var curM3U = window.state && window.state.selectedM3U;
-        if (!_vhs.items.length || _vhs.lastM3U !== curM3U) {
+        /* vodCache dolu mu? Dolu değilse veya M3U değiştiyse yeniden build */
+        var cacheSize = window.state.vodCache ? Object.keys(window.state.vodCache).length : 0;
+        var needRebuild = !_vhs.items.length
+            || _vhs.lastM3U !== curM3U
+            || (_vhs._lastCacheSize !== undefined && cacheSize > _vhs._lastCacheSize + 5);
+        _vhs._lastCacheSize = cacheSize;
+        if (needRebuild) {
             _vhsBuild();
         } else {
             slider.style.display = 'block';
-            if (!_vhs.timer) _vhsStart();
         }
     } else {
         slider.style.display = 'none'; _vhsStop();
@@ -43209,9 +43272,9 @@ function cleanupDeleteContinueModalRemote() {
                 document.querySelectorAll('.cat-pill')[state.remote.catIndex]?.scrollIntoView({block:'nearest',inline:'start'}); 
             }
             else if(state.remote.zone==='heroSlider') {
-                // ← : önceki slide
-                if (typeof vodHeroNav === 'function') vodHeroNav(-1);
-                state.remote.heroSliderBtnIdx = 0;
+                // ← : önceki kart
+                const _slides_l = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                state.remote.heroSliderBtnIdx = Math.max(0, (state.remote.heroSliderBtnIdx || 0) - 1);
                 updateRemoteFocus();
             }
             else if(state.remote.zone==='catManageBtn') {
@@ -43299,9 +43362,9 @@ function cleanupDeleteContinueModalRemote() {
                 state.remote.index = Math.min(cards.length-1, state.remote.index+1); 
             }
             else if(state.remote.zone==='heroSlider') {
-                // → : sonraki slide
-                if (typeof vodHeroNav === 'function') vodHeroNav(1);
-                state.remote.heroSliderBtnIdx = 0;
+                // → : sonraki kart
+                const _slides_r = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                state.remote.heroSliderBtnIdx = Math.min(_slides_r.length - 1, (state.remote.heroSliderBtnIdx || 0) + 1);
                 updateRemoteFocus();
             }
             break;
@@ -43344,12 +43407,12 @@ case 'OK':
                 openCatHideModal();
             }
             else if(state.remote.zone==='heroSlider') {
-                // OK: Aktif slide'daki seçili butona tıkla (Oynat veya Detay)
-                const _activeSl = document.querySelector('#vodHeroSlider .vhs-slide.active');
-                if (_activeSl) {
-                    const _hsBtn = _activeSl.querySelectorAll('.vhs-btn-play, .vhs-btn-info');
-                    const _idx = state.remote.heroSliderBtnIdx || 0;
-                    if (_hsBtn[_idx]) _hsBtn[_idx].click();
+                // OK: Top 10 modunda odaklı kartı aç → detay
+                const _slides = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                const _cardIdx = Math.min(state.remote.heroSliderBtnIdx || 0, _slides.length - 1);
+                const _focusedCard = _slides[_cardIdx];
+                if (_focusedCard) {
+                    _focusedCard.click();
                 }
             }
             else if(state.remote.zone==='channels') { 
@@ -44017,18 +44080,25 @@ function handleFavoriteChannelSelect(key) {
     }
     else if (state.remote.zone === 'heroSlider') {
         const _slider = document.getElementById('vodHeroSlider');
-        const _btnIdx = state.remote.heroSliderBtnIdx || 0;
-        const _activeSlide = _slider ? (_slider.querySelector('.vhs-slide.active') || _slider.querySelector('.vhs-slide')) : null;
-        if (_activeSlide) {
-            const _btns = _activeSlide.querySelectorAll('.vhs-btn-play, .vhs-btn-info');
-            el = _btns[_btnIdx] || _btns[0] || null;
+        const _track  = document.getElementById('vodHeroTrack');
+        const _slides = _slider ? Array.from(_slider.querySelectorAll('.vhs-slide')) : [];
+        const _cardIdx = Math.min(state.remote.heroSliderBtnIdx || 0, Math.max(0, _slides.length - 1));
+        state.remote.heroSliderBtnIdx = _cardIdx;
+        el = _slides[_cardIdx] || null;
+        /* Odaklı kartı track içinde görünür hale getir */
+        if (el && _track) {
+            const cardLeft = el.offsetLeft;
+            const cardRight = cardLeft + el.offsetWidth;
+            const trackLeft  = _track.scrollLeft;
+            const trackRight = trackLeft + _track.clientWidth;
+            if (cardLeft < trackLeft)        _track.scrollLeft = cardLeft - 8;
+            else if (cardRight > trackRight) _track.scrollLeft = cardRight - _track.clientWidth + 8;
         }
         if (_slider) {
             _slider.classList.add('dpad-active');
-            _slider._dpadZone = true;
             _slider.scrollIntoView({ block: 'nearest', behavior: 'auto' });
         }
-        hint = '←→ Slide Değiştir | OK: Oynat/Detay | ↑ Kategoriler | ↓ Kanallara';
+        hint = '←→ Kart Seç (' + (_cardIdx + 1) + '/' + _slides.length + ') | OK: Aç | ↑ Kategoriler | ↓ Kanallara';
     }
 
     if(el) {
@@ -50055,12 +50125,13 @@ var _profAvatarIDB = (function() {
     function _open() {
         return new Promise(function(resolve, reject) {
             if (_db) { resolve(_db); return; }
+            var _t = setTimeout(function(){ reject(new Error('IDB timeout')); }, 2000);
             var req = indexedDB.open(DB_NAME, DB_VER);
             req.onupgradeneeded = function(e) {
                 e.target.result.createObjectStore(STORE);
             };
-            req.onsuccess = function(e) { _db = e.target.result; resolve(_db); };
-            req.onerror   = function(e) { reject(e); };
+            req.onsuccess = function(e) { clearTimeout(_t); _db = e.target.result; resolve(_db); };
+            req.onerror   = function(e) { clearTimeout(_t); reject(e); };
         });
     }
 
@@ -55708,34 +55779,67 @@ function vrUserColor(name) {
   return colors[h % colors.length];
 }
 
-// ── Firebase GET ──
+// ── Firebase GET (XHR fallback) ──
 async function vrFbGet(path) {
+  const url = VOD_REVIEWS_FB + path + '.json';
   try {
-    const r = await fetch(VOD_REVIEWS_FB + path + '.json', { method: 'GET' });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch(e) { return null; }
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), 8000);
+    const r = await fetch(url, { method: 'GET', cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(tid);
+    if (r.ok) return await r.json().catch(()=>null);
+  } catch(e) {}
+  // XHR fallback (App24/WebView)
+  return new Promise(function(resolve) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 8000;
+      xhr.onload = function() { try { resolve(xhr.status>=200&&xhr.status<300 ? JSON.parse(xhr.responseText) : null); } catch(e){resolve(null);} };
+      xhr.onerror = xhr.ontimeout = function(){ resolve(null); };
+      xhr.send(null);
+    } catch(e){ resolve(null); }
+  });
 }
 
-// ── Firebase PUSH ──
+// ── Firebase PUSH (XHR fallback) ──
 async function vrFbPush(path, data) {
+  const url = VOD_REVIEWS_FB + path + '.json';
+  const bodyStr = JSON.stringify(data);
+  // fetch dene
   try {
-    const r = await fetch(VOD_REVIEWS_FB + path + '.json', {
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), 10000);
+    const r = await fetch(url, {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: bodyStr,
+      signal: ctrl.signal
     });
-    if (!r.ok) {
-      const errBody = await r.text().catch(()=>'');
-      console.warn('[VodReview] Firebase POST hata:', r.status, errBody);
-      return null;
-    }
-    return await r.json();
-  } catch(e) {
-    console.warn('[VodReview] Firebase POST exception:', e.message);
-    return null;
-  }
+    clearTimeout(tid);
+    const txt = await r.text().catch(()=>'');
+    if (r.ok) { try { return JSON.parse(txt); } catch(e){ return null; } }
+    // hata: sessiz geç, XHR dene
+  } catch(e) {}
+  // XHR fallback (App24/WebView — fetch bloke olursa)
+  return new Promise(function(resolve) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 10000;
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch(e){ resolve(null); }
+        } else {
+          resolve(null);
+        }
+      };
+      xhr.onerror = xhr.ontimeout = function(){ resolve(null); };
+      xhr.send(bodyStr);
+    } catch(e){ resolve(null); }
+  });
 }
 
 // ── Durum ──
@@ -55750,6 +55854,9 @@ window.vodOpenReviews = async function(contentTitle) {
   _vrCurrentKey = vrSafeKey(_vrCurrentTitle);
   _vrMyStars = 0;
   _vrMyReviewKey = '';
+  // Global'e yaz — vodSubmitReview farklı scope'tan erişebilsin
+  window._vrCurrentKeyGlobal = _vrCurrentKey;
+  window._vrCurrentTitleGlobal = _vrCurrentTitle;
 
   const section = document.getElementById('vodReviewsSection');
   if (!section) return;
@@ -55795,14 +55902,27 @@ async function vodLoadReviews() {
   const countEl = document.getElementById('vodReviewCount');
   if (!listEl) return;
 
+  if (!_vrCurrentKey) {
+    // Global'den al
+    if (window._vrCurrentKeyGlobal) {
+      _vrCurrentKey = window._vrCurrentKeyGlobal;
+      _vrCurrentTitle = window._vrCurrentTitleGlobal || '';
+    } else {
+      listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Henüz yorum yok. İlk yorumu sen yaz!</div>';
+      return;
+    }
+  }
+
   listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Yorumlar yükleniyor...</div>';
 
-  const data = await vrFbGet('/reviews/' + _vrCurrentKey);
+  let data = null;
+  try { data = await vrFbGet('/reviews/' + _vrCurrentKey); } catch(e) {}
 
   listEl.innerHTML = '';
-  if (!data || Object.keys(data).length === 0) {
+  if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
     if (emptyEl) emptyEl.style.display = 'block';
     if (countEl) countEl.textContent = '';
+    listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Henüz yorum yok. İlk yorumu sen yaz!</div>';
     return;
   }
   if (emptyEl) emptyEl.style.display = 'none';
@@ -55817,12 +55937,22 @@ async function vodLoadReviews() {
     if (rev.userId === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
     vodRenderReview(key, rev, myName);
   });
+
+  /* Yeni yorum eklendikten sonra listeyi en üste kaydır (yeni yorum en üstte) */
+  requestAnimationFrame(function() {
+    listEl.scrollTop = 0;
+  });
 }
 
 // ── Tek yorum kartı oluştur ──
 function vodRenderReview(key, rev, myName) {
-  const listEl = document.getElementById('vodReviewsList');
+  let listEl = document.getElementById('vodReviewsList');
   if (!listEl) return;
+  // Eğer liste "Henüz yorum yok" veya "yükleniyor" yazısı içeriyorsa temizle
+  if (listEl.children.length === 1 && listEl.firstElementChild &&
+      listEl.firstElementChild.style && listEl.firstElementChild.style.textAlign === 'center') {
+    listEl.innerHTML = '';
+  }
 
   // isMe: hem userId hem nick karşılaştır (override sonrası mismatch önle)
   const isMe = rev.userId === myName || rev.nick === myName;
@@ -55905,38 +56035,70 @@ window.vodSubmitReview = async function() {
     if (typeof showToast === 'function') showToast('⚠ Yorum yazın veya puan verin');
     return;
   }
+
+  // _vrCurrentKey boşsa sırayla fallback dene
   if (!_vrCurrentKey) {
-    if (typeof showToast === 'function') showToast('⚠ İçerik bulunamadı');
+    // 1) Global window'dan al (vodOpenReviews set etmiş olmalı)
+    if (window._vrCurrentKeyGlobal) {
+      _vrCurrentKey = window._vrCurrentKeyGlobal;
+      _vrCurrentTitle = window._vrCurrentTitleGlobal || '';
+    } else {
+      // 2) Modal başlığından üret
+      try {
+        const titleEl = document.getElementById('vodModalTitle') || document.querySelector('.vod-title');
+        const fallbackTitle = (titleEl && titleEl.textContent.trim()) || _vrCurrentTitle || 'unknown';
+        _vrCurrentTitle = fallbackTitle;
+        _vrCurrentKey = vrSafeKey(fallbackTitle);
+        window._vrCurrentKeyGlobal = _vrCurrentKey;
+        window._vrCurrentTitleGlobal = _vrCurrentTitle;
+      } catch(e) {}
+    }
+  }
+  if (!_vrCurrentKey) {
+    if (typeof showToast === 'function') showToast('⚠ İçerik bulunamadı — filmi tekrar açın');
     return;
   }
 
-  const btn = document.querySelector('[onclick="vodSubmitReview()"]');
+  /* ID önce, yoksa attribute selector ile bul */
+  const btn = document.getElementById('vodSubmitBtn')
+           || document.querySelector('[onclick="vodSubmitReview()"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
-  const _myAvatarRaw = await _profAvatarIDB.get();
+  let _myAvatarRaw = '';
+  try {
+    _myAvatarRaw = await Promise.race([
+      _profAvatarIDB.get(),
+      new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
+    ]);
+  } catch(e) { _myAvatarRaw = ''; }
 
-  // Avatar küçült: data: URL'leri 48x48px JPEG thumbnail'e sikistir (~2KB), http dogrudan gec
+  // Avatar küçült: data: URL'leri 48x48px JPEG thumbnail'e sıkıştır (~2KB), http doğrudan geç
   async function _shrinkAvatar(src) {
     if (!src) return '';
     if (src.startsWith('http')) return src;
     if (!src.startsWith('data:')) return '';
     try {
-      return await new Promise(function(resolve) {
-        var img = new Image();
-        img.onload = function() {
-          var c = document.createElement('canvas');
-          var sz = 48; c.width = sz; c.height = sz;
-          var ctx = c.getContext('2d');
-          var s = Math.min(img.naturalWidth, img.naturalHeight);
-          var ox = (img.naturalWidth - s) / 2;
-          var oy = (img.naturalHeight - s) / 2;
-          ctx.drawImage(img, ox, oy, s, s, 0, 0, sz, sz);
-          resolve(c.toDataURL('image/jpeg', 0.72));
-        };
-        img.onerror = function() { resolve(''); };
-        img.src = src;
-      });
+      return await Promise.race([
+        new Promise(function(resolve) {
+          var img = new Image();
+          img.onload = function() {
+            try {
+              var c = document.createElement('canvas');
+              var sz = 48; c.width = sz; c.height = sz;
+              var ctx = c.getContext('2d');
+              var s = Math.min(img.naturalWidth, img.naturalHeight);
+              var ox = (img.naturalWidth - s) / 2;
+              var oy = (img.naturalHeight - s) / 2;
+              ctx.drawImage(img, ox, oy, s, s, 0, 0, sz, sz);
+              resolve(c.toDataURL('image/jpeg', 0.72));
+            } catch(e) { resolve(''); }
+          };
+          img.onerror = function() { resolve(''); };
+          img.src = src;
+        }),
+        new Promise(function(r){ setTimeout(function(){ r(''); }, 2000); })
+      ]);
     } catch(e) { return ''; }
   }
   const _myAvatarToSave = await _shrinkAvatar(_myAvatarRaw);
@@ -55948,7 +56110,8 @@ window.vodSubmitReview = async function() {
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
     ts: Date.now(),
-    avatar: _myAvatarToSave
+    // Avatar: sadece http URL'leri gönder, data: URL'leri çok büyük olabilir
+    avatar: (_myAvatarToSave && _myAvatarToSave.startsWith('http')) ? _myAvatarToSave : ''
   };
 
   // Mevcut yorumu sil (güncelleme)
@@ -55958,19 +56121,61 @@ window.vodSubmitReview = async function() {
     } catch(e) {}
   }
 
-  const result = await vrFbPush('/reviews/' + _vrCurrentKey, reviewData);
-  if (btn) { btn.disabled = false; btn.textContent = 'Gönder'; }
+  // Gönder — fetch başarısız olursa XHR fallback zaten vrFbPush içinde
+  let result = null;
+  try {
+    result = await vrFbPush('/reviews/' + _vrCurrentKey, reviewData);
+  } catch(e) {
+    result = null;
+  }
+
+  // Butonu her durumda sıfırla
+  const _btnReset = document.getElementById('vodSubmitBtn')
+                 || document.querySelector('[onclick="vodSubmitReview()"]');
+  if (_btnReset) { _btnReset.disabled = false; _btnReset.textContent = 'Gönder'; }
 
   if (!result || !result.name) {
-    if (typeof showToast === 'function') showToast('⚠ Yorum gönderilemedi — Firebase DB kurallarını veya bağlantıyı kontrol edin');
-    console.error('[VodReview] Gönderme başarısız. FB_URL:', VOD_REVIEWS_FB, ' key:', _vrCurrentKey);
-    return;
+    // Son çare: XHR ile doğrudan dene
+    const fallbackResult = await new Promise(function(resolve) {
+      try {
+        var xhr = new XMLHttpRequest();
+        var url = VOD_REVIEWS_FB + '/reviews/' + _vrCurrentKey + '.json';
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 10000;
+        xhr.onload = function() {
+          try {
+            var d = JSON.parse(xhr.responseText);
+            resolve((xhr.status >= 200 && xhr.status < 300 && d && d.name) ? d : null);
+          } catch(e) { resolve(null); }
+        };
+        xhr.onerror = xhr.ontimeout = function() { resolve(null); };
+        xhr.send(JSON.stringify(reviewData));
+      } catch(e) { resolve(null); }
+    });
+
+    if (!fallbackResult || !fallbackResult.name) {
+      if (typeof showToast === 'function') showToast('⚠ Yorum gönderilemedi — internet bağlantısını kontrol edin');
+      return;
+    }
+    result = fallbackResult;
   }
 
   _vrMyReviewKey = result.name;
   if (input) input.value = '';
   if (typeof showToast === 'function') showToast('✅ Yorumunuz kaydedildi!');
-  await vodLoadReviews();
+
+  // Yorumu direkt listeye ekle (Firebase propagation delay'ini atla)
+  const listEl2 = document.getElementById('vodReviewsList');
+  if (listEl2) {
+    listEl2.innerHTML = ''; // temizle
+    const emptyEl2 = document.getElementById('vodReviewsEmpty');
+    if (emptyEl2) emptyEl2.style.display = 'none';
+  }
+  vodRenderReview(_vrMyReviewKey, reviewData, userName);
+
+  // 2 saniye sonra Firebase'den yükle (diğer yorumlar da gelsin)
+  setTimeout(async function() { await vodLoadReviews(); }, 2000);
 };
 
 // ── Yorum sil ──
@@ -56045,17 +56250,19 @@ function _fbXHR(method, url, body) {
 
 async function _fbFetch(method, path, body) {
   const url = FB_URL + path + '.json';
-  // Önce fetch dene
+  // Önce fetch dene (no-cors yerine cors, ama mode olmadan dene de)
   try {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 8000);
-    const opts = { method, mode: 'cors', cache: 'no-store', signal: ctrl.signal };
+    const opts = { method, cache: 'no-store', signal: ctrl.signal };
     if(body !== undefined) { opts.headers = {'Content-Type':'application/json'}; opts.body = JSON.stringify(body); }
     const r = await fetch(url, opts);
     clearTimeout(tid);
-    if(r.ok) return { ok: true, text: await r.text() };
+    const txt = await r.text().catch(()=>'');
+    if(r.ok) return { ok: true, text: txt };
+    // HTTP hata kodu geldi - XHR ile dene
   } catch(e) {}
-  // Fetch başarısız → XHR ile tekrar dene (Brave uyumluluğu)
+  // Fetch başarısız → XHR ile tekrar dene (App24/WebView uyumluluğu)
   return _fbXHR(method, url, body);
 }
 
@@ -56075,10 +56282,16 @@ async function fbSet(path, data) {
 async function fbPush(path, data) {
   try {
     const res = await _fbFetch('POST', path, data);
-    if(!res.ok) return null;
+    if(!res.ok) {
+      console.warn('[FB] POST başarısız:', path, res.text);
+      return null;
+    }
     const d = JSON.parse(res.text);
-    return d.name;
-  } catch(e) { return null; }
+    return d.name || null;
+  } catch(e) {
+    console.warn('[FB] POST exception:', path, e.message);
+    return null;
+  }
 }
 async function fbDelete(path) {
   try { await _fbFetch('DELETE', path); } catch(e) {}
@@ -56177,26 +56390,54 @@ window.wpLoadRooms = async function wpLoadRooms() {
   list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:14px;">Odalar yükleniyor...</div>';
   let rooms = null;
   let fetchOk = false;
+  const testUrl = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app/rooms.json';
+  // Önce fetch dene
   try {
-    // Firebase'e doğrudan fetch ile bağlantı testi yap
-    const testUrl = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app/rooms.json';
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 8000);
-    const resp = await fetch(testUrl, { method: 'GET', mode: 'cors', cache: 'no-store', signal: ctrl.signal });
+    const resp = await fetch(testUrl, { method: 'GET', cache: 'no-store', signal: ctrl.signal });
     clearTimeout(tid);
     if (resp.ok) {
       fetchOk = true;
-      rooms = await resp.json(); // null = DB boş (normal), object = odalar var
+      rooms = await resp.json().catch(() => null);
     }
-  } catch(e) { fetchOk = false; }
+  } catch(e) {}
+  // Fetch başarısız → XHR ile dene (App24/WebView)
+  if (!fetchOk) {
+    await new Promise(function(resolve) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', testUrl, true);
+        xhr.timeout = 8000;
+        xhr.onload = function() {
+          try {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              fetchOk = true;
+              rooms = JSON.parse(xhr.responseText);
+            }
+          } catch(e) { fetchOk = true; rooms = null; }
+          resolve();
+        };
+        xhr.onerror = xhr.ontimeout = function() { resolve(); };
+        xhr.send(null);
+      } catch(e) { resolve(); }
+    });
+  }
 
   list.innerHTML = '';
   if(!fetchOk) {
-    list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
-      '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Bağlantı hatası</div>' +
-      '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
-      '</div>';
-    return;
+    // Son çare: fbGet ile dene (kendi XHR fallback'i var)
+    rooms = await fbGet('/rooms');
+    if(rooms !== null) {
+      fetchOk = true;
+    } else {
+      list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
+        '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Firebase bağlantısı kurulamadı</div>' +
+        '<div style="color:rgba(255,255,255,0.4);font-size:10px;margin-bottom:8px;">İnternet bağlantınızı kontrol edin</div>' +
+        '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
+        '</div>';
+      return;
+    }
   }
   if(!rooms || Object.keys(rooms).length === 0) {
     list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:14px;">Henüz aktif oda yok. İlk odayı sen aç! 🎉</div>';
@@ -56448,7 +56689,7 @@ window.wpCreateRoom = async function() {
 
   if(btn) { btn.disabled = false; btn.textContent = '✦ ODA AÇ'; }
 
-  if(!ok) { wpShowToast('⚠ Bağlantı hatası, tekrar dene'); return; }
+  if(!ok) { wpShowToast('⚠ Firebase bağlantı hatası — internet bağlantını ve Firebase kurallarını kontrol et'); return; }
 
   // Şifre varsa toast ile göster
   if(password) wpShowToast('🔒 Şifreli oda: ' + code);
@@ -56575,7 +56816,8 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
     lastSeen: Date.now(),
     online: true
   });
-  WP.myId = memberId;
+  WP.myId = memberId || ('local_' + Date.now()); // Firebase başarısız olursa yerel ID
+  if(!memberId) console.warn('[WP] Firebase üye yazma başarısız - yerel mod');
 
   // UI güncelle
   document.getElementById('wpPanelCode').textContent = code;
@@ -56583,6 +56825,9 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   if(_rnEl) _rnEl.textContent = roomName || '';
   wpUpdateStars(0);
   wpClearAll();
+  // Kendimizi hemen listeye ekle (SSE/Firebase bağlantısını bekleme)
+  wpAddMember({ nick, color: WP.myColor, isHost, isMe: true, lastSeen: Date.now() });
+  wpUpdateMeta();
   wpAddSystemMsg('🎉 Watch Party başladı! İzleniyor: ' + contentTitle);
 
   // Panel aç
@@ -56610,8 +56855,8 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   // Sayfadan ayrılınca kendini offline yap
   window.addEventListener('beforeunload', wpLeaveCleanup);
 
-  // Chat polling yedek (SSE bağlantısı kopunca mesajları kaçırma)
-  WP._chatPollTimer = setInterval(async () => {
+  // Chat polling — ilk çekimi hemen yap, sonra her 8sn'de yedek
+  async function _doChatPoll() {
     if(!WP.inRoom) return;
     const chat = await fbGet('/rooms/' + code + '/chat');
     if(!chat || typeof chat !== 'object') return;
@@ -56625,7 +56870,9 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
         wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
       }
     });
-  }, 5000);
+  }
+  setTimeout(_doChatPoll, 1500); // açılışta hemen bir kez çek
+  WP._chatPollTimer = setInterval(_doChatPoll, 8000); // sonra her 8sn
 
   // Arka plana alınınca / öne gelince lastSeen güncelle → dot rengi değişsin
   const _wpVisHandler = async () => {
@@ -56651,137 +56898,83 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
 
 // ── FİREBASE DİNLEYİCİLERİ ──
 function wpStartListeners(code) {
-  // Tüm eski listener'ları kapat
-  WP.listeners.forEach(es => es.close());
+  // Tüm eski listener'ları/interval'ları kapat
+  WP.listeners.forEach(function(es) { try { es.close(); } catch(e) {} });
   WP.listeners = [];
+  if(WP._pollInterval) { clearInterval(WP._pollInterval); WP._pollInterval = null; }
 
-  // ── Üyeler dinle ──
-  // Firebase SSE: ilk 'put' path='/' → data = tüm nesne
-  //               sonraki 'put' path='/KEY' → data = tek üye nesnesi
-  const membersEs = new EventSource(FB_URL + '/rooms/' + code + '/members.json');
-  membersEs.addEventListener('put', (e) => {
+  // ── POLLING (SSE yerine — Android WebView uyumlu) ──
+  async function _pollAll() {
     if(!WP.inRoom) return;
+
+    // 1) ÜYELER
     try {
-      const d = JSON.parse(e.data);
-      const now = Date.now();
-      WP.members = [];
-      document.getElementById('wpMembersList').innerHTML = '';
-      let membersObj = null;
-      if(d.path === '/') {
-        // İlk yükleme — tüm üyeler geldi
-        membersObj = d.data;
-      } else {
-        // Tek üye eklendi: path = '/KEY'
-        const key = d.path.replace('/', '');
-        if(d.data) membersObj = { [key]: d.data };
-      }
-      if(!membersObj) { wpUpdateMeta(); return; }
-      // Önce Firebase'den güncel listeyi çek (PUT bazen eski snapshot verir)
-      fbGet('/rooms/' + code + '/members').then(members => {
-        if(!members) return;
+      var members = await fbGet('/rooms/' + code + '/members');
+      if(members && typeof members === 'object') {
         WP.members = [];
         document.getElementById('wpMembersList').innerHTML = '';
-        Object.entries(members).forEach(([id, m]) => {
+        Object.entries(members).forEach(function([id, m]) {
           if(!m || !m.nick) return;
-          const isOnline = m.online !== false;
-          if(!isOnline) return;
-          const isMe = id === WP.myId;
-          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
+          if(m.online === false) return;
+          var isMe = id === WP.myId;
+          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0 });
         });
+        // Kendimiz yoksa ekle
+        if(!WP.members.find(function(m){ return m.isMe; })) {
+          WP.members.unshift({ nick: WP.myNick, color: WP.myColor, isHost: WP.isHost, isMe: true, lastSeen: Date.now() });
+          wpRenderMembers();
+        }
         wpUpdateMeta();
-      });
-    } catch(err) {}
-  });
-  membersEs.onerror = () => {};
-  WP.listeners.push(membersEs);
-
-  // ── Chat dinle ──
-  const chatEs = new EventSource(FB_URL + '/rooms/' + code + '/chat.json');
-  chatEs.addEventListener('put', (e) => {
-    if(!WP.inRoom) return;
-    try {
-      const d = JSON.parse(e.data);
-      if(d.path === '/') {
-        // İlk yükleme veya yeniden bağlanma — geçmiş mesajları göster
-        if(d.data && typeof d.data === 'object') {
-          const isReconnect = WP.lastChatKeys.size > 0;
-          Object.entries(d.data).forEach(([k, msg]) => {
-            if(WP.lastChatKeys.has(k)) return; // zaten gösterilmiş
-            WP.lastChatKeys.add(k);
-            if(!msg || typeof msg !== 'object') return;
-            if(msg.isSystem) {
-              wpAddSystemMsg(msg.text || '');
-            } else {
-              wpAddChatMsg({
-                nick: msg.nick || '?',
-                color: msg.color || '#FFD700',
-                text: msg.text || '',
-                isReaction: !!msg.isReaction
-              });
-            }
-          });
-        }
-        return;
       }
-      // Yeni tek mesaj: path = '/KEY'
-      const key = d.path.replace('/', '');
-      if(WP.lastChatKeys.has(key)) return;
-      WP.lastChatKeys.add(key);
-      const msg = d.data;
-      if(!msg || typeof msg !== 'object') return;
-      if(msg.isSystem) {
-        wpAddSystemMsg(msg.text || '');
-      } else {
-        wpAddChatMsg({
-          nick: msg.nick || '?',
-          color: msg.color || '#FFD700',
-          text: msg.text || '',
-          isReaction: !!msg.isReaction
+    } catch(e) {}
+
+    // 2) CHAT
+    try {
+      var chat = await fbGet('/rooms/' + code + '/chat');
+      if(chat && typeof chat === 'object') {
+        Object.entries(chat).forEach(function([k, msg]) {
+          if(WP.lastChatKeys.has(k)) return;
+          WP.lastChatKeys.add(k);
+          if(!msg || typeof msg !== 'object') return;
+          if(msg.isSystem) {
+            wpAddSystemMsg(msg.text || '');
+          } else {
+            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
+          }
         });
       }
-    } catch(err) {}
-  });
-  chatEs.onerror = () => {};
-  WP.listeners.push(chatEs);
+    } catch(e) {}
 
-  // ── Yorumlar dinle ──
-  const commentsEs = new EventSource(FB_URL + '/rooms/' + code + '/comments.json');
-  commentsEs.addEventListener('put', (e) => {
-    if(!WP.inRoom) return;
+    // 3) YORUMLAR
     try {
-      const d = JSON.parse(e.data);
-      if(d.path === '/') {
-        // Geçmiş yorumlar — sadece key'leri işaretle, gösterme
-        if(d.data && typeof d.data === 'object') {
-          Object.keys(d.data).forEach(k => WP.lastCommentKeys.add(k));
-        }
-        return;
+      var comments = await fbGet('/rooms/' + code + '/comments');
+      if(comments && typeof comments === 'object') {
+        var isFirst = WP.lastCommentKeys.size === 0;
+        Object.entries(comments).forEach(function([k, c]) {
+          if(WP.lastCommentKeys.has(k)) return;
+          WP.lastCommentKeys.add(k);
+          if(isFirst) return; // İlk yüklemede geçmiş yorumları gösterme
+          if(!c || typeof c !== 'object') return;
+          wpAddComment({ nick: c.nick||'?', color: c.color||'#FFD700', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem });
+          if(c.stars) { WP.ratings.push({ nick: c.nick, stars: c.stars }); wpUpdateAvgRating(); }
+        });
       }
-      const key = d.path.replace('/', '');
-      if(WP.lastCommentKeys.has(key)) return;
-      WP.lastCommentKeys.add(key);
-      const c = d.data;
-      if(!c || typeof c !== 'object') return;
-      wpAddComment({
-        nick: c.nick || '?',
-        color: c.color || '#FFD700',
-        text: c.text || '',
-        stars: c.stars || 0,
-        isSystem: !!c.isSystem
-      });
-      if(c.stars) {
-        WP.ratings.push({ nick: c.nick, stars: c.stars });
-        wpUpdateAvgRating();
+    } catch(e) {}
+
+    // 4) nowPlaying
+    try {
+      var np = await fbGet('/rooms/' + code + '/nowPlaying');
+      if(np && np.title && np.title !== WP.contentTitle) {
+        if(typeof wpOnNowPlayingChange === 'function') wpOnNowPlayingChange(np);
       }
-    } catch(err) {}
-  });
-  commentsEs.onerror = () => {};
-  WP.listeners.push(commentsEs);
+    } catch(e) {}
+  }
 
-  // ── nowPlaying dinleyicisi ──
-  wpStartNowPlayingListener(code);
+  // Hemen bir kez çalıştır, sonra her 5 saniyede tekrar
+  _pollAll();
+  WP._pollInterval = setInterval(_pollAll, 5000);
 
-  // ── playerState dinleyicisi (seek/close sync) ──
+  // playerState dinleyicisi
   if(typeof window.wpStartPlayerStateListener === 'function') {
     window.wpStartPlayerStateListener(code);
   }
@@ -56789,6 +56982,10 @@ function wpStartListeners(code) {
 
 // ── TEMİZLEME (odadan çıkış) ──
 function wpLeaveCleanup() {
+  // Polling interval'ı durdur
+  if(WP._pollInterval) { clearInterval(WP._pollInterval); WP._pollInterval = null; }
+  WP.listeners.forEach(function(es) { try { es.close(); } catch(e) {} });
+  WP.listeners = [];
   if(!WP.myId || !WP.roomCode) return;
   // Beacon API ile üyeyi sil (sayfa kapanırken bile çalışır)
   const url = FB_URL + '/rooms/' + WP.roomCode + '/members/' + WP.myId + '.json';
@@ -56856,6 +57053,12 @@ function wpClearAll() {
   document.getElementById('wpChatMessages').innerHTML = '';
   document.getElementById('wpCommentsList').innerHTML = '';
   document.getElementById('wpMembersList').innerHTML = '';
+  // State'i de sıfırla
+  WP.members = [];
+  WP.chatMessages = [];
+  WP.comments = [];
+  WP.lastChatKeys = new Set();
+  WP.lastCommentKeys = new Set();
 }
 
 // ── PANEL GİZLE (odada kal, sadece paneli kapat) ──
@@ -56925,7 +57128,6 @@ window.wpSwitchTab = function(tab) {
     const btn = document.getElementById('wpTab' + t.charAt(0).toUpperCase() + t.slice(1));
     if(!content || !btn) return;
     const isActive = t === tab;
-    // display yerine class kullan — CSS override sorununu önler
     if(isActive) {
       content.classList.add('wp-tab-active');
       content.style.display = 'flex';
@@ -56933,13 +57135,36 @@ window.wpSwitchTab = function(tab) {
       content.classList.remove('wp-tab-active');
       content.style.display = 'none';
     }
-    btn.style.borderBottomColor = isActive ? '#FFD700' : 'transparent';
-    btn.style.color = isActive ? '#FFD700' : 'rgba(255,255,255,0.4)';
+    btn.style.borderBottomColor = isActive ? 'var(--accent-primary,#FFD700)' : 'transparent';
+    btn.style.color = isActive ? 'var(--accent-primary,#FFD700)' : 'rgba(255,255,255,0.4)';
   });
-  // Aktif tab chat ise scroll en alta
+  // Tab açılınca içeriği tazele
   if(tab === 'chat') {
     const msgs = document.getElementById('wpChatMessages');
     if(msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  } else if(tab === 'members') {
+    // Üyeler tab açılınca listeyi yeniden çiz
+    wpRenderMembers();
+    // Firebase'den taze liste çek
+    if(WP.inRoom && WP.roomCode) {
+      fbGet('/rooms/' + WP.roomCode + '/members').then(function(members) {
+        if(!members || typeof members !== 'object') return;
+        var now = Date.now();
+        WP.members = [];
+        Object.entries(members).forEach(function([id, m]) {
+          if(!m || !m.nick) return;
+          if(m.online === false) return;
+          var isMe = id === WP.myId;
+          WP.members.push({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
+        });
+        // Kendimiz ekli değilse ekle
+        if(!WP.members.find(function(m){ return m.isMe; })) {
+          WP.members.unshift({ nick: WP.myNick, color: WP.myColor, isHost: WP.isHost, isMe: true, lastSeen: Date.now() });
+        }
+        wpRenderMembers();
+        wpUpdateMeta();
+      }).catch(function(){});
+    }
   }
 };
 
@@ -60536,7 +60761,10 @@ window.openUserProfileView = async function(userName) {
   var foundAvatar = '';
   var myUserName = (typeof vrGetUserName === 'function') ? vrGetUserName() : '';
   if (userName === myUserName) {
-    var _lsAv = await _profAvatarIDB.get();
+    var _lsAv = await Promise.race([
+      _profAvatarIDB.get(),
+      new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
+    ]).catch(function(){ return ''; });
     if (_lsAv && (_lsAv.startsWith('http') || _lsAv.startsWith('data:'))) foundAvatar = _lsAv;
   }
   if (!foundAvatar) {

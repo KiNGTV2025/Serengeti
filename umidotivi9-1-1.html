@@ -49943,9 +49943,18 @@ function _favIcons(ch, isFav) {
     border-radius:5px;padding:1px 6px;letter-spacing:0.5px;
     vertical-align:middle;flex-shrink:0;
 }
+.rutbe-yeni          { background:rgba(120,220,120,0.12);border:1px solid rgba(120,220,120,0.35);color:#78dc78; }
+.rutbe-caylak        { background:rgba(100,180,255,0.12);border:1px solid rgba(100,180,255,0.35);color:#64b4ff; }
 .rutbe-yorumcu-basi  { background:rgba(100,200,255,0.12);border:1px solid rgba(100,200,255,0.35);color:#64c8ff; }
 .rutbe-yorumcu-sapi  { background:rgba(180,100,255,0.12);border:1px solid rgba(180,100,255,0.35);color:#b464ff; }
 .rutbe-yorumcu-krali { background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.4); color:#FFD700; }
+.rutbe-usta          { background:rgba(255,150,30,0.15); border:1px solid rgba(255,150,30,0.5); color:#ff961e; box-shadow:0 0 6px rgba(255,150,30,0.2); }
+.rutbe-sampiyonu     { background:rgba(255,80,80,0.15);  border:1px solid rgba(255,80,80,0.45); color:#ff6060; box-shadow:0 0 8px rgba(255,80,80,0.2); }
+.rutbe-efsane        { background:linear-gradient(90deg,rgba(255,215,0,0.2),rgba(255,100,200,0.15));border:1px solid rgba(255,215,0,0.6);color:#FFD700;box-shadow:0 0 12px rgba(255,215,0,0.3);animation:rutbeShine 2s ease-in-out infinite; }
+@keyframes rutbeShine {
+  0%,100% { box-shadow:0 0 8px rgba(255,215,0,0.3); }
+  50%      { box-shadow:0 0 16px rgba(255,215,0,0.6),0 0 24px rgba(255,150,0,0.2); }
+}
 
 /* ── Kullanıcı profil görüntüleme modal ── */
 #userProfileViewModal {
@@ -50677,52 +50686,23 @@ document.addEventListener('umittv_login_ok', function() {
    ══════════════════════════════════════════════════════════════ */
 
 /* wpInitials fonksiyonunu genişlet — önizlemede profil resmi kullan */
+/* ── Avatar yardımcı (VOD yorumları için) ── */
 (function() {
     function _isValidAvatarUrl(url) {
         return url && (url.startsWith('http') || url.startsWith('data:'));
     }
-    function _makeAvatarHtml(nick, color) {
+    // _makeAvatarHtml: VOD review kartları gibi dışarıdan çağırılan yerler için korunuyor
+    window._wpMakeAvatarHtml = function(nick, color, avatarSrc) {
         const initial = (nick || '?')[0].toUpperCase();
-        const myName = getProfileDisplayName();
-        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
-        // Kendi mesajımızsa profil resmimizi kullan
-        if (nick === myName && _isValidAvatarUrl(myAvatar)) {
+        const myName = (typeof getProfileDisplayName === 'function') ? getProfileDisplayName() : '';
+        const myAvatar = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache) ? _profAvatarIDB._cache : '';
+        const src = avatarSrc || (nick === myName ? myAvatar : '');
+        if (_isValidAvatarUrl(src)) {
             return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;overflow:hidden;flex-shrink:0;margin-top:1px;">` +
-                   `<img src="${myAvatar}" class="vr-comment-avatar-img" alt="${initial}" onerror="this.parentNode.innerHTML='<span style=font-size:12px;font-weight:700;color:${color};display:flex;align-items:center;justify-content:center;height:100%>${initial}</span>'">` +
+                   `<img src="${src}" class="vr-comment-avatar-img" alt="${initial}" onerror="this.parentNode.innerHTML='<span style=font-size:12px;font-weight:700;color:${color};display:flex;align-items:center;justify-content:center;height:100%>${initial}</span>'">` +
                    `</div>`;
         }
         return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">${initial}</div>`;
-    }
-
-    /* wpAddComment patch — profil resmi destekli */
-    var _origWpAddComment = window.wpAddComment;
-    window.wpAddComment = function(msg) {
-        if (!_origWpAddComment) return;
-        // msg.nick kendi kullanıcımızsa profil resmimizi kullan
-        const { nick, color, text, stars, isSystem } = msg;
-        const myName = getProfileDisplayName();
-        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
-        const isMe = nick === myName && _isValidAvatarUrl(myAvatar);
-
-        const list = document.getElementById('wpCommentsList');
-        if (!list) { _origWpAddComment.call(this, msg); return; }
-
-        const starsHtml = stars ? `<div style="color:#FFD700;font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
-        const avatarHtml = _makeAvatarHtml(nick, color);
-        const el = document.createElement('div');
-        el.style.cssText = 'display:flex;gap:8px;animation:wpMsgIn 0.2s ease;';
-        el.innerHTML = avatarHtml +
-            `<div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:baseline;gap:6px;">
-                    <span style="font-size:12px;font-weight:700;color:${isSystem?'#FFD700':color}">${nick}</span>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.25);">${(function(){ return new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); })()}</span>
-                </div>
-                <div style="font-size:13px;color:${isSystem?'rgba(255,255,255,0.5)':'#e8e8f0'};line-height:1.4;${isSystem?'font-style:italic;':''}">${text}</div>
-                ${starsHtml}
-            </div>`;
-        list.appendChild(el);
-        list.scrollTop = list.scrollHeight;
-        if (window._WP) window._WP.comments = (window._WP.comments || []).concat([{nick,text,stars}]);
     };
 })();
 
@@ -55788,6 +55768,36 @@ function vrUserColor(name) {
   return colors[h % colors.length];
 }
 
+// ── Firebase UPDATE (PATCH) ──
+async function vrFbUpdate(path, data) {
+  const url = VOD_REVIEWS_FB + path + '.json';
+  const bodyStr = JSON.stringify(data);
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), 8000);
+    const r = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      signal: ctrl.signal
+    });
+    clearTimeout(tid);
+    if (r.ok) return true;
+  } catch(e) {}
+  // XHR fallback
+  return new Promise(function(resolve) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PATCH', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 8000;
+      xhr.onload = function() { resolve(xhr.status >= 200 && xhr.status < 300); };
+      xhr.onerror = xhr.ontimeout = function(){ resolve(false); };
+      xhr.send(bodyStr);
+    } catch(e){ resolve(false); }
+  });
+}
+
 // ── Firebase GET (XHR fallback) ──
 async function vrFbGet(path) {
   const url = VOD_REVIEWS_FB + path + '.json';
@@ -55960,11 +55970,12 @@ async function vodLoadReviews() {
   });
 }
 
-// ── Tek yorum kartı oluştur (sade versiyon) ──
+// ── Tek yorum kartı oluştur (like/dislike destekli) ──
 function vodRenderReview(key, rev, myName) {
   var listEl = document.getElementById("vodReviewsList");
   if (!listEl) return;
 
+  // "Yükleniyor..." placeholder'ını temizle
   if (listEl.children.length === 1) {
     var fc = listEl.firstElementChild;
     if (fc && (fc.getAttribute("style") || "").indexOf("text-align") !== -1) {
@@ -55972,55 +55983,229 @@ function vodRenderReview(key, rev, myName) {
     }
   }
 
-  var nick = rev.nick || rev.userId || "?";
-  var text = rev.text || "";
-  var stars = parseInt(rev.stars) || 0;
-  var ts = rev.ts ? new Date(rev.ts).toLocaleDateString("tr-TR") : "";
-  var isMe = (rev.userId === myName || rev.nick === myName);
+  var nick    = rev.nick || rev.userId || "?";
+  var text    = rev.text || "";
+  var stars   = parseInt(rev.stars) || 0;
+  var ts      = rev.ts ? new Date(rev.ts).toLocaleDateString("tr-TR") : "";
+  var isMe    = (rev.userId === myName || rev.nick === myName);
 
   var starsStr = "";
   for (var si = 0; si < 5; si++) { starsStr += si < stars ? "\u2605" : "\u2606"; }
 
+  // Like/Dislike verileri (sayısal olarak al)
+  var likes    = parseInt(rev.likes)    || 0;
+  var dislikes = parseInt(rev.dislikes) || 0;
+  var myLikeKey    = 'vr_like_'    + (_vrCurrentKey || '') + '_' + key;
+  var myDislikeKey = 'vr_dislike_' + (_vrCurrentKey || '') + '_' + key;
+  var myLiked    = false;
+  var myDisliked = false;
+  try { myLiked    = !!localStorage.getItem(myLikeKey);    } catch(e) {}
+  try { myDisliked = !!localStorage.getItem(myDislikeKey); } catch(e) {}
+
+  // Rütbe rozeti
+  var rutbeHtml = '';
+  try {
+    var _cache = window._allUserRevCountCache;
+    if (_cache && _cache[nick]) {
+      var rutbeInfo = getRutbe(_cache[nick]);
+      if (rutbeInfo) {
+        rutbeHtml = '<span class="rutbe-badge ' + rutbeInfo.cls + '" style="font-size:9px;padding:1px 6px;">' + rutbeInfo.label + '</span>';
+      }
+    }
+  } catch(e) {}
+
+  // Kullanıcı rengi
+  var uColor   = (typeof vrUserColor === 'function') ? vrUserColor(nick) : '#FFD700';
+  var uInitial = (nick[0] || '?').toUpperCase();
+
+  // ── Ana kart elementi ──
   var el = document.createElement("div");
   el.id = "vr_" + key;
-  el.style.cssText = "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;margin-bottom:2px;";
+  el.style.cssText = "background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:11px 13px;margin-bottom:8px;";
+
+  // ── Header: avatar + nick + tarih ──
+  var header = document.createElement("div");
+  header.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:7px;";
+
+  // Avatar
+  var avatarDiv = document.createElement("div");
+  avatarDiv.style.cssText = "width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;";
+  avatarDiv.style.background = uColor + '22';
+  avatarDiv.style.border = '1.5px solid ' + uColor + '55';
+  avatarDiv.style.color = uColor;
+  avatarDiv.textContent = uInitial;
+  // Sadece http/https URL — data: kaydedilmez ve sorun çıkarır
+  var revAvatar = rev.avatar;
+  if (revAvatar && typeof revAvatar === 'string' && revAvatar.startsWith('http')) {
+    avatarDiv.style.overflow = 'hidden';
+    var avImg = document.createElement('img');
+    avImg.src = revAvatar;
+    avImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+    var _savedInitial = uInitial;
+    avImg.onerror = function() {
+      avatarDiv.innerHTML = '';
+      avatarDiv.textContent = _savedInitial;
+      avatarDiv.style.overflow = '';
+    };
+    avatarDiv.textContent = '';
+    avatarDiv.appendChild(avImg);
+  }
+
+  // Nick + rütbe + tarih
+  var nickWrap = document.createElement("div");
+  nickWrap.style.cssText = "display:flex;flex-direction:column;flex:1;min-width:0;";
+
+  var nickRow = document.createElement("div");
+  nickRow.style.cssText = "display:flex;align-items:center;flex-wrap:wrap;gap:4px;";
 
   var nickSpan = document.createElement("span");
-  nickSpan.style.cssText = "font-size:13px;font-weight:700;color:#FFD700;";
+  nickSpan.style.cssText = "font-size:13px;font-weight:700;color:" + uColor + ";cursor:pointer;";
   nickSpan.textContent = nick + (isMe ? " (Ben)" : "");
+  nickSpan.onclick = (function(n){ return function(){ if(typeof window.openUserProfileView==='function') window.openUserProfileView(n); }; })(nick);
+  nickRow.appendChild(nickSpan);
+
+  if (rutbeHtml) {
+    var rutbeWrap = document.createElement('span');
+    rutbeWrap.innerHTML = rutbeHtml;
+    if (rutbeWrap.firstChild) nickRow.appendChild(rutbeWrap.firstChild);
+  }
+  nickWrap.appendChild(nickRow);
 
   var tsSpan = document.createElement("span");
-  tsSpan.style.cssText = "font-size:10px;color:rgba(255,255,255,0.4);";
+  tsSpan.style.cssText = "font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px;";
   tsSpan.textContent = ts;
+  nickWrap.appendChild(tsSpan);
 
-  var header = document.createElement("div");
-  header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;";
-  header.appendChild(nickSpan);
-  header.appendChild(tsSpan);
+  header.appendChild(avatarDiv);
+  header.appendChild(nickWrap);
   el.appendChild(header);
 
+  // ── Yıldızlar ──
   if (stars > 0) {
     var starDiv = document.createElement("div");
-    starDiv.style.cssText = "color:#FFD700;font-size:14px;margin-bottom:4px;";
+    starDiv.style.cssText = "color:#FFD700;font-size:13px;margin-bottom:5px;letter-spacing:1px;";
     starDiv.textContent = starsStr;
     el.appendChild(starDiv);
   }
 
+  // ── Yorum metni ──
   if (text) {
     var textDiv = document.createElement("div");
-    textDiv.style.cssText = "font-size:13px;color:#dde0ee;line-height:1.5;";
+    textDiv.style.cssText = "font-size:13px;color:#dde0ee;line-height:1.5;margin-bottom:8px;";
     textDiv.textContent = text;
     el.appendChild(textDiv);
   }
 
-  if (isMe) {
-    var delBtn = document.createElement("button");
-    delBtn.textContent = "Sil";
-    delBtn.style.cssText = "background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);border-radius:6px;color:#e74c3c;font-size:11px;padding:3px 10px;cursor:pointer;margin-top:6px;";
-    delBtn.onclick = (function(k) { return function() { window.vodDeleteReview(k); }; })(key);
-    el.appendChild(delBtn);
+  // ── Like / Dislike satırı ──
+  var actionRow = document.createElement("div");
+  actionRow.style.cssText = "display:flex;align-items:center;gap:6px;margin-top:4px;";
+
+  // İki buton referansını önceden tanımla (scope sorunu yok)
+  var likeBtn, dislikeBtn;
+  var _likesCount    = likes;
+  var _dislikesCount = dislikes;
+
+  function _styleBtn(btn, active, isDislike) {
+    if (active) {
+      btn.style.background = isDislike ? 'rgba(231,76,60,0.18)' : 'rgba(255,215,0,0.18)';
+      btn.style.border     = isDislike ? '1px solid rgba(231,76,60,0.5)' : '1px solid rgba(255,215,0,0.5)';
+      btn.style.color      = isDislike ? '#e74c3c' : '#FFD700';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.06)';
+      btn.style.border     = '1px solid rgba(255,255,255,0.1)';
+      btn.style.color      = 'rgba(255,255,255,0.55)';
+    }
   }
 
+  function _makeBtn(icon, count, active, isDislike) {
+    var btn = document.createElement("button");
+    btn.style.cssText = "display:flex;align-items:center;gap:4px;border-radius:20px;padding:4px 11px;cursor:pointer;font-size:12px;transition:all 0.18s;";
+    btn.innerHTML = icon + '<span>' + count + '</span>';
+    _styleBtn(btn, active, isDislike);
+    return btn;
+  }
+
+  likeBtn    = _makeBtn('👍 ', _likesCount,    myLiked,    false);
+  dislikeBtn = _makeBtn('👎 ', _dislikesCount, myDisliked, true);
+
+  if (!isMe) {
+    likeBtn.onclick = function() {
+      var nowLiked    = !!( (function(){ try{ return localStorage.getItem(myLikeKey);    }catch(e){ return null; } })() );
+      var nowDisliked = !!( (function(){ try{ return localStorage.getItem(myDislikeKey); }catch(e){ return null; } })() );
+      if (nowLiked) {
+        // Geri al
+        try { localStorage.removeItem(myLikeKey); } catch(ex) {}
+        _likesCount = Math.max(0, _likesCount - 1);
+        vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { likes: _likesCount });
+        _styleBtn(likeBtn, false, false);
+      } else {
+        // Beğen (varsa dislike kaldır)
+        if (nowDisliked) {
+          try { localStorage.removeItem(myDislikeKey); } catch(ex) {}
+          _dislikesCount = Math.max(0, _dislikesCount - 1);
+          vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { dislikes: _dislikesCount });
+          _styleBtn(dislikeBtn, false, true);
+          dislikeBtn.querySelector('span').textContent = _dislikesCount;
+        }
+        try { localStorage.setItem(myLikeKey, '1'); } catch(ex) {}
+        _likesCount++;
+        vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { likes: _likesCount });
+        _styleBtn(likeBtn, true, false);
+      }
+      likeBtn.querySelector('span').textContent = _likesCount;
+    };
+
+    dislikeBtn.onclick = function() {
+      var nowLiked    = !!( (function(){ try{ return localStorage.getItem(myLikeKey);    }catch(e){ return null; } })() );
+      var nowDisliked = !!( (function(){ try{ return localStorage.getItem(myDislikeKey); }catch(e){ return null; } })() );
+      if (nowDisliked) {
+        // Geri al
+        try { localStorage.removeItem(myDislikeKey); } catch(ex) {}
+        _dislikesCount = Math.max(0, _dislikesCount - 1);
+        vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { dislikes: _dislikesCount });
+        _styleBtn(dislikeBtn, false, true);
+      } else {
+        // Beğenme (varsa like kaldır)
+        if (nowLiked) {
+          try { localStorage.removeItem(myLikeKey); } catch(ex) {}
+          _likesCount = Math.max(0, _likesCount - 1);
+          vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { likes: _likesCount });
+          _styleBtn(likeBtn, false, false);
+          likeBtn.querySelector('span').textContent = _likesCount;
+        }
+        try { localStorage.setItem(myDislikeKey, '1'); } catch(ex) {}
+        _dislikesCount++;
+        vrFbUpdate('/reviews/' + (_vrCurrentKey||'') + '/' + key, { dislikes: _dislikesCount });
+        _styleBtn(dislikeBtn, true, true);
+      }
+      dislikeBtn.querySelector('span').textContent = _dislikesCount;
+    };
+  } else {
+    // Kendi yorumu — butonlar devre dışı
+    likeBtn.style.opacity    = '0.4';
+    likeBtn.style.cursor     = 'not-allowed';
+    dislikeBtn.style.opacity = '0.4';
+    dislikeBtn.style.cursor  = 'not-allowed';
+    likeBtn.title            = 'Kendi yorumunu beğenemezsin';
+    dislikeBtn.title         = 'Kendi yorumunu beğenemezsin';
+  }
+
+  actionRow.appendChild(likeBtn);
+  actionRow.appendChild(dislikeBtn);
+
+  // Sil butonu (sadece kendi yorumu)
+  if (isMe) {
+    var spacer = document.createElement("div");
+    spacer.style.flex = "1";
+    actionRow.appendChild(spacer);
+    var delBtn = document.createElement("button");
+    delBtn.textContent = "🗑 Sil";
+    delBtn.style.cssText = "background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.25);border-radius:16px;color:rgba(231,76,60,0.7);font-size:11px;padding:4px 10px;cursor:pointer;";
+    delBtn.onclick = (function(k){ return function(){ window.vodDeleteReview(k); }; })(key);
+    actionRow.appendChild(delBtn);
+  }
+
+  el.appendChild(actionRow);
   listEl.appendChild(el);
 }
 
@@ -56122,6 +56307,8 @@ window.vodSubmitReview = async function() {
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
     ts: Date.now(),
+    likes: 0,
+    dislikes: 0,
     // Avatar: sadece http URL'leri gönder, data: URL'leri çok büyük olabilir
     avatar: (_myAvatarToSave && _myAvatarToSave.startsWith('http')) ? _myAvatarToSave : ''
   };
@@ -56682,7 +56869,34 @@ window.wpCreateRoom = async function() {
   const nick = document.getElementById('wpNickInput').value.trim();
   if(!nick) { wpShowToast('⚠ Kullanıcı adı gir'); return; }
   const btn = document.getElementById('wpCreateBtn');
-  if(btn) { btn.disabled = true; btn.textContent = 'Oluşturuluyor...'; }
+  if(btn) { btn.disabled = true; btn.textContent = 'Kontrol ediliyor...'; }
+
+  // ── TEK ODA LİMİTİ: Kullanıcının Firebase'de aktif odası var mı kontrol et ──
+  try {
+    const allRooms = await fbGet('/rooms');
+    if (allRooms && typeof allRooms === 'object') {
+      const now = Date.now();
+      const STALE_MS = 2 * 60 * 60 * 1000; // 2 saat
+      const existingRoom = Object.entries(allRooms).find(([code, r]) => {
+        if (!r || !r.hostNick) return false;
+        if (r.createdAt && (now - r.createdAt) > STALE_MS) return false; // süresi dolmuş
+        return r.hostNick === nick;
+      });
+      if (existingRoom) {
+        const [existCode, existRoom] = existingRoom;
+        if(btn) { btn.disabled = false; btn.textContent = '✦ ODA AÇ'; }
+        wpShowToast('⚠ Zaten aktif bir odanız var: ' + (existRoom.roomName || existCode));
+        // Mevcut odanın kartını vurgula
+        setTimeout(() => {
+          const card = document.querySelector('#wpRoomsList .wp-room-item[data-code="' + existCode + '"]');
+          if (card) { card.style.border = '1px solid #FFD700'; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { card.style.border = ''; }, 2500); }
+        }, 200);
+        return;
+      }
+    }
+  } catch(e) { /* Firebase hatası — devam et */ }
+
+  if(btn) { btn.textContent = 'Oluşturuluyor...'; }
 
   const code = wpGenCode();
   const contentTitle = wpGetCurrentContent();
@@ -56820,13 +57034,24 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   try { localStorage.setItem('wp_last_room', JSON.stringify({ code, roomName, contentTitle, nick, isHost })); } catch(e) {}
 
   // Firebase'e kendimi üye olarak yaz
+  // Kendi avatarını al (IDB önbelleği — sync, en fazla 2sn bekle)
+  let _wpMyAvatar = '';
+  try {
+    if (typeof _profAvatarIDB !== 'undefined') {
+      const _avRaw = await Promise.race([_profAvatarIDB.get(), new Promise(r => setTimeout(() => r(''), 2000))]);
+      // Sadece http URL'leri gönder (data: URL çok büyük olabilir)
+      _wpMyAvatar = (_avRaw && _avRaw.startsWith('http')) ? _avRaw : '';
+    }
+  } catch(e) { _wpMyAvatar = ''; }
+
   const memberId = await fbPush('/rooms/' + code + '/members', {
     nick,
     color: WP.myColor,
     isHost,
     joinedAt: Date.now(),
     lastSeen: Date.now(),
-    online: true
+    online: true,
+    avatar: _wpMyAvatar
   });
   WP.myId = memberId || ('local_' + Date.now()); // Firebase başarısız olursa yerel ID
   if(!memberId) console.warn('[WP] Firebase üye yazma başarısız - yerel mod');
@@ -56879,7 +57104,7 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
       if(msg.isSystem) {
         wpAddSystemMsg(msg.text || '');
       } else {
-        wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
+        wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
       }
     });
   }
@@ -56929,7 +57154,7 @@ function wpStartListeners(code) {
           if(!m || !m.nick) return;
           if(m.online === false) return;
           var isMe = id === WP.myId;
-          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0 });
+          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0, avatar: m.avatar || '' });
         });
         // Kendimiz yoksa ekle
         if(!WP.members.find(function(m){ return m.isMe; })) {
@@ -56951,7 +57176,7 @@ function wpStartListeners(code) {
           if(msg.isSystem) {
             wpAddSystemMsg(msg.text || '');
           } else {
-            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
+            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
           }
         });
       }
@@ -56967,7 +57192,7 @@ function wpStartListeners(code) {
           WP.lastCommentKeys.add(k);
           if(isFirst) return; // İlk yüklemede geçmiş yorumları gösterme
           if(!c || typeof c !== 'object') return;
-          wpAddComment({ nick: c.nick||'?', color: c.color||'#FFD700', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem });
+          wpAddComment({ nick: c.nick||'?', color: c.color||'#FFD700', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem, avatar: c.avatar||'' });
           if(c.stars) { WP.ratings.push({ nick: c.nick, stars: c.stars }); wpUpdateAvgRating(); }
         });
       }
@@ -57184,9 +57409,9 @@ window.wpSwitchTab = function(tab) {
 };
 
 // ── ÜYELER ──
-function wpAddMember({ nick, color, isHost, isMe, lastSeen }) {
+function wpAddMember({ nick, color, isHost, isMe, lastSeen, avatar }) {
   if(WP.members.find(m=>m.nick===nick)) return;
-  WP.members.push({ nick, color, isHost, isMe, lastSeen: lastSeen || 0 });
+  WP.members.push({ nick, color, isHost, isMe, lastSeen: lastSeen || 0, avatar: avatar || '' });
   wpRenderMembers();
 }
 
@@ -57194,17 +57419,28 @@ function wpRenderMembers() {
   const list = document.getElementById('wpMembersList');
   list.innerHTML = '';
   const now = Date.now();
+  // Kendi avatar önbelleği (IDB sync cache)
+  const _myAvatar = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache) ? _profAvatarIDB._cache : '';
+  const _myName = (typeof getProfileDisplayName === 'function') ? getProfileDisplayName() : WP.myNick;
   WP.members.forEach(m => {
     // lastSeen son 120sn içindeyse veya kendimizse aktif say
     const isActive = m.isMe || !m.lastSeen || (now - m.lastSeen) < 120000;
     const dotColor = isActive ? '#2ed573' : '#FFD700';
     const dotLabel = isActive ? 'Aktif' : 'Arka planda';
+    const initial = wpInitials(m.nick);
+    // Avatar: kendi mesajımızsa IDB'den, başkasıysa m.avatar (Firebase'den gelen)
+    const avatarSrc = m.isMe
+      ? ((_myAvatar && (_myAvatar.startsWith('http') || _myAvatar.startsWith('data:'))) ? _myAvatar : '')
+      : ((m.avatar && (m.avatar.startsWith('http') || m.avatar.startsWith('data:'))) ? m.avatar : '');
+    const avatarHtml = avatarSrc
+      ? `<div style="width:34px;height:34px;border-radius:50%;overflow:hidden;border:1px solid ${m.color}44;flex-shrink:0;background:${m.color}22;"><img src="${avatarSrc}" alt="${initial}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<span style=font-size:14px;font-weight:700;color:${m.color};display:flex;align-items:center;justify-content:center;height:100%;>${initial}</span>'"></div>`
+      : `<div style="width:34px;height:34px;border-radius:50%;background:${m.color}22;border:1px solid ${m.color}44;color:${m.color};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">${initial}</div>`;
     const el = document.createElement('div');
     el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid transparent;';
     el.className = 'wp-remote-focus';
     el.tabIndex = 0;
     el.innerHTML = `
-      <div style="width:34px;height:34px;border-radius:50%;background:${m.color}22;border:1px solid ${m.color}44;color:${m.color};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">${wpInitials(m.nick)}</div>
+      ${avatarHtml}
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:700;color:${m.isMe?'#a29bfe':m.isHost?'#FFD700':'#e8e8f0'}">${m.nick}${m.isMe?' (Sen)':''}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.35);">${m.isHost?'Ev Sahibi':'İzleyici'}</div>
@@ -57221,17 +57457,20 @@ window.wpSendChat = async function() {
   const text = input.value.trim();
   if(!text||!WP.inRoom) return;
   input.value = '';
+  // Kendi avatarını al (IDB sync önbellek)
+  const _sendAvatar = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache && _profAvatarIDB._cache.startsWith('http')) ? _profAvatarIDB._cache : '';
   // Firebase'e yaz — listener geri getirir
   await fbPush('/rooms/' + WP.roomCode + '/chat', {
     nick: WP.myNick,
     color: WP.myColor,
     text,
     isReaction: false,
+    avatar: _sendAvatar,
     ts: Date.now()
   });
 };
 
-function wpAddChatMsg({ nick, color, text, isReaction }) {
+function wpAddChatMsg({ nick, color, text, isReaction, avatar }) {
   const stream = document.getElementById('wpChatMessages');
   const el = document.createElement('div');
   el.style.cssText = 'animation:wpMsgIn 0.2s ease;line-height:1.4;';
@@ -57239,7 +57478,22 @@ function wpAddChatMsg({ nick, color, text, isReaction }) {
     el.style.cssText += 'text-align:center;font-size:22px;';
     el.textContent = text;
   } else {
-    el.innerHTML = `<span style="font-size:12px;font-weight:700;color:${color}">${nick}:</span> <span style="font-size:13px;color:#e8e8f0;">${text}</span>`;
+    // Avatar: önce gelen avatar parametresi, sonra WP.members'dan bak, sonra kendi IDB'si
+    const initial = (nick||'?')[0].toUpperCase();
+    let avatarSrc = avatar || '';
+    if (!avatarSrc) {
+      const mem = WP.members.find(function(m){ return m.nick === nick; });
+      if (mem && mem.avatar) avatarSrc = mem.avatar;
+    }
+    if (!avatarSrc && nick === WP.myNick) {
+      const _myAvCache = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache) ? _profAvatarIDB._cache : '';
+      if (_myAvCache && (_myAvCache.startsWith('http') || _myAvCache.startsWith('data:'))) avatarSrc = _myAvCache;
+    }
+    const avatarHtml = avatarSrc
+      ? `<div style="width:26px;height:26px;border-radius:50%;overflow:hidden;border:1px solid ${color}44;flex-shrink:0;background:${color}22;margin-top:1px;"><img src="${avatarSrc}" alt="${initial}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<span style=font-size:11px;font-weight:700;color:${color};display:flex;align-items:center;justify-content:center;height:100%;>${initial}</span>'"></div>`
+      : `<div style="width:26px;height:26px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">${initial}</div>`;
+    el.style.cssText += 'display:flex;gap:7px;align-items:flex-start;';
+    el.innerHTML = avatarHtml + `<div style="flex:1;min-width:0;"><span style="font-size:12px;font-weight:700;color:${color}">${nick}:</span> <span style="font-size:13px;color:#e8e8f0;">${text}</span></div>`;
   }
   stream.appendChild(el);
   stream.scrollTop = stream.scrollHeight;
@@ -57303,11 +57557,13 @@ window.wpSendComment = async function() {
   const text = input.value.trim();
   if(!text&&!WP.myStars) { wpShowToast('⚠ Yorum yaz veya yıldız ver'); return; }
   
+  const _commentAvatar = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache && _profAvatarIDB._cache.startsWith('http')) ? _profAvatarIDB._cache : '';
   const commentData = {
     nick: WP.myNick,
     color: WP.myColor,
     text: text || '★'.repeat(WP.myStars),
     stars: WP.myStars,
+    avatar: _commentAvatar,
     ts: Date.now()
   };
   // Firebase'e yaz
@@ -57325,22 +57581,34 @@ window.wpSendComment = async function() {
   wpUpdateStars(0);
 };
 
-function wpAddComment({ nick, color, text, stars, isSystem }) {
+function wpAddComment({ nick, color, text, stars, isSystem, avatar }) {
   const list = document.getElementById('wpCommentsList');
   const el = document.createElement('div');
   el.style.cssText = 'display:flex;gap:8px;animation:wpMsgIn 0.2s ease;';
   const starsHtml = stars ? `<div style="color:#FFD700;font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
-  el.innerHTML = `
-    <div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">${wpInitials(nick)}</div>
-    <div style="flex:1;min-width:0;">
+  // Avatar: önce gelen parametre, sonra WP.members'dan, sonra kendi IDB
+  const initial = (nick||'?')[0].toUpperCase();
+  let avatarSrc = avatar || '';
+  if (!avatarSrc) {
+    const mem = WP.members.find(function(m){ return m.nick === nick; });
+    if (mem && mem.avatar) avatarSrc = mem.avatar;
+  }
+  if (!avatarSrc && nick === WP.myNick) {
+    const _myAvCache = (typeof _profAvatarIDB !== 'undefined' && _profAvatarIDB._cache) ? _profAvatarIDB._cache : '';
+    if (_myAvCache && (_myAvCache.startsWith('http') || _myAvCache.startsWith('data:'))) avatarSrc = _myAvCache;
+  }
+  const avatarHtml = avatarSrc
+    ? `<div style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:1px solid ${color}44;flex-shrink:0;margin-top:1px;background:${color}22;"><img src="${avatarSrc}" alt="${initial}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<span style=font-size:12px;font-weight:700;color:${color};display:flex;align-items:center;justify-content:center;height:100%;>${initial}</span>'"></div>`
+    : `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;color:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">${initial}</div>`;
+  el.innerHTML = avatarHtml +
+    `<div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:baseline;gap:6px;">
         <span style="font-size:12px;font-weight:700;color:${isSystem?'#FFD700':color}">${nick}</span>
         <span style="font-size:10px;color:rgba(255,255,255,0.25);">${wpNow()}</span>
       </div>
       <div style="font-size:13px;color:${isSystem?'rgba(255,255,255,0.5)':'#e8e8f0'};line-height:1.4;${isSystem?'font-style:italic;':''}">${text}</div>
       ${starsHtml}
-    </div>
-  `;
+    </div>`;
   list.appendChild(el);
   list.scrollTop = list.scrollHeight;
   WP.comments.push({nick,text,stars});
@@ -60725,9 +60993,14 @@ window._umitSnapClearBaseline = function() { _snapHasBaseline = false; };
 var VOD_REVIEWS_FB = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
 
 function getRutbe(count) {
-  if (count >= 20) return { label: '\u0027\u0100 Yorumcu Kral\u0131', cls: 'rutbe-yorumcu-krali' };
-  if (count >= 10) return { label: '\uD83D\uDD25 Yorumcu Sap\u0131',  cls: 'rutbe-yorumcu-sapi'  };
-  if (count >= 5)  return { label: '\uD83D\uDCAC Yorumcu Ba\u015F\u0131', cls: 'rutbe-yorumcu-basi' };
+  if (count >= 100) return { label: '👑 Efsane Yorumcu',    cls: 'rutbe-efsane',         xp: count, next: null };
+  if (count >= 50)  return { label: '🏆 Yorumcu Şampiyonu', cls: 'rutbe-sampiyonu',       xp: count, next: 100 };
+  if (count >= 30)  return { label: '⭐ Yorumcu Ustası',    cls: 'rutbe-usta',            xp: count, next: 50  };
+  if (count >= 20)  return { label: '🔥 Yorumcu Kralı',     cls: 'rutbe-yorumcu-krali',   xp: count, next: 30  };
+  if (count >= 10)  return { label: '💬 Yorumcu Sapı',      cls: 'rutbe-yorumcu-sapi',    xp: count, next: 20  };
+  if (count >= 5)   return { label: '🗨️ Yorumcu Başı',     cls: 'rutbe-yorumcu-basi',    xp: count, next: 10  };
+  if (count >= 2)   return { label: '✏️ Çaylak Yorumcu',   cls: 'rutbe-caylak',          xp: count, next: 5   };
+  if (count >= 1)   return { label: '🌱 Yeni Yorumcu',      cls: 'rutbe-yeni',            xp: count, next: 2   };
   return null;
 }
 
@@ -60811,20 +61084,22 @@ window.openUserProfileView = async function(userName) {
   var reviews = await fetchUserAllReviews(userName);
   if (loadEl) loadEl.style.display = 'none';
 
-  // Avatar: once kendi localStorage'dan (kendi profilimizse), sonra Firebase yorumlarindan
+  // Avatar: SADECE http/https URL — data: URL'ler sorun çıkarır, kabul etme
   var foundAvatar = '';
   var myUserName = (typeof vrGetUserName === 'function') ? vrGetUserName() : '';
   if (userName === myUserName) {
-    var _lsAv = await Promise.race([
-      _profAvatarIDB.get(),
-      new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
-    ]).catch(function(){ return ''; });
-    if (_lsAv && (_lsAv.startsWith('http') || _lsAv.startsWith('data:'))) foundAvatar = _lsAv;
+    try {
+      var _lsAv = await Promise.race([
+        _profAvatarIDB.get(),
+        new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
+      ]).catch(function(){ return ''; });
+      if (_lsAv && typeof _lsAv === 'string' && _lsAv.startsWith('http')) foundAvatar = _lsAv;
+    } catch(e) {}
   }
   if (!foundAvatar) {
     for (var ai = 0; ai < reviews.length; ai++) {
       var au = reviews[ai] && reviews[ai].avatar;
-      if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+      if (au && typeof au === 'string' && au.startsWith('http')) { foundAvatar = au; break; }
     }
   }
   if (avatarEl && foundAvatar) {
@@ -60842,7 +61117,20 @@ window.openUserProfileView = async function(userName) {
 
   var rutbe = getRutbe(total);
   if (badgeEl && rutbe) {
-    badgeEl.innerHTML = '<span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span>';
+    var nextInfo = '';
+    if (rutbe.next !== null && rutbe.next !== undefined) {
+      var pct = Math.round((total / rutbe.next) * 100);
+      nextInfo = '<div style="margin-top:6px;">'
+        + '<div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:3px;">'
+        + '<span>Bir sonraki rütbe</span><span>' + total + ' / ' + rutbe.next + '</span>'
+        + '</div>'
+        + '<div style="height:5px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">'
+        + '<div style="height:100%;width:' + Math.min(pct,100) + '%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:10px;transition:width 0.6s;"></div>'
+        + '</div></div>';
+    } else {
+      nextInfo = '<div style="font-size:10px;color:rgba(255,215,0,0.6);margin-top:4px;">🏅 En yüksek rütbeye ulaştın!</div>';
+    }
+    badgeEl.innerHTML = '<span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span>' + nextInfo;
   }
 
   if (total === 0) { if (emptyEl) emptyEl.style.display = 'block'; return; }
@@ -60931,7 +61219,293 @@ document.addEventListener('keydown', function(e) {
 
 </script>
 
-<!-- ═══ PLAYER BUTON ODAK — NÜKLEer OVERRIDE (en son yüklenir, tüm çakışmaları iptal eder) ═══ -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ÜMİT TV — YORUM BEĞENİ + RÜTBE + PROFİL GELİŞTİRME v2.0
+     ● Yorumlara 👍 / 👎 butonu (Firebase'e kaydedilir)
+     ● 8 kademeli rütbe sistemi (1→2→5→10→20→30→50→100)
+     ● Kullanıcı profil sayfasında film listesi + rütbe progress bar
+     ● Yorum kartında kullanıcı adına tıklayınca profil açılır
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+/* ── Yorum like/dislike toast animasyonu ── */
+@keyframes likePopIn {
+  0%   { transform:scale(0.7);opacity:0; }
+  60%  { transform:scale(1.2);opacity:1; }
+  100% { transform:scale(1);opacity:1; }
+}
+.vr-like-pop { animation:likePopIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ── UPV profil modal geliştirmeleri ── */
+.upv-film-badge {
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;padding:4px 8px;
+  font-size:11px;color:rgba(255,255,255,0.7);
+  cursor:pointer;transition:all 0.18s;
+}
+.upv-film-badge:hover {
+  background:rgba(255,215,0,0.1);
+  border-color:rgba(255,215,0,0.35);
+  color:#FFD700;
+}
+.upv-film-badge .stars-sm { color:#FFD700;font-size:10px;letter-spacing:1px; }
+
+/* Rütbe tablosu */
+.rutbe-table {
+  width:100%;border-collapse:collapse;font-size:11px;
+  color:rgba(255,255,255,0.7);
+}
+.rutbe-table td { padding:5px 8px; }
+.rutbe-table tr:not(:last-child) td {
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.rutbe-table .rt-active td {
+  background:rgba(255,215,0,0.06);
+}
+.rutbe-table .rt-done { opacity:0.4; }
+
+/* Liderlik tablosu (top yorumcular) butonu */
+#vrLeaderboardBtn {
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,215,0,0.08);
+  border:1px solid rgba(255,215,0,0.25);
+  border-radius:20px;padding:6px 14px;
+  font-size:12px;color:#FFD700;cursor:pointer;
+  transition:all 0.2s;margin:0 auto 12px;
+}
+#vrLeaderboardBtn:hover {
+  background:rgba(255,215,0,0.15);
+  box-shadow:0 0 12px rgba(255,215,0,0.2);
+}
+
+/* Liderlik modalı */
+#vrLeaderboardModal {
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+}
+#vrLeaderboardModal.open { display:flex; }
+.vlb-card {
+  background:linear-gradient(160deg,rgba(15,15,28,0.99),rgba(8,8,18,0.99));
+  border:1px solid rgba(255,215,0,0.2);border-radius:18px;
+  width:min(400px,92vw);max-height:80vh;
+  overflow-y:auto;scrollbar-width:thin;
+  scrollbar-color:rgba(255,215,0,0.2) transparent;
+  padding:24px 20px 20px;
+}
+.vlb-header {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.vlb-title {
+  font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;
+  color:#FFD700;letter-spacing:2px;
+}
+.vlb-close {
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all 0.18s;
+}
+.vlb-close:hover { background:rgba(231,76,60,0.2);border-color:#e74c3c;color:#e74c3c; }
+.vlb-row {
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:10px;margin-bottom:4px;
+  transition:background 0.15s;cursor:pointer;
+}
+.vlb-row:hover { background:rgba(255,255,255,0.04); }
+.vlb-rank {
+  width:26px;text-align:center;font-weight:900;font-size:14px;
+  color:rgba(255,255,255,0.3);flex-shrink:0;
+}
+.vlb-rank.gold   { color:#FFD700; }
+.vlb-rank.silver { color:#C0C0C0; }
+.vlb-rank.bronze { color:#CD7F32; }
+.vlb-avatar {
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.vlb-info { flex:1;min-width:0; }
+.vlb-nick { font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.vlb-count { font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px; }
+.vlb-badge-wrap { flex-shrink:0; }
+</style>
+
+<div id="vrLeaderboardModal">
+  <div class="vlb-card">
+    <div class="vlb-header">
+      <div class="vlb-title">🏆 TOP YORUMCULAR</div>
+      <button class="vlb-close" onclick="document.getElementById('vrLeaderboardModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="vlbList"><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Yükleniyor...</div></div>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var _VOD_REVIEWS_FB = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
+
+// ── Liderlik tablosu ──
+window.openVrLeaderboard = async function() {
+  var modal = document.getElementById('vrLeaderboardModal');
+  var listEl = document.getElementById('vlbList');
+  if (!modal || !listEl) return;
+  modal.classList.add('open');
+  listEl.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-size:12px;">Yükleniyor...</div>';
+
+  // Tüm review key'lerini al
+  var keysData = null;
+  try {
+    var r = await fetch(_VOD_REVIEWS_FB + '/reviews.json?shallow=true', { cache:'no-store' });
+    if (r.ok) keysData = await r.json();
+  } catch(e) {}
+  if (!keysData) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Veri alınamadı.</div>';
+    return;
+  }
+
+  var keys = Object.keys(keysData).slice(0, 80); // max 80 içerik
+  var userCounts = {};
+
+  var results = await Promise.all(keys.map(function(k) {
+    return fetch(_VOD_REVIEWS_FB + '/reviews/' + k + '.json', { cache:'no-store' })
+      .then(function(r2){ return r2.ok ? r2.json() : null; })
+      .catch(function(){ return null; });
+  }));
+
+  results.forEach(function(data) {
+    if (!data || typeof data !== 'object') return;
+    Object.values(data).forEach(function(rev) {
+      if (!rev) return;
+      var u = (rev.nick || rev.userId || '').trim();
+      if (!u) return;
+      userCounts[u] = (userCounts[u] || 0) + 1;
+    });
+  });
+
+  // Önbelleğe al (vodRenderReview için)
+  window._allUserRevCountCache = userCounts;
+
+  var sorted = Object.entries(userCounts).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 30);
+
+  if (!sorted.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Henüz yorum yapılmamış.</div>';
+    return;
+  }
+
+  var html = '';
+  sorted.forEach(function(entry, i) {
+    var nick = entry[0], count = entry[1];
+    var rank = i + 1;
+    var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    var rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+
+    // Kullanıcı rengi
+    var colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4','#ff5722'];
+    var h = 0; for (var ci = 0; ci < nick.length; ci++) h = (h * 31 + nick.charCodeAt(ci)) >>> 0;
+    var uColor = colors[h % colors.length];
+    var uInitial = (nick[0] || '?').toUpperCase();
+
+    // Rütbe
+    function _getR(c) {
+      if (c>=100) return {label:'👑 Efsane Yorumcu',cls:'rutbe-efsane'};
+      if (c>=50)  return {label:'🏆 Yorumcu Şampiyonu',cls:'rutbe-sampiyonu'};
+      if (c>=30)  return {label:'⭐ Yorumcu Ustası',cls:'rutbe-usta'};
+      if (c>=20)  return {label:'🔥 Yorumcu Kralı',cls:'rutbe-yorumcu-krali'};
+      if (c>=10)  return {label:'💬 Yorumcu Sapı',cls:'rutbe-yorumcu-sapi'};
+      if (c>=5)   return {label:'🗨️ Yorumcu Başı',cls:'rutbe-yorumcu-basi'};
+      if (c>=2)   return {label:'✏️ Çaylak Yorumcu',cls:'rutbe-caylak'};
+      return {label:'🌱 Yeni Yorumcu',cls:'rutbe-yeni'};
+    }
+    var rutbe = _getR(count);
+
+    html += '<div class="vlb-row" onclick="document.getElementById(\'vrLeaderboardModal\').classList.remove(\'open\');if(typeof openUserProfileView===\'function\')openUserProfileView(\'' + nick.replace(/'/g,"\\'") + '\')">'
+      + '<div class="vlb-rank ' + rankClass + '">' + rankLabel + '</div>'
+      + '<div class="vlb-avatar" style="background:' + uColor + '22;border:1.5px solid ' + uColor + '55;color:' + uColor + ';">' + uInitial + '</div>'
+      + '<div class="vlb-info">'
+      +   '<div class="vlb-nick">' + nick.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+      +   '<div class="vlb-count">' + count + ' yorum</div>'
+      + '</div>'
+      + '<div class="vlb-badge-wrap"><span class="rutbe-badge ' + rutbe.cls + '">' + rutbe.label + '</span></div>'
+      + '</div>';
+  });
+  listEl.innerHTML = html;
+};
+
+// Liderlik butonunu yorum paneline ekle
+function _injectLeaderboardBtn() {
+  var section = document.getElementById('vodReviewsSection');
+  if (!section || document.getElementById('vrLeaderboardBtn')) return;
+  var btn = document.createElement('button');
+  btn.id = 'vrLeaderboardBtn';
+  btn.innerHTML = '🏆 <span>Top Yorumcular</span>';
+  btn.onclick = function() { window.openVrLeaderboard(); };
+  // Count satırının yanına ekle
+  var countEl = document.getElementById('vodReviewCount');
+  if (countEl && countEl.parentNode) {
+    countEl.parentNode.insertBefore(btn, countEl.nextSibling);
+  } else {
+    section.insertBefore(btn, section.firstChild);
+  }
+}
+
+// Sayfa hazır olduğunda butonu ekle
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(_injectLeaderboardBtn, 1500); });
+} else {
+  setTimeout(_injectLeaderboardBtn, 1500);
+}
+
+// vodOpenReviews çağrılınca da buton eklensin
+var _origVodOpenReviews = window.vodOpenReviews;
+if (typeof _origVodOpenReviews === 'function') {
+  window.vodOpenReviews = async function(contentTitle) {
+    var result = await _origVodOpenReviews.apply(this, arguments);
+    setTimeout(_injectLeaderboardBtn, 200);
+    return result;
+  };
+} else {
+  // Henüz tanımlanmamış, 2sn sonra tekrar wrap et
+  setTimeout(function() {
+    var fn = window.vodOpenReviews;
+    if (typeof fn === 'function' && !fn._lbWrapped) {
+      window.vodOpenReviews = async function(contentTitle) {
+        var result = await fn.apply(this, arguments);
+        setTimeout(_injectLeaderboardBtn, 200);
+        return result;
+      };
+      window.vodOpenReviews._lbWrapped = true;
+    }
+  }, 2000);
+}
+
+// ESC tuşuyla liderlik modalını kapat
+document.addEventListener('keydown', function(e) {
+  if ((e.key === 'Escape' || e.keyCode === 27 || e.keyCode === 8) &&
+      document.getElementById('vrLeaderboardModal') &&
+      document.getElementById('vrLeaderboardModal').classList.contains('open')) {
+    document.getElementById('vrLeaderboardModal').classList.remove('open');
+    e.preventDefault(); e.stopPropagation();
+  }
+}, true);
+
+// Modalın dışına tıklayınca kapat
+var _lbModal = document.getElementById('vrLeaderboardModal');
+if (_lbModal) {
+  _lbModal.addEventListener('click', function(e) {
+    if (e.target === _lbModal) _lbModal.classList.remove('open');
+  });
+}
+
+})(); // Leaderboard IIFE
+</script>
+
 <style>
 /* Player butonlarında odak: outline YOK, yalnızca tema rengi yanıp sönen glow */
 .player-action-btn.remote-focused,

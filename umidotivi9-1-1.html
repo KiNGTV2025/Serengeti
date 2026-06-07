@@ -60927,5 +60927,264 @@ body .player-action-btn.focused {
     filter: none !important;
 }
 </style>
+<script>
+// ============================================================
+// WATCH PARTY FIX: Oda sahibi yayın açınca misafirlerde açılsın
+// Sarma ve kapatma işlemleri senkron çalışsın
+// ============================================================
+(function() {
+'use strict';
+
+// == YAYIN AÇMA (NOW PLAYING) FIX =================================
+const _origPlayChannel = window.playChannel;
+if (typeof _origPlayChannel === 'function') {
+    window.playChannel = function(indexOrCh, startTime) {
+        // Sadece HOST (oda sahibi) Firebase'e yazsın
+        if (window._WP && window._WP.inRoom && window._WP.isHost) {
+            try {
+                const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+                const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
+                if (ch && ch.name) {
+                    // Oda ismini ve içerik başlığını güncelle
+                    window._WP.contentTitle = ch.name;
+                    const nowPlayingData = {
+                        type: ch.isLive === false ? 'vod' : 'channel',
+                        name: ch.name,
+                        url: ch.url || ch.streamUrl || '',
+                        channelData: JSON.stringify(ch),
+                        ts: Date.now(),
+                        startedBy: window._WP.myNick
+                    };
+                    // Firebase'e yaz (bekleme, hata yönetimi yok)
+                    window.fbSet('/rooms/' + window._WP.roomCode + '/nowPlaying', nowPlayingData).catch(()=>{});
+                    // Sohbete sistem mesajı at
+                    window.fbPush('/rooms/' + window._WP.roomCode + '/chat', {
+                        nick: 'Sistem', color: '#FFD700',
+                        text: '📺 ' + window._WP.myNick + ' şimdi izliyor: ' + ch.name,
+                        isSystem: true, ts: Date.now()
+                    }).catch(()=>{});
+                }
+            } catch(e) { console.warn('[WP] playChannel yazma hatası:', e); }
+        }
+        // Orijinal playChannel'ı çağır
+        return _origPlayChannel.apply(this, arguments);
+    };
+}
+
+// VOD/Film için aynı fix
+const _origOpenVod = window.openVodModal;
+if (typeof _origOpenVod === 'function') {
+    window.openVodModal = function(vod) {
+        const result = _origOpenVod.apply(this, arguments);
+        if (window._WP && window._WP.inRoom && window._WP.isHost && vod) {
+            setTimeout(() => {
+                try {
+                    const titleEl = document.getElementById('vodModalTitle');
+                    const title = (titleEl && titleEl.textContent.trim()) || (vod.name || vod.title || '');
+                    if (!title) return;
+                    window._WP.contentTitle = title;
+                    const nowPlayingData = {
+                        type: 'vod',
+                        name: title,
+                        url: vod.url || vod.streamUrl || '',
+                        channelData: JSON.stringify(vod),
+                        ts: Date.now(),
+                        startedBy: window._WP.myNick
+                    };
+                    window.fbSet('/rooms/' + window._WP.roomCode + '/nowPlaying', nowPlayingData).catch(()=>{});
+                    window.fbPush('/rooms/' + window._WP.roomCode + '/chat', {
+                        nick: 'Sistem', color: '#FFD700',
+                        text: '🎬 ' + window._WP.myNick + ' izliyor: ' + title,
+                        isSystem: true, ts: Date.now()
+                    }).catch(()=>{});
+                } catch(e) {}
+            }, 500);
+        }
+        return result;
+    };
+}
+
+// == MISAFIRDE YAYIN OTOMATIK AÇMA (NOW PLAYING LISTENER) =========
+function wpStartNowPlayingListenerFixed(code) {
+    if (!window._WP || !code) return;
+    let lastTs = 0;
+    const joinTs = Date.now();
+
+    async function handleNowPlaying(np, isFromPoll) {
+        if (!window._WP || !window._WP.inRoom) return;
+        if (!np || !np.ts) return;
+        if (np.ts <= lastTs) return;
+        // Kendi broadcast'ımızı yoksay
+        if (np.startedBy === window._WP.myNick) { lastTs = np.ts; return; }
+        // Eski veriyi yoksay (odaya katıldıktan sonra eski veri gelmesin)
+        if (np.ts < joinTs - 3000) { lastTs = np.ts; return; }
+        lastTs = np.ts;
+
+        // Bildirim ve sistem mesajı
+        if (typeof wpShowToast === 'function') wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
+        if (typeof wpAddSystemMsg === 'function') wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
+
+        // Kanal verisini çözümle
+        let channel = null;
+        if (np.channelData) {
+            try { channel = JSON.parse(np.channelData); } catch(e) {}
+        }
+        if (!channel && np.url) {
+            channel = { name: np.name, url: np.url, isLive: (np.type !== 'vod'), isVod: (np.type === 'vod') };
+        }
+        if (!channel) return;
+
+        // Açık modalları kapat (çakışma önle)
+        try {
+            const vodModal = document.getElementById('vodModal');
+            if (vodModal && vodModal.style.display !== 'none') {
+                if (typeof closeVodModal === 'function') closeVodModal();
+                else vodModal.style.display = 'none';
+            }
+            const seriesModal = document.getElementById('seriesModal');
+            if (seriesModal && seriesModal.style.display !== 'none') {
+                if (typeof closeSeriesModal === 'function') closeSeriesModal();
+                else seriesModal.style.display = 'none';
+            }
+        } catch(e) {}
+
+        // Kanalı filtered listesinde bul veya ekle
+        const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+        let idx = list.findIndex(c => c.url === channel.url && c.name === channel.name);
+        if (idx === -1) idx = list.findIndex(c => c.url === channel.url);
+        if (idx === -1) idx = list.findIndex(c => c.name === channel.name);
+        if (idx !== -1) {
+            if (typeof _origPlayChannel === 'function') _origPlayChannel(idx, 0);
+            else if (typeof window.playChannel === 'function') window.playChannel(idx);
+        } else {
+            list.push(channel);
+            if (typeof _origPlayChannel === 'function') _origPlayChannel(list.length - 1, 0);
+            else if (typeof window.playChannel === 'function') window.playChannel(list.length - 1);
+        }
+    }
+
+    // Polling ile dinle (SSE yerine daha güvenilir)
+    let lastFetch = 0;
+    const pollInterval = setInterval(async () => {
+        if (!window._WP || !window._WP.inRoom) return;
+        const now = Date.now();
+        if (now - lastFetch < 3000) return;
+        lastFetch = now;
+        try {
+            const np = await window.fbGet('/rooms/' + code + '/nowPlaying');
+            if (np) handleNowPlaying(np, true);
+        } catch(e) {}
+    }, 4000);
+    window._WP._npPollTimer = pollInterval;
+
+    // İlk yükleme
+    setTimeout(async () => {
+        try {
+            const np = await window.fbGet('/rooms/' + code + '/nowPlaying');
+            if (np) handleNowPlaying(np, true);
+        } catch(e) {}
+    }, 1500);
+}
+
+// == SARMA (SEEK) SENKRONİZASYONU ===================================
+// Orijinal seekForward/Backward fonksiyonlarını sarmala
+const _origSeekForward = window.seekForward;
+const _origSeekBackward = window.seekBackward;
+
+function _sendSeekToRoom(step) {
+    if (!window._WP || !window._WP.inRoom || !window._WP.isHost) return;
+    const video = document.getElementById('videoPlayer');
+    if (!video) return;
+    let newTime = video.currentTime + step;
+    // DVR canlı yayın kontrolü
+    if (!isFinite(video.duration) && video.seekable && video.seekable.length > 0) {
+        const skEnd = video.seekable.end(video.seekable.length - 1);
+        newTime = Math.min(skEnd - 0.5, Math.max(video.seekable.start(0) + 0.1, newTime));
+    } else if (video.duration && isFinite(video.duration)) {
+        newTime = Math.max(0, Math.min(video.duration, newTime));
+    }
+    // Seek'i kendimiz de uygulayalım
+    if (typeof window._dvrSeekFull === 'function') {
+        window._dvrSeekFull(video, window.state?.player?.hls, newTime);
+    } else {
+        video.currentTime = newTime;
+    }
+    // Firebase'e bildir (debounce ile)
+    if (window._wpSeekTimer) clearTimeout(window._wpSeekTimer);
+    window._wpSeekTimer = setTimeout(() => {
+        window.fbSet('/rooms/' + window._WP.roomCode + '/playerState', {
+            action: 'seek',
+            currentTime: video.currentTime,
+            ts: Date.now(),
+            by: window._WP.myNick
+        }).catch(()=>{});
+    }, 200);
+}
+
+window.seekForward = function() {
+    if (window._WP && window._WP.inRoom && window._WP.isHost) {
+        _sendSeekToRoom(window._seekSkipSeconds || 10);
+    } else if (typeof _origSeekForward === 'function') {
+        _origSeekForward();
+    }
+};
+window.seekBackward = function() {
+    if (window._WP && window._WP.inRoom && window._WP.isHost) {
+        _sendSeekToRoom(-(window._seekSkipSeconds || 10));
+    } else if (typeof _origSeekBackward === 'function') {
+        _origSeekBackward();
+    }
+};
+
+// Misafirler seek'i dinlesin (playerState listener)
+function wpStartPlayerStateListenerFixed(code) {
+    let lastTs = 0;
+    const joinTs = Date.now();
+    const pollInterval = setInterval(async () => {
+        if (!window._WP || !window._WP.inRoom) return;
+        try {
+            const ps = await window.fbGet('/rooms/' + code + '/playerState');
+            if (!ps || !ps.ts) return;
+            if (ps.ts <= lastTs) return;
+            if (ps.by === window._WP.myNick) { lastTs = ps.ts; return; }
+            if (ps.ts < joinTs - 5000) { lastTs = ps.ts; return; }
+            lastTs = ps.ts;
+            if (ps.action === 'seek' && typeof ps.currentTime === 'number') {
+                const video = document.getElementById('videoPlayer');
+                if (video && video.readyState >= 1) {
+                    if (typeof window._dvrSeekFull === 'function') {
+                        window._dvrSeekFull(video, window.state?.player?.hls, ps.currentTime);
+                    } else {
+                        video.currentTime = ps.currentTime;
+                    }
+                    if (video.paused && !window._userPaused) video.play().catch(()=>{});
+                }
+            } else if (ps.action === 'close') {
+                if (typeof closePlayer === 'function') closePlayer();
+            }
+        } catch(e) {}
+    }, 2000);
+    window._WP._psPollTimer = pollInterval;
+}
+
+// == ODA GİRİŞİNDE DİNLEYİCİLERİ BAŞLAT (hook) ====================
+const _origWpEnterRoom = window.wpEnterRoom;
+if (typeof _origWpEnterRoom === 'function') {
+    window.wpEnterRoom = async function(opts) {
+        const result = await _origWpEnterRoom(opts);
+        if (window._WP && window._WP.inRoom && window._WP.roomCode) {
+            // Mevcut polling'leri temizle
+            if (window._WP._npPollTimer) clearInterval(window._WP._npPollTimer);
+            if (window._WP._psPollTimer) clearInterval(window._WP._psPollTimer);
+            // Yeni dinleyicileri başlat
+            wpStartNowPlayingListenerFixed(window._WP.roomCode);
+            wpStartPlayerStateListenerFixed(window._WP.roomCode);
+        }
+        return result;
+    };
+}
+
+})();
+</script>
 </body>
 </html>

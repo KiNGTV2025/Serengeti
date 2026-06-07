@@ -38490,6 +38490,7 @@ function resumeChannel(startTime) {
     } else if (isHlsUrl) {
         // http:// HLS URL'ler → mixed content engeli → STREAM_PROXY ile aç (tüm ortamlar)
         if (!isKoolTo && !isVavooWorker && !isVavooRaw && !needsDirect && rawUrl.startsWith('http:')) {
+            showToast('[DBG] http HLS→STREAM_PROXY: ' + rawUrl.slice(0,35));
             startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
         } else
         if (isVavooRaw) {
@@ -38539,10 +38540,12 @@ function resumeChannel(startTime) {
                 _koolLastTime = video.currentTime;
             }, 8000); // 5sn→8sn: çok sık stall tespiti yeniden bağlanmaya neden oluyor
         } else if (isVavooWorker) {
-            // Vavoo Worker → her zaman direkt HLS.js (UA spoof ile okhttp sorunu çözüldü)
+            // Vavoo Worker → direkt HLS.js
+            showToast('[DBG] VavooWorker → HLS.js: ' + rawUrl.slice(0,40));
             startHls(rawUrl);
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
+            showToast('[DBG] needsDirect → HLS.js: ' + rawUrl.slice(0,40));
             startHls(rawUrl);
         } else if (needsRedirectResolve) {
             // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
@@ -38617,6 +38620,7 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
+        showToast('[DBG] else branch: isHlsUrl=false url=' + rawUrl.slice(0,35));
         // http:// MKV/MP4 → App24 WebView'da Cleartext Traffic engeli → proxy üzerinden geç
         // https:// → direkt aç, hata olursa proxy zinciri
         const _isMixedContent = rawUrl.startsWith('http:'); // http:// → proxy zorunlu (Android Cleartext)
@@ -38626,6 +38630,7 @@ function resumeChannel(startTime) {
 
         // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
         // http:// → Cleartext engeli → https proxy üzerinden geç
+        showToast('[DBG] MKV branch → mixed:' + String(_isMixedContent) + ' url:' + rawUrl.slice(0,30));
         const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
             ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
             : null;

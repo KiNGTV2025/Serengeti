@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=optional" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
     <style>
      
     /* ═══════════════════════════════════════════
@@ -129,8 +129,8 @@
     }
 
     @keyframes cardIn {
-        from { opacity: 0; transform: translateY(24px) scale(0.97); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     /* — Logo alanı — */
@@ -154,8 +154,8 @@
     }
 
     @keyframes logoPulse {
-        0%,100% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.15); opacity: 1; }
+        0%,100% { opacity: 0.7; }
+        50% { opacity: 1; }
     }
 
     .login-logo-img {
@@ -528,8 +528,8 @@
         animation: banPulse 1.5s ease-in-out infinite;
     }
     @keyframes banPulse {
-        0%, 100% { transform: scale(1);   opacity: 1; }
-        50%       { transform: scale(1.08); opacity: 0.85; }
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.75; }
     }
     .ban-title {
         font-family: 'Orbitron', sans-serif;
@@ -594,15 +594,15 @@
     }
     .ban-link a { color: #FFD700; text-decoration: none; font-weight: 600; }
     .login-focusable.dpad-focused {
-        outline: 2.5px solid rgba(255,215,0,0.95) !important;
-        outline-offset: 3px !important;
-        box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 20px rgba(255,215,0,0.12) !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.70),
+                    0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;
     }
      
     input.login-focusable.dpad-focused {
-        border-color: rgba(255,215,0,0.7) !important;
-        background: rgba(255,215,0,0.07) !important;
-        box-shadow: 0 0 0 3px rgba(255,215,0,0.18) !important;
+        border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.7) !important;
+        background: rgba(var(--accent-primary-rgb,255,215,0), 0.07) !important;
+        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
         outline: none !important;
     }
     </style>
@@ -634,10 +634,9 @@
 .player-action-btn.remote-focused,
 .player-action-btn.focused {
     transform: none !important;
-    box-shadow: none !important;
     transition: none !important;
-    outline: 3px solid var(--accent-primary, #FFD700) !important;
-    background: rgba(255,215,0,0.20) !important;
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
 }
 /* Tüm remote-focused — geçiş yok ama animasyon (dalga) serbest */
 .remote-focused, .focused {
@@ -674,15 +673,14 @@
 .player-actions-row {
     will-change: scroll-position;
 }
-/* focus/hover'da box-shadow yerine outline kullan — shadow GPU paint tetikler */
+/* focus/hover'da box-shadow kullan — glow blink ile uyumlu */
 .header-btn:hover, .header-btn.remote-focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 1px !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.7) !important;
+    outline: none !important;
 }
 .header-btn:focus { outline: none !important; box-shadow: none !important; }
 .header-btn.remote-focused {
-    background: rgba(255,215,0,0.18) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
 }
 </style>
 
@@ -722,13 +720,12 @@
     box-shadow: none !important;
     border-color: var(--accent-primary) !important;
 }
-/* Odak efekti: box-shadow kullan — overflow:hidden'dan etkilenmez, border-radius'u takip eder */
+/* Odak efekti: focusPulse animasyonu — box-shadow sarı hard-kod yok */
 .channel-card.remote-focused,
 .channel-card.focused {
     transform: none !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     transition: none !important;
     will-change: auto !important;
 }
@@ -876,10 +873,8 @@ img {
 .cat-pill.remote-focused,
 .m3u-pill.focused,
 .cat-pill.focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 1px !important;
-    box-shadow: none !important;
-    /* transform: none — kaldırıldı; waveFocus için serbest */
+    outline: none !important;
+    /* transform: none — kaldırıldı; focusEnter için serbest */
     transition: none !important;
 }
 
@@ -920,8 +915,36 @@ img {
 /* ── 14. ODAK RENK GÖSTERGESİ — Hızlı Geri Bildirim ── */
 /* remote-focused sınıfı eklenir eklenmez anında görünsün */
 .remote-focused {
-    outline-color: var(--accent-primary, #FFD700) !important;
-    transition: outline-color 0ms, background-color 60ms linear !important;
+    outline: none !important;
+    transition: background-color 60ms linear !important;
+}
+
+
+/* ── Header El Yazısı Kullanıcı Adı ── */
+#headerUsernameTag {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: 4px;
+    pointer-events: none;
+    user-select: none;
+    min-width: 0;
+    max-width: 120px;
+    overflow: hidden;
+}
+#headerUsernameCurve {
+    display: block;
+    max-width: 120px;
+    height: 28px;
+    transition: opacity 0.4s ease;
+    vertical-align: middle;
+}
+@media (max-width: 480px) {
+    #headerUsernameTag { max-width: 72px; }
+    #headerUsernameCurve { max-width: 72px; height: 24px; }
+}
+@media (max-width: 360px) {
+    #headerUsernameTag { display: none !important; }
 }
 
 /* ═══ SON İZLENENLER — MODERN TV TASARIMI ═══ */
@@ -1058,13 +1081,9 @@ img {
 
 /* Kumanda odağı */
 .recent-card.remote-focused {
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.08) !important;
-    outline: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5) !important;
-    outline-offset: 2px !important;
-    box-shadow:
-        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0),0.12),
-        0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.15) !important;
+    outline: none !important;
 }
 
 /* Badge: CANLI / VOD */
@@ -1121,11 +1140,9 @@ img {
     align-items: center;
     justify-content: center;
     font-family: 'Rajdhani', sans-serif;
-    /* Backdrop blur + koyu overlay */
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    animation: exitModalBgIn 0.25s ease both;
+    /* backdrop-filter kaldırıldı — TVBox WebView'da çok ağır */
+    background: rgba(0,0,0,0.75);
+    animation: exitModalBgIn 0.15s ease both;
 }
 @keyframes exitModalBgIn {
     from { opacity: 0; }
@@ -1153,8 +1170,8 @@ img {
     overflow: hidden;
 }
 @keyframes exitCardIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Üst tema çizgisi */
@@ -1207,8 +1224,8 @@ img {
     animation: exitRingPulse 2.4s ease-in-out infinite 0.6s;
 }
 @keyframes exitRingPulse {
-    0%,100% { opacity: 0.45; transform: scale(1); }
-    50%      { opacity: 1;    transform: scale(1.07); }
+    0%,100% { opacity: 0.45; }
+    50%      { opacity: 0.9; }
 }
 
 /* Logo img */
@@ -1226,8 +1243,8 @@ img {
     animation: exitLogoFloat 3s ease-in-out infinite;
 }
 @keyframes exitLogoFloat {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(-3px); }
+    0%,100% { transform: none; }
+    50%      { transform: none; }
 }
 
 /* — Başlık — */
@@ -1281,7 +1298,7 @@ img {
     font-weight: 700;
     letter-spacing: 0.5px;
     cursor: pointer;
-    transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    transition: background 0.18s, border-color 0.18s;
     position: relative;
     overflow: hidden;
 }
@@ -1313,7 +1330,7 @@ img {
     font-weight: 900;
     letter-spacing: 1.5px;
     cursor: pointer;
-    transition: filter 0.18s, transform 0.15s, box-shadow 0.18s;
+    transition: filter 0.18s, box-shadow 0.18s;
     box-shadow: 0 4px 20px rgba(var(--accent-primary-rgb,255,215,0),0.28);
     position: relative;
     overflow: hidden;
@@ -1340,7 +1357,7 @@ img {
     box-shadow:
         0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.3),
         0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.1) !important;
-    transform: scale(1.05);
+    transform: none !important;
     color: #fff !important;
 }
 #exitConfirmYes.remote-focused {
@@ -1349,7 +1366,7 @@ img {
     box-shadow:
         0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7),
         0 6px 32px rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
-    transform: scale(1.05);
+    transform: none !important;
 }
 
 /* — Kısayol ipucu — */
@@ -1401,16 +1418,40 @@ img {
    Kumandada odak geçişinde buton büyüyüp küçülür
    scale(1.18) → dalga etkisi — TVBox uyumlu
    ══════════════════════════════════════════════ */
-@keyframes waveFocus {
-    0%   { transform: scale(1);    }
-    35%  { transform: scale(1.18); }
-    65%  { transform: scale(1.13); }
-    100% { transform: scale(1.16); }
+/* ══════════════════════════════════════════════
+   ── 18 + 19. ODAK ANİMASYONU — 1.3 BÜYÜT + TEMA RENGİ YANIP SÖNSİN ──
+   Kumandada odak olan kart/buton 1.3x büyür,
+   seçili tema rengiyle saydam glow olarak yanıp söner.
+   Sarı hard-kod renk yok — tamamen var(--accent-primary) bazlı.
+   ══════════════════════════════════════════════ */
+
+/* Giriş: scale YOK — TVBox'ta scale her seferinde tam repaint tetikler */
+@keyframes focusEnter {
+    0%   { transform: none; }
+    100% { transform: none; }
 }
 
-/* Tüm odaklanabilir buton/pill/kart türleri */
+/* Sürekli yanıp sönme — TVBox uyumlu: tek katman, düşük spread */
+@keyframes focusPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.80);
+    }
+    50% {
+        box-shadow:
+            0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.35),
+            0 0 16px rgba(var(--accent-primary-rgb, 255,215,0), 0.55);
+    }
+}
+
+/* Kartlar için — TVBox'ta scale repaint = kasma, sadece glow kullan */
+@keyframes focusEnterCard {
+    0%   { transform: none; }
+    100% { transform: none; }
+}
+
+/* ── Buton / Pill / Modal öğeleri — 1.3x odak ── */
 .header-btn.remote-focused,
-.player-action-btn.remote-focused,
 .m3u-pill.remote-focused,
 .cat-pill.remote-focused,
 .sidebar-category-pill.remote-focused,
@@ -1443,39 +1484,51 @@ img {
 .login-btn-secondary.dpad-focused,
 .login-btn.focused,
 .login-btn-secondary.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
+    animation:
+        focusEnter 200ms cubic-bezier(0.22,1,0.36,1) forwards,
+        focusPulse 1.4s ease-in-out 200ms infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
 }
 
-/* Kanal kartı — biraz daha ölçülü büyüsün (grid kırılmasın) */
+/* ── Kanal kartı — ızgara kırılmasın, scale YOK ── */
 .channel-card.remote-focused,
 .channel-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.10) !important;
+    animation:
+        focusPulse 1.4s ease-in-out infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    border-color: var(--accent-primary) !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                0 6px 24px rgba(0,0,0,0.5) !important;
 }
 
-/* VOD episode kart */
+/* ── VOD episode kart ── */
 .vod-episode-card.remote-focused,
 .vod-episode-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.08) !important;
+    animation:
+        focusPulse 1.4s ease-in-out infinite !important;
     transform-origin: center center !important;
-    will-change: transform !important;
+    outline: none !important;
+    will-change: box-shadow !important;
     z-index: 2 !important;
     position: relative !important;
-    box-shadow: 0 0 0 2px var(--accent-primary, #FFD700) !important;
 }
 
-/* Odak gidince anında sıfırla */
+/* ── Player butonları — scale YOK, sadece glow blink ── */
+.player-action-btn.remote-focused,
+.player-action-btn.focused {
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+    transform: none !important;
+    outline: none !important;
+    will-change: box-shadow !important;
+}
+
+/* ── Odak gidince anında sıfırla ── */
 .channel-card:not(.remote-focused):not(.focused),
 .vod-episode-card:not(.remote-focused):not(.focused) {
     transform: none !important;
@@ -1483,53 +1536,12 @@ img {
     z-index: auto !important;
 }
 
-/* ══════════════════════════════════════════════
-   ── 19. TEMA RENGİNDE YANIP SÖNEN ODAK (BLINK) ──
-   Kumandada odaklanan kart, seçili temanın rengiyle
-   glow olarak yanıp söner — odak asla kaybolmaz
-   ══════════════════════════════════════════════ */
-@keyframes focusBlink {
-    0%,100% { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                          0 0 10px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
-    50%      { box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                          0 0 28px rgba(var(--accent-primary-rgb,255,215,0), 0.9),
-                          0 0 50px rgba(var(--accent-primary-rgb,255,215,0), 0.4); }
-}
-@keyframes focusBlinkOutline {
-    0%,100% { outline-color: var(--accent-primary, #FFD700); opacity: 1; }
-    50%      { outline-color: var(--accent-primary, #FFD700); opacity: 0.55; }
-}
-
-/* Kanal kartı — tema rengi blink — PC'de aktif, TVBox'ta JS ile override edilir */
-.channel-card.remote-focused,
-.channel-card.focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-    transform: scale(1.10) !important;
-    transform-origin: center center !important;
-    will-change: transform !important;
-    z-index: 2 !important;
-    position: relative !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700),
-                0 0 18px rgba(255,215,0,0.45) !important;
-}
-
-/* Buton/pill odağı — outline blink — PC'de aktif, TVBox'ta JS ile override edilir */
-.header-btn.remote-focused,
-.player-action-btn.remote-focused,
-.m3u-pill.remote-focused,
-.cat-pill.remote-focused,
-.sidebar-category-pill.remote-focused,
-.category-list-item.remote-focused {
-    animation: waveFocus 220ms cubic-bezier(0.22,1,0.36,1) forwards !important;
-}
-
-/* Odak KORUNUMU — remote-focused class varken outline hiç kaybolmasın */
+/* ── Genel odak koruması — outline YOK, sadece blink ── */
 .remote-focused {
-    outline: 2px solid var(--accent-primary, #FFD700) !important;
-    outline-offset: 2px !important;
+    outline: none !important;
 }
 .channel-card.remote-focused {
-    outline: none !important; /* kanal kartı box-shadow kullanıyor */
+    outline: none !important;
 }
 
 </style>
@@ -2237,12 +2249,11 @@ body {
  
 #btnCloseEmbed.remote-focused,
 #btnCloseEmbed:focus {
-    outline: 3px solid #FFD700 !important;
-    outline-offset: 3px !important;
-    background: rgba(255,215,0,0.35) !important;
-    border-color: #FFD700 !important;
-    color: #FFD700 !important;
-    box-shadow: none !important;
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80) !important;
     transform: none !important;
 }
 
@@ -2262,8 +2273,8 @@ body {
     transform: none !important;
 }
 #vodInfoScroll.remote-focused {
-    outline: 2px solid rgba(255,215,0,0.5) !important;
-    outline-offset: 4px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
     border-radius: 8px !important;
 }
 
@@ -2370,9 +2381,8 @@ body {
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-             
             filter: drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15);
-            animation: none !important;  
+            /* animasyon JS RAF ile yönetilir — CSS animation yok */
         }
 
          
@@ -2385,8 +2395,8 @@ body {
          
         body.low-performance-mode .neon-logo-img,
         body.fast-mode .neon-logo-img {
-            animation: none !important;  
-            filter: drop-shadow(0 0 5px var(--accent-primary)) brightness(1.12) !important;
+            /* RAF animasyonu JS tarafında low-perf modda yavaşlatılır */
+            filter: drop-shadow(0 0 5px var(--accent-primary)) brightness(1.12);
         }
         
         .header-controls {
@@ -3948,271 +3958,190 @@ body {
     position: relative;
     z-index: 10;
 }
-/* ═══ VOD HERO SLIDER CSS ═══ */
-/* ═══ VOD HERO SLIDER — Modern Netflix/Disney+ Style ═══ */
+/* ═══ VOD HERO SLIDER CSS — TOP 10 Netflix Style ═══ */
+/* ═══ VOD HERO SLIDER — Top 10 Listesi Stili ═══ */
 #vodHeroSlider {
     user-select:none; -webkit-user-select:none;
     position:relative; width:100%;
-    margin-bottom:16px;
-    border-radius:18px;
-    overflow:hidden;
-    background:#070710;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 2px 0 rgba(255,215,0,0.08);
+    margin-bottom:20px;
+    background:transparent;
+    overflow:visible;
 }
 #vodHeroSlider.dpad-active {
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.7), 0 8px 40px rgba(0,0,0,0.7);
+    outline: none;
 }
-#vodHeroTrack {
-    position:relative; width:100%; height:260px; overflow:hidden;
-}
-@media (max-width:700px) { #vodHeroTrack { height:200px !important; } }
-@media (max-width:480px) { #vodHeroTrack { height:170px !important; } }
 
-/* ── Slides ── */
-.vhs-slide {
-    position:absolute; inset:0;
-    opacity:0;
-    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1) !important;
-    cursor:pointer;
-    will-change: opacity;
+/* ── Section header ── */
+#vhsTop10Header {
+    display:flex; align-items:center; gap:8px;
+    padding: 0 2px 10px 2px;
 }
-.vhs-slide.active { opacity:1; z-index:2; }
-.vhs-slide.prev   { opacity:0; z-index:1; }
+#vhsTop10HeaderTitle {
+    font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:16px; font-weight:800; color:#fff; letter-spacing:0.3px;
+}
+.top10-flag {
+    background:linear-gradient(135deg,#E50914,#B20710);
+    color:#fff; font-family:'Orbitron',sans-serif;
+    font-size:8px; font-weight:900; letter-spacing:1.5px;
+    padding:3px 8px; border-radius:4px;
+    text-transform:uppercase;
+}
+
+/* ── Horizontal scroll track ── */
+#vodHeroTrack {
+    position:relative; width:100%;
+    display:flex; flex-direction:row;
+    gap:0px;
+    overflow-x:auto; overflow-y:visible;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:28px;
+    padding-top:6px;
+    height:auto !important;
+}
+#vodHeroTrack::-webkit-scrollbar { display:none; }
+
+/* ── Each Top 10 card ── */
+.vhs-slide {
+    position:relative !important;
+    inset:unset !important;
+    flex:0 0 auto;
+    width:116px;
+    cursor:pointer;
+    display:flex !important;
+    align-items:flex-end;
+    opacity:1 !important;
+    z-index:1;
+    transition:transform 0.2s ease;
+}
+.vhs-slide:hover {
+    transform: scale(1.07);
+    z-index:5;
+}
+.vhs-slide.active { opacity:1 !important; z-index:2; }
+/* Kumanda odağı */
+.vhs-slide.remote-focused {
+    transform: scale(1.1);
+    z-index:10;
+    outline: none;
+}
+.vhs-slide.remote-focused .vhs-poster-wrap {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 2.5px #FFD700, 0 8px 32px rgba(255,215,0,0.55) !important;
+}
+.vhs-slide.remote-focused .vhs-rank-num {
+    -webkit-text-stroke: 3px #FFD700 !important;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.7)) !important;
+}
+@media (max-width:480px) { .vhs-slide { width:96px; } }
+
+/* ── Rank number (big outline) ── */
+.vhs-rank-num {
+    font-family:'Orbitron','Rajdhani',sans-serif;
+    font-size:76px; font-weight:900; line-height:1;
+    color:transparent;
+    -webkit-text-stroke: 3px rgba(255,255,255,0.82);
+    letter-spacing:-6px;
+    flex-shrink:0;
+    align-self:flex-end;
+    margin-right:-12px;
+    position:relative; z-index:2;
+    text-shadow: -3px 3px 0 rgba(0,0,0,0.55);
+    padding-bottom:0;
+    min-width:54px; text-align:right;
+    display:block;
+}
+@media (max-width:480px) {
+    .vhs-rank-num { font-size:58px; -webkit-text-stroke:2.5px rgba(255,255,255,0.82); min-width:42px; letter-spacing:-5px; }
+}
+/* Rank 1 — altın rengi */
+.vhs-slide[data-vi="0"] .vhs-rank-num {
+    -webkit-text-stroke: 3px #FFD700;
+    color:transparent;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.55));
+}
+
+/* ── Poster image wrapper ── */
+.vhs-poster-wrap {
+    width:70px; flex-shrink:0;
+    border-radius:8px; overflow:hidden;
+    position:relative; z-index:3;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.06);
+    aspect-ratio: 2/3;
+    background:#111122;
+    border:1.5px solid rgba(255,255,255,0.07);
+    display:block;
+}
+.vhs-slide:hover .vhs-poster-wrap {
+    border-color:rgba(255,215,0,0.6);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.85), 0 0 0 1.5px rgba(255,215,0,0.5);
+}
+@media (max-width:480px) { .vhs-poster-wrap { width:58px; } }
 
 .vhs-bg-img {
     width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-    filter: brightness(0.72) saturate(1.1);
-    transform: scale(1.04);
-    transition: transform 6s ease-out;
+    object-fit:cover; display:block;
+    transition:transform 0.3s ease;
+    filter:brightness(0.9);
 }
-.vhs-slide.active .vhs-bg-img { transform: scale(1.0); }
+.vhs-slide:hover .vhs-bg-img { transform:scale(1.08); filter:brightness(1); }
 
-/* ── Gradient overlays — sinematik ── */
-.vhs-grad-side {
-    position:absolute; inset:0;
-    background:linear-gradient(to right,
-        rgba(4,4,14,0.97) 0%,
-        rgba(4,4,14,0.7) 32%,
-        rgba(4,4,14,0.2) 58%,
-        transparent 80%);
-    pointer-events:none; z-index:3;
-}
-.vhs-grad-bottom {
-    position:absolute; inset:0;
-    background:linear-gradient(to top,
-        rgba(4,4,14,1) 0%,
-        rgba(4,4,14,0.6) 30%,
-        transparent 60%);
-    pointer-events:none; z-index:3;
-}
-/* Üst karartma (başlık yazısı için) */
-.vhs-grad-top {
-    position:absolute; top:0; left:0; right:0; height:80px;
-    background:linear-gradient(to bottom, rgba(4,4,14,0.5) 0%, transparent 100%);
-    pointer-events:none; z-index:3;
-}
-
-/* ── Info panel ── */
-.vhs-info {
-    position:absolute; left:0; top:0; bottom:0;
-    width:62%; display:flex; flex-direction:column;
-    justify-content:flex-end;
-    padding:20px 20px 22px 20px;
-    z-index:6; pointer-events:none;
-}
-@media (max-width:700px) { .vhs-info { width:82%; padding:12px 12px 16px 14px; } }
-@media (max-width:480px) { .vhs-info { width:90%; padding:8px 8px 12px 10px; } }
-
-/* Slide-up animasyonu info için */
-.vhs-slide.active .vhs-info { animation: vhsInfoIn 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes vhsInfoIn {
-    from { transform:translateY(18px); opacity:0; }
-    to   { transform:translateY(0);    opacity:1; }
-}
-
-.vhs-badge-row {
-    display:flex; align-items:center; gap:6px; margin-bottom:10px; pointer-events:none; flex-wrap:wrap;
-}
-.vhs-badge {
-    font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
-    padding:3px 10px; border-radius:5px;
-    background:linear-gradient(135deg,#FFD700,#E8A000);
-    color:#000;
-    box-shadow: 0 2px 8px rgba(255,215,0,0.3);
-}
-.vhs-badge.series {
-    background:linear-gradient(135deg,#7c5fe6,#a78bfa);
-    color:#fff;
-    box-shadow: 0 2px 8px rgba(124,95,230,0.3);
-}
-.vhs-rating-badge {
-    font-size:9px; font-weight:700;
-    padding:3px 9px; border-radius:5px;
-    background:rgba(255,255,255,0.12);
-    border:1px solid rgba(255,255,255,0.2);
-    color:rgba(255,255,255,0.9);
-    display:flex; align-items:center; gap:3px;
-    backdrop-filter:blur(4px);
-}
-
-/* Kanal numarası / sıra badge */
-.vhs-rank-badge {
-    font-size:9px; font-weight:900; letter-spacing:1px;
-    padding:3px 8px; border-radius:5px;
-    background:rgba(0,0,0,0.5);
-    border:1px solid rgba(255,255,255,0.1);
-    color:rgba(255,255,255,0.5);
-}
-
-.vhs-title {
-    font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:22px; font-weight:800; line-height:1.15;
-    color:#fff;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.8);
-    margin-bottom:6px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    letter-spacing:0.3px;
-}
-@media (max-width:700px) { .vhs-title { font-size:16px; } }
-@media (max-width:480px) { .vhs-title { font-size:13px; margin-bottom:4px; } }
-
-.vhs-overview {
-    font-size:11px; color:rgba(255,255,255,0.65); line-height:1.5;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    margin-bottom:12px;
-    text-shadow:0 1px 4px rgba(0,0,0,0.8);
-}
-@media (max-width:600px) { .vhs-overview { display:none; } }
-
-/* ── Buttons ── */
-.vhs-btns {
-    display:flex; gap:8px; align-items:center; pointer-events:auto; flex-wrap:wrap;
-}
-.vhs-btn-play {
-    display:flex; align-items:center; gap:6px;
-    background:linear-gradient(135deg,#FFD700 0%,#E8A000 100%);
-    color:#000; font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:12px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase;
-    border:none; border-radius:10px;
-    padding:8px 18px; cursor:pointer;
-    box-shadow: 0 4px 16px rgba(255,215,0,0.35);
-    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-}
-.vhs-btn-play:hover, .vhs-btn-play:focus {
-    background:linear-gradient(135deg,#ffe550,#FFD700);
-    box-shadow: 0 6px 24px rgba(255,215,0,0.5);
-    transform:translateY(-1px);
-}
-.vhs-btn-play.remote-focused {
-    outline:3px solid #fff !important; outline-offset:3px;
-    box-shadow: 0 0 0 5px rgba(255,255,255,0.25), 0 4px 16px rgba(255,215,0,0.5) !important;
-    transform:scale(1.05);
-}
-.vhs-btn-info {
-    display:flex; align-items:center; gap:5px;
-    background:rgba(255,255,255,0.1);
-    border:1.5px solid rgba(255,255,255,0.25);
+/* ── "Yeni Eklendi" badge overlay ── */
+.vhs-new-badge {
+    position:absolute; bottom:0; left:0; right:0;
+    background:linear-gradient(0deg,rgba(229,9,20,1) 0%,rgba(229,9,20,0.88) 60%,transparent 100%);
     color:#fff; font-family:'Rajdhani','Exo 2',sans-serif;
-    font-size:12px; font-weight:700;
-    border-radius:10px; padding:8px 15px; cursor:pointer;
-    backdrop-filter:blur(8px);
-    transition: background 0.15s, border-color 0.15s, transform 0.15s;
-}
-.vhs-btn-info:hover, .vhs-btn-info:focus {
-    background:rgba(255,255,255,0.2);
-    border-color:rgba(255,255,255,0.4);
-    transform:translateY(-1px);
-}
-.vhs-btn-info.remote-focused {
-    outline:3px solid #FFD700 !important; outline-offset:3px;
-    background:rgba(255,255,255,0.22);
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.2) !important;
-    transform:scale(1.05);
-}
-@media (max-width:480px) {
-    .vhs-btn-play, .vhs-btn-info { font-size:10px; padding:6px 12px; border-radius:8px; }
+    font-size:7px; font-weight:800; letter-spacing:0.9px; text-transform:uppercase;
+    text-align:center; padding:7px 2px 4px;
+    z-index:4; pointer-events:none;
+    display:flex; align-items:center; justify-content:center; gap:2px;
 }
 
-/* ── Thumbnail strip (right) ── */
-.vhs-thumbs {
-    position:absolute; right:0; top:0; bottom:0;
-    width:150px; display:flex; flex-direction:column;
-    justify-content:center; gap:5px;
-    padding:12px 12px 12px 0;
-    z-index:6;
-}
-@media (max-width:750px) { .vhs-thumbs { display:none; } }
-.vhs-thumb {
-    flex:1; border-radius:8px; overflow:hidden;
-    cursor:pointer; position:relative;
-    border:2px solid transparent;
-    opacity:0.45;
-    max-height:44px;
-    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
-}
-.vhs-thumb.active { border-color:#FFD700; opacity:1; transform:scaleX(1.04); }
-.vhs-thumb:hover  { opacity:0.8; }
-.vhs-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-.vhs-thumb-overlay {
-    position:absolute; inset:0;
-    background:linear-gradient(to right,rgba(0,0,0,0.5),transparent 50%);
+/* ── Title below card ── */
+.vhs-title {
+    position:absolute; bottom:-22px; left:52px; right:0;
+    font-family:'Rajdhani','Exo 2',sans-serif;
+    font-size:9px; font-weight:700; line-height:1.2;
+    color:rgba(255,255,255,0.55);
+    text-overflow:ellipsis; overflow:hidden; white-space:nowrap;
     pointer-events:none;
 }
-/* Aktif thumb'da altın sol çizgi */
-.vhs-thumb.active::before {
-    content:'';
-    position:absolute; left:0; top:0; bottom:0; width:3px;
-    background:linear-gradient(to bottom,#FFD700,#E8A000);
-    z-index:2;
-}
 
-/* ── Dots ── */
-#vodHeroDots {
-    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-    display:flex; gap:5px; z-index:20; align-items:center;
-}
-.vhs-dot {
-    height:3px; border-radius:3px;
-    background:rgba(255,255,255,0.25);
-    cursor:pointer;
-    width:14px;
-    transition: background 0.3s, width 0.3s;
-}
-.vhs-dot.active { background:#FFD700; width:30px; }
+/* Legacy overlay elements — gizle */
+.vhs-grad-side, .vhs-grad-bottom, .vhs-grad-top,
+.vhs-info, .vhs-btns, .vhs-btn-play, .vhs-btn-info,
+.vhs-overview, .vhs-badge-row, .vhs-thumbs,
+.vhs-rating-badge, .vhs-rank-badge, .vhs-badge { display:none !important; }
+
+/* ── Dots — Top10 modunda gizle ── */
+#vodHeroDots { display:none !important; }
 
 /* ── Nav arrows ── */
 .vhs-nav {
-    position:absolute; top:50%; transform:translateY(-50%);
+    position:absolute; top:45%; transform:translateY(-50%);
     z-index:20;
-    background:rgba(0,0,0,0.55);
-    border:1.5px solid rgba(255,255,255,0.15);
-    border-radius:50%; width:32px; height:32px;
+    background:rgba(0,0,0,0.78);
+    border:1.5px solid rgba(255,255,255,0.18);
+    border-radius:50%; width:30px; height:30px;
     display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:#fff; font-size:20px; line-height:1;
+    cursor:pointer; color:#fff; font-size:18px; line-height:1;
     opacity:0;
-    transition: opacity 0.2s, background 0.2s;
+    transition:opacity 0.2s, background 0.2s;
     backdrop-filter:blur(6px);
 }
-#vodHeroSlider:hover .vhs-nav { opacity:0.8; }
-.vhs-nav:hover { background:rgba(0,0,0,0.9); opacity:1 !important; }
-#vodHeroPrev { left:10px; }
-#vodHeroNext { right:10px; }
+#vodHeroSlider:hover .vhs-nav { opacity:0.88; }
+.vhs-nav:hover { background:rgba(0,0,0,0.96); opacity:1 !important; }
+#vodHeroPrev { left:-6px; }
+#vodHeroNext { right:-6px; }
 @media (max-width:600px) {
-    .vhs-nav { width:26px; height:26px; font-size:15px; opacity:0.5 !important; }
+    .vhs-nav { width:24px; height:24px; font-size:14px; opacity:0.55 !important; }
 }
 
-/* ── Progress bar ── */
-#vodHeroProgress {
-    position:absolute; bottom:0; left:0;
-    height:3px; width:0%;
-    background:linear-gradient(90deg,#FFD700,#E8A000);
-    z-index:25;
-    transition:width 0.1s linear;
-    border-radius:0 2px 2px 0;
-    box-shadow: 0 0 6px rgba(255,215,0,0.4);
-}
+/* ── Progress bar — Top10 modunda gizle ── */
+#vodHeroProgress { display:none !important; }
+
 /* ═══ /VOD HERO SLIDER CSS ═══ */
 
 #continueWatchingContainer {
@@ -4744,9 +4673,9 @@ body {
     background: rgba(255,60,60,0.35);
     border-color: rgba(255,80,80,0.8);
     color: #fff;
-    transform: scale(1.12);
+    transform: none;
 }
-#speedCloseBtn:active { transform: scale(0.88); }
+#speedCloseBtn:active { transform: none; }
 #seekAmountPanel > div {
     display: flex;
     gap: 4px;
@@ -4925,10 +4854,10 @@ body {
 }
  
 .sub-adj-btn.sub-dpad-focused {
-    background: rgba(255,215,0,0.35) !important;
-    border-color: #FFD700 !important;
-    outline: 2px solid #FFD700;
-    box-shadow: none;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    border-color: var(--accent-primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85);
     transform: none !important;
 }
 .sub-adj-btn.sub-adj-reset {
@@ -4980,7 +4909,8 @@ body {
     background: rgba(255, 215, 0, 0.15) !important;
     border-color: var(--accent-primary) !important;
     animation: none !important;  
-    outline: 2px solid rgba(255,215,0,0.5) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
 }
 #btnPlayerFav.fav-active .material-symbols-outlined {
     color: var(--accent-primary) !important;
@@ -5262,12 +5192,12 @@ body {
         .brightness-indicator .ind-icon-wrap {
             width: 40px; height: 40px;
             border-radius: 50%;
-            background: rgba(80,200,120,0.12);
-            border: 1.5px solid rgba(80,200,120,0.4);
+            background: rgba(var(--accent-primary-rgb,255,215,0),0.12);
+            border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);
             display: flex; align-items: center; justify-content: center;
         }
         .brightness-indicator .indicator-icon {
-            font-size: 20px; color: #50c878;
+            font-size: 20px; color: var(--accent-primary, #FFD700);
             margin: 0;
         }
         .brightness-indicator .ind-bar-wrap {
@@ -5282,7 +5212,7 @@ body {
         }
         .brightness-indicator .ind-bar-fill {
             width: 100%;
-            background: linear-gradient(to top, #50c878, #a8ffba);
+            background: linear-gradient(to top, var(--accent-primary, #FFD700), color-mix(in srgb, var(--accent-primary, #FFD700) 60%, white));
             border-radius: 18px;
             transition: height 0.12s ease;
             min-height: 4px;
@@ -5291,8 +5221,8 @@ body {
             font-family: 'Orbitron', 'Rajdhani', sans-serif;
             font-size: 13px;
             font-weight: 800;
-            color: #50c878;
-            text-shadow: 0 0 10px rgba(80,200,120,0.5);
+            color: var(--accent-primary, #FFD700);
+            text-shadow: 0 0 10px rgba(var(--accent-primary-rgb,255,215,0),0.5);
         }
 
         /* Ses — sağ alt köşe */
@@ -5305,8 +5235,9 @@ body {
             align-items: center;
             gap: 10px;
             z-index: 9998;
-            pointer-events: none;
+            pointer-events: auto;
             animation: indicator-slidein-right 0.22s cubic-bezier(0.22,1,0.36,1) both;
+            cursor: pointer;
         }
         .volume-indicator .ind-label {
             font-family: 'Rajdhani', sans-serif;
@@ -5319,12 +5250,12 @@ body {
         .volume-indicator .ind-icon-wrap {
             width: 40px; height: 40px;
             border-radius: 50%;
-            background: rgba(255,215,0,0.12);
-            border: 1.5px solid rgba(255,215,0,0.45);
+            background: rgba(var(--accent-secondary-rgb,255,215,0),0.12);
+            border: 1.5px solid rgba(var(--accent-secondary-rgb,255,215,0),0.45);
             display: flex; align-items: center; justify-content: center;
         }
         .volume-indicator .indicator-icon {
-            font-size: 20px; color: var(--accent-primary, #FFD700);
+            font-size: 20px; color: var(--accent-secondary, #FFD700);
             margin: 0;
         }
         .volume-indicator .ind-bar-wrap {
@@ -5339,7 +5270,7 @@ body {
         }
         .volume-indicator .ind-bar-fill {
             width: 100%;
-            background: linear-gradient(to top, #FFD700, #fff176);
+            background: linear-gradient(to top, var(--accent-secondary, #FFD700), color-mix(in srgb, var(--accent-secondary, #FFD700) 60%, white));
             border-radius: 18px;
             transition: height 0.12s ease;
             min-height: 4px;
@@ -5348,8 +5279,8 @@ body {
             font-family: 'Orbitron', 'Rajdhani', sans-serif;
             font-size: 13px;
             font-weight: 800;
-            color: var(--accent-primary, #FFD700);
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            color: var(--accent-secondary, #FFD700);
+            text-shadow: 0 0 10px rgba(var(--accent-secondary-rgb,255,215,0),0.5);
         }
 
         /* Çözünürlük — ortada küçük pill */
@@ -10745,19 +10676,18 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
 <!-- ═══ ÜMİT TV — MODERN TV LOGIN v2.0 ═══ -->
 <style>
-/* Kumanda odak: altın halka + parlama */
+/* Kumanda odak: tema rengi halka + parlama */
 #loginOverlay .login-focusable.dpad-focused,
 #loginOverlay .login-focusable:focus {
-    outline: 2.5px solid #FFD700 !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
 }
 #loginOverlay input.login-focusable.dpad-focused,
 #loginOverlay input.login-focusable:focus {
-    border-color: rgba(255,215,0,0.65) !important;
-    background: rgba(255,215,0,0.06) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.06) !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(255,215,0,0.18), 0 0 16px rgba(255,215,0,0.1) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.18), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.10) !important;
 }
 /* Kumanda gezinme ipucu - TV'ye yakışır */
 .tv-nav-hint {
@@ -11227,9 +11157,8 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .tut-btn-next.tut-dpad,
 .tut-btn-back.tut-dpad,
 .tut-btn-skip.tut-dpad {
-    outline: 2.5px solid rgba(255,215,0,0.95) !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 5px rgba(255,215,0,0.18), 0 0 20px rgba(255,215,0,0.15) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.18), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.15) !important;
     transition: none !important;
 }
 .tut-btn-next.tut-dpad {
@@ -13638,6 +13567,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;" tabindex="-1">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
+            <div id="headerUsernameTag" style="display:flex;align-items:center;pointer-events:none;user-select:none;flex-shrink:0;margin-left:4px;">
+                <canvas id="headerUsernameCurve" width="0" height="28" style="display:block;opacity:0;transition:opacity 0.4s ease;vertical-align:middle;"></canvas>
+            </div>
 
         </div>
         </header>
@@ -13844,7 +13776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 onfocus="this.style.borderColor='rgba(255,215,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                                 <span id="vodReviewUser" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;"></span>
-                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gonder</button>
+                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gönder</button>
                             </div>
                         </div>
                         <div id="vodReviewsList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;scrollbar-width:none;padding-right:2px;"></div>
@@ -13974,7 +13906,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="wpSendReaction('🔥')" class="wp-remote-focus" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:15px;padding:5px;cursor:pointer;">🔥</button>
     </div>
     <!-- Mesajlar — flex:1 + overflow-y:auto ile mesajlar kalır -->
-    <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth;"></div>
+    <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:auto;"></div>
     <!-- Giriş -->
     <div style="padding:8px 10px;border-top:1px solid rgba(255,215,0,0.1);display:flex;gap:7px;flex-shrink:0;background:#0f0f18;">
       <input id="wpChatInput" placeholder="Mesaj yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wpSendChat()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(255,215,0,0.2)'">
@@ -14193,7 +14125,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="touch-zone-indicator" id="touchZoneCenter"></div>
 
     
-    <div class="volume-indicator" id="volumeIndicator">
+    <div class="volume-indicator" id="volumeIndicator" onclick="toggleVideoMute()" style="cursor:pointer;" title="Sesi Aç/Kapat">
         <div class="ind-label">SES</div>
         <div class="ind-icon-wrap">
             <span class="material-symbols-outlined indicator-icon" id="volumeIcon">volume_up</span>
@@ -14512,6 +14444,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                         <button class="player-action-btn" id="btnSubtitle" onclick="toggleSubtitleModal()" title="Altyazı & Ses">
                             <span class="material-symbols-outlined">closed_caption</span>
                             <span class="btn-label">Altyazı</span>
+                        </button>
+                        <button class="player-action-btn" id="btnMuteToggle" onclick="toggleVideoMute()" title="Sesi Aç/Kapat">
+                            <span class="material-symbols-outlined" id="muteToggleIcon">volume_up</span>
+                            <span class="btn-label" id="muteToggleLabel">Ses</span>
                         </button>
                         
                         <button class="player-action-btn" id="btnHideLiveProgress" onclick="toggleLiveProgressBar()" title="Canlı'da Progress Bar Gizle/Göster" style="display:none;">
@@ -14932,7 +14868,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <span>Tuş Sesi Seviyesi</span>
                     <span id="keySoundLevelValue">%50</span>
                 </div>
-                <input type="range" min="0" max="100" value="50" class="slider" id="keySoundLevel">
+                <input type="range" min="0" max="200" value="80" class="slider" id="keySoundLevel">
             </div>
             
             <div class="toggle-container">
@@ -17289,7 +17225,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -17317,7 +17253,7 @@ let state = {
     
     controlSettings: {
         keySoundEnabled: true, 
-        keySoundLevel: 0.5, 
+        keySoundLevel: 0.8, 
         touchSensitivity: 50, 
         vibrationEnabled: true,
         sleepModeEnabled: false,
@@ -17405,7 +17341,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
         
         
 
@@ -20084,7 +20020,7 @@ function applyMiboxOptimizations() {
     state.imageCache.clear();
     
     // Mibox için özel kumanda ayarları
-    state.controlSettings.keySoundLevel = 0.3; // Daha düşük ses
+    state.controlSettings.keySoundLevel = 0.8; // Normal ses
     state.controlSettings.touchSensitivity = 40; // Daha az hassas
     
 }
@@ -21208,6 +21144,10 @@ listSeriesChannels();
             modal.style.zIndex = '10000';
             if (typeof setupVodModalRemote === 'function') setupVodModalRemote();
         }
+        // TMDB bulunamasa da yorumları aç (channelName ile)
+        if (typeof window.vodOpenReviews === 'function') {
+            window.vodOpenReviews(channelName);
+        }
         return;
     }
     
@@ -22068,8 +22008,8 @@ function loadSeasonEpisodes(seriesName, seasonNumber, seriesInfo) {
                 state.remote.vodEpisodeIndex = 0;
                 const focusEl = els[targetIdx];
                 focusEl.classList.add('remote-focused', 'tv-focused', 'focused');
-                focusEl.style.outline = '4px solid var(--accent-primary, #FFD700)';
-                focusEl.style.boxShadow = getComputedStyle(document.documentElement).getPropertyValue('--focus-glow').trim() || '0 0 20px rgba(255,215,0,0.6)';
+                focusEl.style.outline = '';
+                focusEl.style.boxShadow = '';
                 focusEl.scrollIntoView({ behavior: 'auto', block: 'nearest' });
                 focusEl.focus({ preventScroll: true });
             }
@@ -22322,14 +22262,18 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
         var textarea = document.getElementById('vodReviewInput');
         var btn = document.querySelector('[onclick="vodSubmitReview()"]');
 
-        if (stars) stars.style.outline = zone === 'stars' ? '2px solid #FFD700' : 'none';
+        if (stars) {
+            stars.style.outline = '';
+            stars.style.boxShadow = zone === 'stars' ? '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.80)' : '';
+        }
         if (textarea) {
-            textarea.style.borderColor = zone === 'textarea' ? '#FFD700' : 'rgba(255,255,255,0.1)';
-            textarea.style.outline = zone === 'textarea' ? '2px solid rgba(255,215,0,0.4)' : 'none';
+            textarea.style.borderColor = zone === 'textarea' ? 'var(--accent-primary,#FFD700)' : 'rgba(255,255,255,0.1)';
+            textarea.style.outline = '';
+            textarea.style.boxShadow = zone === 'textarea' ? '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.35)' : '';
         }
         if (btn) {
             btn.style.transform = zone === 'submit' ? 'scale(1.08)' : '';
-            btn.style.boxShadow = zone === 'submit' ? '0 0 14px rgba(255,215,0,0.5)' : '';
+            btn.style.boxShadow = zone === 'submit' ? '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.40)' : '';
         }
     }
 
@@ -22406,13 +22350,22 @@ document.getElementById('vodModal').addEventListener('keydown', function(e) {
     }, true); // capture=true: vodModal handler'dan önce yakala
 
     // Yorum bölümü açıldığında zone'u sıfırla
-    var origOpen = window.vodOpenReviews;
-    window.vodOpenReviews = async function(t) {
+    // NOT: origOpen lazy alınıyor — vodOpenReviews bu kod çalışırken henüz tanımlı değil (satır 55852'de tanımlanıyor)
+    window._wpVodOpenReviewsWrapper = async function(t) {
         _reviewZone = 'stars';
         window._vrMyStarsLocal = 0;
-        if (typeof origOpen === 'function') await origOpen(t);
+        // Her çağrıda gerçek fonksiyonu al (lazy lookup)
+        var _realOpen = window._wpVodOpenReviewsReal;
+        if (typeof _realOpen === 'function') await _realOpen(t);
         setTimeout(function() { highlightReviewZone('stars'); }, 200);
     };
+    // Gerçek fonksiyon yüklendikten sonra (DOMContentLoaded sonrası) wrap et
+    window.addEventListener('load', function() {
+        if (typeof window.vodOpenReviews === 'function' && window.vodOpenReviews !== window._wpVodOpenReviewsWrapper) {
+            window._wpVodOpenReviewsReal = window.vodOpenReviews;
+            window.vodOpenReviews = window._wpVodOpenReviewsWrapper;
+        }
+    }, { once: true });
 })();
 
     // Player'a özel tuş kontrolleri
@@ -24443,19 +24396,37 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         window.stopResolutionMonitoring = stopResolutionMonitoring;
 
         // SES, ÇÖZÜNÜRLÜK ve PARLAKLIK GÖSTERGELERİ
+        // Yardımcı: CSS değişkeninden renk al
+        function _getThemeColor(varName, fallback) {
+            var r = document.documentElement;
+            return (r.style.getPropertyValue(varName) || getComputedStyle(r).getPropertyValue(varName) || '').trim() || fallback;
+        }
+
         function showVolumeIndicator(volume) {
             var indicator = document.getElementById('volumeIndicator');
             var pct = Math.round(volume * 100);
             document.getElementById('volumeValue').textContent = pct + '%';
-            // Bar fill
             var fill = document.getElementById('volumeBarFill');
-            if (fill) fill.style.height = Math.max(2, pct) + '%';
-            // Icon: muted vs low vs normal
+            // Bar rengi: --accent-secondary (Galatasaray'da kırmızı)
+            var secColor = _getThemeColor('--accent-secondary', '#FFD700');
+            if (fill) {
+                fill.style.height = Math.max(2, pct) + '%';
+                fill.style.background = 'linear-gradient(to top, ' + secColor + ', ' + secColor + 'aa)';
+            }
             var icon = document.getElementById('volumeIcon');
-            if (icon) icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
-            // Reset animation
+            if (icon) {
+                icon.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up';
+                icon.style.color = secColor;
+            }
+            var val = document.getElementById('volumeValue');
+            if (val) val.style.color = secColor;
+            var iconWrap = indicator.querySelector('.ind-icon-wrap');
+            if (iconWrap) {
+                iconWrap.style.background = 'rgba(' + _getThemeColor('--accent-secondary-rgb','255,215,0') + ',0.15)';
+                iconWrap.style.borderColor = 'rgba(' + _getThemeColor('--accent-secondary-rgb','255,215,0') + ',0.5)';
+            }
             indicator.style.animation = 'none';
-            indicator.offsetHeight; // reflow
+            indicator.offsetHeight;
             indicator.style.animation = '';
             indicator.style.display = 'flex';
             clearTimeout(window.volumeIndicatorTimer);
@@ -24464,17 +24435,57 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             }, 1800);
         }
 
+        /* ── SES İKONU DOKUNMA: Mute Aç/Kapat ── */
+        window.toggleVideoMute = function() {
+            var video = document.getElementById('videoPlayer');
+            if (!video) return;
+            var muteIcon   = document.getElementById('muteToggleIcon');
+            var muteLabel  = document.getElementById('muteToggleLabel');
+            var volIcon    = document.getElementById('volumeIcon');
+            var btn        = document.getElementById('btnMuteToggle');
+
+            if (video.muted || video.volume === 0) {
+                video.muted = false;
+                if (video.volume === 0) video.volume = 0.8;
+                var iconName = video.volume < 0.4 ? 'volume_down' : 'volume_up';
+                if (muteIcon)  muteIcon.textContent  = iconName;
+                if (muteLabel) muteLabel.textContent = 'Ses';
+                if (volIcon)   volIcon.textContent   = iconName;
+                if (btn) btn.classList.remove('btn-active');
+                if (typeof showToast === 'function') showToast('🔊 Ses Açık');
+            } else {
+                video.muted = true;
+                if (muteIcon)  muteIcon.textContent  = 'volume_off';
+                if (muteLabel) muteLabel.textContent = 'Sessiz';
+                if (volIcon)   volIcon.textContent   = 'volume_off';
+                if (btn) btn.classList.add('btn-active');
+                if (typeof showToast === 'function') showToast('🔇 Ses Kapalı');
+            }
+        };
+
         function showBrightnessIndicator(brightness) {
             var indicator = document.getElementById('brightnessIndicator');
             var pct = Math.round(brightness);
             document.getElementById('brightnessValue').textContent = pct + '%';
-            // Bar fill
             var fill = document.getElementById('brightnessBarFill');
-            if (fill) fill.style.height = Math.max(2, pct) + '%';
-            // Icon: dim vs mid vs bright
+            // Bar rengi: --accent-primary (Galatasaray'da sarı)
+            var primColor = _getThemeColor('--accent-primary', '#FFD700');
+            if (fill) {
+                fill.style.height = Math.max(2, pct) + '%';
+                fill.style.background = 'linear-gradient(to top, ' + primColor + ', ' + primColor + 'aa)';
+            }
             var icon = document.getElementById('brightnessIcon');
-            if (icon) icon.textContent = pct < 30 ? 'brightness_2' : pct < 65 ? 'brightness_5' : 'brightness_7';
-            // Reset animation
+            if (icon) {
+                icon.textContent = pct < 30 ? 'brightness_2' : pct < 65 ? 'brightness_5' : 'brightness_7';
+                icon.style.color = primColor;
+            }
+            var val = document.getElementById('brightnessValue');
+            if (val) val.style.color = primColor;
+            var iconWrap = indicator.querySelector('.ind-icon-wrap');
+            if (iconWrap) {
+                iconWrap.style.background = 'rgba(' + _getThemeColor('--accent-primary-rgb','255,215,0') + ',0.15)';
+                iconWrap.style.borderColor = 'rgba(' + _getThemeColor('--accent-primary-rgb','255,215,0') + ',0.5)';
+            }
             indicator.style.animation = 'none';
             indicator.offsetHeight; // reflow
             indicator.style.animation = '';
@@ -24584,12 +24595,11 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         // VOLUME CONTROL
         function changeVolume(delta) {
             hideAllIndicators();
-            
             const video = document.getElementById('videoPlayer');
+            if (!video) return;
             let newVolume = video.volume + (delta / 100);
             newVolume = Math.max(0, Math.min(1, newVolume));
             video.volume = newVolume;
-            
             showVolumeIndicator(newVolume);
         }
 
@@ -25824,7 +25834,7 @@ const storageManager = new LocalStorageManager();
 // Default ayarları tanımla
 const DEFAULT_CONTROL_SETTINGS = {
     keySoundEnabled: true,
-    keySoundLevel: 0.5,
+    keySoundLevel: 0.8,
     touchSensitivity: 50,
     vibrationEnabled: true,
     sleepModeEnabled: false,
@@ -26114,7 +26124,7 @@ window.testSettings = {
     save: () => {
         const testSettings = {
             keySoundEnabled: true,
-            keySoundLevel: 0.7,
+            keySoundLevel: 0.8,
             touchSensitivity: 70,
             vibrationEnabled: true,
             lowPerformanceMode: true,
@@ -32575,7 +32585,7 @@ var _vhs = {
     cur:     0,
     timer:   null,
     DELAY:   4500,
-    SLIDE_COUNT: 5,
+    SLIDE_COUNT: 10,
     lastM3U: undefined
 };
 
@@ -32621,124 +32631,236 @@ function _imgUrl(info, c) {
     return { img: bd || po, thumb: po || bd };
 }
 
-/* ── Build: shuffle + ilk 5 VOD ── */
+/* ── Dizi adı kökünü çıkar (bölüm/sezon suffix temizle) ── */
+function _vhsRootName(name) {
+    return String(name)
+        /* 1. On prefix temizle: "TR | ", "ATV | ", "ATVPanel | " vb.
+           Boru karakterinden once en fazla 20 karakter varsa prefix say */
+        .replace(/^[^|]{1,20}\|\s*/g, '')
+        /* 2. S01E02 / S1E2 / s01e02 */
+        .replace(/\s*[Ss]\d{1,3}[Ee]\d{1,4}.*/g, '')
+        /* 3. " - Bolum 1" / " - Sezon 2 Bolum 5" (tire + anahtar kelime) */
+        .replace(/\s*[-\u2013]\s*(B\u00f6l\u00fcm|Bolum|Sezon|Season|Episode)\b.*/gi, '')
+        /* 4. "1.Bolum" / "2.Sezon" formati */
+        .replace(/\s*\d+\s*\.\s*(B\u00f6l\u00fcm|Bolum|Sezon|Season)\b.*/gi, '')
+        /* 5. Bolum/Episode kelimesi + sayi */
+        .replace(/\s*(B\u00f6l\u00fcm|Bolum|Episode|Ep\.?|Part|Sezon|Season)\s*\d+.*/gi, '')
+        /* 6. Sonunda " - 05" */
+        .replace(/\s*[-\u2013]\s*\d{1,4}\s*$/g, '')
+        /* 7. Sonunda "HD" / "FHD" / "4K" / "1080p" */
+        .replace(/\s+(HD|FHD|4K|SD|720p|1080p)\s*$/gi, '')
+        /* 8. Sonunda parantez ici yil: (2024) */
+        .replace(/\s*\(\d{4}\)\s*$/g, '')
+        /* 9. Sonunda yalniz bolum numarasi (" 5" / " 115") */
+        .replace(/\s+\d{1,4}\s*$/g, '')
+        /* 10. Sonda kalan " -" veya " -" */
+        .replace(/\s*[-\u2013]\s*$/g, '')
+        .trim();
+}
+
+/* ── Build: TMDB Popularity + Rating + Favoriler + İzlenme + Yeni Eklendi ── */
 function _vhsBuild() {
     var slider = document.getElementById('vodHeroSlider');
     if (!slider) return;
 
     _vhs.lastM3U = window.state && window.state.selectedM3U;
 
-    var vods = _getVodPool();
-    if (!vods.length) { slider.style.display = 'none'; return; }
+    var allVods = _getVodPool();
+    if (!allVods.length) { slider.style.display = 'none'; return; }
 
-    /* Her çağrıda shuffle → farklı 5 içerik */
-    vods = vods.slice().sort(function() { return Math.random() - 0.5; });
+    /* ── "En son eklenen" tespiti: M3U array sonundaki %15 = yeni eklendi ──
+       M3U'da addedAt yok; array pozisyonu = ekleme sırası.
+       En sondaki kanallar en yeni. Eşik: son %15 veya minimum 20 kanal. */
+    var totalAll = allVods.length;
+    var NEW_THRESHOLD = Math.max(20, Math.floor(totalAll * 0.15));
+    /* allVods içinde her kanalın orijinal pool pozisyonunu kaydet */
+    var posMap = new Map();
+    for (var pi = 0; pi < allVods.length; pi++) {
+        posMap.set(allVods[pi].name, pi);
+    }
 
-    /* Posteri olanları öne al */
+    /* ── TEKİLLEŞTİRME: her dizi adı kökünden yalnızca 1 kanal tut ──
+       Aynı dizinin farklı bölümleri varsa, en yüksek array pozisyonunu (en yeni)
+       temsil eden bölümü al. */
+    var seenRoots = {};
+    var unique = [];
+    for (var ui = 0; ui < allVods.length; ui++) {
+        var root = _vhsRootName(allVods[ui].name).toLowerCase();
+        if (!root) root = allVods[ui].name.toLowerCase();
+        if (seenRoots[root] !== undefined) {
+            /* Aynı kök — daha yüksek (yani daha yeni) array pozisyonu kazanır */
+            var prevPos = posMap.get(unique[seenRoots[root]].name) || 0;
+            var curPos  = posMap.get(allVods[ui].name) || 0;
+            if (curPos > prevPos) {
+                unique[seenRoots[root]] = allVods[ui];
+            }
+            continue;
+        }
+        seenRoots[root] = unique.length;
+        unique.push(allVods[ui]);
+    }
+    var vods = unique;
+
+    /* ── Yardımcılar ── */
+    var st = window.state;
+    var favs      = (st && st.favs) ? st.favs : new Set();
+    var contWatch = (st && st.continueWatching) ? st.continueWatching : {};
+
+    /* ── Skoru hesapla (çok-sinyal) ──
+       TMDB Popularity  : 0 – ~1000  (ham değer, genellikle 10–500 arası)
+       TMDB Rating bonus: rating × 8  → 0 – 80  (ek puan)
+       Favori bonusu    : +60          (kullanıcı favoriledi)
+       Devam-et bonusu  : +40          (kullanıcı izlemeye başladı)
+       Yeni-eklendi     : +25          (son %15 array)
+       Fallback (TMDB yok): rating×10 veya array-oran×50
+    */
+    var totalUnique = vods.length;
+    vods = vods.map(function(c) {
+        var info    = st && st.vodCache && st.vodCache[c.name];
+        var origPos = posMap.get(c.name) || 0;
+        var isNew   = origPos >= (totalAll - NEW_THRESHOLD);
+        var isFav   = favs.has(c.name);
+        var hasCont = !!contWatch[c.name];
+
+        var score;
+        if (info && info.popularity && parseFloat(info.popularity) > 0) {
+            /* Ana sinyal: TMDB popularity */
+            score = parseFloat(info.popularity);
+            /* Rating ek puanı */
+            if (info.rating && parseFloat(info.rating) > 0) {
+                score += parseFloat(info.rating) * 8;
+            }
+        } else if (info && info.rating && parseFloat(info.rating) > 0) {
+            /* Popularity yok ama rating var */
+            score = parseFloat(info.rating) * 10;
+        } else {
+            /* TMDB verisi hiç yok → array pozisyonu bazlı fallback (0–50) */
+            score = (origPos / Math.max(totalAll - 1, 1)) * 50;
+        }
+
+        /* Kullanıcı davranışı bonusları */
+        if (isFav)   score += 60;
+        if (hasCont) score += 40;
+        if (isNew)   score += 25;
+
+        return { ch: c, score: score, isNew: isNew };
+    });
+
+    /* Büyükten küçüğe sırala */
+    vods.sort(function(a, b) { return b.score - a.score; });
+
+    /* Posteri olanları kesinlikle öne al (puan sırası korunarak) */
     var hasPoster = [], noPoster = [];
-    vods.forEach(function(c) {
-        var info = window.state.vodCache && window.state.vodCache[c.name];
-        ((info && (info.poster || info.backdrop)) || c.logo ? hasPoster : noPoster).push(c);
+    vods.forEach(function(x) {
+        var info = st && st.vodCache && st.vodCache[x.ch.name];
+        ((info && (info.poster || info.backdrop)) || x.ch.logo ? hasPoster : noPoster).push(x);
     });
     vods = hasPoster.concat(noPoster).slice(0, _vhs.SLIDE_COUNT);
 
-    _vhs.items = vods.map(function(c) {
-        var info = window.state.vodCache && window.state.vodCache[c.name];
+    _vhs.items = vods.map(function(x) {
+        var c    = x.ch;
+        var info = st && st.vodCache && st.vodCache[c.name];
         var urls = _imgUrl(info, c);
+        var displayName = _vhsRootName(c.name) || c.name;
         return {
-            name:     c.name,
-            imgSrc:   urls.img,
-            thumbSrc: urls.thumb,
-            isSeries: !!c.isSeries,
-            rating:   info && info.rating  ? parseFloat(info.rating).toFixed(1) : '',
-            year:     info && info.year    ? info.year    : '',
-            overview: info && info.overview ? info.overview : '',
-            chIdx:    window.state.channels.indexOf(c)
+            name:        c.name,
+            displayName: displayName,
+            imgSrc:      urls.img,
+            thumbSrc:    urls.thumb,
+            isSeries:    !!c.isSeries,
+            rating:      info && info.rating     ? parseFloat(info.rating).toFixed(1)    : '',
+            popularity:  info && info.popularity ? parseFloat(info.popularity).toFixed(0) : '',
+            year:        info && info.year       ? info.year    : '',
+            overview:    info && info.overview   ? info.overview : '',
+            chIdx:       (st && st.channels) ? st.channels.indexOf(c) : -1,
+            isNew:       x.isNew   /* "Yeni Eklendi" damgası için */
         };
     });
 
     _vhsRender();
 }
 
-/* ── Render HTML ── */
+/* ── Render HTML — TOP 10 Netflix Style ── */
 function _vhsRender() {
     var slider = document.getElementById('vodHeroSlider');
     var track  = document.getElementById('vodHeroTrack');
     var dots   = document.getElementById('vodHeroDots');
-    if (!slider || !track || !dots || !_vhs.items.length) return;
+    if (!slider || !track || !_vhs.items.length) return;
 
     _vhs.cur = 0;
     slider.style.display = 'block';
 
-    /* Slides */
+    /* ─── Header inject (bir kez) ─── */
+    var hdr = document.getElementById('vhsTop10Header');
+    if (!hdr) {
+        hdr = document.createElement('div');
+        hdr.id = 'vhsTop10Header';
+        hdr.innerHTML =
+            '<span class="top10-flag">TOP 10</span>' +
+            '<span id="vhsTop10HeaderTitle">En Popüler İçerikler</span>';
+        slider.insertBefore(hdr, track);
+    }
+
+    /* ─── Top 10 cards ─── */
     var slidesHtml = _vhs.items.map(function(item, i) {
-        var badge = item.isSeries
-            ? '<span class="vhs-badge series">Dizi</span>'
-            : '<span class="vhs-badge">Film</span>';
-        var meta = '';
-        if (item.rating) meta += '<span class="vhs-rating-badge">\u2B50 ' + item.rating + '</span>';
-        if (item.year)   meta += '<span class="vhs-rating-badge">' + item.year + '</span>';
-        var btnLabel = item.isSeries ? 'Sezonlar' : 'Oynat';
-        var bg = item.imgSrc
-            ? '<img class="vhs-bg-img" src="' + _e(item.imgSrc) + '" alt="" onerror="this.style.display=\'none\';this.parentNode.style.background=\'#0d0d1a\'">'
-            : '<div class="vhs-bg-img" style="background:#0d0d1a;"></div>';
-        return '<div class="vhs-slide' + (i === 0 ? ' active' : '') + '" data-vi="' + i + '">'
-            + bg
-            + '<div class="vhs-grad-top"></div>'
-            + '<div class="vhs-grad-side"></div>'
-            + '<div class="vhs-grad-bottom"></div>'
-            + '<div class="vhs-info">'
-            +   '<div class="vhs-badge-row">' + badge + meta + '</div>'
-            +   '<div class="vhs-title">' + _e(item.name) + '</div>'
-            +   (item.overview ? '<div class="vhs-overview">' + _e(item.overview) + '</div>' : '')
-            +   '<div class="vhs-btns">'
-            +     '<button class="vhs-btn-play" onclick="event.stopPropagation();_vhsPlay(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg> ' + btnLabel + '</button>'
-            +     '<button class="vhs-btn-info" onclick="event.stopPropagation();_vhsDetail(' + i + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Detay</button>'
-            +   '</div>'
+        var rank = i + 1;
+        /* Poster veya backdrop; dikey oran için poster tercih et */
+        var imgSrc = item.thumbSrc || item.imgSrc || '';
+        var imgEl = imgSrc
+            ? '<img class="vhs-bg-img" src="' + _e(imgSrc) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.style.background=\'#1a1a2e\'">'
+            : '<div style="width:100%;height:100%;background:#1a1a2e;"></div>';
+
+        /* Yeni eklendi badge — M3U array son %15'ine giren içerikler */
+        var newBadge = item.isNew
+            ? '<div class="vhs-new-badge"><svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>YENİ EKLENDİ</div>'
+            : '';
+
+        return '<div class="vhs-slide" data-vi="' + i + '" title="' + _e(item.displayName || item.name) + '">'
+            + '<span class="vhs-rank-num">' + rank + '</span>'
+            + '<div class="vhs-poster-wrap">'
+            +   imgEl
+            +   newBadge
             + '</div>'
+            + '<div class="vhs-title">' + _e(item.displayName || item.name) + '</div>'
             + '</div>';
     }).join('');
 
-    /* Thumbnail strip */
-    var thumbsHtml = _vhs.items.map(function(item, i) {
-        var src = item.thumbSrc
-            ? '<img src="' + _e(item.thumbSrc) + '" alt="" onerror="this.parentNode.style.background=\'#1a1a2e\';this.remove();">'
-            : '<div style="width:100%;height:100%;background:#1a1a2e;"></div>';
-        return '<div class="vhs-thumb' + (i === 0 ? ' active' : '') + '" onclick="_vhsNavTo(' + i + ')">'
-            + src + '<div class="vhs-thumb-overlay"></div></div>';
-    }).join('');
-
-    track.innerHTML = slidesHtml + '<div class="vhs-thumbs">' + thumbsHtml + '</div>';
+    track.innerHTML = slidesHtml;
 
     /* Slide tıklama → detay */
     track.querySelectorAll('.vhs-slide').forEach(function(s) {
-        s.addEventListener('click', function(e) {
-            if (e.target.closest('button')) return;
+        s.addEventListener('click', function() {
             _vhsDetail(parseInt(s.getAttribute('data-vi')));
         });
     });
 
-    /* Dots */
-    dots.innerHTML = _vhs.items.map(function(_, i) {
-        return '<div class="vhs-dot' + (i === 0 ? ' active' : '') + '" onclick="_vhsNavTo(' + i + ')"></div>';
-    }).join('');
+    /* Dots gizle */
+    if (dots) dots.innerHTML = '';
 
-    /* Progress bar */
-    var prog = document.getElementById('vodHeroProgress');
-    if (!prog) {
-        prog = document.createElement('div');
-        prog.id = 'vodHeroProgress';
-        slider.appendChild(prog);
+    /* Nav arrows: track kaydırma */
+    var prevBtn = document.getElementById('vodHeroPrev');
+    var nextBtn = document.getElementById('vodHeroNext');
+    if (prevBtn) {
+        prevBtn.onclick = function() {
+            track.scrollBy({ left: -220, behavior: 'smooth' });
+        };
+    }
+    if (nextBtn) {
+        nextBtn.onclick = function() {
+            track.scrollBy({ left: 220, behavior: 'smooth' });
+        };
     }
 
-    _vhsStart();
+    /* Top10 modunda otomatik timer yok */
+    _vhsStop();
 }
 
 /* ── Oynat ── */
 window._vhsPlay = function(vi) {
     var item = _vhs.items[vi];
     if (!item) return;
-    var chName = item.name;
+    var chName     = item.name;
+    var seriesRoot = item.displayName || _vhsRootName(chName) || chName;
     /* filtered içinde ara, yoksa geçici ekle */
     var idx = window.state.filtered.findIndex(function(c) { return c && c.name === chName; });
     if (idx === -1) {
@@ -32746,10 +32868,11 @@ window._vhsPlay = function(vi) {
         if (ch) { window.state.filtered.push(ch); idx = window.state.filtered.length - 1; }
     }
     if (idx === -1) return;
+    var chIdx = window.state.channels.findIndex(function(c) { return c && c.name === chName; });
     if (item.isSeries && typeof openSeriesModal === 'function') {
-        // Önce açık olabilecek vodModal'ı kapat
+        /* Dizi: root adıyla aç (bölüm numarasız) */
         if (typeof closeVodModal === 'function') closeVodModal();
-        openSeriesModal(chName, idx);
+        openSeriesModal(seriesRoot, chIdx >= 0 ? chIdx : idx);
     } else {
         // Film: açık vodModal ve dizi state'ini temizle
         if (typeof closeVodModal === 'function') closeVodModal();
@@ -32785,35 +32908,60 @@ window._vhsPlay = function(vi) {
     }
 };
 
-/* ── Detay (film bilgisi modalı) ── */
+/* ── Detay (film bilgisi modalı veya dizi modalı) ── */
 window._vhsDetail = function(vi) {
     var item = _vhs.items[vi];
     if (!item) return;
-    var chName = item.name;
+
+    /* item.name = orijinal kanal adı (örn. "Süper Baba 1")
+       item.displayName = root adı (örn. "Süper Baba")
+       item.isSeries = M3U parse'dan gelen ch.isSeries flag'i */
+    var chName     = item.name;
+    var seriesRoot = item.displayName || _vhsRootName(chName) || chName;
+
+    /* filtered'da ara; yoksa channels'dan ekle */
     var idx = window.state.filtered.findIndex(function(c) { return c && c.name === chName; });
     if (idx === -1) {
         var ch = window.state.channels.find(function(c) { return c && c.name === chName; });
         if (ch) { window.state.filtered.push(ch); idx = window.state.filtered.length - 1; }
     }
+    var chIdx = window.state.channels.findIndex(function(c) { return c && c.name === chName; });
 
-    /* Hero'dan bilinen poster/backdrop varsa — TMDB beklenmeden modal'a yükle */
-    var _vm = document.getElementById('vodModal');
-    var _pw = document.getElementById('vodPosterWrapper');
+    /* Poster'i önceden göster (hem film hem dizi için) */
     var _preSrc = item.imgSrc || item.thumbSrc || '';
-    if (_vm && _pw && _preSrc) {
-        _pw.innerHTML = '<img loading="lazy" id="vodModalPoster" class="vod-poster" src="' + _preSrc + '" alt="' + chName.replace(/"/g,'') + '" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3ODAiIGhlaWdodD0iNDQwIj48cmVjdCB3aWR0aD0iNzgwIiBoZWlnaHQ9IjQ0MCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R8O2cnNlbCBZb2s8L3RleHQ+PC9zdmc+\'">';
-        if (document.getElementById('vodModalTitle')) document.getElementById('vodModalTitle').textContent = chName;
-        if (document.getElementById('vodModalMeta') && item.year) {
-            document.getElementById('vodModalMeta').innerHTML = '<div class="vod-meta-item">' + item.year + '</div>' + (item.rating ? '<div class="vod-meta-item tmdb-rating">&#9733; ' + item.rating + '</div>' : '');
+    if (_preSrc) {
+        var _pw = document.getElementById('vodPosterWrapper');
+        if (_pw) {
+            _pw.innerHTML = '<img loading="lazy" id="vodModalPoster" class="vod-poster" src="' + _preSrc
+                + '" alt="' + seriesRoot.replace(/"/g,'') + '"'
+                + ' onerror="this.style.display=\'none\'">';
         }
-        /* Modalı hemen göster — poster görünür */
-        _vm.style.display = 'flex';
-        _vm.style.zIndex = '10000';
+        var _t = document.getElementById('vodModalTitle');
+        if (_t) _t.textContent = seriesRoot;
+        var _m = document.getElementById('vodModalMeta');
+        if (_m && item.year) {
+            _m.innerHTML = '<div class="vod-meta-item">' + item.year + '</div>'
+                + (item.rating ? '<div class="vod-meta-item tmdb-rating">&#9733; ' + item.rating + '</div>' : '');
+        }
     }
 
     window.state.player.name = chName;
     window.state.player.isLiveStream = false;
-    if (typeof openVodModal === 'function') {
+
+    /* ── DİZİ / FİLM DALI: item.isSeries'e güven; openVodModal'ın
+       kırık tespitini bypass et ── */
+    if (item.isSeries && typeof openSeriesModal === 'function') {
+        /* Vodal'ı önce kapat/sıfırla, sonra dizi modalını aç */
+        var _vm2 = document.getElementById('vodModal');
+        if (_vm2) { _vm2.removeAttribute('data-channel-name'); _vm2.style.display = 'none'; }
+        openSeriesModal(seriesRoot, chIdx >= 0 ? chIdx : undefined);
+    } else if (typeof openVodModal === 'function') {
+        /* Film — openVodModal normal akışı */
+        var _vm3 = document.getElementById('vodModal');
+        if (_vm3) {
+            _vm3.style.display = 'flex';
+            _vm3.style.zIndex  = '10000';
+        }
         openVodModal(chName);
     } else if (typeof playVod === 'function' && idx >= 0) {
         playVod(idx);
@@ -32822,19 +32970,16 @@ window._vhsDetail = function(vi) {
 
 /* ── Navigasyon ── */
 function _setSlide(idx) {
-    document.querySelectorAll('.vhs-slide').forEach(function(s, i) { s.classList.toggle('active', i === idx); });
-    document.querySelectorAll('.vhs-dot').forEach(function(d, i)   { d.classList.toggle('active', i === idx); });
-    document.querySelectorAll('.vhs-thumb').forEach(function(t, i) { t.classList.toggle('active', i === idx); });
+    /* Top 10 modunda slide geçişi yok — scroll tabanlı */
     _vhs.cur = idx;
-    _vhsProgReset();
 }
 
 window._vhsNavTo = function(idx) { _vhsStop(); _setSlide(idx); _vhsStart(); };
 
 window.vodHeroNav = function(dir) {
-    _vhsStop();
-    _setSlide((_vhs.cur + dir + _vhs.items.length) % _vhs.items.length);
-    _vhsStart();
+    /* Top 10 modunda: track'i yatay kaydır */
+    var track = document.getElementById('vodHeroTrack');
+    if (track) track.scrollBy({ left: dir * 220, behavior: 'smooth' });
 };
 
 /* ── Progress bar ── */
@@ -32873,11 +33018,16 @@ function _vhsCatCheck() {
     if (cat === 'cont' || cat === 'fav') { slider.style.display = 'none'; _vhsStop(); return; }
     if (_isVodCat()) {
         var curM3U = window.state && window.state.selectedM3U;
-        if (!_vhs.items.length || _vhs.lastM3U !== curM3U) {
+        /* vodCache dolu mu? Dolu değilse veya M3U değiştiyse yeniden build */
+        var cacheSize = window.state.vodCache ? Object.keys(window.state.vodCache).length : 0;
+        var needRebuild = !_vhs.items.length
+            || _vhs.lastM3U !== curM3U
+            || (_vhs._lastCacheSize !== undefined && cacheSize > _vhs._lastCacheSize + 5);
+        _vhs._lastCacheSize = cacheSize;
+        if (needRebuild) {
             _vhsBuild();
         } else {
             slider.style.display = 'block';
-            if (!_vhs.timer) _vhsStart();
         }
     } else {
         slider.style.display = 'none'; _vhsStop();
@@ -37431,6 +37581,13 @@ function resumeChannel(startTime) {
         if (state.series && state.series.currentSeries) {
             startAutoNextTimer();
         }
+        // ── YAYIM BAŞLADI: Dekoratif efektleri durdur (CPU/GPU tasarrufu) ──
+        if (typeof window.stopLogoGlow === 'function') window.stopLogoGlow();
+        // El yazısı canvas interval'ini durdur
+        (function() {
+            var canvas = document.getElementById('headerUsernameCurve');
+            if (canvas) canvas.style.opacity = '0';
+        })();
     };
     
     // Donma önleme — TEK merkezi recovery sistemi
@@ -38031,8 +38188,8 @@ function resumeChannel(startTime) {
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 10;
-            hlsInst.config.maxMaxBufferLength = 30;
+            hlsInst.config.maxBufferLength    = 6;
+            hlsInst.config.maxMaxBufferLength = 18;
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir
@@ -39290,6 +39447,11 @@ function closePlayer() {
     playKeySound('back');
     // Başa dön butonu güncelle
     setTimeout(() => { typeof window._umkGoTopUpdate === 'function' && window._umkGoTopUpdate(); }, 100);
+    // Player kapandı → el yazısı + logo efektlerini yeniden başlat
+    setTimeout(function() {
+        if (typeof window.startLogoGlow === 'function') window.startLogoGlow();
+        if (typeof window.updateHeaderUsername === 'function') window.updateHeaderUsername();
+    }, 300);
 }
 
 
@@ -40272,6 +40434,11 @@ function updateSidebarFavIcons(channelName) {
             localStorage.setItem('theme', id); 
             playKeySound('confirm');
             closeThemeModal();
+            /* Tema değişince header kullanıcı adı rengini güncelle */
+            setTimeout(function() {
+                if (typeof updateHeaderUsername === 'function') updateHeaderUsername();
+                if (typeof startLogoGlow === 'function') startLogoGlow();
+            }, 60);
         }
         
         function darkenColor(color, factor) {
@@ -40695,18 +40862,19 @@ function _updateSearchRemoteFocus() {
 
     focusEl.classList.add('remote-focused', 'search-remote-focused');
     if (focusEl.tagName === 'INPUT') {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
-        focusEl.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.25)';
+        focusEl.style.outline = '';
+        focusEl.style.borderColor = 'var(--accent-primary)';
+        focusEl.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.30)';
     } else if (focusEl.classList.contains('toggle-container') || focusEl.id === 'vodToggleContainer' || focusEl.id === 'liveToggleContainer') {
-        focusEl.style.outline = '2px solid var(--accent-primary, #FFD700)';
-        focusEl.style.borderColor = 'var(--accent-primary, #FFD700)';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
     } else if (focusEl.classList.contains('search-result-item')) {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.background = 'rgba(255,215,0,0.15)';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
+        focusEl.style.background = 'rgba(var(--accent-primary-rgb,255,215,0), 0.12)';
     } else {
-        focusEl.style.outline = '3px solid var(--accent-primary, #FFD700)';
-        focusEl.style.outlineOffset = '2px';
+        focusEl.style.outline = '';
+        focusEl.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75)';
     }
     try { focusEl.focus({ preventScroll: true }); } catch(e) {}
     focusEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
@@ -41418,8 +41586,8 @@ function deleteContinueWatchingRecord(name) {
             el.style.boxShadow = '';
         });
         newEl.classList.add('remote-focused', 'tv-focused');
-        newEl.style.outline = '4px solid #FFD700';
-        newEl.style.boxShadow = '0 0 20px #FFD700';
+        newEl.style.outline = '';
+        newEl.style.boxShadow = '';
         newEl.focus({ preventScroll: false });
         // vodInfoScroll'a odaklanırken scrollIntoView yapma (zaten scroll alanının içi kayıyor)
         if (newEl.id !== 'vodInfoScroll') {
@@ -43113,9 +43281,9 @@ function cleanupDeleteContinueModalRemote() {
                 document.querySelectorAll('.cat-pill')[state.remote.catIndex]?.scrollIntoView({block:'nearest',inline:'start'}); 
             }
             else if(state.remote.zone==='heroSlider') {
-                // ← : önceki slide
-                if (typeof vodHeroNav === 'function') vodHeroNav(-1);
-                state.remote.heroSliderBtnIdx = 0;
+                // ← : önceki kart
+                const _slides_l = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                state.remote.heroSliderBtnIdx = Math.max(0, (state.remote.heroSliderBtnIdx || 0) - 1);
                 updateRemoteFocus();
             }
             else if(state.remote.zone==='catManageBtn') {
@@ -43203,9 +43371,9 @@ function cleanupDeleteContinueModalRemote() {
                 state.remote.index = Math.min(cards.length-1, state.remote.index+1); 
             }
             else if(state.remote.zone==='heroSlider') {
-                // → : sonraki slide
-                if (typeof vodHeroNav === 'function') vodHeroNav(1);
-                state.remote.heroSliderBtnIdx = 0;
+                // → : sonraki kart
+                const _slides_r = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                state.remote.heroSliderBtnIdx = Math.min(_slides_r.length - 1, (state.remote.heroSliderBtnIdx || 0) + 1);
                 updateRemoteFocus();
             }
             break;
@@ -43248,12 +43416,12 @@ case 'OK':
                 openCatHideModal();
             }
             else if(state.remote.zone==='heroSlider') {
-                // OK: Aktif slide'daki seçili butona tıkla (Oynat veya Detay)
-                const _activeSl = document.querySelector('#vodHeroSlider .vhs-slide.active');
-                if (_activeSl) {
-                    const _hsBtn = _activeSl.querySelectorAll('.vhs-btn-play, .vhs-btn-info');
-                    const _idx = state.remote.heroSliderBtnIdx || 0;
-                    if (_hsBtn[_idx]) _hsBtn[_idx].click();
+                // OK: Top 10 modunda odaklı kartı aç → detay
+                const _slides = document.querySelectorAll('#vodHeroSlider .vhs-slide');
+                const _cardIdx = Math.min(state.remote.heroSliderBtnIdx || 0, _slides.length - 1);
+                const _focusedCard = _slides[_cardIdx];
+                if (_focusedCard) {
+                    _focusedCard.click();
                 }
             }
             else if(state.remote.zone==='channels') { 
@@ -43921,18 +44089,25 @@ function handleFavoriteChannelSelect(key) {
     }
     else if (state.remote.zone === 'heroSlider') {
         const _slider = document.getElementById('vodHeroSlider');
-        const _btnIdx = state.remote.heroSliderBtnIdx || 0;
-        const _activeSlide = _slider ? (_slider.querySelector('.vhs-slide.active') || _slider.querySelector('.vhs-slide')) : null;
-        if (_activeSlide) {
-            const _btns = _activeSlide.querySelectorAll('.vhs-btn-play, .vhs-btn-info');
-            el = _btns[_btnIdx] || _btns[0] || null;
+        const _track  = document.getElementById('vodHeroTrack');
+        const _slides = _slider ? Array.from(_slider.querySelectorAll('.vhs-slide')) : [];
+        const _cardIdx = Math.min(state.remote.heroSliderBtnIdx || 0, Math.max(0, _slides.length - 1));
+        state.remote.heroSliderBtnIdx = _cardIdx;
+        el = _slides[_cardIdx] || null;
+        /* Odaklı kartı track içinde görünür hale getir */
+        if (el && _track) {
+            const cardLeft = el.offsetLeft;
+            const cardRight = cardLeft + el.offsetWidth;
+            const trackLeft  = _track.scrollLeft;
+            const trackRight = trackLeft + _track.clientWidth;
+            if (cardLeft < trackLeft)        _track.scrollLeft = cardLeft - 8;
+            else if (cardRight > trackRight) _track.scrollLeft = cardRight - _track.clientWidth + 8;
         }
         if (_slider) {
             _slider.classList.add('dpad-active');
-            _slider._dpadZone = true;
             _slider.scrollIntoView({ block: 'nearest', behavior: 'auto' });
         }
-        hint = '←→ Slide Değiştir | OK: Oynat/Detay | ↑ Kategoriler | ↓ Kanallara';
+        hint = '←→ Kart Seç (' + (_cardIdx + 1) + '/' + _slides.length + ') | OK: Aç | ↑ Kategoriler | ↓ Kanallara';
     }
 
     if(el) {
@@ -44457,22 +44632,166 @@ function tryIframeRedirect(action) {
             if (!state.controlSettings.keySoundEnabled || !audioContext) return;
             try {
                 if (audioContext.state === 'suspended') audioContext.resume();
-                const oscillator = audioContext.createOscillator();
-                const envelope = audioContext.createGain();
-                oscillator.connect(envelope);
-                envelope.connect(gainNode);
-                switch(type) {
-                    case 'click': oscillator.frequency.setValueAtTime(800, audioContext.currentTime); break;
-                    case 'navigate': oscillator.frequency.setValueAtTime(600, audioContext.currentTime); break;
-                    case 'confirm': oscillator.frequency.setValueAtTime(1000, audioContext.currentTime); break;
-                    case 'back': oscillator.frequency.setValueAtTime(400, audioContext.currentTime); break;
-                    case 'ch_change': oscillator.frequency.setValueAtTime(700, audioContext.currentTime); break;
+                const now = audioContext.currentTime;
+                const vol = state.controlSettings.keySoundLevel;
+
+                // ── Modern Premium UI Ses Tasarımı ──
+                // Referans: Apple TV 4K, Google TV, Sonos UI
+                // Prensip: saf sine, keskin attack, hızlı decay, gürültüsüz, temiz
+
+                if (type === 'click') {
+                    // Apple TV remote tıklama: 1046 Hz (C6) — saf, net, kısa
+                    // Hafif 5. harmonik katkısı ile "cam" tınısı
+                    const o  = audioContext.createOscillator();
+                    const o2 = audioContext.createOscillator();
+                    const g  = audioContext.createGain();
+                    const g2 = audioContext.createGain();
+
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1046.5, now);   // C6
+
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(1046.5 * 5, now); // 5. harmonik (glass tınısı)
+
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.55, now + 0.003); // çok hızlı attack
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);  // temiz decay
+
+                    g2.gain.setValueAtTime(vol * 0.08, now);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+                    o.connect(g);   g.connect(gainNode);
+                    o2.connect(g2); g2.connect(gainNode);
+
+                    o.start(now);  o.stop(now + 0.08);
+                    o2.start(now); o2.stop(now + 0.03);
+
+                } else if (type === 'navigate') {
+                    // Google TV / tvOS menü geçişi: 1318 Hz (E6) — çok kısa, hafif
+                    // navigate click'ten 1/3 daha sessiz ve kısa olmalı (repeat tolerable)
+                    const o = audioContext.createOscillator();
+                    const g = audioContext.createGain();
+
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1318.5, now);  // E6
+
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.28, now + 0.002);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.042);
+
+                    o.connect(g); g.connect(gainNode);
+                    o.start(now); o.stop(now + 0.05);
+
+                } else if (type === 'confirm') {
+                    // Sonos / Apple TV onay: Do-Mi-Sol (C6-E6-G6) majör arpej
+                    // Temiz, premium, 3 nota — net aralıklar, hızlı tempo
+                    var notes  = [1046.5, 1318.5, 1568.0]; // C6, E6, G6
+                    var timing = [0.0,    0.085,   0.170 ];
+                    var durs   = [0.160,  0.160,   0.260 ];
+
+                    notes.forEach(function(freq, i) {
+                        var t = now + timing[i];
+                        var amp = (i === 2) ? vol * 0.75 : vol * 0.60;
+
+                        var o  = audioContext.createOscillator();
+                        var oh = audioContext.createOscillator(); // oktav üstü — derinlik
+                        var g  = audioContext.createGain();
+                        var gh = audioContext.createGain();
+
+                        o.type  = 'sine';
+                        oh.type = 'sine';
+                        o.frequency.setValueAtTime(freq, t);
+                        oh.frequency.setValueAtTime(freq * 2, t);
+
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(amp, t + 0.006);
+                        g.gain.setValueAtTime(amp, t + durs[i] * 0.4);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + durs[i] + 0.06);
+
+                        gh.gain.setValueAtTime(amp * 0.18, t);
+                        gh.gain.exponentialRampToValueAtTime(0.001, t + durs[i] * 0.5);
+
+                        o.connect(g);   g.connect(gainNode);
+                        oh.connect(gh); gh.connect(gainNode);
+
+                        o.start(t);  o.stop(t + durs[i] + 0.1);
+                        oh.start(t); oh.stop(t + durs[i] * 0.55);
+                    });
+
+                } else if (type === 'back') {
+                    // tvOS / Sonos geri: G5→E5 inen iki nota — "olumsuz ama nazik"
+                    // İki nota arası: majör 3'lü aşağı — net yönlü his
+                    var backNotes  = [783.99, 659.25]; // G5 → E5
+                    var backTiming = [0.0, 0.09];
+                    var backDurs   = [0.10, 0.16];
+
+                    backNotes.forEach(function(freq, i) {
+                        var t   = now + backTiming[i];
+                        var amp = (i === 0) ? vol * 0.52 : vol * 0.42;
+
+                        var o = audioContext.createOscillator();
+                        var g = audioContext.createGain();
+
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, t);
+
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(amp, t + 0.005);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + backDurs[i]);
+
+                        o.connect(g); g.connect(gainNode);
+                        o.start(t); o.stop(t + backDurs[i] + 0.02);
+                    });
+
+                } else if (type === 'ch_change') {
+                    // Hızlı "whoosh" + arrival ping — modern kanal geçişi
+                    // Aşama 1: pitch-rise sweep (300ms içinde 400→1200Hz) — geçiş hissi
+                    // Aşama 2: arrival ping (G5=784Hz) — "kanal geldi" konfirmasyonu
+
+                    // Sweep: hızlı yükselen tone, pitch-bend etkisi
+                    var sw = audioContext.createOscillator();
+                    var sg = audioContext.createGain();
+                    sw.type = 'sine';
+                    sw.frequency.setValueAtTime(380, now);
+                    sw.frequency.exponentialRampToValueAtTime(1100, now + 0.055);
+                    sg.gain.setValueAtTime(0, now);
+                    sg.gain.linearRampToValueAtTime(vol * 0.38, now + 0.008);
+                    sg.gain.exponentialRampToValueAtTime(0.001, now + 0.058);
+                    sw.connect(sg); sg.connect(gainNode);
+                    sw.start(now); sw.stop(now + 0.065);
+
+                    // Arrival ping: net, G5
+                    var ap = audioContext.createOscillator();
+                    var ag = audioContext.createGain();
+                    var ah = audioContext.createOscillator(); // hafif oktav harmonik
+                    var ahg = audioContext.createGain();
+                    ap.type = 'sine';
+                    ap.frequency.setValueAtTime(783.99, now + 0.05);
+                    ah.type = 'sine';
+                    ah.frequency.setValueAtTime(783.99 * 2, now + 0.05);
+                    ag.gain.setValueAtTime(0, now + 0.05);
+                    ag.gain.linearRampToValueAtTime(vol * 0.68, now + 0.062);
+                    ag.gain.setValueAtTime(vol * 0.68, now + 0.09);
+                    ag.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+                    ahg.gain.setValueAtTime(vol * 0.14, now + 0.05);
+                    ahg.gain.exponentialRampToValueAtTime(0.001, now + 0.10);
+                    ap.connect(ag);   ag.connect(gainNode);
+                    ah.connect(ahg); ahg.connect(gainNode);
+                    ap.start(now + 0.05); ap.stop(now + 0.20);
+                    ah.start(now + 0.05); ah.stop(now + 0.11);
+
+                } else {
+                    // Fallback
+                    const o = audioContext.createOscillator();
+                    const g = audioContext.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1046.5, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(vol * 0.5, now + 0.004);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                    o.connect(g); g.connect(gainNode);
+                    o.start(now); o.stop(now + 0.08);
                 }
-                envelope.gain.setValueAtTime(0, audioContext.currentTime);
-                envelope.gain.linearRampToValueAtTime(state.controlSettings.keySoundLevel, audioContext.currentTime + 0.01);
-                envelope.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
             } catch (e) {}
         }
 
@@ -45666,8 +45985,9 @@ s.textContent=`
 .player-action-btn.remote-focused,
 .player-action-btn.focused {
   outline: 3px solid var(--accent-primary, #FFD700) !important;
-  filter: drop-shadow(0 0 6px var(--accent-primary, #FFD700)) !important;
+  filter: none !important;
   transform: none !important;
+  animation: none !important;
 }
 `;
 document.head.appendChild(s);
@@ -46000,18 +46320,17 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
         /* ── TV Box odak ── */
         .tv-focused {
-            outline: 4px solid #FFD700 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 20px #FFD700 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.40) !important;
             border-radius: 8px !important;
             z-index: 10 !important;
         }
         .vod-season-btn.tv-focused {
-            background: #FFD700 !important;
+            background: var(--accent-primary) !important;
             color: #000 !important;
         }
         .vod-episode-card.tv-focused {
-            background: rgba(255, 215, 0, 0.25) !important;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
             border-color: #FFD700 !important;
         }
     `;
@@ -47702,8 +48021,8 @@ function updateSubtitleDpad() {
     if (target.type === 'btn') {
         // Butonu vurgula + bağlı satırı hafifçe göster
         target.el.classList.add('sub-dpad-focused');
-        target.el.style.outline = '2px solid var(--accent-primary, #FFD700)';
-        target.el.style.boxShadow = '0 0 8px rgba(255,215,0,0.5)';
+        target.el.style.outline = '';
+        target.el.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 10px rgba(var(--accent-primary-rgb,255,215,0), 0.35)';
         target.row.classList.add('remote-focused');
     } else {
         target.el.classList.add('remote-focused');
@@ -48205,8 +48524,8 @@ document.addEventListener('umittv_channels_ready', function() {
         if (!el) return;
         _clearFocus();
         el.classList.add('remote-focused','tv-focused','focused');
-        el.style.outline = '3px solid #FFD700';
-        el.style.boxShadow = '0 0 15px rgba(255,215,0,0.5)';
+        el.style.outline = '';
+        el.style.boxShadow = '';
         el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
         try { el.focus({ preventScroll: true }); } catch(e) {}
     }
@@ -48306,19 +48625,19 @@ document.addEventListener('umittv_channels_ready', function() {
         const scrollUpBtn = document.getElementById('vodScrollUpBtn');
 
         // Tümünü sıfırla
-        if (starPicker) starPicker.style.outline = 'none';
-        if (textarea) { textarea.style.borderColor = 'rgba(255,255,255,0.1)'; textarea.style.outline = 'none'; }
+        if (starPicker) { starPicker.style.outline = ''; starPicker.style.boxShadow = ''; }
+        if (textarea) { textarea.style.borderColor = 'rgba(255,255,255,0.1)'; textarea.style.outline = ''; textarea.style.boxShadow = ''; }
         if (btn) { btn.style.transform = ''; btn.style.boxShadow = ''; btn.style.outline = ''; }
         if (scrollUpBtn) { scrollUpBtn.style.transform = ''; scrollUpBtn.style.boxShadow = ''; scrollUpBtn.style.outline = ''; }
 
         if (zone === 'stars') {
-            if (starPicker) { starPicker.style.outline = '3px solid #FFD700'; starPicker.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (starPicker) { starPicker.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8)'; starPicker.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'textarea') {
-            if (textarea) { textarea.style.borderColor = '#FFD700'; textarea.style.outline = '3px solid rgba(255,215,0,0.4)'; textarea.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (textarea) { textarea.style.borderColor = 'var(--accent-primary,#FFD700)'; textarea.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.3)'; textarea.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'submit') {
-            if (btn) { btn.style.outline = '3px solid #FFD700'; btn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (btn) { btn.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.4)'; btn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         } else if (zone === 'scrollup') {
-            if (scrollUpBtn) { scrollUpBtn.style.outline = '3px solid #FFD700'; scrollUpBtn.style.boxShadow = '0 0 14px rgba(255,215,0,0.5)'; scrollUpBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+            if (scrollUpBtn) { scrollUpBtn.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.8), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.4)'; scrollUpBtn.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
         }
 
         // Hint güncelle
@@ -48506,7 +48825,7 @@ document.addEventListener('umittv_channels_ready', function() {
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                     // Yıldız outline'ı koru (vodPickStar sıfırlamaz)
                     const sp = document.getElementById('vodStarPicker');
-                    if (sp) sp.style.outline = '3px solid #FFD700';
+                    if (sp) { sp.style.outline = ''; sp.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80)'; }
                 }
                 break;
 
@@ -48532,7 +48851,7 @@ document.addEventListener('umittv_channels_ready', function() {
                     if (typeof window.vodPickStar === 'function') window.vodPickStar(_reviewStarVal);
                     // Yıldız outline'ı koru
                     const sp2 = document.getElementById('vodStarPicker');
-                    if (sp2) sp2.style.outline = '3px solid #FFD700';
+                    if (sp2) { sp2.style.outline = ''; sp2.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80)'; }
                 }
                 break;
 
@@ -48563,9 +48882,9 @@ document.addEventListener('umittv_channels_ready', function() {
                     } else if (_reviewSubZone === 'scrollup') {
                         // Asıl scroll eden vodModalBody — onu başa sar
                         const mb = document.getElementById('vodModalBody');
-                        if (mb) { try { mb.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { mb.scrollTop = 0; } }
+                        if (mb) { try { mb.scrollTo({ top: 0, behavior: 'instant' }); } catch(e) { mb.scrollTop = 0; } }
                         const sc = document.getElementById('vodInfoScroll');
-                        if (sc) { try { sc.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { sc.scrollTop = 0; } }
+                        if (sc) { try { sc.scrollTo({ top: 0, behavior: 'instant' }); } catch(e) { sc.scrollTop = 0; } }
                         // Buttons zone'una dön
                         _clearFocus();
                         _vodZone = VOD_ZONE.BUTTONS;
@@ -49195,7 +49514,8 @@ _ready(function() {
         '}',
         '/* remote-focused outline */',
         '#progressBarContainer.remote-focused {',
-        '    outline: 3px solid rgba(255,215,0,0.6) !important;',
+        '    outline: none !important;',
+        '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;',
         '    border-radius: 6px !important;',
         '    height: 10px !important;',
         '}',
@@ -49591,8 +49911,8 @@ function _favIcons(ch, isFav) {
 .profile-save-btn:hover { filter: brightness(1.08); }
 .profile-save-btn:active { filter: brightness(0.95); }
 .profile-save-btn.remote-focused, .profile-save-btn.dpad-focused {
-    outline: 3px solid rgba(255,215,0,0.9) !important;
-    outline-offset: 3px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80) !important;
 }
 
 /* ── Header Avatar küçük ── */
@@ -49690,17 +50010,18 @@ function _favIcons(ch, isFav) {
 }
 .upv-dpad-item.upv-dpad-focused,
 .upv-dpad-item.remote-focused {
-    background:rgba(255,215,0,0.07) !important;
-    border-color:rgba(255,215,0,0.35) !important;
-    outline:2px solid rgba(255,215,0,0.5);
+    background:rgba(var(--accent-primary-rgb,255,215,0), 0.07) !important;
+    border-color:rgba(var(--accent-primary-rgb,255,215,0), 0.35) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.55);
 }
 .upv-close.upv-dpad-focused,
 .upv-close.remote-focused {
-    background:rgba(255,215,0,0.18) !important;
-    border-color:rgba(255,215,0,0.5) !important;
-    color:#FFD700 !important;
-    outline:2px solid rgba(255,215,0,0.7);
-    outline-offset:2px;
+    background:rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
+    border-color:rgba(var(--accent-primary-rgb,255,215,0), 0.5) !important;
+    color: var(--accent-primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.75);
 }
 </style>
 
@@ -49798,15 +50119,78 @@ function _favIcons(ch, isFav) {
 
 /* ── Storage anahtarları ── */
 const PROF_NAME_KEY    = 'umittv_profile_name';
-const PROF_AVATAR_KEY  = 'umittv_profile_avatar';
-const PROF_NAME_LOCKED = 'umittv_profile_name_locked'; // şans kodu için kilit
+const PROF_NAME_LOCKED = 'umittv_profile_name_locked';
+// NOT: Avatar artık IndexedDB'de (localStorage 5MB limiti aşılır)
 
-/* ── Profil oku ── */
+/* ── Avatar IDB ── */
+var _profAvatarIDB = (function() {
+    var DB_NAME = 'umittv_prof_db';
+    var DB_VER  = 1;
+    var STORE   = 'profile';
+    var KEY     = 'avatar';
+    var _db     = null;
+    var _cache  = null; // preload sonrası bellekte sakla
+
+    function _open() {
+        return new Promise(function(resolve, reject) {
+            if (_db) { resolve(_db); return; }
+            var _t = setTimeout(function(){ reject(new Error('IDB timeout')); }, 2000);
+            var req = indexedDB.open(DB_NAME, DB_VER);
+            req.onupgradeneeded = function(e) {
+                e.target.result.createObjectStore(STORE);
+            };
+            req.onsuccess = function(e) { clearTimeout(_t); _db = e.target.result; resolve(_db); };
+            req.onerror   = function(e) { clearTimeout(_t); reject(e); };
+        });
+    }
+
+    return {
+        get: function() {
+            if (_cache !== null) return Promise.resolve(_cache);
+            return _open().then(function(db) {
+                return new Promise(function(resolve) {
+                    var tx  = db.transaction(STORE, 'readonly');
+                    var req = tx.objectStore(STORE).get(KEY);
+                    req.onsuccess = function() {
+                        _cache = req.result || '';
+                        // localStorage migration: eski avatar varsa taşı
+                        if (!_cache) {
+                            try {
+                                var old = localStorage.getItem('umittv_profile_avatar');
+                                if (old) {
+                                    _cache = old;
+                                    localStorage.removeItem('umittv_profile_avatar');
+                                    _profAvatarIDB.set(old);
+                                }
+                            } catch(me) {}
+                        }
+                        resolve(_cache);
+                    };
+                    req.onerror = function() { resolve(''); };
+                });
+            }).catch(function() { return ''; });
+        },
+        set: function(val) {
+            _cache = val || '';
+            return _open().then(function(db) {
+                return new Promise(function(resolve) {
+                    var tx = db.transaction(STORE, 'readwrite');
+                    tx.objectStore(STORE).put(_cache, KEY);
+                    tx.oncomplete = function() { resolve(); };
+                    tx.onerror    = function() { resolve(); };
+                });
+            }).catch(function() {});
+        },
+        preload: function() { return this.get(); }
+    };
+})();
+
+/* ── Profil oku (isim/kilit sync, avatar önbellekten) ── */
 function profGet() {
     try {
         return {
             name:   localStorage.getItem(PROF_NAME_KEY) || '',
-            avatar: localStorage.getItem(PROF_AVATAR_KEY) || '',
+            avatar: _profAvatarIDB._cache || '',
             locked: localStorage.getItem(PROF_NAME_LOCKED) === '1'
         };
     } catch(e) {
@@ -49814,13 +50198,18 @@ function profGet() {
     }
 }
 
+/* Avatar async oku (garantili güncel değer) */
+async function profGetAvatar() {
+    return await _profAvatarIDB.get();
+}
+
 /* ── Profil kaydet ── */
 function profSave(name, avatar, lock) {
     try {
         if (name !== null) localStorage.setItem(PROF_NAME_KEY, name);
-        if (avatar !== null) localStorage.setItem(PROF_AVATAR_KEY, avatar);
-        if (lock) localStorage.setItem(PROF_NAME_LOCKED, '1');
+        if (lock)          localStorage.setItem(PROF_NAME_LOCKED, '1');
     } catch(e) {}
+    if (avatar !== null) _profAvatarIDB.set(avatar);
 }
 
 /* ── Telegram ID al ── */
@@ -49863,22 +50252,201 @@ window.getProfileDisplayName = function() {
 };
 
 /* ── Profil avatar URL'ini al ── */
+// Sync: önbellekten al (preload çağrıldıysa dolu)
 window.getProfileAvatarUrl = function() {
-    const prof = profGet();
-    return prof.avatar || '';
+    return _profAvatarIDB._cache || '';
+};
+// Async: IDB'den garantili güncel değer
+window.getProfileAvatarUrlAsync = async function() {
+    return await _profAvatarIDB.get();
 };
 
+/* ── Header username tag güncelle (el yazısı, tema rengi) ── */
+/* ── Header kullanıcı adı — Canvas tabanlı, tema renkli, yanıp sönen ── */
+(function() {
+    var _unameRaf = null;
+    var _unamePhase = 0;
+    var _unameLastName = '';
+    var _unameLastP = '';
+    var _unameLastS = '';
+
+    function _h2rgb(hex) {
+        hex = (hex || '#FFD700').replace('#','').trim();
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        if (hex.length !== 6) return [255,215,0];
+        return [parseInt(hex.substring(0,2),16), parseInt(hex.substring(2,4),16), parseInt(hex.substring(4,6),16)];
+    }
+    function _mix(h1, h2, t) {
+        var a=_h2rgb(h1), b=_h2rgb(h2);
+        return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')';
+    }
+    function _bright(h, t) {
+        var c=_h2rgb(h);
+        return 'rgb('+Math.round(c[0]+(255-c[0])*t)+','+Math.round(c[1]+(255-c[1])*t)+','+Math.round(c[2]+(255-c[2])*t)+')';
+    }
+
+    function _drawFrame() {
+        var canvas = document.getElementById('headerUsernameCurve');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        var name = _unameLastName;
+        var p = _unameLastP || '#FFD700';
+        var s = _unameLastS || '#F1C40F';
+
+        _unamePhase += 0.10; // büyük adım: 0.018 → 0.10 (daha az frame, aynı görsel)
+        var pulse = 0.5 + 0.5 * Math.sin(_unamePhase);
+
+        var dpr = 1; // TVBox'ta dpr=1 zorunlu — 2x canvas = 4x bellek/bant
+        var h = 30, fontSize = 17;
+        ctx.font = 'bold '+fontSize+'px "Caveat","Dancing Script","Segoe Script",cursive';
+        var textW = ctx.measureText(name).width;
+        var w = Math.min(Math.ceil(textW + 10), 130);
+
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width  = w;
+            canvas.height = h;
+            canvas.style.width  = w+'px';
+            canvas.style.height = h+'px';
+        }
+        ctx.clearRect(0,0,w,h);
+        ctx.save();
+        ctx.translate(w/2,h/2); ctx.rotate(-0.05); ctx.translate(-w/2,-h/2);
+
+        var gradC1 = pulse>0.5 ? _bright(p,(pulse-0.5)*0.6) : _mix(p,s,(0.5-pulse)*1.2);
+        var gradC2 = pulse>0.5 ? _bright(s,(pulse-0.5)*0.4) : _mix(s,p,(0.5-pulse)*0.8);
+        var gradC3 = _bright(p, pulse*0.5);
+        var grd = ctx.createLinearGradient(0,0,w,0);
+        grd.addColorStop(0, gradC1);
+        grd.addColorStop(0.5, gradC3);
+        grd.addColorStop(1, gradC2);
+
+        var rgb = _h2rgb(p);
+        var glowA = 0.3 + pulse*0.45;
+        ctx.shadowColor = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+glowA+')';
+        ctx.shadowBlur  = 3 + pulse*6; // 4+pulse*10 → 3+pulse*6: daha hafif blur
+        ctx.font = 'bold '+fontSize+'px "Caveat","Dancing Script","Segoe Script",cursive';
+        ctx.fillStyle = grd;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name, 4, h/2);
+        ctx.restore();
+        // RAF kaldırıldı — interval ile çağrılıyor
+    }
+
+    window.updateHeaderUsername = function() {
+        var canvas = document.getElementById('headerUsernameCurve');
+        if (!canvas) return;
+        var name = localStorage.getItem('umittv_profile_name') || (typeof getProfileDisplayName==='function' ? getProfileDisplayName() : '') || '';
+        if (!name) {
+            canvas.style.opacity='0';
+            if(_unameRaf){ clearInterval(_unameRaf); _unameRaf=null; }
+            return;
+        }
+        var root = document.documentElement;
+        _unameLastP = (root.style.getPropertyValue('--accent-primary')||getComputedStyle(root).getPropertyValue('--accent-primary')||'#FFD700').trim();
+        _unameLastS = (root.style.getPropertyValue('--accent-secondary')||getComputedStyle(root).getPropertyValue('--accent-secondary')||'#F1C40F').trim();
+        _unameLastName = name;
+        canvas.style.opacity = '1';
+        // RAF → interval: 500ms aralık (2fps) TVBox için yeterli, sürekli RAF = jank
+        if (!_unameRaf) {
+            _drawFrame(); // ilk frame hemen çiz
+            _unameRaf = setInterval(_drawFrame, 500);
+        }
+    };
+})();
+
+/* ── Header Logo — RAF tabanlı tema renkli yanıp sönme ── */
+(function() {
+    var _logoRaf = null;
+    var _logoPhase = 0;
+    var _logoP = '#FFD700';
+    var _logoS = '#F1C40F';
+    var _logoRgb = '255,215,0';
+
+    function _h2rgb(hex) {
+        hex = (hex || '#FFD700').replace('#','').trim();
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        if (hex.length !== 6) return [255,215,0];
+        return [parseInt(hex.substring(0,2),16), parseInt(hex.substring(2,4),16), parseInt(hex.substring(4,6),16)];
+    }
+
+    function _logoFrame() {
+        var logo = document.querySelector('.neon-logo-img');
+        if (!logo) { if(_logoRaf){clearInterval(_logoRaf);_logoRaf=null;} return; }
+
+        _logoPhase += 0.12; /* 0.022 → 0.12: daha az adım, aynı efekt */
+        var pulse = 0.5 + 0.5 * Math.sin(_logoPhase);
+
+        var glow1 = Math.round(3 + pulse * 8);
+        var glow2 = Math.round(6 + pulse * 14);
+        var bright = (1.05 + pulse * 0.20).toFixed(2);
+        var opac = (0.85 + pulse * 0.15).toFixed(2);
+
+        var rgb1 = _h2rgb(_logoP);
+        var r = rgb1[0], g = rgb1[1], b = rgb1[2];
+        var glowColor  = 'rgba('+r+','+g+','+b+',0.85)';
+        var glowColor2 = 'rgba('+r+','+g+','+b+',0.40)';
+
+        logo.style.filter =
+            'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
+            'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
+            'brightness(' + bright + ')';
+        logo.style.opacity = opac;
+        // RAF kaldırıldı — interval ile çağrılıyor
+    }
+
+    window.startLogoGlow = function() {
+        var root = document.documentElement;
+        _logoP = (root.style.getPropertyValue('--accent-primary')   || getComputedStyle(root).getPropertyValue('--accent-primary')   || '#FFD700').trim();
+        _logoS = (root.style.getPropertyValue('--accent-secondary') || getComputedStyle(root).getPropertyValue('--accent-secondary') || '#F1C40F').trim();
+        if (_logoRaf) return; /* zaten çalışıyor */
+        _logoFrame(); /* ilk kare hemen */
+        _logoRaf = setInterval(_logoFrame, 600); /* ~1.6fps — glow için fazlasıyla yeterli */
+    };
+
+    window.stopLogoGlow = function() {
+        if (_logoRaf) { clearInterval(_logoRaf); _logoRaf = null; }
+        var logo = document.querySelector('.neon-logo-img');
+        if (logo) {
+            logo.style.filter  = 'drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15)';
+            logo.style.opacity = '1';
+        }
+    };
+
+    /* Sayfa yüklenince otomatik başlat — sadece player kapalıysa */
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var pv = document.getElementById('playerView');
+            if (!pv || pv.style.display === 'none' || pv.style.display === '') {
+                window.startLogoGlow();
+            }
+        }, 800);
+    });
+    /* DOMContentLoaded geçtiyse hemen başlat */
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(function() {
+            var pv = document.getElementById('playerView');
+            if (!pv || pv.style.display === 'none' || pv.style.display === '') {
+                window.startLogoGlow();
+            }
+        }, 800);
+    }
+})();
+
+
 /* ── Header avatar güncelle ── */
-function updateHeaderAvatar() {
+async function updateHeaderAvatar() {
     const wrap = document.getElementById('headerProfileAvatar');
     if (!wrap) return;
-    const { name, avatar } = profGet();
-    const initial = (name || getProfileDisplayName() || '?')[0].toUpperCase();
+    const name   = localStorage.getItem('umittv_profile_name') || getProfileDisplayName() || '?';
+    const avatar = await _profAvatarIDB.get();
+    const initial = name[0].toUpperCase();
     if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
         wrap.innerHTML = `<img src="${avatar}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:20px>account_circle</span>'">`;
     } else {
         wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:#FFD700;">${initial}</span>`;
     }
+    /* Profil adını da güncelle */
+    updateHeaderUsername();
 }
 
 /* ── Modal aç ── */
@@ -49920,12 +50488,12 @@ window.openProfileModal = function() {
         }
     }
 
-    // Avatar input — data: URL ise text input'a koyma (dosyadan yüklendi)
+    // Avatar input — IDB'den async oku
     const avatarInput = document.getElementById('profileAvatarInput');
-    if (avatarInput) avatarInput.value = (prof.avatar && prof.avatar.startsWith('http')) ? prof.avatar : '';
-
-    // Avatar önizleme
-    _updateModalAvatar(prof.avatar, prof.name || getProfileDisplayName());
+    _profAvatarIDB.get().then(function(av) {
+        if (avatarInput) avatarInput.value = (av && av.startsWith('http')) ? av : '';
+        _updateModalAvatar(av, prof.name || getProfileDisplayName());
+    });
 
     // Status temizle
     const statusMsg = document.getElementById('profileStatusMsg');
@@ -50095,13 +50663,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // İlk yükleme: header avatarı güncelle
-    setTimeout(updateHeaderAvatar, 500);
+    // İlk yükleme: IDB'yi preload et, sonra header'i güncelle
+    _profAvatarIDB.preload().then(function() { updateHeaderAvatar(); });
 });
 
 /* ── Login sonrası header güncelle ── */
 document.addEventListener('umittv_login_ok', function() {
-    setTimeout(updateHeaderAvatar, 300);
+    _profAvatarIDB.preload().then(function() { updateHeaderAvatar(); });
 });
 
 /* ══════════════════════════════════════════════════════════════
@@ -50116,7 +50684,7 @@ document.addEventListener('umittv_login_ok', function() {
     function _makeAvatarHtml(nick, color) {
         const initial = (nick || '?')[0].toUpperCase();
         const myName = getProfileDisplayName();
-        const myAvatar = getProfileAvatarUrl();
+        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
         // Kendi mesajımızsa profil resmimizi kullan
         if (nick === myName && _isValidAvatarUrl(myAvatar)) {
             return `<div style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;overflow:hidden;flex-shrink:0;margin-top:1px;">` +
@@ -50133,7 +50701,7 @@ document.addEventListener('umittv_login_ok', function() {
         // msg.nick kendi kullanıcımızsa profil resmimizi kullan
         const { nick, color, text, stars, isSystem } = msg;
         const myName = getProfileDisplayName();
-        const myAvatar = getProfileAvatarUrl();
+        const myAvatar = _profAvatarIDB._cache || ''; // IDB önbelleği (sync)
         const isMe = nick === myName && _isValidAvatarUrl(myAvatar);
 
         const list = document.getElementById('wpCommentsList');
@@ -50234,7 +50802,7 @@ document.addEventListener('umittv_login_ok', function() {
         var el = _getEl(item);
         if (!el) return;
         el.classList.add('dpad-focused', 'remote-focused', 'prof-dpad-focused');
-        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
         if (typeof playKeySound === 'function') playKeySound('move');
     }
 
@@ -50319,15 +50887,14 @@ document.addEventListener('umittv_login_ok', function() {
         var s = document.createElement('style');
         s.textContent = [
             '.prof-dpad-focused {',
-            '    outline: 3px solid rgba(255,215,0,0.95) !important;',
-            '    outline-offset: 3px !important;',
-            '    box-shadow: 0 0 0 5px rgba(255,215,0,0.15), 0 0 18px rgba(255,215,0,0.2) !important;',
+            '    outline: none !important;',
+            '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.75), 0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;',
             '}',
             'input.prof-dpad-focused {',
             '    outline: none !important;',
-            '    border-color: rgba(255,215,0,0.8) !important;',
-            '    background: rgba(255,215,0,0.06) !important;',
-            '    box-shadow: 0 0 0 3px rgba(255,215,0,0.2) !important;',
+            '    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.8) !important;',
+            '    background: rgba(var(--accent-primary-rgb,255,215,0), 0.06) !important;',
+            '    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.2) !important;',
             '}'
         ].join('\n');
         document.head.appendChild(s);
@@ -50875,25 +51442,22 @@ document.addEventListener('umittv_login_ok', function() {
 
          
         .__UMD_CITY_BUTTON.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.35) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
             transform: scale(1.04) !important;
-            background: rgba(255,204,0,0.18) !important;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
             color: #fff !important;
-            border-color: #ffcc00 !important;
+            border-color: var(--accent-primary) !important;
         }
         #__UMD_CITY_CANCEL.wrf, #__UMD_CITY_SELECT.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.35) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.80), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
             transform: scale(1.04) !important;
         }
         #__UMD_CITY_SEARCH.wrf {
-            outline: 3px solid #ffcc00 !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 4px rgba(255,204,0,0.25) !important;
-            border-color: #ffcc00 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.70), 0 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.15) !important;
+            border-color: var(--accent-primary) !important;
         }
 
         body.__umd_modal_open {
@@ -52107,6 +52671,8 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
             window.applyTheme = function() {
                 orig.apply(this, arguments);
                 setTimeout(applyThemeColor, 50);
+                setTimeout(function() { if (typeof startLogoGlow === 'function') startLogoGlow(); }, 70);
+                setTimeout(function() { if (typeof updateHeaderUsername === 'function') updateHeaderUsername(); }, 80);
             };
             window._umkThemeHooked = window.applyTheme;
         }
@@ -54692,8 +55258,7 @@ document.readyState === 'loading'
 .channel-card.focused,
 .channel-card:focus-visible {
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
     transform: translateZ(0) !important;
     transition: none !important;
     contain: layout style paint !important;
@@ -54706,8 +55271,7 @@ document.readyState === 'loading'
 .channel-card[data-is-series="true"].remote-focused,
 .channel-card[data-is-series="true"].focused {
     outline: none !important;
-    box-shadow: 0 0 0 3px var(--accent-primary, #FFD700) !important;
-    border-color: var(--accent-primary, #FFD700) !important;
+    border-color: var(--accent-primary) !important;
 }
 
 /* ══════════════════════════════════════
@@ -55224,34 +55788,67 @@ function vrUserColor(name) {
   return colors[h % colors.length];
 }
 
-// ── Firebase GET ──
+// ── Firebase GET (XHR fallback) ──
 async function vrFbGet(path) {
+  const url = VOD_REVIEWS_FB + path + '.json';
   try {
-    const r = await fetch(VOD_REVIEWS_FB + path + '.json', { method: 'GET' });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch(e) { return null; }
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), 8000);
+    const r = await fetch(url, { method: 'GET', cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(tid);
+    if (r.ok) return await r.json().catch(()=>null);
+  } catch(e) {}
+  // XHR fallback (App24/WebView)
+  return new Promise(function(resolve) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 8000;
+      xhr.onload = function() { try { resolve(xhr.status>=200&&xhr.status<300 ? JSON.parse(xhr.responseText) : null); } catch(e){resolve(null);} };
+      xhr.onerror = xhr.ontimeout = function(){ resolve(null); };
+      xhr.send(null);
+    } catch(e){ resolve(null); }
+  });
 }
 
-// ── Firebase PUSH ──
+// ── Firebase PUSH (XHR fallback) ──
 async function vrFbPush(path, data) {
+  const url = VOD_REVIEWS_FB + path + '.json';
+  const bodyStr = JSON.stringify(data);
+  // fetch dene
   try {
-    const r = await fetch(VOD_REVIEWS_FB + path + '.json', {
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), 10000);
+    const r = await fetch(url, {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: bodyStr,
+      signal: ctrl.signal
     });
-    if (!r.ok) {
-      const errBody = await r.text().catch(()=>'');
-      console.warn('[VodReview] Firebase POST hata:', r.status, errBody);
-      return null;
-    }
-    return await r.json();
-  } catch(e) {
-    console.warn('[VodReview] Firebase POST exception:', e.message);
-    return null;
-  }
+    clearTimeout(tid);
+    const txt = await r.text().catch(()=>'');
+    if (r.ok) { try { return JSON.parse(txt); } catch(e){ return null; } }
+    // hata: sessiz geç, XHR dene
+  } catch(e) {}
+  // XHR fallback (App24/WebView — fetch bloke olursa)
+  return new Promise(function(resolve) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 10000;
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch(e){ resolve(null); }
+        } else {
+          resolve(null);
+        }
+      };
+      xhr.onerror = xhr.ontimeout = function(){ resolve(null); };
+      xhr.send(bodyStr);
+    } catch(e){ resolve(null); }
+  });
 }
 
 // ── Durum ──
@@ -55266,6 +55863,9 @@ window.vodOpenReviews = async function(contentTitle) {
   _vrCurrentKey = vrSafeKey(_vrCurrentTitle);
   _vrMyStars = 0;
   _vrMyReviewKey = '';
+  // Global'e yaz — vodSubmitReview farklı scope'tan erişebilsin
+  window._vrCurrentKeyGlobal = _vrCurrentKey;
+  window._vrCurrentTitleGlobal = _vrCurrentTitle;
 
   const section = document.getElementById('vodReviewsSection');
   if (!section) return;
@@ -55295,14 +55895,20 @@ window.vodOpenReviews = async function(contentTitle) {
           window.state.remote.vodModalIndex = infoIdx;
           const el = els[infoIdx];
           el.classList.add('remote-focused', 'tv-focused');
-          el.style.outline = '4px solid #FFD700';
-          el.style.boxShadow = '0 0 20px #FFD700';
+          el.style.outline = '';
+          el.style.boxShadow = '';
           el.focus({ preventScroll: true });
         }
       }
     }
   }, 150);
 };
+
+// Wrapper'ı hemen kur (22354'teki override gerçek fonksiyonu bulamadan önce çalışmıştı)
+if (typeof window._wpVodOpenReviewsWrapper === 'function') {
+  window._wpVodOpenReviewsReal = window.vodOpenReviews;
+  window.vodOpenReviews = window._wpVodOpenReviewsWrapper;
+}
 
 // ── Yorumları Firebase'den yükle ──
 async function vodLoadReviews() {
@@ -55311,14 +55917,27 @@ async function vodLoadReviews() {
   const countEl = document.getElementById('vodReviewCount');
   if (!listEl) return;
 
+  if (!_vrCurrentKey) {
+    // Global'den al
+    if (window._vrCurrentKeyGlobal) {
+      _vrCurrentKey = window._vrCurrentKeyGlobal;
+      _vrCurrentTitle = window._vrCurrentTitleGlobal || '';
+    } else {
+      listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Henüz yorum yok. İlk yorumu sen yaz!</div>';
+      return;
+    }
+  }
+
   listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Yorumlar yükleniyor...</div>';
 
-  const data = await vrFbGet('/reviews/' + _vrCurrentKey);
+  let data = null;
+  try { data = await vrFbGet('/reviews/' + _vrCurrentKey); } catch(e) {}
 
   listEl.innerHTML = '';
-  if (!data || Object.keys(data).length === 0) {
+  if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
     if (emptyEl) emptyEl.style.display = 'block';
     if (countEl) countEl.textContent = '';
+    listEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">Henüz yorum yok. İlk yorumu sen yaz!</div>';
     return;
   }
   if (emptyEl) emptyEl.style.display = 'none';
@@ -55330,71 +55949,78 @@ async function vodLoadReviews() {
   // Mevcut kullanıcının yorumunu bul
   const myName = vrGetUserName();
   entries.forEach(([key, rev]) => {
-    if (rev.userId === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
-    vodRenderReview(key, rev, myName);
+    if (!rev || typeof rev !== 'object') return;
+    if (rev.userId === myName || rev.nick === myName) { _vrMyReviewKey = key; _vrMyStars = rev.stars || 0; vodPickStar(_vrMyStars); }
+    try { vodRenderReview(key, rev, myName); } catch(e) { console.error('[vodLoadReviews] render hatası:', e); }
+  });
+
+  /* Yeni yorum eklendikten sonra listeyi en üste kaydır (yeni yorum en üstte) */
+  requestAnimationFrame(function() {
+    listEl.scrollTop = 0;
   });
 }
 
-// ── Tek yorum kartı oluştur ──
+// ── Tek yorum kartı oluştur (sade versiyon) ──
 function vodRenderReview(key, rev, myName) {
-  const listEl = document.getElementById('vodReviewsList');
+  var listEl = document.getElementById("vodReviewsList");
   if (!listEl) return;
 
-  // isMe: hem userId hem nick karşılaştır (override sonrası mismatch önle)
-  const isMe = rev.userId === myName || rev.nick === myName;
-  const color = vrUserColor(rev.userId || rev.nick || '?');
-  const initial = (rev.nick || rev.userId || '?')[0].toUpperCase();
-  const starsHtml = rev.stars
-    ? '<div style="color:#FFD700;font-size:13px;margin-top:3px;">' +
-      '★'.repeat(rev.stars) +
-      '<span style="color:rgba(255,255,255,0.15)">' + '★'.repeat(5 - rev.stars) + '</span></div>'
-    : '';
-  const dateStr = rev.ts ? new Date(rev.ts).toLocaleDateString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
-                            new Date(rev.ts).toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}) : '';
-  const deleteBtn = isMe
-    ? '<button onclick="vodDeleteReview(\'' + key + '\')" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:6px;color:#e74c3c;font-size:10px;padding:2px 7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Sil</button>'
-    : '';
+  if (listEl.children.length === 1) {
+    var fc = listEl.firstElementChild;
+    if (fc && (fc.getAttribute("style") || "").indexOf("text-align") !== -1) {
+      listEl.innerHTML = "";
+    }
+  }
 
-  // Kendi yorumumsa profil resmimizi göster
-  // Avatar: kendi yorumsa localStorage'dan, diğerleri için rev.avatar'dan
-  const myAvatarUrl = isMe && typeof getProfileAvatarUrl === 'function' ? getProfileAvatarUrl() : '';
-  const otherAvatarUrl = !isMe && rev.avatar && (rev.avatar.startsWith('http') || rev.avatar.startsWith('data:')) ? rev.avatar : '';
-  // Kendi yorumuysa önce localStorage'dan al (data: dahil), değilse Firebase'den
-  const resolvedAvatar = isMe ? (myAvatarUrl || otherAvatarUrl) : otherAvatarUrl;
-  const hasAvatar = resolvedAvatar && (resolvedAvatar.startsWith('http') || resolvedAvatar.startsWith('data:'));
-  const safeNickForAvatar = (rev.nick || rev.userId || '?').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const avatarHtml = hasAvatar
-    ? '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;overflow:hidden;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' +
-      '<img src="' + resolvedAvatar + '" class="vr-comment-avatar-img" alt="' + initial + '" onerror="this.parentNode.innerHTML=\'<span style=font-size:14px;font-weight:700;color:' + color + ';display:flex;align-items:center;justify-content:center;height:100%>' + initial + '</span>\'">' +
-      '</div>'
-    : '<div onclick="openUserProfileView(\'' + safeNickForAvatar + '\')" style="width:34px;height:34px;border-radius:50%;background:' + color + '22;border:1px solid ' + color + '55;color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">' + initial + '</div>';
+  var nick = rev.nick || rev.userId || "?";
+  var text = rev.text || "";
+  var stars = parseInt(rev.stars) || 0;
+  var ts = rev.ts ? new Date(rev.ts).toLocaleDateString("tr-TR") : "";
+  var isMe = (rev.userId === myName || rev.nick === myName);
 
-  const displayNick = rev.nick || rev.userId || '?';
-  const meLabel = isMe ? '<span style="font-size:9px;color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.1);border-radius:4px;padding:1px 5px;">Ben</span>' : '';
-  const safeNick = displayNick.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const nickHtml = '<span onclick="openUserProfileView(\'' + safeNick + '\')" '
-    + 'style="font-size:12px;font-weight:700;color:' + color + ';cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
-    + 'text-decoration-line:underline;text-decoration-style:dotted;text-underline-offset:2px;padding:6px 2px;display:inline-block;" '
-    + 'title="Profili g\u00f6r\u00fcntle">' + displayNick + '</span>';
-  const el = document.createElement('div');
-  el.id = 'vr_' + key;
-  el.style.cssText = 'display:flex;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px;';
-  el.innerHTML =
-    avatarHtml +
-    '<div style="flex:1;min-width:0;">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;">' +
-        '<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">' +
-          nickHtml +
-          meLabel +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<span style="font-size:10px;color:rgba(255,255,255,0.2);">' + dateStr + '</span>' +
-          deleteBtn +
-        '</div>' +
-      '</div>' +
-      starsHtml +
-      (rev.text ? '<div style="font-size:13px;color:#dde0ee;line-height:1.45;margin-top:4px;">' + rev.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' : '') +
-    '</div>';
+  var starsStr = "";
+  for (var si = 0; si < 5; si++) { starsStr += si < stars ? "\u2605" : "\u2606"; }
+
+  var el = document.createElement("div");
+  el.id = "vr_" + key;
+  el.style.cssText = "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;margin-bottom:2px;";
+
+  var nickSpan = document.createElement("span");
+  nickSpan.style.cssText = "font-size:13px;font-weight:700;color:#FFD700;";
+  nickSpan.textContent = nick + (isMe ? " (Ben)" : "");
+
+  var tsSpan = document.createElement("span");
+  tsSpan.style.cssText = "font-size:10px;color:rgba(255,255,255,0.4);";
+  tsSpan.textContent = ts;
+
+  var header = document.createElement("div");
+  header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;";
+  header.appendChild(nickSpan);
+  header.appendChild(tsSpan);
+  el.appendChild(header);
+
+  if (stars > 0) {
+    var starDiv = document.createElement("div");
+    starDiv.style.cssText = "color:#FFD700;font-size:14px;margin-bottom:4px;";
+    starDiv.textContent = starsStr;
+    el.appendChild(starDiv);
+  }
+
+  if (text) {
+    var textDiv = document.createElement("div");
+    textDiv.style.cssText = "font-size:13px;color:#dde0ee;line-height:1.5;";
+    textDiv.textContent = text;
+    el.appendChild(textDiv);
+  }
+
+  if (isMe) {
+    var delBtn = document.createElement("button");
+    delBtn.textContent = "Sil";
+    delBtn.style.cssText = "background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);border-radius:6px;color:#e74c3c;font-size:11px;padding:3px 10px;cursor:pointer;margin-top:6px;";
+    delBtn.onclick = (function(k) { return function() { window.vodDeleteReview(k); }; })(key);
+    el.appendChild(delBtn);
+  }
+
   listEl.appendChild(el);
 }
 
@@ -55421,18 +56047,74 @@ window.vodSubmitReview = async function() {
     if (typeof showToast === 'function') showToast('⚠ Yorum yazın veya puan verin');
     return;
   }
+
+  // _vrCurrentKey boşsa sırayla fallback dene
   if (!_vrCurrentKey) {
-    if (typeof showToast === 'function') showToast('⚠ İçerik bulunamadı');
+    // 1) Global window'dan al (vodOpenReviews set etmiş olmalı)
+    if (window._vrCurrentKeyGlobal) {
+      _vrCurrentKey = window._vrCurrentKeyGlobal;
+      _vrCurrentTitle = window._vrCurrentTitleGlobal || '';
+    } else {
+      // 2) Modal başlığından üret
+      try {
+        const titleEl = document.getElementById('vodModalTitle') || document.querySelector('.vod-title');
+        const fallbackTitle = (titleEl && titleEl.textContent.trim()) || _vrCurrentTitle || 'unknown';
+        _vrCurrentTitle = fallbackTitle;
+        _vrCurrentKey = vrSafeKey(fallbackTitle);
+        window._vrCurrentKeyGlobal = _vrCurrentKey;
+        window._vrCurrentTitleGlobal = _vrCurrentTitle;
+      } catch(e) {}
+    }
+  }
+  if (!_vrCurrentKey) {
+    if (typeof showToast === 'function') showToast('⚠ İçerik bulunamadı — filmi tekrar açın');
     return;
   }
 
-  const btn = document.querySelector('[onclick="vodSubmitReview()"]');
+  /* ID önce, yoksa attribute selector ile bul */
+  const btn = document.getElementById('vodSubmitBtn')
+           || document.querySelector('[onclick="vodSubmitReview()"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Gönderiliyor...'; }
 
   const userName = vrGetUserName();
-  const _myAvatarRaw = (typeof getProfileAvatarUrl === 'function') ? getProfileAvatarUrl() : '';
-  // data: URL'leri Firebase'e kaydetme — cok buyuk, quota tuketir. Sadece http/https URL'lerini sakla.
-  const _myAvatarToSave = (_myAvatarRaw && _myAvatarRaw.startsWith('http')) ? _myAvatarRaw : '';
+  let _myAvatarRaw = '';
+  try {
+    _myAvatarRaw = await Promise.race([
+      _profAvatarIDB.get(),
+      new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
+    ]);
+  } catch(e) { _myAvatarRaw = ''; }
+
+  // Avatar küçült: data: URL'leri 48x48px JPEG thumbnail'e sıkıştır (~2KB), http doğrudan geç
+  async function _shrinkAvatar(src) {
+    if (!src) return '';
+    if (src.startsWith('http')) return src;
+    if (!src.startsWith('data:')) return '';
+    try {
+      return await Promise.race([
+        new Promise(function(resolve) {
+          var img = new Image();
+          img.onload = function() {
+            try {
+              var c = document.createElement('canvas');
+              var sz = 48; c.width = sz; c.height = sz;
+              var ctx = c.getContext('2d');
+              var s = Math.min(img.naturalWidth, img.naturalHeight);
+              var ox = (img.naturalWidth - s) / 2;
+              var oy = (img.naturalHeight - s) / 2;
+              ctx.drawImage(img, ox, oy, s, s, 0, 0, sz, sz);
+              resolve(c.toDataURL('image/jpeg', 0.72));
+            } catch(e) { resolve(''); }
+          };
+          img.onerror = function() { resolve(''); };
+          img.src = src;
+        }),
+        new Promise(function(r){ setTimeout(function(){ r(''); }, 2000); })
+      ]);
+    } catch(e) { return ''; }
+  }
+  const _myAvatarToSave = await _shrinkAvatar(_myAvatarRaw);
+
   const reviewData = {
     userId: userName,
     nick: userName,
@@ -55440,7 +56122,8 @@ window.vodSubmitReview = async function() {
     stars: _vrMyStars,
     contentTitle: _vrCurrentTitle,
     ts: Date.now(),
-    avatar: _myAvatarToSave
+    // Avatar: sadece http URL'leri gönder, data: URL'leri çok büyük olabilir
+    avatar: (_myAvatarToSave && _myAvatarToSave.startsWith('http')) ? _myAvatarToSave : ''
   };
 
   // Mevcut yorumu sil (güncelleme)
@@ -55450,19 +56133,61 @@ window.vodSubmitReview = async function() {
     } catch(e) {}
   }
 
-  const result = await vrFbPush('/reviews/' + _vrCurrentKey, reviewData);
-  if (btn) { btn.disabled = false; btn.textContent = 'Gönder'; }
+  // Gönder — fetch başarısız olursa XHR fallback zaten vrFbPush içinde
+  let result = null;
+  try {
+    result = await vrFbPush('/reviews/' + _vrCurrentKey, reviewData);
+  } catch(e) {
+    result = null;
+  }
+
+  // Butonu her durumda sıfırla
+  const _btnReset = document.getElementById('vodSubmitBtn')
+                 || document.querySelector('[onclick="vodSubmitReview()"]');
+  if (_btnReset) { _btnReset.disabled = false; _btnReset.textContent = 'Gönder'; }
 
   if (!result || !result.name) {
-    if (typeof showToast === 'function') showToast('⚠ Yorum gönderilemedi — Firebase DB kurallarını veya bağlantıyı kontrol edin');
-    console.error('[VodReview] Gönderme başarısız. FB_URL:', VOD_REVIEWS_FB, ' key:', _vrCurrentKey);
-    return;
+    // Son çare: XHR ile doğrudan dene
+    const fallbackResult = await new Promise(function(resolve) {
+      try {
+        var xhr = new XMLHttpRequest();
+        var url = VOD_REVIEWS_FB + '/reviews/' + _vrCurrentKey + '.json';
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 10000;
+        xhr.onload = function() {
+          try {
+            var d = JSON.parse(xhr.responseText);
+            resolve((xhr.status >= 200 && xhr.status < 300 && d && d.name) ? d : null);
+          } catch(e) { resolve(null); }
+        };
+        xhr.onerror = xhr.ontimeout = function() { resolve(null); };
+        xhr.send(JSON.stringify(reviewData));
+      } catch(e) { resolve(null); }
+    });
+
+    if (!fallbackResult || !fallbackResult.name) {
+      if (typeof showToast === 'function') showToast('⚠ Yorum gönderilemedi — internet bağlantısını kontrol edin');
+      return;
+    }
+    result = fallbackResult;
   }
 
   _vrMyReviewKey = result.name;
   if (input) input.value = '';
   if (typeof showToast === 'function') showToast('✅ Yorumunuz kaydedildi!');
-  await vodLoadReviews();
+
+  // Yorumu direkt listeye ekle (Firebase propagation delay'ini atla)
+  const listEl2 = document.getElementById('vodReviewsList');
+  if (listEl2) {
+    listEl2.innerHTML = ''; // temizle
+    const emptyEl2 = document.getElementById('vodReviewsEmpty');
+    if (emptyEl2) emptyEl2.style.display = 'none';
+  }
+  vodRenderReview(_vrMyReviewKey, reviewData, userName);
+
+  // 2 saniye sonra Firebase'den yükle (diğer yorumlar da gelsin)
+  setTimeout(async function() { await vodLoadReviews(); }, 2000);
 };
 
 // ── Yorum sil ──
@@ -55537,17 +56262,19 @@ function _fbXHR(method, url, body) {
 
 async function _fbFetch(method, path, body) {
   const url = FB_URL + path + '.json';
-  // Önce fetch dene
+  // Önce fetch dene (no-cors yerine cors, ama mode olmadan dene de)
   try {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 8000);
-    const opts = { method, mode: 'cors', cache: 'no-store', signal: ctrl.signal };
+    const opts = { method, cache: 'no-store', signal: ctrl.signal };
     if(body !== undefined) { opts.headers = {'Content-Type':'application/json'}; opts.body = JSON.stringify(body); }
     const r = await fetch(url, opts);
     clearTimeout(tid);
-    if(r.ok) return { ok: true, text: await r.text() };
+    const txt = await r.text().catch(()=>'');
+    if(r.ok) return { ok: true, text: txt };
+    // HTTP hata kodu geldi - XHR ile dene
   } catch(e) {}
-  // Fetch başarısız → XHR ile tekrar dene (Brave uyumluluğu)
+  // Fetch başarısız → XHR ile tekrar dene (App24/WebView uyumluluğu)
   return _fbXHR(method, url, body);
 }
 
@@ -55567,10 +56294,16 @@ async function fbSet(path, data) {
 async function fbPush(path, data) {
   try {
     const res = await _fbFetch('POST', path, data);
-    if(!res.ok) return null;
+    if(!res.ok) {
+      console.warn('[FB] POST başarısız:', path, res.text);
+      return null;
+    }
     const d = JSON.parse(res.text);
-    return d.name;
-  } catch(e) { return null; }
+    return d.name || null;
+  } catch(e) {
+    console.warn('[FB] POST exception:', path, e.message);
+    return null;
+  }
 }
 async function fbDelete(path) {
   try { await _fbFetch('DELETE', path); } catch(e) {}
@@ -55669,26 +56402,54 @@ window.wpLoadRooms = async function wpLoadRooms() {
   list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:14px;">Odalar yükleniyor...</div>';
   let rooms = null;
   let fetchOk = false;
+  const testUrl = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app/rooms.json';
+  // Önce fetch dene
   try {
-    // Firebase'e doğrudan fetch ile bağlantı testi yap
-    const testUrl = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app/rooms.json';
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 8000);
-    const resp = await fetch(testUrl, { method: 'GET', mode: 'cors', cache: 'no-store', signal: ctrl.signal });
+    const resp = await fetch(testUrl, { method: 'GET', cache: 'no-store', signal: ctrl.signal });
     clearTimeout(tid);
     if (resp.ok) {
       fetchOk = true;
-      rooms = await resp.json(); // null = DB boş (normal), object = odalar var
+      rooms = await resp.json().catch(() => null);
     }
-  } catch(e) { fetchOk = false; }
+  } catch(e) {}
+  // Fetch başarısız → XHR ile dene (App24/WebView)
+  if (!fetchOk) {
+    await new Promise(function(resolve) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', testUrl, true);
+        xhr.timeout = 8000;
+        xhr.onload = function() {
+          try {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              fetchOk = true;
+              rooms = JSON.parse(xhr.responseText);
+            }
+          } catch(e) { fetchOk = true; rooms = null; }
+          resolve();
+        };
+        xhr.onerror = xhr.ontimeout = function() { resolve(); };
+        xhr.send(null);
+      } catch(e) { resolve(); }
+    });
+  }
 
   list.innerHTML = '';
   if(!fetchOk) {
-    list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
-      '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Bağlantı hatası</div>' +
-      '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
-      '</div>';
-    return;
+    // Son çare: fbGet ile dene (kendi XHR fallback'i var)
+    rooms = await fbGet('/rooms');
+    if(rooms !== null) {
+      fetchOk = true;
+    } else {
+      list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
+        '<div style="color:#e74c3c;margin-bottom:8px;">⚠ Firebase bağlantısı kurulamadı</div>' +
+        '<div style="color:rgba(255,255,255,0.4);font-size:10px;margin-bottom:8px;">İnternet bağlantınızı kontrol edin</div>' +
+        '<button onclick="wpLoadRooms()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
+        '</div>';
+      return;
+    }
   }
   if(!rooms || Object.keys(rooms).length === 0) {
     list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:14px;">Henüz aktif oda yok. İlk odayı sen aç! 🎉</div>';
@@ -55940,7 +56701,7 @@ window.wpCreateRoom = async function() {
 
   if(btn) { btn.disabled = false; btn.textContent = '✦ ODA AÇ'; }
 
-  if(!ok) { wpShowToast('⚠ Bağlantı hatası, tekrar dene'); return; }
+  if(!ok) { wpShowToast('⚠ Firebase bağlantı hatası — internet bağlantını ve Firebase kurallarını kontrol et'); return; }
 
   // Şifre varsa toast ile göster
   if(password) wpShowToast('🔒 Şifreli oda: ' + code);
@@ -56067,7 +56828,8 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
     lastSeen: Date.now(),
     online: true
   });
-  WP.myId = memberId;
+  WP.myId = memberId || ('local_' + Date.now()); // Firebase başarısız olursa yerel ID
+  if(!memberId) console.warn('[WP] Firebase üye yazma başarısız - yerel mod');
 
   // UI güncelle
   document.getElementById('wpPanelCode').textContent = code;
@@ -56075,6 +56837,9 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   if(_rnEl) _rnEl.textContent = roomName || '';
   wpUpdateStars(0);
   wpClearAll();
+  // Kendimizi hemen listeye ekle (SSE/Firebase bağlantısını bekleme)
+  wpAddMember({ nick, color: WP.myColor, isHost, isMe: true, lastSeen: Date.now() });
+  wpUpdateMeta();
   wpAddSystemMsg('🎉 Watch Party başladı! İzleniyor: ' + contentTitle);
 
   // Panel aç
@@ -56102,8 +56867,8 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
   // Sayfadan ayrılınca kendini offline yap
   window.addEventListener('beforeunload', wpLeaveCleanup);
 
-  // Chat polling yedek (SSE bağlantısı kopunca mesajları kaçırma)
-  WP._chatPollTimer = setInterval(async () => {
+  // Chat polling — ilk çekimi hemen yap, sonra her 8sn'de yedek
+  async function _doChatPoll() {
     if(!WP.inRoom) return;
     const chat = await fbGet('/rooms/' + code + '/chat');
     if(!chat || typeof chat !== 'object') return;
@@ -56117,7 +56882,9 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
         wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
       }
     });
-  }, 5000);
+  }
+  setTimeout(_doChatPoll, 1500); // açılışta hemen bir kez çek
+  WP._chatPollTimer = setInterval(_doChatPoll, 8000); // sonra her 8sn
 
   // Arka plana alınınca / öne gelince lastSeen güncelle → dot rengi değişsin
   const _wpVisHandler = async () => {
@@ -56143,137 +56910,83 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
 
 // ── FİREBASE DİNLEYİCİLERİ ──
 function wpStartListeners(code) {
-  // Tüm eski listener'ları kapat
-  WP.listeners.forEach(es => es.close());
+  // Tüm eski listener'ları/interval'ları kapat
+  WP.listeners.forEach(function(es) { try { es.close(); } catch(e) {} });
   WP.listeners = [];
+  if(WP._pollInterval) { clearInterval(WP._pollInterval); WP._pollInterval = null; }
 
-  // ── Üyeler dinle ──
-  // Firebase SSE: ilk 'put' path='/' → data = tüm nesne
-  //               sonraki 'put' path='/KEY' → data = tek üye nesnesi
-  const membersEs = new EventSource(FB_URL + '/rooms/' + code + '/members.json');
-  membersEs.addEventListener('put', (e) => {
+  // ── POLLING (SSE yerine — Android WebView uyumlu) ──
+  async function _pollAll() {
     if(!WP.inRoom) return;
+
+    // 1) ÜYELER
     try {
-      const d = JSON.parse(e.data);
-      const now = Date.now();
-      WP.members = [];
-      document.getElementById('wpMembersList').innerHTML = '';
-      let membersObj = null;
-      if(d.path === '/') {
-        // İlk yükleme — tüm üyeler geldi
-        membersObj = d.data;
-      } else {
-        // Tek üye eklendi: path = '/KEY'
-        const key = d.path.replace('/', '');
-        if(d.data) membersObj = { [key]: d.data };
-      }
-      if(!membersObj) { wpUpdateMeta(); return; }
-      // Önce Firebase'den güncel listeyi çek (PUT bazen eski snapshot verir)
-      fbGet('/rooms/' + code + '/members').then(members => {
-        if(!members) return;
+      var members = await fbGet('/rooms/' + code + '/members');
+      if(members && typeof members === 'object') {
         WP.members = [];
         document.getElementById('wpMembersList').innerHTML = '';
-        Object.entries(members).forEach(([id, m]) => {
+        Object.entries(members).forEach(function([id, m]) {
           if(!m || !m.nick) return;
-          const isOnline = m.online !== false;
-          if(!isOnline) return;
-          const isMe = id === WP.myId;
-          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
+          if(m.online === false) return;
+          var isMe = id === WP.myId;
+          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0 });
         });
+        // Kendimiz yoksa ekle
+        if(!WP.members.find(function(m){ return m.isMe; })) {
+          WP.members.unshift({ nick: WP.myNick, color: WP.myColor, isHost: WP.isHost, isMe: true, lastSeen: Date.now() });
+          wpRenderMembers();
+        }
         wpUpdateMeta();
-      });
-    } catch(err) {}
-  });
-  membersEs.onerror = () => {};
-  WP.listeners.push(membersEs);
-
-  // ── Chat dinle ──
-  const chatEs = new EventSource(FB_URL + '/rooms/' + code + '/chat.json');
-  chatEs.addEventListener('put', (e) => {
-    if(!WP.inRoom) return;
-    try {
-      const d = JSON.parse(e.data);
-      if(d.path === '/') {
-        // İlk yükleme veya yeniden bağlanma — geçmiş mesajları göster
-        if(d.data && typeof d.data === 'object') {
-          const isReconnect = WP.lastChatKeys.size > 0;
-          Object.entries(d.data).forEach(([k, msg]) => {
-            if(WP.lastChatKeys.has(k)) return; // zaten gösterilmiş
-            WP.lastChatKeys.add(k);
-            if(!msg || typeof msg !== 'object') return;
-            if(msg.isSystem) {
-              wpAddSystemMsg(msg.text || '');
-            } else {
-              wpAddChatMsg({
-                nick: msg.nick || '?',
-                color: msg.color || '#FFD700',
-                text: msg.text || '',
-                isReaction: !!msg.isReaction
-              });
-            }
-          });
-        }
-        return;
       }
-      // Yeni tek mesaj: path = '/KEY'
-      const key = d.path.replace('/', '');
-      if(WP.lastChatKeys.has(key)) return;
-      WP.lastChatKeys.add(key);
-      const msg = d.data;
-      if(!msg || typeof msg !== 'object') return;
-      if(msg.isSystem) {
-        wpAddSystemMsg(msg.text || '');
-      } else {
-        wpAddChatMsg({
-          nick: msg.nick || '?',
-          color: msg.color || '#FFD700',
-          text: msg.text || '',
-          isReaction: !!msg.isReaction
+    } catch(e) {}
+
+    // 2) CHAT
+    try {
+      var chat = await fbGet('/rooms/' + code + '/chat');
+      if(chat && typeof chat === 'object') {
+        Object.entries(chat).forEach(function([k, msg]) {
+          if(WP.lastChatKeys.has(k)) return;
+          WP.lastChatKeys.add(k);
+          if(!msg || typeof msg !== 'object') return;
+          if(msg.isSystem) {
+            wpAddSystemMsg(msg.text || '');
+          } else {
+            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction });
+          }
         });
       }
-    } catch(err) {}
-  });
-  chatEs.onerror = () => {};
-  WP.listeners.push(chatEs);
+    } catch(e) {}
 
-  // ── Yorumlar dinle ──
-  const commentsEs = new EventSource(FB_URL + '/rooms/' + code + '/comments.json');
-  commentsEs.addEventListener('put', (e) => {
-    if(!WP.inRoom) return;
+    // 3) YORUMLAR
     try {
-      const d = JSON.parse(e.data);
-      if(d.path === '/') {
-        // Geçmiş yorumlar — sadece key'leri işaretle, gösterme
-        if(d.data && typeof d.data === 'object') {
-          Object.keys(d.data).forEach(k => WP.lastCommentKeys.add(k));
-        }
-        return;
+      var comments = await fbGet('/rooms/' + code + '/comments');
+      if(comments && typeof comments === 'object') {
+        var isFirst = WP.lastCommentKeys.size === 0;
+        Object.entries(comments).forEach(function([k, c]) {
+          if(WP.lastCommentKeys.has(k)) return;
+          WP.lastCommentKeys.add(k);
+          if(isFirst) return; // İlk yüklemede geçmiş yorumları gösterme
+          if(!c || typeof c !== 'object') return;
+          wpAddComment({ nick: c.nick||'?', color: c.color||'#FFD700', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem });
+          if(c.stars) { WP.ratings.push({ nick: c.nick, stars: c.stars }); wpUpdateAvgRating(); }
+        });
       }
-      const key = d.path.replace('/', '');
-      if(WP.lastCommentKeys.has(key)) return;
-      WP.lastCommentKeys.add(key);
-      const c = d.data;
-      if(!c || typeof c !== 'object') return;
-      wpAddComment({
-        nick: c.nick || '?',
-        color: c.color || '#FFD700',
-        text: c.text || '',
-        stars: c.stars || 0,
-        isSystem: !!c.isSystem
-      });
-      if(c.stars) {
-        WP.ratings.push({ nick: c.nick, stars: c.stars });
-        wpUpdateAvgRating();
+    } catch(e) {}
+
+    // 4) nowPlaying
+    try {
+      var np = await fbGet('/rooms/' + code + '/nowPlaying');
+      if(np && np.title && np.title !== WP.contentTitle) {
+        if(typeof wpOnNowPlayingChange === 'function') wpOnNowPlayingChange(np);
       }
-    } catch(err) {}
-  });
-  commentsEs.onerror = () => {};
-  WP.listeners.push(commentsEs);
+    } catch(e) {}
+  }
 
-  // ── nowPlaying dinleyicisi ──
-  wpStartNowPlayingListener(code);
+  // Hemen bir kez çalıştır, sonra her 5 saniyede tekrar
+  _pollAll();
+  WP._pollInterval = setInterval(_pollAll, 5000);
 
-  // ── playerState dinleyicisi (seek/close sync) ──
+  // playerState dinleyicisi
   if(typeof window.wpStartPlayerStateListener === 'function') {
     window.wpStartPlayerStateListener(code);
   }
@@ -56281,6 +56994,10 @@ function wpStartListeners(code) {
 
 // ── TEMİZLEME (odadan çıkış) ──
 function wpLeaveCleanup() {
+  // Polling interval'ı durdur
+  if(WP._pollInterval) { clearInterval(WP._pollInterval); WP._pollInterval = null; }
+  WP.listeners.forEach(function(es) { try { es.close(); } catch(e) {} });
+  WP.listeners = [];
   if(!WP.myId || !WP.roomCode) return;
   // Beacon API ile üyeyi sil (sayfa kapanırken bile çalışır)
   const url = FB_URL + '/rooms/' + WP.roomCode + '/members/' + WP.myId + '.json';
@@ -56348,6 +57065,12 @@ function wpClearAll() {
   document.getElementById('wpChatMessages').innerHTML = '';
   document.getElementById('wpCommentsList').innerHTML = '';
   document.getElementById('wpMembersList').innerHTML = '';
+  // State'i de sıfırla
+  WP.members = [];
+  WP.chatMessages = [];
+  WP.comments = [];
+  WP.lastChatKeys = new Set();
+  WP.lastCommentKeys = new Set();
 }
 
 // ── PANEL GİZLE (odada kal, sadece paneli kapat) ──
@@ -56417,7 +57140,6 @@ window.wpSwitchTab = function(tab) {
     const btn = document.getElementById('wpTab' + t.charAt(0).toUpperCase() + t.slice(1));
     if(!content || !btn) return;
     const isActive = t === tab;
-    // display yerine class kullan — CSS override sorununu önler
     if(isActive) {
       content.classList.add('wp-tab-active');
       content.style.display = 'flex';
@@ -56425,13 +57147,36 @@ window.wpSwitchTab = function(tab) {
       content.classList.remove('wp-tab-active');
       content.style.display = 'none';
     }
-    btn.style.borderBottomColor = isActive ? '#FFD700' : 'transparent';
-    btn.style.color = isActive ? '#FFD700' : 'rgba(255,255,255,0.4)';
+    btn.style.borderBottomColor = isActive ? 'var(--accent-primary,#FFD700)' : 'transparent';
+    btn.style.color = isActive ? 'var(--accent-primary,#FFD700)' : 'rgba(255,255,255,0.4)';
   });
-  // Aktif tab chat ise scroll en alta
+  // Tab açılınca içeriği tazele
   if(tab === 'chat') {
     const msgs = document.getElementById('wpChatMessages');
     if(msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  } else if(tab === 'members') {
+    // Üyeler tab açılınca listeyi yeniden çiz
+    wpRenderMembers();
+    // Firebase'den taze liste çek
+    if(WP.inRoom && WP.roomCode) {
+      fbGet('/rooms/' + WP.roomCode + '/members').then(function(members) {
+        if(!members || typeof members !== 'object') return;
+        var now = Date.now();
+        WP.members = [];
+        Object.entries(members).forEach(function([id, m]) {
+          if(!m || !m.nick) return;
+          if(m.online === false) return;
+          var isMe = id === WP.myId;
+          WP.members.push({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
+        });
+        // Kendimiz ekli değilse ekle
+        if(!WP.members.find(function(m){ return m.isMe; })) {
+          WP.members.unshift({ nick: WP.myNick, color: WP.myColor, isHost: WP.isHost, isMe: true, lastSeen: Date.now() });
+        }
+        wpRenderMembers();
+        wpUpdateMeta();
+      }).catch(function(){});
+    }
   }
 };
 
@@ -56765,22 +57510,18 @@ function wpStartNowPlayingListener(code) {
     if(np.startedBy === WP.myNick) { lastTs = np.ts; return; }
 
     // Odaya katılınca gelen eski nowPlaying'i işleme:
-    // ts joinTs'den önce ise → eski kayıt, sadece lastTs'i set et
+    // ts joinTs'den önce ise → eski kayıt AMA host şu an yayındaysa (playerState açık) oynat
     if(np.ts < joinTs) {
       lastTs = np.ts;
-      return;
-    }
-
-    // joinTs ile eş zamanlı veya sonrası — host player durumundan bağımsız işle
-    // (hostPlayerOpen async fbGet'e bağlıydı, race condition yaratıyordu)
-    // Yalnızca joinTs sonrası 500ms içindeki ilk snapshot'ı atla
-    if(np.ts <= joinTs + 500 && isFromPoll) {
-      lastTs = np.ts;
-      return;
+      // Eğer host şu an yayındaysa odaya yeni katılan misafir de otomatik başlatılsın
+      if(WP._hostPlayerOpen && !isFromPoll) {
+        // SSE ilk snapshot (isFromPoll=false) ve host açıksa oynat — devam et
+      } else {
+        return;
+      }
     }
 
     lastTs = np.ts;
-
     wpShowToast('📺 ' + np.startedBy + ' açtı: ' + np.name);
     wpAddSystemMsg('▶ ' + np.startedBy + ' açtı: ' + np.name);
 
@@ -56828,9 +57569,9 @@ function wpStartNowPlayingListener(code) {
       const d = JSON.parse(e.data);
       if(d.path === '/') {
         // İlk snapshot — SSE bağlanınca Firebase mevcut veriyi gönderir
-        // Bu joinTs'den önce yazılmış olabilir, wpHandleNowPlaying zaten ts kontrolü yapar
-        // Sadece hostPlayerOpen belirlenene kadar bekle (async fbGet tamamlanır)
-        setTimeout(() => wpHandleNowPlaying(d.data, true), 200);
+        // Eğer ts joinTs'den önce ise eski kayıt — ama host şu an yayındaysa oynat
+        // Kısa gecikme ile işle (fbGet'in playerState kontrolü tamamlansın)
+        setTimeout(() => wpHandleNowPlaying(d.data, false), 300);
         return;
       }
       // Gerçek yeni event (path !== '/') — anında işle
@@ -57078,7 +57819,7 @@ function handleWpLobbyRemote(e) {
     const nextEl = focusables[next];
     nextEl.classList.add('remote-focused');
     nextEl.focus();
-    nextEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    nextEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     if (typeof playKeySound === 'function') playKeySound('navigate');
 }
 
@@ -57761,6 +58502,217 @@ html, body {
 }
 </style>
 
+<style>
+/* ══════════════════════════════════════════════════════
+   MODERN PLAYER BUTON SİSTEMİ — Tema rengi uyumlu
+   D-pad / remote-focused mantığına dokunulmaz
+   ══════════════════════════════════════════════════════ */
+
+/* ── Kontrol kutusu: cam/blur efekti ── */
+.player-controls-box {
+    background: rgba(6,5,2,0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.14) !important;
+    border-top: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.28) !important;
+    box-shadow:
+        0 -1px 0 rgba(var(--accent-primary-rgb,255,215,0), 0.10) inset,
+        0 24px 48px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(0,0,0,0.4) !important;
+    padding: 10px 10px 8px !important;
+    margin: 0 6px 6px !important;
+}
+
+/* ── Buton satırı ── */
+.player-actions-row {
+    gap: 6px !important;
+    padding: 2px 2px !important;
+}
+.player-action-group {
+    gap: 5px !important;
+}
+
+/* ── Ayırıcı ── */
+.action-sep {
+    width: 1px !important;
+    height: 28px !important;
+    background: linear-gradient(to bottom,
+        transparent,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.22) 30%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.22) 70%,
+        transparent) !important;
+    margin: 0 3px !important;
+}
+
+/* ── Ana buton stili ── */
+.player-action-btn {
+    position: relative !important;
+    min-width: 48px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    padding: 0 10px !important;
+    gap: 3px !important;
+    /* Cam efekti arka plan */
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.09) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.04) 100%) !important;
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
+    border-top: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.32) !important;
+    border-bottom: 1px solid rgba(0,0,0,0.3) !important;
+    color: var(--accent-primary, #FFD700) !important;
+    /* İnce üst ışık çizgisi */
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        0 2px 8px rgba(0,0,0,0.25) !important;
+    transition: none !important;
+    overflow: hidden !important;
+}
+
+/* Buton iç parlaklık katmanı */
+.player-action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg,
+        rgba(255,255,255,0.06) 0%,
+        transparent 50%);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* İkon boyutu */
+.player-action-btn .material-symbols-outlined {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* Label */
+.player-action-btn .btn-label {
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    text-transform: uppercase !important;
+    opacity: 0.65 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Play/Pause — vurgulu ── */
+.player-action-btn.play-pause-btn {
+    min-width: 56px !important;
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.45) !important;
+    border-top-color: rgba(var(--accent-primary-rgb,255,215,0), 0.65) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
+        0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.18),
+        0 4px 12px rgba(0,0,0,0.35) !important;
+}
+.player-action-btn.play-pause-btn .material-symbols-outlined {
+    font-size: 22px !important;
+}
+
+/* ── Aktif (açık) buton ── */
+.player-action-btn.btn-active {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.30) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.14) 100%) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
+    border-top-color: rgba(var(--accent-primary-rgb,255,215,0), 0.75) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 2px 8px rgba(0,0,0,0.3) !important;
+    color: var(--accent-primary, #FFD700) !important;
+}
+
+/* ── Favori aktif ── */
+#btnPlayerFav.fav-active {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.28) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 100%) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    border-top-color: var(--accent-primary, #FFD700) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+/* ── D-PAD / Remote focused — outline YOK, glow blink animasyonu yeterli ── */
+.player-action-btn.remote-focused,
+.player-action-btn.focused {
+    outline: none !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.20) !important;
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.5) !important;
+    color: var(--accent-primary) !important;
+    transform: none !important;
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+    z-index: 2;
+}
+
+/* btn-active + remote-focused birlikte */
+.player-action-btn.btn-active.remote-focused {
+    outline: none !important;
+}
+
+/* ── Canlı (LIVE) butonu ── */
+.live-btn {
+    height: 44px !important;
+    border-radius: 12px !important;
+    padding: 0 14px !important;
+    background: linear-gradient(160deg, rgba(220,30,30,0.88), rgba(140,0,0,0.65)) !important;
+    border: 1px solid rgba(255,80,80,0.40) !important;
+    border-top: 1px solid rgba(255,110,110,0.55) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
+        0 0 14px rgba(220,30,30,0.25),
+        0 3px 10px rgba(0,0,0,0.35) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.8px !important;
+    font-weight: 800 !important;
+}
+.live-btn.remote-focused {
+    outline: 2px solid #FF4444 !important;
+    outline-offset: 2px !important;
+    box-shadow:
+        0 0 0 4px rgba(255,60,60,0.18),
+        0 0 18px rgba(255,60,60,0.30) !important;
+}
+
+/* ── CH+/CH- butonları hafif farklı ── */
+.player-action-btn.ch-up-btn,
+.player-action-btn.ch-down-btn {
+    background: linear-gradient(160deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.07) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.03) 100%) !important;
+}
+
+/* ── Küçük ekran uyumu ── */
+@media (max-width: 380px) {
+    .player-action-btn {
+        min-width: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        padding: 0 7px !important;
+    }
+    .player-action-btn .material-symbols-outlined { font-size: 18px !important; }
+    .player-action-btn.play-pause-btn { min-width: 48px !important; }
+    .live-btn { height: 40px !important; border-radius: 10px !important; }
+}
+@media (max-width: 360px) {
+    .player-action-btn .btn-label { display: none !important; }
+    .player-action-btn { min-width: 36px !important; height: 36px !important; padding: 0 5px !important; }
+    .live-btn { height: 36px !important; }
+}
+</style>
+
 <!-- Tam Ekran butonu (mobilde görünür) -->
 <button id="mobileFullscreenBtn" title="Tam Ekran" onclick="enterAppFullscreen()">
     <span class="material-symbols-outlined" style="font-size:24px;line-height:1;">fullscreen</span>
@@ -57953,7 +58905,7 @@ html, body {
     ];
     targets.forEach(function(el) {
       if (!el) return;
-      try { el.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e2) {}
+      try { el.scrollTo({ top: 0, behavior: 'instant' }); } catch(e2) {}
       try { el.scrollTop = 0; } catch(e3) {}
     });
   }
@@ -58236,14 +59188,14 @@ function _dpHighlight() {
     var all = _getFocusables();
     all.forEach(function(el, i) {
         if (i === _dpIdx) {
-            el.style.outline = '2px solid #FFD700';
-            el.style.outlineOffset = '2px';
+            el.style.outline = '';
+            el.style.boxShadow = '0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.85)';
             el.style.background = el.classList.contains('unp-row')
-                ? 'rgba(255,215,0,0.13)' : 'rgba(255,215,0,0.2)';
-            try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e) {}
+                ? 'rgba(var(--accent-primary-rgb,255,215,0), 0.13)' : 'rgba(var(--accent-primary-rgb,255,215,0), 0.20)';
+            try { el.scrollIntoView({ block: 'nearest', behavior: 'instant' }); } catch(e) {}
         } else {
             el.style.outline = '';
-            el.style.outlineOffset = '';
+            el.style.boxShadow = '';
             if (el.classList.contains('unp-row')) {
                 var id = el.getAttribute('data-id');
                 var n  = _notifList.find(function(x) { return String(x.id) === id; });
@@ -58904,12 +59856,12 @@ function _hookVodReview() {
                         var modalOpen = modal && (modal.style.display !== 'none' && modal.style.display !== '');
                         if (modalOpen) {
                             var sec = document.getElementById('vodReviewsSection');
-                            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                         } else if (typeof openVodModal === 'function' && contentName) {
                             openVodModal(contentName);
                             setTimeout(function() {
                                 var sec = document.getElementById('vodReviewsSection');
-                                if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                             }, 600);
                         }
                     }
@@ -58997,12 +59949,12 @@ function _handleFbNotif(n) {
                 var modalOpen = modal && (modal.style.display !== 'none' && modal.style.display !== '');
                 if (modalOpen) {
                     var sec = document.getElementById('vodReviewsSection');
-                    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                 } else if (contentName && typeof openVodModal === 'function') {
                     openVodModal(contentName);
                     setTimeout(function() {
                         var sec = document.getElementById('vodReviewsSection');
-                        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (sec) sec.scrollIntoView({ behavior: 'instant', block: 'start' });
                     }, 600);
                 }
             }
@@ -59813,11 +60765,21 @@ window.openUserProfileView = async function(userName) {
   var reviews = await fetchUserAllReviews(userName);
   if (loadEl) loadEl.style.display = 'none';
 
-  // Avatarı ilk bulunan yorumdan al (rev.avatar)
+  // Avatar: once kendi localStorage'dan (kendi profilimizse), sonra Firebase yorumlarindan
   var foundAvatar = '';
-  for (var ai = 0; ai < reviews.length; ai++) {
-    var au = reviews[ai] && reviews[ai].avatar;
-    if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+  var myUserName = (typeof vrGetUserName === 'function') ? vrGetUserName() : '';
+  if (userName === myUserName) {
+    var _lsAv = await Promise.race([
+      _profAvatarIDB.get(),
+      new Promise(function(r){ setTimeout(function(){ r(''); }, 1500); })
+    ]).catch(function(){ return ''; });
+    if (_lsAv && (_lsAv.startsWith('http') || _lsAv.startsWith('data:'))) foundAvatar = _lsAv;
+  }
+  if (!foundAvatar) {
+    for (var ai = 0; ai < reviews.length; ai++) {
+      var au = reviews[ai] && reviews[ai].avatar;
+      if (au && (au.startsWith('http') || au.startsWith('data:'))) { foundAvatar = au; break; }
+    }
   }
   if (avatarEl && foundAvatar) {
     avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;border:2px solid ' + color + '55;';
@@ -59879,7 +60841,7 @@ function upvSetDpadFocus(el) {
   _upvFocusedEl = el;
   if (el) {
     el.classList.add('upv-dpad-focused','remote-focused');
-    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+    el.scrollIntoView({block:'nearest',behavior:'instant'});
   }
 }
 function _upvDpadReady() {
@@ -59922,5 +60884,48 @@ document.addEventListener('keydown', function(e) {
 })(); // UserProfileView IIFE
 
 </script>
+
+<!-- ═══ PLAYER BUTON ODAK — NÜKLEer OVERRIDE (en son yüklenir, tüm çakışmaları iptal eder) ═══ -->
+<style>
+/* Player butonlarında odak: outline YOK, yalnızca tema rengi yanıp sönen glow */
+.player-action-btn.remote-focused,
+.player-action-btn.focused,
+.player-action-btn:focus,
+body .player-action-btn.remote-focused,
+body .player-action-btn.focused {
+    outline: none !important;
+    filter: none !important;
+    transform: none !important;
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+    will-change: box-shadow !important;
+    background: rgba(var(--accent-primary-rgb, 255,215,0), 0.18) !important;
+    color: var(--accent-primary) !important;
+    border-color: rgba(var(--accent-primary-rgb, 255,215,0), 0.5) !important;
+    transition: none !important;
+    z-index: 2 !important;
+    position: relative !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Odaksız durumda hiçbir pseudo-element efekti kalmasın */
+.player-action-btn:not(.remote-focused):not(.focused)::before,
+.player-action-btn:not(.remote-focused):not(.focused)::after {
+    opacity: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+/* Tüm player butonlarında tap highlight kapat */
+.player-action-btn {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Player konteyner - gereksiz composite layer oluşturma */
+.player-controls, .player-controls-box, .player-action-group {
+    transform: none !important;
+    will-change: auto !important;
+    filter: none !important;
+}
+</style>
 </body>
 </html>

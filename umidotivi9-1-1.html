@@ -16734,6 +16734,15 @@ const HIGH_RES_DIRECT_DOMAINS = [
 
 // App Creator 24 WebView'da Web Worker desteği yok → enableWorker: false
 const _isApp24WebView = (navigator.userAgent || '').toLowerCase().includes('okhttp');
+// App24 okhttp UA → sunucu/CDN reddedebilir → navigator.userAgent'ı spoof et
+if (_isApp24WebView) {
+    try {
+        Object.defineProperty(navigator, 'userAgent', {
+            get: () => 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+            configurable: true
+        });
+    } catch(e) {}
+}
 const HLS_CONFIG = {
     enableWorker: !_isApp24WebView,   // App24'te false: Web Worker crash önle
     debug: false,
@@ -16794,6 +16803,10 @@ const HLS_CONFIG = {
         xhr.withCredentials = false;
         // App24 WebView'da uzun timeout = takılı bağlantı temizlenmiyor → 12sn yeterli
         xhr.timeout = _isApp24WebView ? 12000 : 20000;
+        // okhttp UA → sunucu/CDN reddedebilir → Mozilla UA ile spoof et
+        if (_isApp24WebView) {
+            try { xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'); } catch(e) {}
+        }
     }
 };
 
@@ -38390,9 +38403,9 @@ function resumeChannel(startTime) {
                 showToast('Vavoo yeniden bağlanıyor...');
                 startHls(effectiveUrl);
             } else if (isVavooWorker) {
-                // Vavoo Worker (direkt) hata verdi → STREAM_PROXY üzerinden dene
-                showToast('Yedek bağlantı deneniyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+                // Vavoo Worker hata verdi → yeniden dene (UA spoof aktif)
+                showToast('Yeniden bağlanıyor...');
+                startHls(rawUrl);
             } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
@@ -38526,7 +38539,7 @@ function resumeChannel(startTime) {
                 _koolLastTime = video.currentTime;
             }, 8000); // 5sn→8sn: çok sık stall tespiti yeniden bağlanmaya neden oluyor
         } else if (isVavooWorker) {
-            // Vavoo Worker → her zaman direkt, hiç proxy'e gönderme
+            // Vavoo Worker → her zaman direkt HLS.js (UA spoof ile okhttp sorunu çözüldü)
             startHls(rawUrl);
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt

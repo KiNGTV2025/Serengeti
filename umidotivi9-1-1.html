@@ -2036,7 +2036,6 @@ body {
             text-align: center;
             box-shadow: 0 0 24px rgba(255,215,0,0.3);
         }
-        #skipCountdownOverlay.active { display: flex !important; }
         #skipCountdownOverlay .skip-icon {
             font-size: 32px;
             color: var(--accent-primary);
@@ -5788,62 +5787,6 @@ body {
             z-index: 10; 
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
-
-        /* ── Seekbar Thumbnail Preview ── */
-        #seekThumbTooltip {
-            position: absolute;
-            bottom: 28px;
-            transform: translateX(-50%);
-            pointer-events: none;
-            z-index: 99;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
-        }
-        #seekThumbCanvas {
-            width: 160px;
-            height: 90px;
-            border-radius: 6px;
-            border: 2px solid var(--accent-primary, #FFD700);
-            background: #111;
-            display: block;
-        }
-        #seekThumbTime {
-            margin-top: 4px;
-            background: rgba(0,0,0,0.75);
-            color: var(--accent-primary, #FFD700);
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-        /* İdle ekran karartma overlay */
-        #utv-idle-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 99999;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 16px;
-        }
-        #utv-idle-overlay.active { display: flex; }
-        #utv-idle-clock {
-            color: rgba(255,255,255,0.15);
-            font-size: clamp(40px, 8vw, 80px);
-            font-weight: 200;
-            letter-spacing: 0.1em;
-            font-variant-numeric: tabular-nums;
-        }
-        #utv-idle-hint {
-            color: rgba(255,255,255,0.25);
-            font-size: 14px;
-        }
         
         .player-bottom-row { 
             display: flex; 
@@ -7488,11 +7431,6 @@ select.sort-dpad-focused {
     justify-content: center; 
     align-items: center; 
     padding: 16px;
-}
-/* ── class tabanlı modal göster/gizle — style.display yerine ── */
-/* TVBox'ta style recalc sayısını azaltır; classList toggle daha hızlı */
-.modal-bg.active {
-    display: flex !important;
 }
 
  
@@ -11798,12 +11736,6 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
             <div class="login-progress-dot" data-step="3"></div>
         </div>
 
-        <!-- Idle Ekran Koruyucu -->
-        <div id="utv-idle-overlay" onclick="window._utvIdleWake && window._utvIdleWake()">
-            <div id="utv-idle-clock">00:00</div>
-            <div id="utv-idle-hint">Devam etmek için dokunun</div>
-        </div>
-
         <!-- Ban ekranı -->
         <div id="banScreen">
             <div class="ban-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
@@ -14466,11 +14398,6 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 <div class="progress-bar-container" id="progressBarContainer" onclick="seekByProgressClick(event)" ontouchend="if(!window._progressDragged){seekByProgressClick(event);}" tabindex="0" role="slider" aria-label="Video ilerleme çubuğu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                     <div class="progress-bar" id="progressBar"></div>
                     <div class="progress-handle" id="progressHandle"></div>
-                    <!-- Seekbar thumbnail preview tooltip -->
-                    <div id="seekThumbTooltip">
-                        <canvas id="seekThumbCanvas" width="320" height="180"></canvas>
-                        <div id="seekThumbTime">0:00</div>
-                    </div>
                 </div>
                 <div class="time-display" id="totalDuration" style="margin-left:-8px;">/ 00:00</div>
             </div>
@@ -17375,12 +17302,10 @@ let state = {
         passwordModalIndex: 0,
         vodModalButtons: [],
         sleepModeIndex: 0,
-        /* chButtons ve playerBoxButtons sabit — state dışında PLAYER_BOX_BUTTONS const'u ile yönetilir */
-        /* Burada tutmak her state kopyasında gereksiz array oluşturuyor */
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: null, /* PLAYER_BOX_BUTTONS const'undan beslenir — initRemoteState'de set edilir */
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -17431,11 +17356,16 @@ let state = {
     lazyLoadObserver: null,
     isLowPerformanceMode: false,
     systemBrightness: 100,
+    virtualScroll: null,
     isVirtualScrollEnabled: true,
     currentGridScale: parseFloat(localStorage.getItem('gridScale') || '1'),
     currentGridCols: parseInt(localStorage.getItem('gridCols') || '4'),
     channelCache: {},
     m3uCache: {},
+    performanceMode: {
+        debounceTimers: {},
+        throttleTimers: {}
+    },
     
     
 
@@ -17450,10 +17380,6 @@ let state = {
     
     
 
-    /* highPerf: Kanal listesi render cache + debounce/throttle state'i
-     * cache (Map) + isFiltering/lastRenderTime sık güncelleniyor.
-     * TODO: Bir sonraki refactor turunda window._UTV.perf'e taşınacak.
-     * scrollPosition ve throttleTimer → window._UTV._savedScrollTop ile zaten senkron. */
     highPerf: {
         cache: new Map(),
         currentPage: 1,
@@ -17496,8 +17422,7 @@ Object.defineProperty(window, 'state', {
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
         const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
-        /* state.remote.playerBoxButtons → PLAYER_BOX_BUTTONS const'una bağla (state içinde kopyası yok) */
-        state.remote.playerBoxButtons = PLAYER_BOX_BUTTONS;
+        
         
 
         let TOUCH_SENSITIVITY = 50;
@@ -18266,23 +18191,6 @@ async function loadContinueWatching() {
 
         
 
-        // ── showModal / hideModal — class tabanlı, style.display'den daha hızlı ──
-        // TVBox'ta her style.display değişikliği layout recalc tetikler.
-        // classList.add/remove('active') bunu önler: CSS zaten display:flex tanımlı.
-        window.showModal = function(idOrEl) {
-            var el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
-            if (!el) return;
-            el.classList.add('active');
-            // Geriye dönük uyumluluk: style.display'i de set et (bazı kod parçaları bunu okur)
-            if (el.classList.contains('modal-bg')) el.style.display = 'flex';
-        };
-        window.hideModal = function(idOrEl) {
-            var el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
-            if (!el) return;
-            el.classList.remove('active');
-            if (el.classList.contains('modal-bg')) el.style.display = 'none';
-        };
-
         function closeAllModals() {
             const modals = [
                 'vodModal', 'sleepModeModal', 'm3uHintModal', 'passwordModal',
@@ -18292,8 +18200,7 @@ async function loadContinueWatching() {
             
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
-                // classList + style.display ikisi birden — geçiş döneminde güvenli
-                if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+                if (modal) modal.style.display = 'none';
             });
         }
         
@@ -19368,7 +19275,7 @@ function openEpgModal() {
     }
 
     // showChannelEpg yoksa eski davranış (fallback)
-    window.showModal(modal);
+    modal.style.display = 'flex';
 
     if (state.remote.active) {
         state.remote.zone = 'epgModal';
@@ -19395,7 +19302,7 @@ function closeEpgModal() {
     const modal = document.getElementById('epgModal');
     if (!modal) return;
     
-    window.hideModal(modal);
+    modal.style.display = 'none';
     
     // Focus sınıflarını temizle (style.cssText dokunma — flicker yapar)
     document.querySelectorAll('.epg-remote-focused').forEach(el => el.classList.remove('epg-remote-focused'));
@@ -23747,7 +23654,7 @@ document.addEventListener('DOMContentLoaded', resetSleepModeOnAppStart);
 ================================ */
 function openSleepModeModal() {
     const modal = document.getElementById('sleepModeModal');
-    window.showModal(modal);
+    modal.style.display = 'flex';
 
     const sleepRange = document.getElementById('sleepTimeSlider');
     const sleepValue = document.getElementById('sleepTimeValue');
@@ -23815,7 +23722,7 @@ if (!sleepRange.dataset.touchInit) {
     playKeySound('click');
 }
 function closeSleepModeModal() {
-    var _smm=document.getElementById('sleepModeModal'); if(_smm) window.hideModal(_smm);
+    var _smm=document.getElementById('sleepModeModal'); if(_smm) _smm.style.display='none';
 
     if (state.remote.active) {
         state.remote.zone = 'header';
@@ -26171,8 +26078,9 @@ function saveControlSettings() {
 function closeControlSettingsModal() {
     const modal = document.getElementById('controlSettingsModal');
 
-    // 1️⃣ Modalı kapat — class tabanlı (style.display yerine)
-    window.hideModal(modal);
+    // 1️⃣ Modalı gerçekten kapat
+    modal.style.display = 'none';
+    modal.classList.remove('active');
 
     // 2️⃣ Remote zone'u DEĞİŞTİR (ÇOK ÖNEMLİ)
     if (state.remote.active) {
@@ -26284,7 +26192,7 @@ function openControlSettingsModal() {
     updateSettingsUI();
     
     // Modal'ı göster
-    var _csm=document.getElementById('controlSettingsModal'); if(_csm) window.showModal(_csm);
+    var _csm=document.getElementById('controlSettingsModal'); if(_csm) _csm.style.display='flex';
     
     // Kumanda odak noktasını ayarla
     if(state.remote.active) { 
@@ -27008,7 +26916,7 @@ function openSidebar() {
 
     // ODAK-FIX: Sidebar açılırken skip overlay gizle + tüm odak kalıntılarını temizle
     var _skipOvSb = document.getElementById('skipCountdownOverlay');
-    if (_skipOvSb) _skipOvSb.classList.remove('active'); _skipOvSb.style.display = 'none';
+    if (_skipOvSb) _skipOvSb.style.display = 'none';
     document.querySelectorAll('.remote-focused, .focused').forEach(function(el) {
         el.classList.remove('remote-focused', 'focused');
     });
@@ -27875,7 +27783,7 @@ function playDirectChannel(channel) {
                 }
             }
             
-            var _amm=document.getElementById('addM3UModal'); if(_amm) window.showModal(_amm);
+            var _amm=document.getElementById('addM3UModal'); if(_amm) _amm.style.display='flex';
             state.editingM3UIndex = isEdit ? index : null;
 
             if (isEdit && index !== null) {
@@ -27912,7 +27820,7 @@ function playDirectChannel(channel) {
         }
 
         function closeAddM3UModal() {
-            var _amm=document.getElementById('addM3UModal'); if(_amm) window.hideModal(_amm);
+            var _amm=document.getElementById('addM3UModal'); if(_amm) _amm.style.display='none';
             state.editingM3UIndex = null;
             if(state.remote.active) { 
                 state.remote.zone = 'header'; 
@@ -28520,7 +28428,7 @@ function openPasswordModal(m3uIndex, m3uName) {
 
         const modal = document.getElementById('passwordModal');
         if (modal) {
-            window.showModal(modal);
+            modal.style.display = 'flex';
             modal.style.zIndex = '99999';
             /* Açılış animasyonunu sıfırla */
             const card = modal.querySelector('.modal-content');
@@ -34458,7 +34366,7 @@ function addContinueCardStyles() {
         }
 
         function openSettingsModal() { 
-            var _stm=document.getElementById('settingsModal'); if(_stm) window.showModal(_stm);
+            var _stm=document.getElementById('settingsModal'); if(_stm) _stm.style.display='flex';
             _syncFsBtnToggleLabel();
             if(state.remote.active) { 
                 state.remote.zone = 'settingsModal'; 
@@ -34469,7 +34377,7 @@ function addContinueCardStyles() {
         }
         
         function closeSettingsModal() { 
-            var _stm=document.getElementById('settingsModal'); if(_stm) window.hideModal(_stm);
+            var _stm=document.getElementById('settingsModal'); if(_stm) _stm.style.display='none';
             if(state.remote.active) { 
                 state.remote.zone = 'header'; 
                 state.remote.headerIndex = HEADER_BUTTONS.indexOf('btnSettings'); 
@@ -37373,7 +37281,7 @@ function resumeChannel(startTime) {
     window._skipShowTimer = null;
     window._skipGraceTimer = null;
     state.player.loadTimeout = null;
-    if (skipOv) { skipOv.classList.remove('active'); skipOv.style.display = 'none'; };
+    if (skipOv) skipOv.style.display = 'none';
 
     // Her kanalın kendi "nesil" numarası — eski timer'lar yanlış kanalı atlamasın
     const _skipGeneration = (window._skipGeneration || 0) + 1;
@@ -37397,7 +37305,7 @@ function resumeChannel(startTime) {
             window._skipCountdownInterval = null;
             clearTimeout(window._skipShowTimer);
             window._skipShowTimer = null;
-            if (skipOv) { skipOv.classList.remove('active'); skipOv.style.display = 'none'; };
+            if (skipOv) skipOv.style.display = 'none';
             if (!state.player.streamStarted) {
                 if (state.player.hls) state.player.hls.stopLoad();
                 video.pause();
@@ -37415,12 +37323,12 @@ function resumeChannel(startTime) {
             const _elapsed = (Date.now() - window._lastChannelOpenTime - _graceMs);
             let remaining = Math.max(5, Math.round(SKIP_DELAY - _elapsed / 1000));
             if (skipNum) skipNum.textContent = remaining;
-            if (skipOv) { skipOv.classList.add('active'); skipOv.style.display = 'flex'; };
+            if (skipOv) skipOv.style.display = 'flex';
             clearInterval(window._skipCountdownInterval);
             window._skipCountdownInterval = setInterval(() => {
                 if (window._skipGeneration !== _skipGeneration) {
                     clearInterval(window._skipCountdownInterval);
-                    if (skipOv) { skipOv.classList.remove('active'); skipOv.style.display = 'none'; };
+                    if (skipOv) skipOv.style.display = 'none';
                     return;
                 }
                 remaining--;
@@ -37480,7 +37388,7 @@ function resumeChannel(startTime) {
                 if (remaining <= 0) {
                     clearInterval(window._skipCountdownInterval);
                     window._skipCountdownInterval = null;
-                    if (skipOv) { skipOv.classList.remove('active'); skipOv.style.display = 'none'; };
+                    if (skipOv) skipOv.style.display = 'none';
                 }
             }, 1000);
         }, _skipShowDelay);
@@ -37555,8 +37463,6 @@ function resumeChannel(startTime) {
     // ── PLAYER AÇILDI: Arka plan UI dondur — TVBox kasmasın ──
     window._playerUIFrozen = true;
     document.body.classList.add('utv-player-open');
-    /* Seekbar thumbnail önizlemesini sıfırla — yeni kanal */
-    if (typeof window._utvSeekThumbReset === 'function') window._utvSeekThumbReset();
     // 1) CSS animasyonlarını arka plan elementlerde durdur
     try {
         var _freezeStyle = document.getElementById('_playerFreezeStyle');
@@ -37667,7 +37573,7 @@ function resumeChannel(startTime) {
         state.player.loadTimeout = null;
         // Geri sayım overlay'i gizle
         const _skipOvEl = document.getElementById('skipCountdownOverlay');
-        if (_skipOvEl) _skipOvEl.classList.remove('active'); _skipOvEl.style.display = 'none';
+        if (_skipOvEl) _skipOvEl.style.display = 'none';
         clearInterval(window._skipCountdownInterval);
         clearTimeout(window._skipShowTimer);
         window._skipCountdownInterval = null;
@@ -38544,7 +38450,7 @@ function resumeChannel(startTime) {
                     window._skipLoadTimeout = null;
                     state.player.loadTimeout = null;
                     const _skipOvFrag = document.getElementById('skipCountdownOverlay');
-                    if (_skipOvFrag) _skipOvFrag.classList.remove('active'); _skipOvFrag.style.display = 'none';
+                    if (_skipOvFrag) _skipOvFrag.style.display = 'none';
                     clearInterval(window._skipCountdownInterval);
                     clearTimeout(window._skipShowTimer);
                     window._skipCountdownInterval = null;
@@ -39639,7 +39545,7 @@ function closePlayer() {
     window._skipShowTimer = null;
     window._skipCountdownInterval = null;
     const _skipOvClose = document.getElementById('skipCountdownOverlay');
-    if (_skipOvClose) _skipOvClose.classList.remove('active'); _skipOvClose.style.display = 'none';
+    if (_skipOvClose) _skipOvClose.style.display = 'none';
 
     // Timeout'u temizle ki player kapalıyken kanal değişmesin
     if (state.player.loadTimeout) {
@@ -44181,7 +44087,7 @@ function handleFavoriteChannelSelect(key) {
     if (_skipZone && _skipZone !== 'player' && _skipZone !== 'playerTopBar' && _skipZone !== 'progressBar') {
         var _skipOvUrf = document.getElementById('skipCountdownOverlay');
         if (_skipOvUrf && _skipOvUrf.style.display !== 'none') {
-            _skipOvUrf.classList.remove('active'); _skipOvUrf.style.display = 'none';
+            _skipOvUrf.style.display = 'none';
         }
     }
     document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
@@ -47058,7 +46964,7 @@ window.cancelSkipCountdown = function() {
     window._skipCountdownInterval = null;
     window._skipShowTimer = null;
     const ov = document.getElementById('skipCountdownOverlay');
-    if (ov) { ov.classList.remove('active'); ov.style.display = 'none'; }
+    if (ov) ov.style.display = 'none';
 };
 
 window._qualityOpen  = false;
@@ -50721,281 +50627,6 @@ window.getProfileAvatarUrlAsync = async function() {
         logo.style.opacity = opac;
         // RAF kaldırıldı — interval ile çağrılıyor
     }
-
-    // ═══════════════════════════════════════════════════════
-    // SEEKBAR THUMBNAIL PREVIEW
-    // VOD seekbar'ında hover/dpad ile video karesi gösterir
-    // Canlı yayında otomatik devre dışı
-    // ═══════════════════════════════════════════════════════
-    (function initSeekThumbnail() {
-        var _pbCont   = null;
-        var _tooltip  = null;
-        var _canvas   = null;
-        var _timeEl   = null;
-        var _video    = null;
-        var _rafId    = null;
-        var _lastRatio = -1;
-        var _capturing = false;
-        var _offCanvas = null; // offscreen canvas - TVBox'ta DOM canvas'a doğrudan çizme yavaş
-
-        function _fmt(sec) {
-            sec = Math.max(0, Math.floor(sec));
-            var h = Math.floor(sec / 3600);
-            var m = Math.floor((sec % 3600) / 60);
-            var s = sec % 60;
-            if (h > 0) return h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-            return m + ':' + (s < 10 ? '0' : '') + s;
-        }
-
-        function _captureFrame(ratio) {
-            if (_capturing) return;
-            _video = document.getElementById('videoPlayer');
-            if (!_video || !_video.duration || !isFinite(_video.duration) || _video.duration <= 0) return;
-            /* Canlı yayında thumbnail gösterme */
-            if (window.state && window.state.player && window.state.player.isLiveStream) return;
-
-            _capturing = true;
-            var targetTime = _video.duration * ratio;
-
-            /* Offscreen canvas — DOM canvas'a son anda kopyala (TVBox layout thrash önleme) */
-            if (!_offCanvas) {
-                _offCanvas = document.createElement('canvas');
-                _offCanvas.width  = 320;
-                _offCanvas.height = 180;
-            }
-            var ctx = _offCanvas.getContext('2d');
-            var _savedTime = _video.currentTime;
-
-            /* seeked event ile frame'i yakala — currentTime'ı geçici değiştir */
-            var _onSeeked = function() {
-                try {
-                    ctx.drawImage(_video, 0, 0, 320, 180);
-                    if (_canvas) {
-                        var dctx = _canvas.getContext('2d');
-                        dctx.drawImage(_offCanvas, 0, 0);
-                    }
-                    if (_timeEl) _timeEl.textContent = _fmt(targetTime);
-                    /* Videoyu geri al */
-                    _video.removeEventListener('seeked', _onSeeked);
-                    _video.currentTime = _savedTime;
-                } catch(e) {}
-                _capturing = false;
-            };
-            _video.addEventListener('seeked', _onSeeked);
-            /* Sadece thumbnail için seek — sessizce */
-            try { _video.currentTime = targetTime; } catch(e) {
-                _video.removeEventListener('seeked', _onSeeked);
-                _capturing = false;
-            }
-        }
-
-        function _showAt(ratio, clientX) {
-            if (!_tooltip || !_pbCont) return;
-            var barW = _pbCont.offsetWidth || 1;
-            var pct  = Math.max(0, Math.min(ratio, 1));
-            var px   = pct * barW;
-            /* Tooltip ekran dışına taşmasın */
-            var ttW  = 168; /* 160 + padding */
-            var left = Math.max(ttW / 2, Math.min(px, barW - ttW / 2));
-            _tooltip.style.left = left + 'px';
-            _tooltip.style.display = 'flex';
-            if (Math.abs(pct - _lastRatio) > 0.005) {
-                _lastRatio = pct;
-                _captureFrame(pct);
-            }
-        }
-
-        function _hide() {
-            if (_tooltip) _tooltip.style.display = 'none';
-            _lastRatio = -1;
-            _capturing = false;
-        }
-
-        function _init() {
-            _pbCont  = document.getElementById('progressBarContainer');
-            _tooltip = document.getElementById('seekThumbTooltip');
-            _canvas  = document.getElementById('seekThumbCanvas');
-            _timeEl  = document.getElementById('seekThumbTime');
-            if (!_pbCont || !_tooltip) return;
-
-            /* Mouse hover */
-            _pbCont.addEventListener('mousemove', function(e) {
-                var rect = _pbCont.getBoundingClientRect();
-                var ratio = (e.clientX - rect.left) / rect.width;
-                _showAt(ratio, e.clientX);
-            });
-            _pbCont.addEventListener('mouseleave', _hide);
-
-            /* Touch — sürüklerken göster */
-            _pbCont.addEventListener('touchmove', function(e) {
-                if (!e.touches.length) return;
-                var rect = _pbCont.getBoundingClientRect();
-                var ratio = (e.touches[0].clientX - rect.left) / rect.width;
-                _showAt(ratio, e.touches[0].clientX);
-            }, { passive: true });
-            _pbCont.addEventListener('touchend', _hide);
-        }
-
-        /* DOMContentLoaded veya hemen init */
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', _init);
-        } else {
-            setTimeout(_init, 800);
-        }
-
-        /* Player her açıldığında canvas'ı temizle */
-        window._utvSeekThumbReset = function() { _hide(); _capturing = false; _lastRatio = -1; };
-    })();
-
-    // ═══════════════════════════════════════════════════════
-    // IDLE MODU (Ekran Koruyucu)
-    // 15 dakika hareketsizlikte ekran kararır + saati gösterir
-    // Herhangi bir tuş/dokunuş ile geri döner
-    // Yayın sırasında devre dışı
-    // ═══════════════════════════════════════════════════════
-    (function initIdleMode() {
-        var IDLE_TIMEOUT_MS  = 15 * 60 * 1000; /* 15 dakika */
-        var _idleTimer       = null;
-        var _clockInterval   = null;
-        var _isIdle          = false;
-        var _overlay         = null;
-        var _clockEl         = null;
-
-        function _fmt12(d) {
-            var h = d.getHours(), m = d.getMinutes();
-            return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-        }
-
-        function _wake() {
-            if (!_isIdle) return;
-            _isIdle = false;
-            if (_overlay) _overlay.classList.remove('active');
-            if (_clockInterval) { clearInterval(_clockInterval); _clockInterval = null; }
-            /* Dondurulmuş arayüzü canlandır */
-            if (typeof window.startLogoGlow === 'function') window.startLogoGlow();
-            if (typeof window.updateHeaderUsername === 'function') window.updateHeaderUsername();
-            _reset();
-        }
-
-        function _sleep() {
-            /* Yayın açıksa idle mod devreye girmesin */
-            if (window._playerUIFrozen) { _reset(); return; }
-            _isIdle = true;
-            _overlay = _overlay || document.getElementById('utv-idle-overlay');
-            _clockEl = _clockEl || document.getElementById('utv-idle-clock');
-            if (!_overlay) return;
-            /* Logo/username animasyonunu durdur */
-            if (typeof window.stopLogoGlow === 'function') window.stopLogoGlow();
-            _overlay.classList.add('active');
-            /* Saati güncelle */
-            if (_clockEl) _clockEl.textContent = _fmt12(new Date());
-            if (_clockInterval) clearInterval(_clockInterval);
-            _clockInterval = setInterval(function() {
-                if (_clockEl) _clockEl.textContent = _fmt12(new Date());
-            }, 30000); /* 30sn'de bir güncelle — 1sn gerekmez */
-        }
-
-        function _reset() {
-            clearTimeout(_idleTimer);
-            _idleTimer = setTimeout(_sleep, IDLE_TIMEOUT_MS);
-        }
-
-        /* Kullanıcı aktivitelerini dinle */
-        ['mousemove','keydown','keyup','touchstart','click','pointerdown','wheel'].forEach(function(ev) {
-            document.addEventListener(ev, function() {
-                if (_isIdle) _wake();
-                else _reset();
-            }, { passive: true, capture: true });
-        });
-
-        /* Global wake API — idle overlay onclick ve remote tuşları için */
-        window._utvIdleWake = _wake;
-
-        /* İlk timer'ı başlat */
-        setTimeout(_reset, 2000);
-    })();
-
-    // ═══════════════════════════════════════════════════════
-    // SERVICE WORKER — OFFLINE CACHE
-    // App kabuğu (HTML kendisi) ve kanal verisi önbelleğe alınır
-    // TVBox'ta internet kesilse de uygulama hemen açılır
-    // ═══════════════════════════════════════════════════════
-    (function registerServiceWorker() {
-        if (!('serviceWorker' in navigator)) return;
-        /* SW kodu dinamik olarak Blob URL ile kayıt — ayrı sw.js dosyasına gerek yok */
-        var swCode = `
-const CACHE_NAME = 'utv-cache-v1';
-const CACHE_URLS = [
-    self.location.pathname /* Uygulamanın kendi URL'i */
-];
-
-self.addEventListener('install', function(e) {
-    e.waitUntil(
-        caches.open(CACHE_NAME).then(function(cache) {
-            return cache.addAll(CACHE_URLS);
-        }).catch(function() {}) /* Hata sessizce geç — cache isteğe bağlı */
-    );
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', function(e) {
-    e.waitUntil(
-        caches.keys().then(function(keys) {
-            return Promise.all(
-                keys.filter(function(k) { return k !== CACHE_NAME; })
-                    .map(function(k) { return caches.delete(k); })
-            );
-        })
-    );
-    self.clients.claim();
-});
-
-self.addEventListener('fetch', function(e) {
-    var url = e.request.url;
-    /* Sadece GET isteklerini yakala; m3u/stream/firebase/API'ye dokunma */
-    if (e.request.method !== 'GET') return;
-    if (url.includes('firebasedatabase') || url.includes('.m3u') ||
-        url.includes('/stream') || url.includes('anthropic') ||
-        url.includes('googleapis')) return;
-
-    /* Cache-first: önce cache'ten sun, yoksa ağdan al ve cache'e ekle */
-    e.respondWith(
-        caches.match(e.request).then(function(cached) {
-            if (cached) return cached;
-            return fetch(e.request).then(function(resp) {
-                if (!resp || !resp.ok || resp.type === 'opaque') return resp;
-                var clone = resp.clone();
-                caches.open(CACHE_NAME).then(function(c) {
-                    /* Sadece HTML, JS, CSS, font — video/görüntü cache'leme */
-                    var ct = resp.headers.get('content-type') || '';
-                    if (ct.includes('text/') || ct.includes('javascript') ||
-                        ct.includes('font') || ct.includes('woff')) {
-                        c.put(e.request, clone);
-                    }
-                });
-                return resp;
-            }).catch(function() {
-                return caches.match(e.request);
-            });
-        })
-    );
-});
-`;
-        try {
-            var blob = new Blob([swCode], { type: 'application/javascript' });
-            var swUrl = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(swUrl, { scope: '/' })
-                .then(function(reg) {
-                    window._UTV = window._UTV || {};
-                    window._UTV._swRegistered = true;
-                    /* 24 saatte bir güncelleme kontrolü */
-                    setInterval(function() { reg.update(); }, 24 * 60 * 60 * 1000);
-                })
-                .catch(function() {
-                    /* SW kayıt başarısız — sessizce geç, uygulama normal çalışır */
-                });
-        } catch(e) {}
-    })();
 
     window.startLogoGlow = function() {
         /* Player açıkken logo animasyonu başlatma — TVBox'ta gereksiz CPU */

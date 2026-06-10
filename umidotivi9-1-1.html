@@ -4948,66 +4948,6 @@ body {
         }
         
          
-        
-/* ── ÇİFT DOK. TAM EKRAN: CSS-tabanlı rotate (Android WebView uyumlu) ── */
-/*
-  Portre: vw=dar kenar, vh=uzun kenar.
-  90° döndürünce: element genişliği → vh (uzun) doldurmali,
-                  element yüksekliği → vw (dar) doldurmalı.
-  top = (vh-vw)/2, left = (vw-vh)/2  → elementi tam ortalar.
-*/
-#playerView.dbl-tap-fullscreen {
-    position: fixed !important;
-    top: calc((100vh - 100vw) / 2) !important;
-    left: calc((100vw - 100vh) / 2) !important;
-    width: 100vh !important;
-    height: 100vw !important;
-    transform: rotate(90deg) !important;
-    transform-origin: center center !important;
-    z-index: 999999 !important;
-    background: #000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-}
-#playerView.dbl-tap-fullscreen .player-container {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 0 !important;
-    background: #000 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-#playerView.dbl-tap-fullscreen video {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-}
-/* Çift dokunma tam ekran rozeti */
-#dblTapFsToast {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
-    color: #FFD700;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px; font-weight: 700;
-    padding: 10px 20px;
-    border-radius: 24px;
-    border: 1px solid rgba(255,215,0,0.4);
-    pointer-events: none;
-    z-index: 9999999;
-    display: none;
-    white-space: nowrap;
-    /* Tam ekran rotate modunda toastın da doğru görünmesi için */
-    will-change: transform;
 }
 
 @media (orientation: landscape) {
@@ -14252,7 +14192,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         </div>
         <span class="indicator-value" id="brightnessValue">100%</span>
     </div>
-    <div id="dblTapFsToast"></div>
+
     <div class="resolution-indicator" id="resolutionIndicator">
         <div id="resolutionText">
             <span class="material-symbols-outlined indicator-icon">high_quality</span>
@@ -18243,6 +18183,8 @@ async function loadContinueWatching() {
                 const modal = document.getElementById(modalId);
                 if (modal) modal.style.display = 'none';
             });
+            // headerIndex'i sıfırla — belirsiz kalmasın
+            if (state.remote) state.remote.headerIndex = 0;
         }
         
 
@@ -22184,9 +22126,17 @@ function playSeriesEpisode(seriesName, season, episode, url) {
     state.series.currentSeason = season;
     state.series.currentEpisode = episode;
     state.series.autoNextEnabled = true; // Her yeni bölümde sıfırla
+    // Global auto-next flag'lerini sıfırla — yeni bölüm için temiz slate
+    window._autoNextTriggered  = false;
+    window._autoNextModalShown = false;
     // HLS fallback flag'ini sıfırla
     const _vid = document.getElementById('videoPlayer');
-    if (_vid) { _vid._autoNextTriggered = false; _vid._autoNextModalShown = false; _vid._markedWatched = false; }
+    if (_vid) { _vid._markedWatched = false; }
+    // Otomatik geçiş modalını kesin kapat (defense in depth)
+    if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
+    // DOM'dan da direkt kapat — race condition'a karşı
+    const _anModal = document.getElementById('autoNextNotification');
+    if (_anModal) { _anModal.classList.remove('visible'); _anModal.style.display = 'none'; }
     
     // Devam et kaydını güncelle
     state.continueWatching[seriesName] = {
@@ -22640,6 +22590,19 @@ function startAutoNextTimer() {
 
     const video = document.getElementById('videoPlayer');
 
+    // currentEpisode'u çalışma başında doğrula — geçersizse kanal adından çıkar
+    if (!state.series.currentEpisode || Number(state.series.currentEpisode) < 1) {
+        var _pnSat = state.player && state.player.name;
+        var _emSat = _pnSat && (_pnSat.match(/S\d+\s*[EB](\d+)/i) || _pnSat.match(/(\d+)\.\s*B/i));
+        if (_emSat) state.series.currentEpisode = Number(_emSat[1]);
+    }
+    if (!state.series.currentSeason || Number(state.series.currentSeason) < 1) {
+        var _pnSat2 = state.player && state.player.name;
+        var _emSat2 = _pnSat2 && _pnSat2.match(/S(\d+)\s*[EB]\d+/i);
+        if (_emSat2) state.series.currentSeason = Number(_emSat2[1]);
+        else state.series.currentSeason = 1;
+    }
+
     // Önceki listener'ları kaldır (duplikasyonu önle)
     if (video._autoNextTimeupdateHandler) {
         video.removeEventListener('timeupdate', video._autoNextTimeupdateHandler);
@@ -22660,16 +22623,30 @@ function startAutoNextTimer() {
         if (!state.series.currentSeries || !state.series.autoNextEnabled) return;
         // Bölüm gerçekten bitti mi? Başında sahte ended'ı engelle
         if (!video.duration || !isFinite(video.duration) || video.duration < 10) return;
-        if (video.currentTime < 5) return;
+        // currentTime < 5 yerine duration'ın %10'undan az değil mi kontrolü (kısa bölümler için)
+        var _minPlayed = Math.min(5, video.duration * 0.1);
+        if (video.currentTime < _minPlayed) return;
         // Bölüm bitti — izlendi olarak kaydet
         if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
-        const _doneKey = `${state.series.currentSeries}_S${state.series.currentSeason}E${state.series.currentEpisode}`;
+        // currentEpisode'un geçerli olduğundan emin ol
+        var _currentEp = Number(state.series.currentEpisode);
+        if (!_currentEp || _currentEp < 1) {
+            // Kanal adından bölüm numarasını çıkarmayı dene
+            var _pn = state.player && state.player.name;
+            var _em = _pn && (_pn.match(/S\d+\s*[EB](\d+)/i) || _pn.match(/(\d+)\.\s*[Bb]ölüm/i));
+            _currentEp = _em ? Number(_em[1]) : 1;
+            state.series.currentEpisode = _currentEp;
+        }
+        const _doneKey = `${state.series.currentSeries}_S${state.series.currentSeason}E${_currentEp}`;
         state.series.watchedEpisodes[_doneKey] = { ts: Date.now() };
         try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
         // Modal zaten aktifse (geri sayım yapıyor) o halleder — çift geçişi önle
         if (window._anModalActive && window._anModalActive()) return;
+        // _doNext zaten çağrıldıysa (modal kapandı ama ended henüz tetiklendi) — çift geçişi önle
+        if (window._autoNextTriggered) return;
+        window._autoNextTriggered = true;
         // Modal açılmamışsa (çok hızlı biten bölüm) direkt geç
-        video._autoNextModalShown = false;
+        window._autoNextModalShown = false;
         if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
         setTimeout(() => { nextEpisode(); }, 300);
     };
@@ -22690,8 +22667,9 @@ function handleVideoTimeUpdate() {
                 var _sc = state.series.seriesCache[_pName];
                 if (_sc && _sc.seasons) {
                     state.series.currentSeries = _pName;
-                    state.series.currentSeason = state.series.currentSeason || 1;
-                    state.series.currentEpisode = state.series.currentEpisode || 1;
+                    // currentSeason/currentEpisode zaten playSeriesEpisode tarafından set edilmişse dokunma
+                    if (!state.series.currentSeason) state.series.currentSeason = 1;
+                    if (!state.series.currentEpisode) state.series.currentEpisode = 1;
                     state.series.autoNextEnabled = true;
                     startAutoNextTimer();
                     return;
@@ -22702,13 +22680,18 @@ function handleVideoTimeUpdate() {
                     if (_pName.indexOf(_keys[_ki]) !== -1 || _keys[_ki].indexOf(_pName.split(' ')[0]) !== -1) {
                         var _scd = state.series.seriesCache[_keys[_ki]];
                         if (_scd && _scd.seasons) {
-                            // Kanal adından sezon/bölüm çıkar
-                            var _sm = _pName.match(/S(\d+)\s*[EB](\d+)/i);
-                            var _ss = _sm ? Number(_sm[1]) : 1;
-                            var _se = _sm ? Number(_sm[2]) : 1;
+                            // Kanal adından sezon/bölüm çıkar — her zaman adı parse et, varsayılan 1 değil
+                            var _sm = _pName.match(/S(\d+)\s*[EB](\d+)/i)
+                                   || _pName.match(/(\d+)\.\s*Sezon.*?(\d+)\.\s*[Bb]ölüm/i)
+                                   || _pName.match(/[Ss]ezon\s*(\d+).*?[Bb]ölüm\s*(\d+)/i);
+                            // Sadece bölüm numarası olan format: "Dizi Adı 5. Bölüm"
+                            var _smEp = !_sm && _pName.match(/(\d+)\.\s*[Bb]ölüm/i);
+                            var _ss = _sm ? Number(_sm[1]) : (state.series.currentSeason || 1);
+                            var _se = _sm ? Number(_sm[2]) : (_smEp ? Number(_smEp[1]) : (state.series.currentEpisode || 1));
                             state.series.currentSeries = _keys[_ki];
-                            state.series.currentSeason = _ss;
-                            state.series.currentEpisode = _se;
+                            // Mevcut değerler zaten doğru set edilmişse ezme
+                            if (!state.series.currentSeason) state.series.currentSeason = _ss;
+                            if (!state.series.currentEpisode) state.series.currentEpisode = _se;
                             state.series.autoNextEnabled = true;
                             startAutoNextTimer();
                             return;
@@ -22765,14 +22748,14 @@ function handleVideoTimeUpdate() {
 
     // Son 12 saniyede modalı SADECE BİR KEZ aç
     if (remainingTime <= 12 && remainingTime > 0) {
-        if (!video._autoNextModalShown) {
-            video._autoNextModalShown = true;
+        if (!window._autoNextModalShown) {
+            window._autoNextModalShown = true;
             showAutoNextNotification();
         }
     } else if (remainingTime > 13) {
         // Yeni bölüm başladığında flag'i sıfırla
-        video._autoNextModalShown = false;
-        video._autoNextTriggered  = false;
+        window._autoNextModalShown = false;
+        window._autoNextTriggered  = false;
     }
     // NOT: nextEpisode çağrısı BURADAN yapılmıyor.
     // Sadece modal geri sayımı (10sn) veya 'ended' event tetikler.
@@ -22821,7 +22804,10 @@ function handleVideoTimeUpdate() {
         _anActive = false;
         clearInterval(_anTimer);
         var e = _getEls();
-        if (e.modal) { e.modal.classList.remove('visible'); e.modal.style.display = ''; }
+        if (e.modal) {
+            e.modal.classList.remove('visible');
+            e.modal.style.display = 'none'; // inline 'none' — CSS'i override et, kesin gizle
+        }
         if (_anKeyHandler) {
             window.removeEventListener('keydown', _anKeyHandler, true);
             _anKeyHandler = null;
@@ -22830,10 +22816,11 @@ function handleVideoTimeUpdate() {
 
     function _doNext() {
         _closeModal();
+        // Global flag set et — ended handler çift geçiş yapmasın
+        window._autoNextTriggered = true;
         // _autoNextModalShown sıfırla — yeni bölümde modal tekrar açılsın
         setTimeout(function() {
-            var vid = document.getElementById('videoPlayer');
-            if (vid) vid._autoNextModalShown = false;
+            window._autoNextModalShown = false;
             nextEpisode();
         }, 200);
     }
@@ -22929,17 +22916,33 @@ function handleVideoTimeUpdate() {
 })();
 
 function showAutoNextNotification(seconds) {
-    // Eski küçük bildirim yerine modal aç (sadece ilk çağrıda)
+    // Zaten modal açıksa veya global flag set ise açma
     var e = document.getElementById('autoNextNotification');
-    if (e && e.classList.contains('visible')) return; // Zaten açık
+    if (e && e.classList.contains('visible')) return;
+    if (window._anModalActive && window._anModalActive()) return;
     // Sonraki bölüm bilgisini al
     var nextS = null, nextE = null;
     try {
-        var sd = state.series.seriesCache[state.series.currentSeries];
-        var cs = state.series.currentSeason;
-        var ce = state.series.currentEpisode;
+        // Cache lookup — case-insensitive fallback
+        var _cSeries = state.series.currentSeries;
+        var sd = state.series.seriesCache[_cSeries];
+        if (!sd) {
+            var _lc2 = _cSeries && _cSeries.toLowerCase();
+            var _k2 = _lc2 && Object.keys(state.series.seriesCache).find(k => k.toLowerCase() === _lc2);
+            if (_k2) { sd = state.series.seriesCache[_k2]; state.series.currentSeries = _k2; }
+        }
+        var cs = Number(state.series.currentSeason) || 1;
+        var ce = Number(state.series.currentEpisode);
+        // ce geçersizse kanal adından çıkar
+        if (!ce || ce < 1) {
+            var _pn2 = state.player && state.player.name;
+            var _em2 = _pn2 && (_pn2.match(/S\d+\s*[EB](\d+)/i) || _pn2.match(/(\d+)\.\s*B/i));
+            ce = _em2 ? Number(_em2[1]) : 1;
+            state.series.currentEpisode = ce;
+        }
         var seEps = sd && sd.seasons && sd.seasons[cs] ? sd.seasons[cs] : [];
-        if (ce + 1 <= seEps.length) { nextS = cs; nextE = ce + 1; }
+        var maxEp = seEps.length > 0 ? Math.max.apply(null, seEps.map(function(ep){ return Number(ep.episode); })) : 0;
+        if (ce + 1 <= maxEp) { nextS = cs; nextE = ce + 1; }
         else if (sd && cs + 1 <= sd.totalSeasons) { nextS = cs + 1; nextE = 1; }
     } catch(_) {}
     if (typeof window._showAutoNextModal === 'function') {
@@ -22953,21 +22956,42 @@ function nextEpisode() {
     if (typeof window._hideAutoNextModal === 'function') window._hideAutoNextModal();
     if (!state.series.currentSeries) return;
     
-    const seriesData = state.series.seriesCache[state.series.currentSeries];
+    // Cache lookup — currentSeries ile direkt veya case-insensitive fallback
+    let seriesData = state.series.seriesCache[state.series.currentSeries];
+    if (!seriesData) {
+        // Case-insensitive fallback
+        const _lc = state.series.currentSeries.toLowerCase();
+        const _key = Object.keys(state.series.seriesCache).find(k => k.toLowerCase() === _lc);
+        if (_key) {
+            seriesData = state.series.seriesCache[_key];
+            state.series.currentSeries = _key; // Düzelt
+        }
+    }
     if (!seriesData) return;
     
-    const currentSeason = state.series.currentSeason;
-    const currentEpisode = state.series.currentEpisode;
+    const currentSeason = Number(state.series.currentSeason) || 1;
+    // currentEpisode geçersizse kanal adından çıkar, yoksa 1
+    let currentEpisode = Number(state.series.currentEpisode);
+    if (!currentEpisode || currentEpisode < 1) {
+        const _pn = state.player && state.player.name;
+        const _em = _pn && (_pn.match(/S\d+\s*[EB](\d+)/i) || _pn.match(/(\d+)\.\s*B/i));
+        currentEpisode = _em ? Number(_em[1]) : 1;
+        state.series.currentEpisode = currentEpisode; // Düzelt
+    }
     
     let nextSeason = currentSeason;
-    let nextEpisode = currentEpisode + 1;
+    let nextEpisodeNum = currentEpisode + 1;
     
-    // Mevcut sezondaki bölüm sayısını kontrol et
+    // Mevcut sezondaki bölümlerin gerçek max episode numarasını bul
     const seasonEpisodes = seriesData.seasons[currentSeason] || [];
-    if (nextEpisode > seasonEpisodes.length) {
+    const maxEpisodeNum = seasonEpisodes.length > 0
+        ? Math.max(...seasonEpisodes.map(ep => Number(ep.episode)))
+        : 0;
+    
+    if (nextEpisodeNum > maxEpisodeNum) {
         // Sonraki sezona geç
         nextSeason++;
-        nextEpisode = 1;
+        nextEpisodeNum = 1;
         
         // Daha fazla sezon yoksa
         if (nextSeason > seriesData.totalSeasons) {
@@ -22976,11 +23000,12 @@ function nextEpisode() {
         }
     }
     
-    // Sonraki bölümü bul
-    const nextEp = seriesData.seasons[nextSeason].find(ep => ep.episode === nextEpisode);
+    // Sonraki bölümü bul — Number() ile tip güvenli karşılaştırma
+    const nextSeasonEps = seriesData.seasons[nextSeason] || [];
+    const nextEp = nextSeasonEps.find(ep => Number(ep.episode) === nextEpisodeNum);
     if (nextEp && nextEp.url) {
-        playSeriesEpisode(state.series.currentSeries, nextSeason, nextEpisode, nextEp.url);
-        showToast(`S${nextSeason}:E${nextEpisode} başlıyor`);
+        playSeriesEpisode(state.series.currentSeries, nextSeason, nextEpisodeNum, nextEp.url);
+        showToast(`S${nextSeason}:E${nextEpisodeNum} başlıyor`);
     }
 }
 
@@ -22991,13 +23016,13 @@ function prevEpisode() {
     const seriesData = state.series.seriesCache[state.series.currentSeries];
     if (!seriesData) return;
     
-    const currentSeason = state.series.currentSeason;
-    const currentEpisode = state.series.currentEpisode;
+    const currentSeason = Number(state.series.currentSeason);
+    const currentEpisode = Number(state.series.currentEpisode);
     
     let prevSeason = currentSeason;
-    let prevEpisode = currentEpisode - 1;
+    let prevEpisodeNum = currentEpisode - 1;
     
-    if (prevEpisode < 1) {
+    if (prevEpisodeNum < 1) {
         // Önceki sezona geç
         prevSeason--;
         if (prevSeason < 1) {
@@ -23005,16 +23030,19 @@ function prevEpisode() {
             return;
         }
         
-        // Önceki sezonun son bölümünü al
+        // Önceki sezonun gerçek son bölüm numarasını al
         const prevSeasonEpisodes = seriesData.seasons[prevSeason] || [];
-        prevEpisode = prevSeasonEpisodes.length;
+        prevEpisodeNum = prevSeasonEpisodes.length > 0
+            ? Math.max(...prevSeasonEpisodes.map(ep => Number(ep.episode)))
+            : 1;
     }
     
-    // Önceki bölümü bul
-    const prevEp = seriesData.seasons[prevSeason].find(ep => ep.episode === prevEpisode);
+    // Önceki bölümü bul — Number() ile tip güvenli karşılaştırma
+    const prevSeasonEps = seriesData.seasons[prevSeason] || [];
+    const prevEp = prevSeasonEps.find(ep => Number(ep.episode) === prevEpisodeNum);
     if (prevEp && prevEp.url) {
-        playSeriesEpisode(state.series.currentSeries, prevSeason, prevEpisode, prevEp.url);
-        showToast(`S${prevSeason}:E${prevEpisode} başlıyor`);
+        playSeriesEpisode(state.series.currentSeries, prevSeason, prevEpisodeNum, prevEp.url);
+        showToast(`S${prevSeason}:E${prevEpisodeNum} başlıyor`);
     }
 }
 
@@ -25122,28 +25150,18 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 const _nowHid = Date.now();
                 const _DTAP_HID = 350;
                 if (_nowHid - (window._hiddenLastTapTime || 0) < _DTAP_HID) {
-                    // Çift dokunma → kontrolleri aç (veya tam ekrandan çık)
+                    // Çift dokunma → kontrolleri aç
                     window._hiddenLastTapTime = 0;
                     clearTimeout(window._hiddenTapTimer);
-                    // Eğer CSS tam ekran açıksa önce kapat
-                    var _pvH = document.getElementById('playerView');
-                    if (_pvH && _pvH.classList.contains('dbl-tap-fullscreen')) {
-                        _pvH.classList.remove('dbl-tap-fullscreen');
-                        document.body.style.overflow = '';
-                        document.documentElement.style.overflow = '';
-                        var _tH = document.getElementById('dblTapFsToast');
-                        if (_tH) { _tH.textContent = '⊠ Normal Mod'; _tH.style.display = 'block'; setTimeout(function(){ _tH.style.display = 'none'; }, 1200); }
-                    } else {
-                        window._controlsHidden = false;
-                        var pc2 = document.getElementById('playerContainer');
-                        if (pc2) pc2.classList.remove('controls-hidden');
-                        var icon  = document.getElementById('hideControlsIcon');
-                        var label = document.getElementById('hideControlsLabel');
-                        if (icon)  icon.textContent  = 'visibility_off';
-                        if (label) label.textContent = 'Gizle';
-                        showControls(5000);
-                        showToast('Kontroller Açıldı');
-                    }
+                    window._controlsHidden = false;
+                    var pc2 = document.getElementById('playerContainer');
+                    if (pc2) pc2.classList.remove('controls-hidden');
+                    var icon  = document.getElementById('hideControlsIcon');
+                    var label = document.getElementById('hideControlsLabel');
+                    if (icon)  icon.textContent  = 'visibility_off';
+                    if (label) label.textContent = 'Gizle';
+                    showControls(5000);
+                    showToast('Kontroller Açıldı');
                 } else {
                     // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
                     window._hiddenLastTapTime = _nowHid;
@@ -25222,52 +25240,19 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     }, DOUBLE_TAP_MS);
                 }
             } else {
-                // Orta bölge — çift dokunma: CSS tam ekran yatay, tek dokunma: kontrol göster/gizle
-                var _cNow = Date.now();
+                // Orta bölge — tek dokunma: kontrol göster/gizle
                 var _cZone = currentTouchZone;
-                var CDTAP_MS = 320;
                 if (_cZone === TOUCH_ZONES.CENTER) {
-                    if (_cNow - (window._centerDtapLast || 0) < CDTAP_MS) {
-                        // ── ÇİFT DOKUNMA → CSS Rotate Tam Ekran ──
-                        window._centerDtapLast = 0;
-                        clearTimeout(window._centerDtapTimer);
-                        var pv = document.getElementById('playerView');
-                        var toast = document.getElementById('dblTapFsToast');
-                        if (pv) {
-                            var isFs = pv.classList.contains('dbl-tap-fullscreen');
-                            if (isFs) {
-                                pv.classList.remove('dbl-tap-fullscreen');
-                                document.body.style.overflow = '';
-                                document.documentElement.style.overflow = '';
-                                if (toast) { toast.textContent = '⊠ Normal Mod'; toast.style.display = 'block'; setTimeout(function(){ toast.style.display = 'none'; }, 1200); }
-                            } else {
-                                pv.classList.add('dbl-tap-fullscreen');
-                                document.body.style.overflow = 'hidden';
-                                document.documentElement.style.overflow = 'hidden';
-                                // Video boyutlarını sıfırla — CSS üstlensin
-                                var _vid = document.getElementById('videoPlayer');
-                                if (_vid) { _vid.style.width = ''; _vid.style.height = ''; }
-                                if (toast) { toast.textContent = '⛶ Tam Ekran'; toast.style.display = 'block'; setTimeout(function(){ toast.style.display = 'none'; }, 1200); }
-                            }
+                    // Tek dokunma eylemi: kontrol göster/gizle
+                    var pc = document.getElementById('playerContainer');
+                    if (pc) {
+                        var isVis = pc.classList.contains('show-controls');
+                        if (isVis) {
+                            pc.classList.remove('show-controls');
+                        } else if (!window._controlsHidden) {
+                            pc.classList.add('show-controls');
+                            showControls(5000);
                         }
-                        if (typeof playKeySound === 'function') playKeySound('click');
-                    } else {
-                        // İlk dokunma — bekle
-                        window._centerDtapLast = _cNow;
-                        clearTimeout(window._centerDtapTimer);
-                        window._centerDtapTimer = setTimeout(function() {
-                            window._centerDtapLast = 0;
-                            // Tek dokunma eylemi: kontrol göster/gizle
-                            var pc = document.getElementById('playerContainer');
-                            if (!pc) return;
-                            var isVis = pc.classList.contains('show-controls');
-                            if (isVis) {
-                                pc.classList.remove('show-controls');
-                            } else if (!window._controlsHidden) {
-                                pc.classList.add('show-controls');
-                                showControls(5000);
-                            }
-                        }, CDTAP_MS);
                     }
                 } else {
                     // Canlı, sol/sağ — normal tap
@@ -26369,40 +26354,7 @@ window.testSettings = {
                 }
             });
             
-            playerContainer.addEventListener('dblclick', (e) => {
-                if (e.target.closest('button') || e.target.closest('.progress-bar-container')) {
-                    return;
-                }
-                
-                if (isControlModeActive) {
-                    showToast("Kumanda Modu Devam Ediyor");
-                    return;
-                }
-
-                // _controlsHidden modunda: gizlemeyi kaldır ve göster
-                if (window._controlsHidden) {
-                    window._controlsHidden = false;
-                    const pc2 = document.getElementById('playerContainer');
-                    if (pc2) pc2.classList.remove('controls-hidden');
-                    const icon  = document.getElementById('hideControlsIcon');
-                    const label = document.getElementById('hideControlsLabel');
-                    if (icon)  icon.textContent  = 'visibility_off';
-                    if (label) label.textContent = 'Gizle';
-                    showControls(5000);
-                    showToast('Kontroller Açıldı');
-                    return;
-                }
-
-                // Normal mod: show-controls toggle
-                const pc = document.getElementById('playerContainer');
-                if (pc) {
-                    if (pc.classList.contains('show-controls')) {
-                        pc.classList.remove('show-controls');
-                    } else {
-                        showControls(5000);
-                    }
-                }
-            });
+            // dblclick tam ekran kaldırıldı — tek tıklama kontrolleri yönetiyor
             
             // ── AKILLI SCROLL: Kaydırma vs Tıklama ayırt et ──
             (function setupActionsRowScroll() {
@@ -31837,9 +31789,13 @@ function groupChannelsBySeries(channels) {
             if (epM) { season = parseInt(epM[1]); episode = parseInt(epM[2]); }
             else if (epOnly) { episode = parseInt(epOnly[1]); }
             if (!sc.seasons[season]) sc.seasons[season] = [];
-            sc.seasons[season].push({ episode, title: name, url: channel.url, originalChannel: channel, season });
-            sc.totalEpisodes++;
-            sc.seasons[season].sort((a, b) => a.episode - b.episode);
+            // Aynı episode numarası zaten varsa ekleme (duplicate önleme)
+            const _epEx = sc.seasons[season].some(ep => Number(ep.episode) === Number(episode));
+            if (!_epEx) {
+                sc.seasons[season].push({ episode, title: name, url: channel.url, originalChannel: channel, season });
+                sc.totalEpisodes++;
+                sc.seasons[season].sort((a, b) => a.episode - b.episode);
+            }
             processed.add(index);
             return;
         }
@@ -31856,9 +31812,13 @@ function groupChannelsBySeries(channels) {
                 // Dizi adını temizle
                 const cleanSeriesName = match[pat.seriesGroup]
                     .replace(/^(TR|EN|HD|FHD|4K)\s*:\s*/i, '')
-                    .replace(/\s*-\s*$/, '').trim();
+                    .replace(/\s*-\s*$/, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                // Harita anahtarı: büyük/küçük harf ve boşluk normalizasyonu (case-insensitive dedup)
+                const _mapKey = cleanSeriesName.toLowerCase();
                 
-                if (!seriesMap.has(cleanSeriesName)) {
+                if (!seriesMap.has(_mapKey)) {
                     // Yeni dizi kartı oluştur
                     const seriesCard = {
                         name: cleanSeriesName,
@@ -31873,24 +31833,28 @@ function groupChannelsBySeries(channels) {
                         seasons: {},
                         totalEpisodes: 0
                     };
-                    seriesMap.set(cleanSeriesName, seriesCard);
+                    seriesMap.set(_mapKey, seriesCard);
                     grouped.push(seriesCard);
                 }
                 
-                const seriesCard = seriesMap.get(cleanSeriesName);
+                const seriesCard = seriesMap.get(_mapKey);
                 if (!seriesCard.seasons[season]) seriesCard.seasons[season] = [];
                 
-                seriesCard.seasons[season].push({
-                    episode: episode,
-                    title: name,
-                    url: channel.url,
-                    originalChannel: channel,
-                    season: season
-                });
-                seriesCard.totalEpisodes++;
-                
-                // Bölümleri sırala
-                seriesCard.seasons[season].sort((a, b) => a.episode - b.episode);
+                // Aynı episode numarası zaten varsa ekleme (duplicate önleme)
+                const _epExists = seriesCard.seasons[season].some(ep => Number(ep.episode) === Number(episode));
+                if (!_epExists) {
+                    seriesCard.seasons[season].push({
+                        episode: episode,
+                        title: name,
+                        url: channel.url,
+                        originalChannel: channel,
+                        season: season
+                    });
+                    seriesCard.totalEpisodes++;
+                    
+                    // Bölümleri sırala
+                    seriesCard.seasons[season].sort((a, b) => a.episode - b.episode);
+                }
                 
                 processed.add(index);
                 matched = true;
@@ -31918,8 +31882,10 @@ function groupChannelsBySeries(channels) {
         seriesCard.totalEpisodes = totalEp;
         seriesCard.totalSeasons  = seasonCount;
 
-        state.series.seriesCache[seriesName] = {
-            name: seriesName,
+        // Cache key: seriesCard.name (orijinal temiz ad) — currentSeries ile tutarlı
+        const _cacheKey = seriesCard.name;
+        state.series.seriesCache[_cacheKey] = {
+            name: _cacheKey,
             seasons: seriesCard.seasons,
             totalSeasons: seasonCount,
             totalEpisodes: totalEp,
@@ -32622,6 +32588,7 @@ async function refreshSingleM3U(idx) {
 
 // 😄 loadSingleM3U fonksiyonu - güncellendi
 async function loadSingleM3U(idx, m3u, forceRefresh = false) {
+    window._isLoadingM3U = true;  // renderChannels wrap bypass flag
     showInlineLoading(5, `${m3u.name} Yükleniyor...`);
     try {
         let m3uContent = null;
@@ -32812,6 +32779,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     updateChannelCount(state.filtered.length);
                     const _titleEl = document.getElementById('activeCategoryTitle');
                     if (_titleEl) _titleEl.innerText = 'Tüm Kanallar';
+                    // _streamingActive bypass — liste yüklemesi her zaman render edilmeli
                     try { renderChannels(); } catch(e2) {}
                     showToast(`${_finalChannels.length.toLocaleString()} içerik yüklendi`);
                     hideInlineLoading();
@@ -32951,7 +32919,9 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         renderCats();
         updateChannelCount(state.filtered.length);
         document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
-        renderChannels();
+        // _streamingActive=true olsa bile liste yüklenince grid mutlaka render edilmeli
+        // _isLoadingM3U=true iken wrapper bypass aktif, doğrudan _origRenderChannels çağrılır
+        try { renderChannels(); } catch(e2) {}
         
         // Cache meta güncelle (kanallar IDB'de)
         try {
@@ -32963,6 +32933,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         
         showToast(`${parsed.length.toLocaleString()} içerik yüklendi`);
         hideInlineLoading();
+        window._isLoadingM3U = false;
         
         if (state.remote.active) {
             state.remote.zone = 'channels';
@@ -32973,6 +32944,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         }
         
     } catch(e) {
+        window._isLoadingM3U = false;
         // Zaten yüklenmiş kanallar varsa koru — listeyi silme
         const _existingForIdx = state.channels.filter(c => c.listIdx == idx);
         if (_existingForIdx.length > 0) {
@@ -33467,9 +33439,13 @@ function _vhsCatCheck() {
 }
 
 /* ── renderChannels hook ── */
-var _origRC = window.renderChannels;
+// _origRC closure freeze sorununu önlemek için window._realRenderChannels kullan.
+// Freeze sırasında window.renderChannels = function(){} yapılsa bile _realRenderChannels
+// gerçek fonksiyonu işaret eder; restore sonrası hem window.renderChannels hem _realRenderChannels güncellenir.
+window._realRenderChannels = window.renderChannels;
 window.renderChannels = function() {
-    if (_origRC) _origRC.apply(this, arguments);
+    var _rc = window._realRenderChannels;
+    if (_rc) _rc.apply(this, arguments);
     setTimeout(_vhsCatCheck, 150);
     // Devam Et kartlarını da güncelle (kanallar yüklendikten sonra)
     setTimeout(function() {
@@ -37832,6 +37808,10 @@ function resumeChannel(startTime) {
     window._renderContinueFrozen    = window.renderContinueWatching;
     window._renderRecentFrozen      = window.renderRecentChannels;
     window.renderChannels           = function() {};
+    // _realRenderChannels ve _origRenderChannels'ı da boş yap (freeze tutarlı olsun)
+    // restore sonrası closePlayer bunları tekrar güncelleyecek
+    if (typeof window._realRenderChannels !== 'undefined') window._realRenderChannelsFrozen = window._realRenderChannels;
+    if (typeof window._origRenderChannels !== 'undefined') window._origRenderChannelsFrozen = window._origRenderChannels;
     window.renderSidebarChannels    = function() {};
     window.renderCats               = function() {};
     window.renderContinueWatching   = function() {};
@@ -39944,9 +39924,8 @@ function closePlayer() {
     
     pushHistoryState('main');
     
-    if (typeof renderContinueWatching === 'function' && state.activeCat === 'all') {
-        renderContinueWatching();
-    }
+    // renderContinueWatching çağrısı restore sonrasına taşındı (aşağıda setTimeout 50ms)
+    // Burada çağırmak boş function(){} döneceğinden grid dolu görünmüyor
     
     state.remote.zone = 'channels';
     // Player kapanınca index'i oynayan kanala geri döndür — ilk kart highlight olmasın
@@ -40010,7 +39989,42 @@ function closePlayer() {
     if (window._renderCatsFrozen)      { window.renderCats             = window._renderCatsFrozen;       window._renderCatsFrozen      = null; }
     if (window._renderContinueFrozen)  { window.renderContinueWatching = window._renderContinueFrozen;  window._renderContinueFrozen  = null; }
     if (window._renderRecentFrozen)    { window.renderRecentChannels   = window._renderRecentFrozen;     window._renderRecentFrozen    = null; }
-    // 4) Lazy load kaldığı yerden devam et
+    // _wrapRenderChannels scope'undaki _origRenderChannels pointer'ını senkronize et.
+    // Player açılırken freeze, wrap'ten ÖNCE olmuş olabilir → _origRenderChannels
+    // hâlâ eski boş function(){} işaret ediyor. Restore sonrası güncelle.
+    if (typeof window._origRenderChannels !== 'undefined') {
+        window._origRenderChannels = window._origRenderChannelsFrozen || window.renderChannels;
+        window._origRenderChannelsFrozen = null;
+    }
+    // _origRC hook'u da güncelle (closure freeze sorunu: _origRC = function(){} kalmış olabilir)
+    if (typeof window._realRenderChannels !== 'undefined') {
+        window._realRenderChannels = window._realRenderChannelsFrozen || window.renderChannels;
+        window._realRenderChannelsFrozen = null;
+    }
+    // _streamingActive kesinlikle false yap — pause event bazen geç gelir
+    if (typeof window._streamingActive !== 'undefined') window._streamingActive = false;
+    // 4) Tüm UI'ı render et — sıra önemli: cats → channels → continue
+    _streamingActive = false;
+    setTimeout(function() {
+        try {
+            // renderCats: kategori pill'leri (bu da freeze ediliyordu — restore ettik ama çağrılmıyordu)
+            if (typeof renderCats === 'function') renderCats();
+        } catch(e) {}
+        setTimeout(function() {
+            try {
+                // renderChannels: wrap bypass → _origRenderChannels doğrudan çağır
+                var _rcFn = window._origRenderChannels;
+                if (typeof _rcFn === 'function') {
+                    _rcFn();
+                } else if (typeof renderChannels === 'function') {
+                    renderChannels();
+                }
+                if (typeof renderContinueWatching === 'function' && state.activeCat === 'all') renderContinueWatching();
+                if (typeof renderRecentChannels === 'function') renderRecentChannels();
+            } catch(e) {}
+        }, 30);
+    }, 20);
+    // 5) Lazy load kaldığı yerden devam et
     if (typeof window._lazyLoadResumeCallback === 'function') {
         setTimeout(window._lazyLoadResumeCallback, 200);
         window._lazyLoadResumeCallback = null;
@@ -44497,6 +44511,20 @@ function handleFavoriteChannelSelect(key) {
         }
     }
     else if(state.remote.zone==='header') {
+        // Görünmeyen/devre dışı header butonuna odaklanmayı önle — gerekirse index düzelt
+        (function() {
+            var _hbEl0 = document.getElementById(HEADER_BUTTONS[state.remote.headerIndex]);
+            if (!_hbEl0 || _hbEl0.style.display === 'none' || _hbEl0.disabled) {
+                // Görünür ilk butonu bul
+                for (var _hbScan = 0; _hbScan < HEADER_BUTTONS.length; _hbScan++) {
+                    var _hbScanEl = document.getElementById(HEADER_BUTTONS[_hbScan]);
+                    if (_hbScanEl && _hbScanEl.style.display !== 'none' && !_hbScanEl.disabled) {
+                        state.remote.headerIndex = _hbScan;
+                        break;
+                    }
+                }
+            }
+        })();
         el=document.getElementById(HEADER_BUTTONS[state.remote.headerIndex]);
         const _hbId2 = HEADER_BUTTONS[state.remote.headerIndex] || '';
         const _hbHints2 = {
@@ -53796,16 +53824,29 @@ function _wrapRenderChannels() {
     window._renderChannelsWrapped = true;
     _origRenderChannels = window.renderChannels;
 
+    // window._origRenderChannels global olarak da tut — closePlayer restore sonrası güncelleyebilsin
+    window._origRenderChannels = _origRenderChannels;
+
     window.renderChannels = function() {
+        // M3U yükleme sırasında — streaming olsa bile render et
+        if (window._isLoadingM3U) {
+            var _rcLoad = window._origRenderChannels || _origRenderChannels;
+            if (_rcLoad) { try { _rcLoad(); } catch(e) {} }
+            return;
+        }
+        // _origRenderChannels her çağrıda window._origRenderChannels'tan taze al
+        // Bu sayede closePlayer restore sonrası pointer stale kalmaz
+        var _rc = window._origRenderChannels || _origRenderChannels;
         if (_streamingActive) {
             clearTimeout(_rcStreamDelay);
             _rcStreamDelay = setTimeout(function() {
-                if (!_isStreaming() && _origRenderChannels) _origRenderChannels();
+                var _rc2 = window._origRenderChannels || _origRenderChannels;
+                if (!_isStreaming() && _rc2) _rc2();
             }, 1500);
             return;
         }
-        if (_origRenderChannels) {
-            try { _origRenderChannels(); } catch(e) {}
+        if (_rc) {
+            try { _rc(); } catch(e) {}
         }
     };
 }
@@ -60998,7 +61039,14 @@ document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') {
             var active = document.activeElement;
             var btn    = document.getElementById('btnNotifTest');
-            if (btn && active && (active === btn || btn.contains(active))) {
+            // Normal focus kontrolü
+            var normalFocus = btn && active && (active === btn || btn.contains(active));
+            // Kumanda modu: header zone'da notif butonu seçiliyse
+            var remoteFocus = (typeof state !== 'undefined' && state.remote && state.remote.active &&
+                state.remote.zone === 'header' &&
+                (typeof HEADER_BUTTONS !== 'undefined') &&
+                HEADER_BUTTONS[state.remote.headerIndex] === 'btnNotifTest');
+            if (normalFocus || remoteFocus) {
                 e.preventDefault(); e.stopPropagation();
                 _openPanel();
                 return;

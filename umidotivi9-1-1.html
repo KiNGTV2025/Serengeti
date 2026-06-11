@@ -854,7 +854,7 @@ body, button, .channel-title, .cat-pill, .m3u-pill {
 /* ── 10. IMAGE DECODE — Bloklamayı Önle ── */
 img {
     decoding: async !important;
-    content-visibility: auto !important;
+    content-visibility: visible !important;
 }
 
 /* ── 11. CAT-PILL / M3U-PILL — Aktif Geçiş Hızı ── */
@@ -2104,12 +2104,13 @@ body {
         #sleepCountdownOverlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 99999;
+            background: #000000;
+            z-index: 9999999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            pointer-events: all;
         }
 
          
@@ -9984,10 +9985,9 @@ body.sidebar-open {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
 }
-/* ── content-visibility: TVBox GPU compositing ── */
+/* ── content-visibility: KALDIRILDI — EPG sidebar/bar bozuyor ── */
 .channel-card {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 120px;
+    content-visibility: visible;
 }
 /* ── GPU layer sadece kritik elemanlara ── */
 .app-header { contain: layout style; }
@@ -10515,7 +10515,75 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </head>
-<body class="fast-mode low-performance-mode"> 
+<body class="fast-mode low-performance-mode">
+
+<!-- ═══ TVBox Ultra Performance Boost — Ana CSS ═══ -->
+<style id="tvbox-ultra-boost">
+/* ── Tüm geçişleri daha da agresif kapat — GPU yük azalt ── */
+*,
+*::before,
+*::after {
+    /* backface-visibility removed - can break EPG iframe/fetch */
+}
+
+/* ── 1. Kaydırma çubuğu minimal ── */
+::-webkit-scrollbar { width:3px !important; height:3px !important; }
+::-webkit-scrollbar-track { background:transparent !important; }
+::-webkit-scrollbar-thumb { background:rgba(255,215,0,0.25) !important; border-radius:2px !important; }
+
+/* ── 2. Text rendering hızlandır ── */
+body {
+    text-rendering: optimizeSpeed !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* ── 3. Backdrop-filter tümünden kaldır — en ağır CSS özelliği ── */
+* {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+/* Sadece login kartında izin ver */
+.login-card {
+    backdrop-filter: none !important;
+}
+
+/* ── 4. Box-shadow maliyetini düşür — tek layer ── */
+.channel-card {
+    box-shadow: none !important;
+}
+
+/* ── 5. Contain agresif uygula ── */
+.channels-grid {
+    contain: layout style !important;
+}
+
+/* ── 6. Scroll snap kaldır — jank yapar ── */
+.channels-viewport,
+.channels-grid,
+.category-bar,
+.m3u-selector-bar {
+    scroll-snap-type: none !important;
+}
+
+/* ── 7. content-visibility: KALDIRILDI — EPG/sidebar bozuyor ── */
+
+/* ── 8. Kritik text-stroke kaldır ── */
+.loading-text-below {
+    -webkit-text-stroke: 0 !important;
+}
+
+/* ── 9. font-display kaldırıldı — sadece @font-face için geçerli ── */
+
+/* ── 10. SVG animasyonları durdur (logo vs.) ── */
+.orbit-ring,
+.logo-particle,
+.logo-rays,
+.logo-border-glow {
+    animation: none !important;
+    display: none !important;
+}
+</style>
+ 
 <style id="ultimate-player-style">
  
 
@@ -18213,7 +18281,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -19739,7 +19807,7 @@ function processEPGForChannel(channelKey) {
     const epgModalChannelName = document.getElementById('epgModalChannelName');
     
     if (epgModalChannelName) epgModalChannelName.textContent = `${channel.name} - Program Rehberi`;
-    if (epgModal) epgModal.style.display = 'flex';
+    if (epgModal) { epgModal.style.display = 'flex'; document.body.classList.add('epg-open', 'epg-modal-open'); }
 
     
 
@@ -19959,7 +20027,7 @@ function processEPGForChannel(channelKey) {
     }
     
     const _epgModal = document.getElementById('epgModal');
-    if (_epgModal) _epgModal.style.display = 'flex';
+    if (_epgModal) { _epgModal.style.display = 'flex'; document.body.classList.add('epg-open', 'epg-modal-open'); }
     
     // EPG modalı için remote state ayarla
     state.remote.zone = 'epgModal';
@@ -20105,6 +20173,7 @@ function openEpgModal() {
 
     // showChannelEpg yoksa eski davranış (fallback)
     modal.style.display = 'flex';
+    document.body.classList.add('epg-open', 'epg-modal-open'); /* channelInfoBanner gizle */
 
     if (state.remote.active) {
         state.remote.zone = 'epgModal';
@@ -20132,6 +20201,7 @@ function closeEpgModal() {
     if (!modal) return;
     
     modal.style.display = 'none';
+    document.body.classList.remove('epg-open', 'epg-modal-open'); /* channelInfoBanner geri göster */
     
     // Focus sınıflarını temizle (style.cssText dokunma — flicker yapar)
     document.querySelectorAll('.epg-remote-focused').forEach(el => el.classList.remove('epg-remote-focused'));
@@ -20619,7 +20689,7 @@ function applyTVBoxOptimizations() {
         }
 
         /* ── TVBox: img lazy decode ── */
-        img { content-visibility: auto; }
+        img { content-visibility: visible; }
         /* ── TVBox: Sidebar logo her zaman görünür ── */
         #sidebarChannelsList img,
         .channel-logo-small img,
@@ -20763,6 +20833,9 @@ function applyTVBoxOptimizations() {
     // Güvenlik countdown gibi kritik timer'ların throttle'dan kaçması için global'e aç
     window._origSetInterval = _origSetInterval;
     window._origClearInterval = _origClearInterval;
+    // setTimeout/clearTimeout native referanslarını da sakla
+    window._origSetTimeout = window.setTimeout;
+    window._origClearTimeout = window.clearTimeout;
     window.setInterval = function(fn, ms) {
         var args = Array.prototype.slice.call(arguments, 2);
         var fnStr = (typeof fn === 'function') ? fn.toString() : '';
@@ -24794,39 +24867,48 @@ function updateSleepModeTimer() {
             closePlayer();
             closeSidebar();
 
-            // Geri sayım overlay
-            let countdown = 5;
+            // Geri sayım overlay — drift-corrected setTimeout (TV/STB için en güvenilir)
+            const _cdTotal1 = 5;
             const overlay = document.getElementById('sleepCountdownOverlay');
             const numberEl = document.getElementById('sleepCountdownNumber');
 
             overlay.style.display = 'flex';
-            numberEl.textContent = countdown;
+            numberEl.textContent = _cdTotal1;
 
-            sleepCountdownInterval = setInterval(() => {
-                countdown--;
-                numberEl.textContent = countdown;
+            clearInterval(sleepCountdownInterval);
+            clearTimeout(sleepConfirmTimeout);
+            sleepCountdownInterval = null;
+            sleepConfirmTimeout = null;
+            if (window._sleepCdCancelFn) { window._sleepCdCancelFn(); window._sleepCdCancelFn = null; }
 
-                if (countdown <= 0) {
-                    clearInterval(sleepCountdownInterval);
-                }
-            }, 1000);
+            window._exitModeActive = true;   // cancelSleepShutdown'u kilitle
+            const _cdStart1 = Date.now();
+            let _cdCanceled1 = false;
+            let _cdHandle1 = null;
 
-            // 🔴 KESİN KAPANIŞ
-            sleepConfirmTimeout = setTimeout(() => {
-                if (!sleepCanceled) {
+            function _cdTick1() {
+                if (_cdCanceled1) return;
+                const elapsed = Date.now() - _cdStart1;
+                const remaining = Math.max(0, Math.ceil((_cdTotal1 * 1000 - elapsed) / 1000));
+                numberEl.textContent = remaining;
 
-                    // 🔥 UYKU MODUNU KALICI KAPAT
+                if (elapsed >= _cdTotal1 * 1000) {
                     state.controlSettings.sleepModeEnabled = false;
                     state.controlSettings.sleepTimer = null;
-
-                    localStorage.setItem(
-                        'controlSettings',
-                        JSON.stringify(state.controlSettings)
-                    );
-
+                    localStorage.setItem('controlSettings', JSON.stringify(state.controlSettings));
                     closeAppSafely();
+                    return;
                 }
-            }, 5000);
+                // Bir sonraki tam saniyeye ne kadar kaldı?
+                const nextTick = 1000 - (elapsed % 1000);
+                _cdHandle1 = setTimeout(_cdTick1, nextTick);
+            }
+            _cdHandle1 = setTimeout(_cdTick1, 1000);
+            window._sleepCdCancelFn = function() {
+                _cdCanceled1 = true;
+                clearTimeout(_cdHandle1);
+                _cdHandle1 = null;
+            };
 
         }, sleepTimeMs);
     }
@@ -24836,16 +24918,21 @@ function updateSleepModeTimer() {
    CANCEL SHUTDOWN
 ================================ */
 function cancelSleepShutdown() {
-    if (!sleepConfirmTimeout && !sleepCountdownInterval) return;
+    // Exit modundaysa (uygulama kapanıyor) iptal edilemez
+    if (window._exitModeActive) return;
+    // Sadece geri sayım aktifse iptal et
+    const overlay = document.getElementById('sleepCountdownOverlay');
+    const isCountdownActive = overlay && overlay.style.display === 'flex';
+    if (!isCountdownActive && !sleepConfirmTimeout && !sleepCountdownInterval && !window._sleepCdCancelFn) return;
 
+    sleepCanceled = true;
+    window._exitModeActive = false;  // exit modunu sıfırla
+    if (window._sleepCdCancelFn) { window._sleepCdCancelFn(); window._sleepCdCancelFn = null; }
     clearTimeout(sleepConfirmTimeout);
     clearInterval(sleepCountdownInterval);
-
     sleepConfirmTimeout = null;
     sleepCountdownInterval = null;
-    sleepCanceled = true;
 
-    const overlay = document.getElementById('sleepCountdownOverlay');
     const numberEl = document.getElementById('sleepCountdownNumber');
 
     if (overlay) {
@@ -24879,11 +24966,11 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             
             if (!document.fullscreenElement) {
                 if (playerContainer.requestFullscreen) {
-                    playerContainer.requestFullscreen();
+                    playerContainer.requestFullscreen().catch(function(){});
                 } else if (playerContainer.webkitRequestFullscreen) {
-                    playerContainer.webkitRequestFullscreen();
+                    try { playerContainer.webkitRequestFullscreen(); } catch(e) {}
                 } else if (playerContainer.msRequestFullscreen) {
-                    playerContainer.msRequestFullscreen();
+                    try { playerContainer.msRequestFullscreen(); } catch(e) {}
                 }
                 // Tam ekranda video tüm alanı kaplar (siyah boşluk kalmaz)
                 if (vid) { vid.style.objectFit = 'cover'; vid.style.width = '100%'; vid.style.height = '100%'; }
@@ -24896,11 +24983,11 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 showToast("Tam ekran modu açıldı");
             } else {
                 if (document.exitFullscreen) {
-                    document.exitFullscreen();
+                    document.exitFullscreen().catch(function(){});
                 } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
+                    try { document.webkitExitFullscreen(); } catch(e) {}
                 } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                    try { document.msExitFullscreen(); } catch(e) {}
                 }
                 // Tam ekrandan çıkınca contain'e dön
                 if (vid) { vid.style.objectFit = ''; vid.style.width = ''; vid.style.height = ''; }
@@ -31909,6 +31996,7 @@ function openEpgModalForTvBox() {
     if (!modal) return;
     
     modal.style.display = 'flex';
+    document.body.classList.add('epg-open', 'epg-modal-open'); /* channelInfoBanner gizle */
     
     // TV Box remote ayarları
     if (state.remote.active) {
@@ -34296,6 +34384,7 @@ function _vhsCatCheck() {
 // gerçek fonksiyonu işaret eder; restore sonrası hem window.renderChannels hem _realRenderChannels güncellenir.
 window._realRenderChannels = window.renderChannels;
 window.renderChannels = function() {
+    if (window._renderFrozenByPlayer) return;
     var _rc = window._realRenderChannels;
     if (_rc) _rc.apply(this, arguments);
     setTimeout(_vhsCatCheck, 150);
@@ -34387,6 +34476,7 @@ setTimeout(_vhsInit, 1200);
     // ════════════════════════════════════════════════════════
     var _recentContainer = null;
     function renderRecentChannels() {
+        if (window._renderFrozenByPlayer) return;
         // Ana grid görünümündeyken göster
         const mainGrid = document.getElementById('channelsGrid') || document.getElementById('channelsViewport');
         if (!mainGrid) return;
@@ -34695,6 +34785,7 @@ setTimeout(_vhsInit, 1200);
     }
 
    function renderContinueWatching() {
+    if (window._renderFrozenByPlayer) return;
     const container = document.getElementById('continueWatchingContainer');
     const continueList = Object.values(state.continueWatching).filter(c => {
         // Kanallar henüz yüklenmemişse sadece progress kontrolü yap
@@ -35702,44 +35793,76 @@ function addContinueCardStyles() {
         function exitApp() {
             playKeySound('back');
 
-            // Player temizliği
-            if (state.player.hls) {
-                state.player.hls.destroy();
-                state.player.hls = null;
-            }
-            const video = document.getElementById('videoPlayer');
-            if (video) { video.pause(); video.src = ''; }
-
-            closeAllModals();
-            closePlayer();
-            closeSidebar();
-
-            // Geri sayım overlay
-            let countdown = 3;
-            const overlay = document.getElementById('sleepCountdownOverlay');
-            const numberEl = document.getElementById('sleepCountdownNumber');
-            overlay.style.display = 'flex';
-            numberEl.textContent = countdown;
-
-            // Overlay metnini kapatma mesajına çevir
-            const overlayText = overlay.querySelector('.sleep-countdown-text');
-            const origText = overlayText ? overlayText.innerHTML : '';
-            if (overlayText) overlayText.innerHTML = 'ÜmitTV Kapatılıyor<br>Hoşçakal Birtanem';
-
+            // ── 1) Tüm eski timer'ları temizle ──
+            window._exitModeActive = true;
             sleepCanceled = false;
             clearInterval(sleepCountdownInterval);
-            sleepCountdownInterval = setInterval(() => {
-                countdown--;
-                numberEl.textContent = countdown;
-                if (countdown <= 0) clearInterval(sleepCountdownInterval);
-            }, 1000);
-
             clearTimeout(sleepConfirmTimeout);
-            sleepConfirmTimeout = setTimeout(() => {
-                if (!sleepCanceled) closeAppSafely();
-                // Metni eski haline döndür (iptal edilirse)
+            sleepCountdownInterval = null;
+            sleepConfirmTimeout = null;
+            window._sleepCdCancelFn = null;
+
+            // ── 2) Overlay'i body'e taşı ve göster (closePlayer/closeAllModals'tan önce) ──
+            const overlay = document.getElementById('sleepCountdownOverlay');
+            const numberEl = document.getElementById('sleepCountdownNumber');
+            const overlayText = overlay ? overlay.querySelector('.sleep-countdown-text') : null;
+            const origText = overlayText ? overlayText.innerHTML : '';
+            if (overlayText) overlayText.innerHTML = 'ÜmitTV Kapatılıyor<br>Hoşçakal Birtanem';
+            // body'e append et — herhangi bir parent'ın display:none'ından kaçmak için
+            document.body.appendChild(overlay);
+            overlay.style.cssText = 'display:flex !important; z-index:9999999 !important; position:fixed !important; inset:0 !important; background:#000000 !important; flex-direction:column; align-items:center; justify-content:center; pointer-events:all !important;';
+
+            const _cdTotal2 = 3;
+            if (numberEl) numberEl.textContent = _cdTotal2;
+
+            // ── 3) Geri sayım başlat — closePlayer'dan önce, daha sonra hiçbir şey bozamaz ──
+            const _cdStart2 = Date.now();
+            let _cdShown2 = _cdTotal2;
+            let _cdHandle2 = null;
+            let _cdDone2 = false;
+            const _nativeST = window._origSetTimeout || setTimeout;
+            const _nativeCT = window._origClearTimeout || clearTimeout;
+
+            function _cdPoll2() {
+                if (_cdDone2) return;
+                // overlay'i her tick'te yeniden zorla — başka kod kapatmasın
+                overlay.style.display = 'flex';
+                const elapsed = Date.now() - _cdStart2;
+                if (elapsed >= _cdTotal2 * 1000) {
+                    _cdDone2 = true;
+                    if (numberEl) numberEl.textContent = 0;
+                    closeAppSafely();
+                    if (overlayText) overlayText.innerHTML = origText;
+                    return;
+                }
+                const remaining = _cdTotal2 - Math.floor(elapsed / 1000);
+                if (remaining !== _cdShown2) {
+                    _cdShown2 = remaining;
+                    if (numberEl) numberEl.textContent = remaining;
+                }
+                _cdHandle2 = _nativeST.call(window, _cdPoll2, 80);
+            }
+            _cdHandle2 = _nativeST.call(window, _cdPoll2, 80);
+
+            window._sleepCdCancelFn = function() {
+                if (window._exitModeActive) return;
+                _cdDone2 = true;
+                _nativeCT.call(window, _cdHandle2);
+                _cdHandle2 = null;
+                sleepCanceled = true;
+                overlay.style.display = 'none';
                 if (overlayText) overlayText.innerHTML = origText;
-            }, 3000);
+            };
+
+            // ── 4) Player / modal temizliği (overlay kurulduktan sonra güvenle çağır) ──
+            try {
+                if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
+                const video = document.getElementById('videoPlayer');
+                if (video) { video.pause(); video.src = ''; }
+                closeAllModals();
+                closePlayer();
+                closeSidebar();
+            } catch(e) {}
         }
 
         // ── KANAL SIRALAMA SİSTEMİ ────────────────────────────────────────
@@ -37195,7 +37318,8 @@ function addContinueCardStyles() {
                 }, 400);
             });
         }
-        function filterChannels() {
+        window.filterChannels = function filterChannels() {
+    if (window._renderFrozenByPlayer) return;
     const now = performance.now();
     
     clearTimeout(state.highPerf.debounceTimer);
@@ -37304,7 +37428,13 @@ function addContinueCardStyles() {
         document.getElementById('activeCategoryTitle').innerText = categoryTitle;
         
         // 4. Kanalları render et
-        renderChannels();
+        try { renderChannels(); } catch(e) {
+            // Fallback: doğrudan _origRenderChannels dene
+            try {
+                var _rf = window._origRenderChannels || window._realRenderChannels;
+                if (typeof _rf === 'function') _rf();
+            } catch(e2) {}
+        }
         
         // 5. Series kartlarını güncelle (async)
         setTimeout(() => {
@@ -37330,6 +37460,7 @@ function addContinueCardStyles() {
 // ============================================================
 
 function renderChannels() {
+    if (window._renderFrozenByPlayer) return;
     const grid = document.getElementById('channelsGrid');
     if (!grid) {
         return;
@@ -38083,6 +38214,7 @@ function selectCat(id) {
 
 // Kategori pill'lerini render ederken:
 function renderCats() {
+    if (window._renderFrozenByPlayer) return;
     const div = document.getElementById('categoryContainer');
     let html = '';
     const _hiddenCats3 = getHiddenCategories();
@@ -38680,20 +38812,17 @@ function resumeChannel(startTime) {
         };
     }
     // 3) Arka plan render fonksiyonlarını geçici olarak engelle
+    // FLAG tabanlı freeze — fonksiyonların üstüne yazma, sadece bayrak koy
+    // Böylece tüm closure zinciri bozulmaz, closePlayer'da tek satırla açılır
+    window._renderFrozenByPlayer = true;
+    // Referansları yine sakla (closePlayer'daki mevcut restore kodu için)
     window._renderChannelsFrozen    = window.renderChannels;
     window._renderSidebarFrozen     = window.renderSidebarChannels;
     window._renderCatsFrozen        = window.renderCats;
     window._renderContinueFrozen    = window.renderContinueWatching;
     window._renderRecentFrozen      = window.renderRecentChannels;
-    window.renderChannels           = function() {};
-    // _realRenderChannels ve _origRenderChannels'ı da boş yap (freeze tutarlı olsun)
-    // restore sonrası closePlayer bunları tekrar güncelleyecek
     if (typeof window._realRenderChannels !== 'undefined') window._realRenderChannelsFrozen = window._realRenderChannels;
     if (typeof window._origRenderChannels !== 'undefined') window._origRenderChannelsFrozen = window._origRenderChannels;
-    window.renderSidebarChannels    = function() {};
-    window.renderCats               = function() {};
-    window.renderContinueWatching   = function() {};
-    window.renderRecentChannels     = function() {};
 
     // Başa dön butonu player açıkken gizle
     setTimeout(() => { typeof window._umkGoTopUpdate === 'function' && window._umkGoTopUpdate(); }, 50);
@@ -40862,46 +40991,70 @@ function closePlayer() {
         };
     }
     // 3) Render fonksiyonlarını geri yükle
-    if (window._renderChannelsFrozen)  { window.renderChannels         = window._renderChannelsFrozen;  window._renderChannelsFrozen  = null; }
-    if (window._renderSidebarFrozen)   { window.renderSidebarChannels  = window._renderSidebarFrozen;   window._renderSidebarFrozen   = null; }
-    if (window._renderCatsFrozen)      { window.renderCats             = window._renderCatsFrozen;       window._renderCatsFrozen      = null; }
-    if (window._renderContinueFrozen)  { window.renderContinueWatching = window._renderContinueFrozen;  window._renderContinueFrozen  = null; }
-    if (window._renderRecentFrozen)    { window.renderRecentChannels   = window._renderRecentFrozen;     window._renderRecentFrozen    = null; }
-    // _wrapRenderChannels scope'undaki _origRenderChannels pointer'ını senkronize et.
-    // Player açılırken freeze, wrap'ten ÖNCE olmuş olabilir → _origRenderChannels
-    // hâlâ eski boş function(){} işaret ediyor. Restore sonrası güncelle.
-    if (typeof window._origRenderChannels !== 'undefined') {
-        window._origRenderChannels = window._origRenderChannelsFrozen || window.renderChannels;
-        window._origRenderChannelsFrozen = null;
-    }
-    // _origRC hook'u da güncelle (closure freeze sorunu: _origRC = function(){} kalmış olabilir)
-    if (typeof window._realRenderChannels !== 'undefined') {
-        window._realRenderChannels = window._realRenderChannelsFrozen || window.renderChannels;
-        window._realRenderChannelsFrozen = null;
-    }
-    // _streamingActive kesinlikle false yap — pause event bazen geç gelir
+    // 3-restore) Freeze flag'ini kaldır — tüm closure zincirleri artık çalışabilir
+    window._renderFrozenByPlayer = false;
+    // Referans kopyaları temizle
+    window._renderChannelsFrozen = null;
+    window._renderSidebarFrozen = null;
+    window._renderCatsFrozen = null;
+    window._renderContinueFrozen = null;
+    window._renderRecentFrozen = null;
+    window._origRenderChannelsFrozen = null;
+    window._realRenderChannelsFrozen = null;
+    // _streamingActive kesinlikle false yap
     if (typeof window._streamingActive !== 'undefined') window._streamingActive = false;
-    // 4) Tüm UI'ı render et — sıra önemli: cats → channels → continue
+    window._streamingActive = false;
+    // 4) activeCat restore — player açılmadan önceki kategoriyi geri yükle
+    try {
+        var _savedCat = window._UTV && window._UTV._savedActiveCat;
+        if (_savedCat && window.state) {
+            window.state.activeCat = _savedCat;
+            if (window.state.sidebar) window.state.sidebar.currentCategory = _savedCat;
+        }
+    } catch(e) {}
+    // Tüm UI'ı render et
     _streamingActive = false;
     setTimeout(function() {
-        try {
-            // renderCats: kategori pill'leri (bu da freeze ediliyordu — restore ettik ama çağrılmıyordu)
-            if (typeof renderCats === 'function') renderCats();
-        } catch(e) {}
+        try { if (typeof renderCats === 'function') renderCats(); } catch(e) {}
         setTimeout(function() {
             try {
-                // renderChannels: wrap bypass → _origRenderChannels doğrudan çağır
-                var _rcFn = window._origRenderChannels;
-                if (typeof _rcFn === 'function') {
-                    _rcFn();
-                } else if (typeof renderChannels === 'function') {
-                    renderChannels();
+                // state.filtered boşsa yeniden doldur
+                if (!window.state.filtered || window.state.filtered.length === 0) {
+                    if (window.state.channels && window.state.channels.length > 0) {
+                        window.state.filtered = window.state.channels.filter(function(c) {
+                            return window.state.selectedM3U === 'all' || c.listIdx == window.state.selectedM3U;
+                        });
+                        if (window.state.filtered.length === 0) window.state.filtered = window.state.channels.slice();
+                    }
                 }
-                if (typeof renderContinueWatching === 'function' && state.activeCat === 'all') renderContinueWatching();
-                if (typeof renderRecentChannels === 'function') renderRecentChannels();
+                // highPerf debounce kilidini aç
+                if (window.state.highPerf) {
+                    window.state.highPerf.isFiltering = false;
+                    window.state.highPerf.lastRenderTime = 0;
+                    clearTimeout(window.state.highPerf.debounceTimer);
+                }
+                if (typeof window.filterChannels === 'function') {
+                    window.filterChannels();
+                } else if (typeof renderChannels === 'function') {
+                    try { renderChannels(); } catch(e) {}
+                }
+                var _cat = window.state && window.state.activeCat;
+                if (typeof renderContinueWatching === 'function' && (_cat === 'all' || _cat === 'Tümü')) { try { renderContinueWatching(); } catch(e) {} }
+                if (typeof renderRecentChannels === 'function') { try { renderRecentChannels(); } catch(e) {} }
             } catch(e) {}
-        }, 30);
-    }, 20);
+            // Güvenlik: grid hâlâ boşsa 400ms sonra tekrar dene
+            setTimeout(function() {
+                try {
+                    var _g = document.getElementById('channelsGrid');
+                    if (_g && _g.children.length === 0 && window.state && window.state.filtered && window.state.filtered.length > 0) {
+                        if (window.state.highPerf) { window.state.highPerf.isFiltering = false; window.state.highPerf.lastRenderTime = 0; }
+                        if (typeof window.filterChannels === 'function') { try { window.filterChannels(); } catch(e) {} }
+                        else if (typeof renderChannels === 'function') { try { renderChannels(); } catch(e) {} }
+                    }
+                } catch(e) {}
+            }, 400);
+        }, 50);
+    }, 30);
     // 5) Lazy load kaldığı yerden devam et
     if (typeof window._lazyLoadResumeCallback === 'function') {
         setTimeout(window._lazyLoadResumeCallback, 200);
@@ -54796,6 +54949,8 @@ function _wrapRenderChannels() {
     window._origRenderChannels = _origRenderChannels;
 
     window.renderChannels = function() {
+        // Player tarafından freeze edilmişse çalışma
+        if (window._renderFrozenByPlayer) return;
         // M3U yükleme sırasında — streaming olsa bile render et
         if (window._isLoadingM3U) {
             var _rcLoad = window._origRenderChannels || _origRenderChannels;
@@ -54805,11 +54960,14 @@ function _wrapRenderChannels() {
         // _origRenderChannels her çağrıda window._origRenderChannels'tan taze al
         // Bu sayede closePlayer restore sonrası pointer stale kalmaz
         var _rc = window._origRenderChannels || _origRenderChannels;
-        if (_streamingActive) {
+        // Player kapalıyken (UIFrozen=false) streaming gecikmesini atla —
+        // closePlayer restore sonrası kartlar anında çizilsin
+        var _isPlayerOpen = window._playerUIFrozen === true;
+        if (_streamingActive && _isPlayerOpen) {
             clearTimeout(_rcStreamDelay);
             _rcStreamDelay = setTimeout(function() {
                 var _rc2 = window._origRenderChannels || _origRenderChannels;
-                if (!_isStreaming() && _rc2) _rc2();
+                if (!_isStreaming() && _rc2) { try { _rc2(); } catch(e) {} }
             }, 1500);
             return;
         }
@@ -55825,7 +55983,7 @@ function _patchUpdateRemoteFocus() {
     // renderChannels cache invalidate
     var _origRender = window.renderChannels;
     if (typeof _origRender === 'function' && !_origRender._cacheInv) {
-        window.renderChannels = function() { _cardCache = null; _cardCacheLen = 0; return _origRender.apply(this, arguments); };
+        window.renderChannels = function() { if (window._renderFrozenByPlayer) return; _cardCache = null; _cardCacheLen = 0; return _origRender.apply(this, arguments); };
         window.renderChannels._cacheInv = true;
     }
     window.updateRemoteFocus = function() {
@@ -56369,6 +56527,7 @@ function _hookRenderChannels() {
     var _orig = window.renderChannels;
     if (typeof _orig !== 'function' || _orig._numHooked) return;
     window.renderChannels = function() {
+        if (window._renderFrozenByPlayer) return;
         var ret = _orig.apply(this, arguments);
         // DOM hazır olunca badge ekle
         setTimeout(_addBadges, 120);
@@ -57197,6 +57356,7 @@ _ready(function() {
 
     window.renderChannels = function() {
         // Player açıkken render etme — video donması önle
+        if (window._renderFrozenByPlayer) return;
         if (window.state && window.state.player && window.state.player.isOpen) return;
 
         clearTimeout(_renderTimer);
@@ -64742,7 +64902,7 @@ document.addEventListener('keydown', function(e) {
       <span id="chNoteChannelLabel" style="margin-left:4px;font-size:12px;color:rgba(255,255,255,0.45);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
       <button id="chNoteCloseBtn" onclick="closeChNoteModal()" style="margin-left:auto;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.35);border-radius:7px;color:#ff7070;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <textarea id="chNoteInput" tabindex="0" maxlength="200" placeholder="Bu kanal için not bırak... (maks. 200 karakter)" style="width:100%;min-height:90px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:11px 13px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;resize:none;box-sizing:border-box;line-height:1.5;" onfocus="this.style.borderColor='rgba(255,215,0,0.6)';this.style.outline='2px solid rgba(255,215,0,0.4)'" onblur="this.style.borderColor='rgba(255,215,0,0.25)';this.style.outline='none'" oninput="document.getElementById('chNoteCharCount').textContent=(200-this.value.length)+' karakter kaldı'"></textarea>
+    <textarea id="chNoteInput" tabindex="0" maxlength="200" readonly inputmode="none" placeholder="Bu kanal için not bırak... (maks. 200 karakter)" style="width:100%;min-height:90px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:11px 13px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;resize:none;box-sizing:border-box;line-height:1.5;caret-color:transparent;" onfocus="this.style.borderColor='rgba(255,215,0,0.6)';this.style.outline='2px solid rgba(255,215,0,0.4)';this.removeAttribute('readonly');" onblur="this.style.borderColor='rgba(255,215,0,0.25)';this.style.outline='none';this.setAttribute('readonly','');" oninput="document.getElementById('chNoteCharCount').textContent=(200-this.value.length)+' karakter kaldı'"></textarea>
     <div id="chNoteCharCount" style="font-size:10px;color:rgba(255,255,255,0.3);text-align:right;margin-top:4px;margin-bottom:12px;">200 karakter kaldı</div>
     <div style="display:flex;gap:8px;">
       <button id="chNoteSaveBtn" onclick="saveChNote()" style="flex:2;padding:11px;background:linear-gradient(135deg,rgba(255,215,0,0.9),rgba(255,170,0,0.9));border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;">
@@ -65292,21 +65452,22 @@ function openChNoteModal(channelName) {
         _cnUpdateRemoteFocus();
     }
 
-    // Textarea'yı gerçekten focus'la — birden fazla deneme
-    function _forceFocusTextarea() {
-        var inp = document.getElementById('chNoteInput');
-        if (!inp) return;
-        inp.removeAttribute('readonly');
-        inp.setAttribute('tabindex', '0');
-        inp.focus();
-        inp.click();
-        // Cursor'u sona al
-        var len = inp.value.length;
-        try { inp.setSelectionRange(len, len); } catch(e) {}
+    // TV/STB kumanda modu: textarea'ya focus/click yapma — sistem klavyesi açılır
+    // Kumanda D-Pad ile zaten yönetiliyor, readonly modunda çalışır
+    var _isTvBox = window._tvBoxMode || (window.state && window.state.remote && window.state.remote.active);
+    if (!_isTvBox) {
+        // Sadece dokunmatik/fare modunda sistem klavyesini aç
+        function _forceFocusTextarea() {
+            var inp = document.getElementById('chNoteInput');
+            if (!inp) return;
+            inp.removeAttribute('readonly');
+            inp.setAttribute('tabindex', '0');
+            inp.focus();
+            var len = inp.value.length;
+            try { inp.setSelectionRange(len, len); } catch(e) {}
+        }
+        setTimeout(_forceFocusTextarea, 100);
     }
-    setTimeout(_forceFocusTextarea, 100);
-    setTimeout(_forceFocusTextarea, 300);
-    setTimeout(_forceFocusTextarea, 600);
 }
 
 function closeChNoteModal() {
@@ -65390,6 +65551,7 @@ function _refreshNotesBadges() {
         if (window.renderChannels._notesBadgeWrapped) return;
         var orig = window.renderChannels;
         window.renderChannels = function() {
+            if (window._renderFrozenByPlayer) return;
             var result = orig.apply(this, arguments);
             setTimeout(_refreshNotesBadges, 300);
             return result;
@@ -66329,6 +66491,10 @@ window.openVoiceSearch = function () {
     document.getElementById('vsStatus').className = 'vs-status';
     document.getElementById('vsMicBtn').className = 'vs-mic-btn';
 
+    // Index'i şimdi hazırla — arama anında gecikme olmasın
+    _vsIndexedForFiltered = null; // zorla yenile
+    setTimeout(_vsBuildIndex, 0);
+
     /* Remote zone kaydet */
     if (window.state && window.state.remote) {
         window._vsPrevZone = window.state.remote.zone;
@@ -66429,62 +66595,86 @@ function _vsStopListen() {
 }
 
 /* ── Arama ── */
+/* ── Önceden hazırlanmış arama index'i ── */
+var _vsChannelIndex = null; // { normalizedName → [{ch, filteredIdx}] } Map
+var _vsIndexedForFiltered = null; // hangi filtered array için index yapıldı
+
+function _vsBuildIndex() {
+    var allChannels = (window.state && window.state.channels) || [];
+    var filtered    = (window.state && window.state.filtered)  || [];
+
+    // filtered değişmediyse yeniden yapma
+    if (_vsIndexedForFiltered === filtered && _vsChannelIndex) return;
+    _vsIndexedForFiltered = filtered;
+
+    // URL → filteredIdx Map (O(n))
+    var urlToFi = new Map();
+    for (var fi = 0; fi < filtered.length; fi++) {
+        var fch = filtered[fi];
+        if (fch && fch.url) urlToFi.set(fch.url, fi);
+    }
+
+    // allChannels → normalize edilmiş isim listesi (O(n))
+    _vsChannelIndex = [];
+    for (var i = 0; i < allChannels.length; i++) {
+        var ch = allChannels[i];
+        if (!ch || !ch.name) continue;
+        var nn = _vsNormalize(ch.name);
+        var fi2 = (ch.url && urlToFi.has(ch.url)) ? urlToFi.get(ch.url) : -1;
+        _vsChannelIndex.push({ ch: ch, nn: nn, idx: fi2 });
+    }
+}
+
+function _vsNormalize(s) {
+    return (s || '').toLowerCase()
+        .replace(/ı/g,'i').replace(/İ/g,'i')
+        .replace(/ş/g,'s').replace(/Ş/g,'s')
+        .replace(/ğ/g,'g').replace(/Ğ/g,'g')
+        .replace(/ü/g,'u').replace(/Ü/g,'u')
+        .replace(/ö/g,'o').replace(/Ö/g,'o')
+        .replace(/ç/g,'c').replace(/Ç/g,'c');
+}
+
 function _vsSearchText(query) {
-    query = (query || '').trim().toLowerCase();
+    query = (query || '').trim();
     if (!query) { _vsRenderResults([]); return; }
 
-    var channels = (window.state && window.state.filtered) || [];
-    var results = [];
+    _vsBuildIndex(); // zaten güncelse anında döner
 
-    /* Türkçe karakter normalize */
-    function normalize(s) {
-        return s.toLowerCase()
-            .replace(/ı/g,'i').replace(/İ/g,'i')
-            .replace(/ş/g,'s').replace(/Ş/g,'s')
-            .replace(/ğ/g,'g').replace(/Ğ/g,'g')
-            .replace(/ü/g,'u').replace(/Ü/g,'u')
-            .replace(/ö/g,'o').replace(/Ö/g,'o')
-            .replace(/ç/g,'c').replace(/Ç/g,'c');
-    }
-
-    var nq = normalize(query);
+    var nq = _vsNormalize(query);
     var exact = [], starts = [], contains = [];
+    var idx = _vsChannelIndex || [];
 
-    for (var i = 0; i < channels.length; i++) {
-        var ch = channels[i];
-        if (!ch || !ch.name) continue;
-        var nn = normalize(ch.name);
-        if (nn === nq) { exact.push({ch:ch,idx:i}); }
-        else if (nn.indexOf(nq) === 0) { starts.push({ch:ch,idx:i}); }
-        else if (nn.indexOf(nq) >= 0) { contains.push({ch:ch,idx:i}); }
+    for (var i = 0; i < idx.length; i++) {
+        var entry = idx[i];
+        var nn = entry.nn;
+        var item = { ch: entry.ch, idx: entry.idx };
+        if (nn === nq)                 { exact.push(item);    if (exact.length >= 5) break; }
+        else if (nn.indexOf(nq) === 0) { starts.push(item);   }
+        else if (nn.indexOf(nq) >= 0)  { contains.push(item); }
+        // 20 bulunca erken çık
+        if (starts.length + contains.length >= 20) break;
     }
 
-    results = exact.concat(starts).concat(contains).slice(0, 20);
+    var results = exact.concat(starts).concat(contains).slice(0, 20);
     _vsResults = results;
     _vsFocusIdx = 0;
 
     /* ── TEK SONUÇ: direkt oynat, modal kapat ── */
     if (results.length === 1) {
         var _onlyResult = results[0];
-        /* Kısa bekleme: ses algılama mesajı görünsün sonra uçsun */
         setTimeout(function () {
             if (typeof showToast === 'function') showToast('▶ ' + _onlyResult.ch.name, 'success');
             closeVoiceSearch();
-            setTimeout(function () {
-                if (typeof playChannel === 'function') playChannel(_onlyResult.idx, 0);
-            }, 80);
+            setTimeout(function () { _vsPlayItem(_onlyResult); }, 80);
         }, 420);
-        /* Arayüzde tek sonucu göster (kısa süreliğine) */
         _vsRenderResults(results);
         return;
     }
 
-    /* ── BİRDEN FAZLA SONUÇ: listeye düş, ilk öğeye odaklan ── */
     _vsRenderResults(results);
     if (results.length > 0) {
         _vsFocusZone = 'results';
-        /* flat index'i ilk result öğesine taşı:
-           Sıra: close(0) mic(1) input(2) search(3) results[0](4)... */
         _vsFlatIdx = 4;
     }
     _vsUpdateFocus();
@@ -66526,17 +66716,25 @@ function _vsRenderResults(results) {
     }).join('');
 }
 
+/* ── Kanal oynat — filtered index varsa playChannel, yoksa playChannelByName ── */
+function _vsPlayItem(r) {
+    if (!r || !r.ch) return;
+    if (r.idx >= 0 && typeof playChannel === 'function') {
+        playChannel(r.idx, 0);
+    } else if (typeof playChannelByName === 'function') {
+        playChannelByName(r.ch.name);
+    } else if (r.ch.url && typeof playChannelByUrl === 'function') {
+        playChannelByUrl(r.ch.url, r.ch.name);
+    }
+}
+
 /* ── Seçilen kanalı oynat ── */
 window.vsPlayResult = function (i) {
     var r = _vsResults[i];
     if (!r) return;
-    closeVoiceSearch();
-    setTimeout(function () {
-        if (typeof playChannel === 'function') {
-            playChannel(r.idx, 0);
-        }
-    }, 100);
     if (typeof showToast === 'function') showToast('▶ ' + r.ch.name, 'success');
+    closeVoiceSearch();
+    setTimeout(function () { _vsPlayItem(r); }, 100);
 };
 
 /* ── D-Pad focus sistemi ── */
@@ -66990,3 +67188,1383 @@ window.umitSendPush      = window.umitSendPush;
 
 })(); /* ÜmitTV v3.9 — Voice + Push */
 </script>
+
+
+<style id="epg-modal-zindex-fix">
+/* ═══ EPG MODAL Z-INDEX DÜZELTMESİ ═══
+   channelInfoBanner EPG modalının üstünde kalıyor — düzelt
+   epgModal açıkken banner gizle, z-index yükselt */
+
+/* EPG modal z-index — channelInfoBanner (99999) üstünde olmalı */
+.epg-modal {
+    z-index: 100000 !important;
+}
+.epg-modal-content {
+    z-index: 100001 !important;
+    position: relative;
+}
+
+/* EPG modal açıkken channelInfoBanner gizle */
+body.epg-open #channelInfoBanner,
+body.epg-modal-open #channelInfoBanner {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* EPG modal backdrop tam ekran opak */
+.epg-modal {
+    background: rgba(0, 0, 0, 0.97) !important;
+}
+
+/* EPG modal içeriği — temiz görünüm */
+.epg-modal-content {
+    background: var(--bg-panel, #1a1a2e) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 1px rgba(255,215,0,0.15),
+                0 30px 80px rgba(0,0,0,0.9) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* EPG header — temiz */
+.epg-modal-header {
+    background: rgba(0,0,0,0.5) !important;
+    border-bottom: 1px solid rgba(255,215,0,0.2) !important;
+    padding: 14px 16px !important;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.epg-modal-title {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: var(--accent-primary, #FFD700) !important;
+    letter-spacing: 0.5px;
+}
+
+/* EPG kapat butonu — sağ üstte net */
+#epgModalCloseBtn {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1.5px solid rgba(255,255,255,0.15) !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    z-index: 10 !important;
+    position: relative !important;
+}
+#epgModalCloseBtn:hover,
+#epgModalCloseBtn.remote-focused,
+#epgModalCloseBtn.nf-focused {
+    background: rgba(255,60,60,0.25) !important;
+    border-color: rgba(255,80,80,0.7) !important;
+    box-shadow: 0 0 0 3px rgba(255,60,60,0.4) !important;
+}
+
+/* EPG body — scroll temiz */
+.epg-modal-body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255,215,0,0.3) transparent !important;
+}
+.epg-modal-body::-webkit-scrollbar { width: 4px !important; }
+.epg-modal-body::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3) !important; border-radius: 2px !important; }
+.epg-modal-body::-webkit-scrollbar-track { background: transparent !important; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ÜMİT TV BOX — ULTRA NAVİGASYON ENGİNE v5.0
+     KASMA YOK · DONMA YOK · MÜKEMMEL KUMANDA ODAĞI
+     Her buton · her pill · her modal · her grid
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="tvbox-nav-engine-css">
+
+/* ════════════════════════════════════════════════
+   ODAK SİSTEMİ v5.0 — Katmanlı, GPU-Hızlandırmalı
+   ════════════════════════════════════════════════ */
+
+/* CSS değişkenleri */
+:root {
+  --nf-r: 255;
+  --nf-g: 215;
+  --nf-b: 0;
+  --nf-color: rgb(var(--nf-r), var(--nf-g), var(--nf-b));
+  --nf-shadow-sm: 0 0 0 3px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.95);
+  --nf-shadow-lg: 0 0 0 3px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.95),
+                  0 0 18px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.45);
+}
+
+/* ── Temel odak sınıfı: her element için tek kural ── */
+.nf-focused,
+.nf-focused.remote-focused {
+  box-shadow: var(--nf-shadow-sm) !important;
+  border-color: rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.9) !important;
+  outline: none !important;
+  z-index: 10 !important;
+  position: relative !important;
+  /* GPU katmanı — box-shadow değişimi kompozit katmanda, repaint yok */
+  will-change: box-shadow !important;
+  animation: nfPulse 1.8s ease-in-out infinite !important;
+  transform: none !important;
+}
+
+/* Kanal kartı — scale YOK, ızgara bozulmasın */
+.channel-card.nf-focused,
+.vod-episode-card.nf-focused,
+.recent-card.nf-focused,
+.continue-card.nf-focused,
+.channel-list-item.nf-focused,
+.nf-focused.channel-card,
+.nf-focused.recent-card {
+  transform: none !important;
+  animation: nfPulse 1.8s ease-in-out infinite !important;
+  box-shadow: var(--nf-shadow-lg) !important;
+  border-color: var(--nf-color) !important;
+}
+
+/* Butonlar — hafif ölçek yok, sadece glow */
+.header-btn.nf-focused,
+.player-action-btn.nf-focused,
+.m3u-pill.nf-focused,
+.cat-pill.nf-focused,
+.sidebar-category-pill.nf-focused,
+.category-list-item.nf-focused,
+.vod-season-btn.nf-focused,
+.modal-back-btn.nf-focused,
+.settings-btn.nf-focused,
+.login-btn.nf-focused,
+.login-btn-secondary.nf-focused {
+  box-shadow: var(--nf-shadow-lg) !important;
+  animation: nfPulse 1.8s ease-in-out infinite !important;
+  transform: none !important;
+}
+
+/* Progress bar odak */
+#progressBarContainer.nf-focused {
+  box-shadow: var(--nf-shadow-lg) !important;
+  animation: nfPulse 1.8s ease-in-out infinite !important;
+  border-radius: 4px;
+}
+
+/* Toggle container odak */
+.toggle-container.nf-focused {
+  box-shadow: var(--nf-shadow-sm) !important;
+  border-radius: 8px;
+  animation: nfPulse 1.8s ease-in-out infinite !important;
+}
+
+/* Odak kaldırılınca anında temizle */
+:not(.nf-focused) {
+  animation-name: none !important;
+}
+/* Sadece odak animasyonu olan elementlerde override */
+.channel-card:not(.nf-focused):not(.remote-focused),
+.header-btn:not(.nf-focused):not(.remote-focused),
+.m3u-pill:not(.nf-focused):not(.remote-focused),
+.cat-pill:not(.nf-focused):not(.remote-focused),
+.player-action-btn:not(.nf-focused):not(.remote-focused) {
+  will-change: auto !important;
+  box-shadow: none !important;
+}
+
+/* ── TVBox mod: animation yok, sadece solid border ── */
+body.tvbox-mode .nf-focused,
+body.tvbox-mode .nf-focused.remote-focused {
+  animation: none !important;
+  box-shadow: var(--nf-shadow-sm) !important;
+  border-color: var(--nf-color) !important;
+  will-change: auto !important;
+  outline: 2.5px solid rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.95) !important;
+  outline-offset: 1px !important;
+}
+
+/* ── Pulse animasyon keyframe — box-shadow only, GPU katman ── */
+@keyframes nfPulse {
+  0%,100% {
+    box-shadow: 0 0 0 3px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.95);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.45),
+                0 0 20px rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.35);
+  }
+}
+
+/* ── Zone ipucu gösterge ── */
+#nf-zone-hint {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.82);
+  color: rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.95);
+  border: 1px solid rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.35);
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-family: 'Rajdhani', 'Share Tech Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  z-index: 999998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#nf-zone-hint.nf-visible { opacity: 1; }
+
+/* ── D-Pad ipucu ── */
+#nf-dpad-hint {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 1px;
+  z-index: 99998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#nf-dpad-hint.nf-visible { opacity: 1; }
+.nf-key {
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(var(--nf-r),var(--nf-g),var(--nf-b),0.7);
+}
+
+/* ── Scroll margin: odaklı eleman ekranda görünsün ── */
+.nf-focused {
+  scroll-margin: 80px !important;
+  scroll-margin-block: 80px !important;
+}
+
+</style>
+
+<div id="nf-zone-hint"></div>
+<div id="nf-dpad-hint">
+  <span class="nf-key">↑↓←→</span>
+  <span>GEZİN</span>
+  <span style="margin:0 5px;opacity:0.3">|</span>
+  <span class="nf-key">OK</span>
+  <span>SEÇ</span>
+  <span style="margin:0 5px;opacity:0.3">|</span>
+  <span class="nf-key">◀</span>
+  <span>GERİ</span>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   ÜMİT TV BOX — ULTRA NAVİGASYON ENGİNE v5.0
+   Özellikler:
+   • Mevcut state.remote sistemini BOZMAZ — yanlara entegre
+   • rAF throttle: Her kare max 1 odak değişikliği → kasma yok
+   • Tüm zone/modal: header, m3u, catPills, grid, player,
+     sidebar, vodModal, epgModal, search, settings, tüm confirm
+     modal'ları, sleep, sort, theme, qsn, voiceSearch, pushModal
+   • Grid: gerçek cols hesabı, state.currentGridCols prioritesi
+   • Scroll: scrollIntoView instant, scroll-margin korumalı
+   • Back tuşu: mevcut handleBackButton'u çağırır
+   • TVBox mode: animation yok, solid outline
+   ════════════════════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
+/* ══ CONFIG ══ */
+var C = {
+  FC: 'nf-focused',       /* focus class */
+  LC: 'remote-focused',   /* legacy class (uyumluluk) */
+  HINT_MS: 1100,          /* zone hint süre */
+  DPAD_MS: 6000,          /* dpad hint süre */
+  MUTATION_THROTTLE: 80,  /* mutation observer throttle ms */
+};
+
+/* ══ STATE ══ */
+var NF = {
+  active: false,
+  zone: null,
+  idx: 0,
+  items: [],
+  cols: 1,
+  raf: null,
+  zoneTimer: null,
+  dpadTimer: null,
+  mutTimer: null,
+  lastKey: 0,
+};
+
+/* ══ ODAK YARDIMCILARI ══ */
+
+function clearFocus() {
+  var els = document.querySelectorAll('.' + C.FC);
+  for (var i = 0; i < els.length; i++) {
+    els[i].classList.remove(C.FC);
+    els[i].classList.remove(C.LC);
+  }
+}
+
+function applyFocus(el) {
+  if (!el) return;
+  clearFocus();
+  el.classList.add(C.FC);
+  el.classList.add(C.LC);
+  /* Scroll — sadece görünmüyorsa */
+  try {
+    var rect = el.getBoundingClientRect();
+    var wh = window.innerHeight;
+    var ww = window.innerWidth;
+    if (rect.bottom > wh - 60 || rect.top < 60 || rect.right > ww || rect.left < 0) {
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+    }
+  } catch(ex) {}
+}
+
+/* ══ ELEMENT GEÇERLİLİK ══ */
+
+function isEl(el) {
+  if (!el || el.disabled) return false;
+  /* Display/visibility kontrolü */
+  var st = window.getComputedStyle(el);
+  if (st.display === 'none') return false;
+  if (st.visibility === 'hidden') return false;
+  if (parseFloat(st.opacity) < 0.01) return false;
+  /* Boyut kontrolü */
+  var r = el.getBoundingClientRect();
+  if (r.width < 1 && r.height < 1) return false;
+  return true;
+}
+
+function qsa(sel, ctx) {
+  var els = (ctx || document).querySelectorAll(sel);
+  var out = [];
+  for (var i = 0; i < els.length; i++) {
+    if (isEl(els[i])) out.push(els[i]);
+  }
+  return out;
+}
+
+/* ══ ZONE TESPİT ══ */
+
+function detectZone() {
+  /* Öncelik sırasına göre: en üst önce */
+
+  /* 1. Login overlay */
+  var lo = document.getElementById('loginOverlay');
+  if (lo && !lo.classList.contains('hidden') && getComputedStyle(lo).display !== 'none') return 'login';
+
+  /* 2. Exit confirm */
+  var ec = document.getElementById('exitConfirmModal');
+  if (ec && (ec.style.display === 'flex' || ec.classList.contains('open'))) return 'exitConfirm';
+
+  /* 3. Push notification modal */
+  var pm = document.getElementById('pushPermModal');
+  if (pm && pm.classList.contains('pp-open')) return 'pushModal';
+
+  /* 4. Watch Party Lobby */
+  var wpl = document.getElementById('wpLobbyModal');
+  if (wpl && wpl.classList.contains('wp-open')) return 'wpLobby';
+
+  /* 5. Watch Party Panel */
+  var wpp = document.getElementById('wpPanel');
+  if (wpp && wpp.classList.contains('wp-open')) return 'wpPanel';
+
+  /* 6. Channel Note Modal */
+  var cnm = document.getElementById('chNoteModal');
+  if (cnm && cnm.style.display === 'flex') return 'chNoteModal';
+
+  /* 7. Voice Search */
+  var vsm = document.getElementById('voiceSearchModal');
+  if (vsm && vsm.classList.contains('open')) return 'voiceSearch';
+
+  /* 8. VOD Modal */
+  var vmod = document.querySelector('.vod-modal');
+  if (vmod && vmod.style.display && vmod.style.display !== 'none' && vmod.style.display !== '') return 'vodModal';
+
+  /* 9. EPG Modal */
+  var epg = document.getElementById('epgModal') || document.querySelector('.epg-modal');
+  if (epg && (epg.classList.contains('open') || (epg.style.display && epg.style.display !== 'none'))) return 'epgModal';
+
+  /* 10. Search Modal */
+  var sm = document.getElementById('searchModal');
+  if (sm && sm.style.display && sm.style.display !== 'none') return 'searchModal';
+
+  /* 11. Settings Modal */
+  var stm = document.getElementById('settingsModal');
+  if (stm && stm.style.display && stm.style.display !== 'none') return 'settingsModal';
+
+  /* 12. Control Settings Modal */
+  var csm = document.getElementById('controlSettingsModal');
+  if (csm && csm.style.display && csm.style.display !== 'none') return 'controlSettingsModal';
+
+  /* 13. Theme Modal */
+  var thm = document.getElementById('themeModal');
+  if (thm && thm.style.display && thm.style.display !== 'none') return 'themeModal';
+
+  /* 14. Sleep Mode Modal */
+  var slp = document.getElementById('sleepModeModal');
+  if (slp && slp.style.display && slp.style.display !== 'none') return 'sleepModeModal';
+
+  /* 15. Add M3U Modal */
+  var am = document.getElementById('addM3UModal');
+  if (am && am.style.display && am.style.display !== 'none') return 'addM3UModal';
+
+  /* 16. Sort Backup Modal */
+  var sbm = document.getElementById('sortBackupModal');
+  if (sbm && (sbm.classList.contains('open') || sbm.style.display !== 'none')) return 'sortBackupModal';
+
+  /* 17. Quick Sort Num Modal */
+  var qsn = document.getElementById('qsnModal');
+  if (qsn && (qsn.classList.contains('open') || qsn.style.display !== 'none')) return 'qsnModal';
+
+  /* 18. Reset Confirm Modal */
+  var rcm = document.getElementById('resetConfirmModal');
+  if (rcm && (rcm.classList.contains('open') || rcm.style.display !== 'none')) return 'resetConfirmModal';
+
+  /* 19. Delete Confirm Modal */
+  var dcm = document.getElementById('deleteContinueModal');
+  if (dcm && (dcm.classList.contains('open') || dcm.style.display !== 'none')) return 'deleteContinueModal';
+
+  /* 20. Continue Modal */
+  var cm = document.getElementById('continueModal');
+  if (cm && (cm.classList.contains('open') || cm.style.display !== 'none')) return 'continueModal';
+
+  /* 21. M3U Hint Modal */
+  var mhm = document.getElementById('m3uHintModal');
+  if (mhm && mhm.style.display !== 'none') return 'm3uHintModal';
+
+  /* 22. Sort Modal (kanal sıralaması) */
+  var sortm = document.getElementById('sortModal');
+  if (sortm && sortm.style.display !== 'none') return 'sortModal';
+
+  /* 23. Password Modal */
+  var pwm = document.getElementById('passwordModal');
+  if (pwm && pwm.style.display !== 'none') return 'passwordModal';
+
+  /* 24. Category Hide Modal */
+  var chm = document.getElementById('catHideModal');
+  if (chm && chm.classList.contains('open')) return 'catHideModal';
+
+  /* 25. Quality Modal */
+  var qual = document.getElementById('qualityModal');
+  if (qual && qual.classList.contains('qm-open')) return 'qualityModal';
+
+  /* 26. Subtitle Modal */
+  var sub = document.getElementById('subtitleModal');
+  if (sub && sub.classList.contains('qm-open')) return 'subtitleModal';
+
+  /* 27. Auto-next notification */
+  var an = document.querySelector('.auto-next-notification');
+  if (an && an.classList.contains('visible')) return 'autoNext';
+
+  /* 28. Embed Modal */
+  var embm = document.getElementById('embedModal');
+  if (embm && embm.style.display && embm.style.display !== 'none') return 'embedModal';
+
+  /* 29. Weather Modal */
+  var wm = document.getElementById('__UMD_WEATHER_MODAL');
+  if (wm && wm.style.display === 'flex') return 'weatherModal';
+
+  /* 30. Player */
+  var pv = document.getElementById('playerView');
+  if (pv && (pv.style.display === 'flex' || pv.style.display === 'block')) return 'player';
+
+  /* 31. Sidebar açık mı? */
+  var sb = document.getElementById('sidebar');
+  if (sb && sb.classList.contains('open')) return 'sidebar';
+
+  /* 32. Ana ekran — mevcut state.remote.zone kullan */
+  if (window.state && window.state.remote) {
+    var z = window.state.remote.zone;
+    if (z === 'header') return 'header';
+    if (z === 'm3u') return 'm3u';
+    if (z === 'categories') return 'catPills';
+    if (z === 'heroSlider') return 'heroSlider';
+    if (z === 'umkGoTop') return 'umkGoTop';
+    if (z === 'continueCards') return 'continueCards';
+    if (z === 'recentCards') return 'recentCards';
+    if (z === 'clearAllContinue') return 'clearAllContinue';
+  }
+
+  return 'channels'; /* default */
+}
+
+/* ══ ZONE'A GÖRE ELEMENT TOPLAMA ══ */
+
+function getZoneItems(zone) {
+  switch(zone) {
+
+    /* ── Login ── */
+    case 'login': {
+      var lo = document.getElementById('loginOverlay');
+      return qsa('.login-focusable, .login-btn, .login-btn-secondary', lo);
+    }
+
+    /* ── Çıkış Confirm ── */
+    case 'exitConfirm': {
+      return qsa('#exitConfirmNo, #exitConfirmYes');
+    }
+
+    /* ── Push Modal ── */
+    case 'pushModal': {
+      return qsa('.pp-btn');
+    }
+
+    /* ── Watch Party ── */
+    case 'wpLobby': {
+      var wpl = document.getElementById('wpLobbyModal');
+      return qsa('button:not(:disabled)', wpl);
+    }
+    case 'wpPanel': {
+      var wpp = document.getElementById('wpPanel');
+      return qsa('button:not(:disabled)', wpp);
+    }
+
+    /* ── Kanal Not Modal ── */
+    case 'chNoteModal': {
+      return qsa('#chNoteSaveBtn, #chNoteCancelBtn, #chNoteInput');
+    }
+
+    /* ── Sesli Arama ── */
+    case 'voiceSearch': {
+      var vsm = document.getElementById('voiceSearchModal');
+      return qsa('#vsListenBtn, #vsSearchBtn, #vsCloseBtn, .vs-result-item', vsm);
+    }
+
+    /* ── VOD Modal ── */
+    case 'vodModal': {
+      /* mevcut state.remote.vodModalButtons sırasını kullan */
+      if (window.state && window.state.remote && window.state.remote.vodModalButtons) {
+        var btns = window.state.remote.vodModalButtons;
+        var els = [];
+        for (var bi = 0; bi < btns.length; bi++) {
+          var bel = document.getElementById(btns[bi]) || document.querySelector('.' + btns[bi]);
+          if (bel && isEl(bel)) els.push(bel);
+        }
+        if (els.length > 0) return els;
+      }
+      /* fallback */
+      var vmod = document.querySelector('.vod-modal');
+      return qsa('.vod-modal-close, .vod-play-btn, .vod-continue-btn, .vod-trailer-btn, .vod-season-btn, .vod-episode-card', vmod);
+    }
+
+    /* ── EPG Modal ── */
+    case 'epgModal': {
+      if (window.state && window.state.remote && window.state.remote.epgModalElements) {
+        return window.state.remote.epgModalElements.filter(isEl);
+      }
+      var epg = document.getElementById('epgModal') || document.querySelector('.epg-modal');
+      return qsa('.epg-item, .modal-back-btn, .epg-alarm-btn, .epg-close-btn', epg);
+    }
+
+    /* ── Search Modal ── */
+    case 'searchModal': {
+      var sm = document.getElementById('searchModal');
+      return qsa('#searchInput, .search-result-item, .search-close-btn, #btnSearchClose, #searchClose', sm);
+    }
+
+    /* ── Settings Modal ── */
+    case 'settingsModal': {
+      var btns2 = window.SETTINGS_BUTTONS || [];
+      if (btns2.length === 0) {
+        var stm = document.getElementById('settingsModal');
+        return qsa('.settings-btn, .modal-back-btn', stm);
+      }
+      return btns2.map(function(id) { return document.getElementById(id); }).filter(isEl);
+    }
+
+    /* ── Control Settings Modal ── */
+    case 'controlSettingsModal': {
+      var btns3 = window.CONTROL_SETTINGS_BUTTONS || [];
+      if (btns3.length === 0) {
+        var csm = document.getElementById('controlSettingsModal');
+        return qsa('.settings-btn, .toggle-container, input[type="range"], input[type="checkbox"], .modal-back-btn', csm);
+      }
+      return btns3.map(function(id) { return document.getElementById(id); }).filter(isEl);
+    }
+
+    /* ── Theme Modal ── */
+    case 'themeModal': {
+      var thm = document.getElementById('themeModal');
+      var themes = qsa('.theme-item', thm);
+      var back = document.getElementById('btnThemeBack');
+      if (back && isEl(back)) themes.push(back);
+      return themes;
+    }
+
+    /* ── Sleep Mode Modal ── */
+    case 'sleepModeModal': {
+      var btns4 = window.SLEEP_MODE_BUTTONS || [];
+      if (btns4.length === 0) {
+        var slp = document.getElementById('sleepModeModal');
+        return qsa('input[type="range"], input[type="checkbox"], button, .modal-back-btn', slp);
+      }
+      return btns4.map(function(id) { return document.getElementById(id); }).filter(isEl);
+    }
+
+    /* ── Add M3U Modal ── */
+    case 'addM3UModal': {
+      var am = document.getElementById('addM3UModal');
+      return qsa('input[type="text"], input[type="url"], button, .modal-back-btn', am);
+    }
+
+    /* ── Sort Backup Modal ── */
+    case 'sortBackupModal': {
+      return qsa('#btnSortBackupCancel, #btnSortBackupConfirm, #btnSortBackupBack');
+    }
+
+    /* ── Quick Sort Num Modal ── */
+    case 'qsnModal': {
+      return qsa('#btnQsnMinus, #btnQsnPlus, #btnQsnFirst, #btnQsnLast, #btnQsnConfirm, #btnQsnCancel, #btnQsnBack, #qsnInput');
+    }
+
+    /* ── Reset Confirm Modal ── */
+    case 'resetConfirmModal': {
+      return qsa('#resetConfirmCancel, #resetConfirmOk, #btnResetConfirmBack');
+    }
+
+    /* ── Delete Confirm Modal ── */
+    case 'deleteContinueModal': {
+      return qsa('#btnDeleteCancel, #btnDeleteConfirm, #btnContinueDelete');
+    }
+
+    /* ── Continue Modal ── */
+    case 'continueModal': {
+      return qsa('#btnWatchLater, #btnContinueDelete, #btnStartOver, #btnContinue');
+    }
+
+    /* ── M3U Hint Modal ── */
+    case 'm3uHintModal': {
+      return qsa('#btnM3UHintOk, #dontShowM3UHint');
+    }
+
+    /* ── Sort Modal ── */
+    case 'sortModal': {
+      var sortm = document.getElementById('sortModal');
+      return qsa('.sort-item, #sortCatSelect, .sort-tool-btn, #btnSortSave, #btnSortClose, #btnSortBack', sortm);
+    }
+
+    /* ── Password Modal ── */
+    case 'passwordModal': {
+      var btns5 = window.PASSWORD_MODAL_BUTTONS || [];
+      if (btns5.length === 0) {
+        return qsa('#passwordInput, input[type="checkbox"], #btnPasswordCancel, #btnPasswordConfirm, #btnPasswordBack');
+      }
+      return btns5.map(function(id) { return document.getElementById(id); }).filter(isEl);
+    }
+
+    /* ── Category Hide Modal ── */
+    case 'catHideModal': {
+      var chm = document.getElementById('catHideModal');
+      return qsa('.cat-hide-item, .cat-hide-footer-btn, input[type="checkbox"]', chm);
+    }
+
+    /* ── Quality Modal ── */
+    case 'qualityModal': {
+      var qual = document.getElementById('qualityModal');
+      return qsa('.quality-item, .quality-option, button', qual);
+    }
+
+    /* ── Subtitle Modal ── */
+    case 'subtitleModal': {
+      var sub = document.getElementById('subtitleModal');
+      return qsa('.subtitle-item, .subtitle-option, button', sub);
+    }
+
+    /* ── Auto-next ── */
+    case 'autoNext': {
+      return qsa('.auto-next-btn');
+    }
+
+    /* ── Embed Modal ── */
+    case 'embedModal': {
+      return qsa('#btnCloseEmbed');
+    }
+
+    /* ── Weather Modal ── */
+    case 'weatherModal': {
+      var wm = document.getElementById('__UMD_WEATHER_MODAL');
+      return qsa('button', wm);
+    }
+
+    /* ── Player ── */
+    case 'player': {
+      /* Mevcut sistemin visible button listesini kullan */
+      if (window.PLAYER_BOX_BUTTONS) {
+        var vis = window.PLAYER_BOX_BUTTONS.filter(function(id) {
+          var el = document.getElementById(id);
+          return el && isEl(el);
+        });
+        return vis.map(function(id) { return document.getElementById(id); });
+      }
+      var pv = document.getElementById('playerView');
+      return qsa('.player-action-btn, #btnClosePlayer', pv);
+    }
+
+    /* ── Sidebar ── */
+    case 'sidebar': {
+      var sb = document.getElementById('sidebar');
+      return qsa('.channel-list-item, .category-list-item, .sidebar-category-pill', sb);
+    }
+
+    /* ── Header ── */
+    case 'header': {
+      if (window.HEADER_BUTTONS) {
+        return window.HEADER_BUTTONS.map(function(id) {
+          return document.getElementById(id);
+        }).filter(isEl);
+      }
+      return qsa('.header-btn:not([style*="display:none"])');
+    }
+
+    /* ── M3U Pills ── */
+    case 'm3u': {
+      return qsa('.m3u-pill');
+    }
+
+    /* ── Category Pills ── */
+    case 'catPills': {
+      return qsa('.cat-pill');
+    }
+
+    /* ── Hero Slider ── */
+    case 'heroSlider': {
+      return qsa('.vhs-slide', document.getElementById('vodHeroSlider'));
+    }
+
+    /* ── Başa Dön butonu ── */
+    case 'umkGoTop': {
+      var gt = document.getElementById('umkGoTop');
+      return gt && isEl(gt) ? [gt] : [];
+    }
+
+    /* ── Tümünü Temizle butonu ── */
+    case 'clearAllContinue': {
+      var cb = document.getElementById('btnClearAllContinue');
+      return cb && isEl(cb) ? [cb] : [];
+    }
+
+    /* ── Continue Cards ── */
+    case 'continueCards': {
+      return qsa('.continue-card');
+    }
+
+    /* ── Recent Cards ── */
+    case 'recentCards': {
+      return qsa('.recent-card');
+    }
+
+    /* ── Channels (default) ── */
+    case 'channels':
+    default: {
+      var activeCont = window.state && window.state.activeCat === 'cont';
+      if (activeCont) {
+        return qsa('.continue-card-in-grid, .channel-card.clear-card');
+      }
+      return qsa('.channel-card:not(.continue-card-in-grid)');
+    }
+  }
+}
+
+/* ══ SÜTUN SAYISI ══ */
+
+function getCols(zone) {
+  /* Grid zone'u: state.currentGridCols kesin kaynak */
+  if (zone === 'channels') {
+    return (window.state && window.state.currentGridCols) || 4;
+  }
+  /* Header / m3u / catPills: yatay scroll, tek satır */
+  if (zone === 'header' || zone === 'm3u' || zone === 'catPills' || zone === 'player' || zone === 'heroSlider') {
+    return 99; /* yatay, limitsiz */
+  }
+  /* Exit confirm, push modal: 2 buton yan yana */
+  if (zone === 'exitConfirm' || zone === 'pushModal' || zone === 'sortBackupModal' || zone === 'resetConfirmModal') {
+    return 2;
+  }
+  /* qsn modal: 3 buton satırı */
+  if (zone === 'qsnModal') return 3;
+  /* Diğerleri: dikey liste */
+  return 1;
+}
+
+/* ══ ZONE DEĞİŞİMİ ══ */
+
+var _zoneHintTimer = null;
+function showZoneHint(zone) {
+  var labels = {
+    login:'GİRİŞ', exitConfirm:'ÇIKIŞ', header:'MENÜ', m3u:'LİSTELER',
+    catPills:'KATEGORİLER', channels:'KANALLAR', heroSlider:'ÖNE ÇIKANLAR',
+    player:'OYNATICI', sidebar:'KANAL LİSTESİ', vodModal:'FİLM/DİZİ',
+    epgModal:'EPG', searchModal:'ARAMA', settingsModal:'AYARLAR',
+    controlSettingsModal:'KONTROL AYARLARI', themeModal:'TEMA',
+    sleepModeModal:'UYKU', addM3UModal:'M3U EKLE', sortBackupModal:'YEDEK',
+    qsnModal:'HIZLI ATLA', resetConfirmModal:'SIFIRLA', deleteContinueModal:'SİL',
+    continueModal:'DEVAM', m3uHintModal:'İPUCU', sortModal:'SIRALAMA',
+    passwordModal:'ŞİFRE', catHideModal:'GİZLE', qualityModal:'KALİTE',
+    subtitleModal:'ALTYAZI', autoNext:'SIRA', embedModal:'EMBED',
+    weatherModal:'HAVA DURUMU', voiceSearch:'SES ARAMA', pushModal:'BİLDİRİM',
+    wpLobby:'WATCH PARTY', wpPanel:'WATCH PARTY', chNoteModal:'NOT',
+    continueCards:'DEVAM ET', recentCards:'SON İZLENENLER',
+    clearAllContinue:'TEMİZLE', umkGoTop:'BAŞA DÖN',
+  };
+  var lbl = labels[zone];
+  if (!lbl) return;
+  var hint = document.getElementById('nf-zone-hint');
+  if (!hint) return;
+  hint.textContent = '⬡ ' + lbl;
+  hint.classList.add('nf-visible');
+  if (_zoneHintTimer) clearTimeout(_zoneHintTimer);
+  _zoneHintTimer = setTimeout(function() {
+    hint.classList.remove('nf-visible');
+  }, C.HINT_MS);
+}
+
+var _dpadHintTimer = null;
+function showDpadHint() {
+  var hint = document.getElementById('nf-dpad-hint');
+  if (!hint) return;
+  hint.classList.add('nf-visible');
+  if (_dpadHintTimer) clearTimeout(_dpadHintTimer);
+  _dpadHintTimer = setTimeout(function() {
+    hint.classList.remove('nf-visible');
+  }, C.DPAD_MS);
+}
+
+/* ══ ZONE YENILEME ══ */
+
+function refreshItems() {
+  var zone = NF.zone || detectZone();
+  NF.zone = zone;
+  var items = getZoneItems(zone);
+  NF.items = items;
+  NF.cols = getCols(zone);
+  /* index sınır kontrolü */
+  if (NF.idx >= items.length) NF.idx = Math.max(0, items.length - 1);
+  return items;
+}
+
+/* ══ ODAK UYGULA (rAF ile) ══ */
+
+function commitFocus(el) {
+  if (NF.raf) cancelAnimationFrame(NF.raf);
+  NF.raf = requestAnimationFrame(function() {
+    applyFocus(el);
+    /* Mevcut state.remote'u senkronize et — bu, hint sistemini ve diğer callback'leri tetikler */
+    syncLegacyState();
+  });
+}
+
+/* ══ LEGACY SENKRONIZASYON ══ */
+/* state.remote'u NavEngine state'iyle hizala */
+
+function syncLegacyState() {
+  if (!window.state || !window.state.remote) return;
+  var z = NF.zone;
+  var idx = NF.idx;
+
+  /* Zone → state.remote.zone mapping */
+  var zmap = {
+    channels: 'channels', header: 'header', m3u: 'm3u',
+    catPills: 'categories', heroSlider: 'heroSlider',
+    player: 'player', sidebar: 'sidebar',
+    vodModal: 'vodModal', epgModal: 'epgModal',
+    continueCards: 'continueCards', recentCards: 'recentCards',
+    clearAllContinue: 'clearAllContinue', umkGoTop: 'umkGoTop',
+    settingsModal: 'settingsModal', controlSettingsModal: 'controlSettingsModal',
+    themeModal: 'themeModal', sleepModeModal: 'sleepModeModal',
+    continueModal: 'continueModal', deleteContinueModal: 'deleteContinueModal',
+    exitConfirm: 'exitConfirm', passwordModal: 'passwordModal',
+    sortModal: 'sortModal', qsnModal: 'quickSortNumModal',
+    searchModal: 'searchModal',
+  };
+  if (zmap[z]) window.state.remote.zone = zmap[z];
+
+  /* Index → state.remote ilgili index */
+  if (z === 'channels') window.state.remote.index = idx;
+  else if (z === 'header') window.state.remote.headerIndex = idx;
+  else if (z === 'm3u') window.state.remote.m3uIndex = idx;
+  else if (z === 'catPills') window.state.remote.catIndex = idx;
+  else if (z === 'player') window.state.remote.playerBoxIndex = idx;
+  else if (z === 'vodModal') window.state.remote.vodModalIndex = idx;
+  else if (z === 'settingsModal') window.state.remote.settingsIndex = idx;
+  else if (z === 'themeModal') window.state.remote.themeIndex = idx;
+  else if (z === 'heroSlider') window.state.remote.heroSliderBtnIdx = idx;
+}
+
+/* ══ NAVİGASYON ══ */
+
+function navigate(dir) {
+  refreshItems();
+  var items = NF.items;
+  if (!items || items.length === 0) {
+    /* Boş zone → akıllı geçiş dene */
+    handleZoneBoundary(dir);
+    return;
+  }
+
+  var idx = NF.idx;
+  var cols = NF.cols;
+  var len = items.length;
+  var newIdx = idx;
+  var hitBoundary = false;
+
+  if (dir === 'right') {
+    if (cols === 99) { /* yatay liste */
+      newIdx = idx + 1;
+      if (newIdx >= len) { newIdx = len - 1; hitBoundary = true; }
+    } else {
+      newIdx = idx + 1;
+      /* Satır sonuna geldik mi? */
+      if (newIdx >= len || Math.floor(newIdx / cols) !== Math.floor(idx / cols)) {
+        newIdx = idx; hitBoundary = true;
+      }
+    }
+  } else if (dir === 'left') {
+    if (cols === 99) {
+      newIdx = idx - 1;
+      if (newIdx < 0) { newIdx = 0; hitBoundary = true; }
+    } else {
+      newIdx = idx - 1;
+      /* Satır başına geldik mi? */
+      if (newIdx < 0 || Math.floor(newIdx / cols) !== Math.floor(idx / cols)) {
+        newIdx = idx; hitBoundary = true;
+      }
+    }
+  } else if (dir === 'down') {
+    if (cols === 1) {
+      newIdx = idx + 1;
+      if (newIdx >= len) { newIdx = len - 1; hitBoundary = true; }
+    } else if (cols === 99) {
+      /* Yatay liste → aşağı = zone geçişi */
+      hitBoundary = true;
+    } else {
+      newIdx = idx + cols;
+      if (newIdx >= len) {
+        /* Son satır → son elemana git */
+        newIdx = len - 1;
+        if (newIdx === idx) hitBoundary = true;
+      }
+    }
+  } else if (dir === 'up') {
+    if (cols === 1) {
+      newIdx = idx - 1;
+      if (newIdx < 0) { newIdx = 0; hitBoundary = true; }
+    } else if (cols === 99) {
+      hitBoundary = true;
+    } else {
+      newIdx = idx - cols;
+      if (newIdx < 0) { newIdx = idx; hitBoundary = true; }
+    }
+  }
+
+  if (hitBoundary) {
+    handleZoneBoundary(dir);
+    return;
+  }
+
+  if (newIdx === idx) return; /* hareket yok */
+
+  NF.idx = newIdx;
+  commitFocus(items[newIdx]);
+  soundNav();
+}
+
+/* ══ ZONE SINIRLARI ══ */
+
+function handleZoneBoundary(dir) {
+  var z = NF.zone;
+
+  /* ── Header ── */
+  if (z === 'header') {
+    if (dir === 'down') switchZone('m3u');
+    return;
+  }
+  /* ── M3U Pills ── */
+  if (z === 'm3u') {
+    if (dir === 'up') switchZone('header');
+    if (dir === 'down') switchZone('catPills');
+    return;
+  }
+  /* ── Category Pills ── */
+  if (z === 'catPills') {
+    if (dir === 'up') switchZone('m3u');
+    if (dir === 'down') {
+      var hs = document.getElementById('vodHeroSlider');
+      if (hs && hs.style.display !== 'none' && hs.offsetParent !== null) {
+        switchZone('heroSlider');
+      } else {
+        switchZoneKeepPos('channels');
+      }
+    }
+    return;
+  }
+  /* ── Hero Slider ── */
+  if (z === 'heroSlider') {
+    if (dir === 'up') switchZone('catPills');
+    if (dir === 'down') switchZoneKeepPos('channels');
+    if (dir === 'left' || dir === 'right') {
+      /* sınırda kal */
+      var slides = getZoneItems('heroSlider');
+      var newI = dir === 'right' ? slides.length - 1 : 0;
+      NF.idx = newI;
+      commitFocus(slides[newI]);
+    }
+    return;
+  }
+  /* ── Channels ── */
+  if (z === 'channels') {
+    if (dir === 'up') {
+      /* ilk satır → slider veya catPills */
+      var hs2 = document.getElementById('vodHeroSlider');
+      if (hs2 && hs2.style.display !== 'none' && hs2.offsetParent !== null) {
+        switchZone('heroSlider');
+      } else {
+        switchZone('catPills');
+      }
+    }
+    if (dir === 'left' && NF.idx === 0) switchZone('catPills');
+    return;
+  }
+  /* ── Sidebar ── */
+  if (z === 'sidebar') {
+    /* sınırda kal */
+    return;
+  }
+  /* ── Player ── */
+  if (z === 'player') {
+    /* yatay: sınırda kal */
+    return;
+  }
+  /* ── Diğer modal'lar: sınırda kal ── */
+}
+
+/* ══ ZONE DEĞIŞIMI ══ */
+
+function switchZone(newZone, newIdx) {
+  var prevZone = NF.zone;
+  NF.zone = newZone;
+  NF.idx = (typeof newIdx === 'number') ? newIdx : 0;
+  var items = refreshItems();
+  if (items && items.length > 0) {
+    commitFocus(items[NF.idx]);
+    if (newZone !== prevZone) showZoneHint(newZone);
+  } else {
+    clearFocus();
+  }
+}
+
+function switchZoneKeepPos(newZone) {
+  /* Kanal grid'ine geçerken state.remote.index'i koru */
+  var savedIdx = 0;
+  if (newZone === 'channels' && window.state && window.state.remote) {
+    savedIdx = window.state.remote.index || 0;
+  }
+  switchZone(newZone, savedIdx);
+}
+
+/* ══ ENTER ══ */
+
+function pressEnter() {
+  refreshItems();
+  var el = NF.items[NF.idx];
+  if (!el) return;
+
+  /* Görsel flash */
+  var origOpacity = el.style.opacity;
+  el.style.opacity = '0.6';
+  setTimeout(function() { el.style.opacity = origOpacity; }, 80);
+
+  /* Click */
+  try { el.click(); } catch(ex) {}
+
+  /* Input ise focus */
+  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+    try { el.focus(); } catch(ex) {}
+  }
+
+  soundSelect();
+
+  /* Zone sonrası yenile */
+  setTimeout(function() {
+    var newZone = detectZone();
+    if (newZone !== NF.zone) {
+      NF.zone = null; /* force zone değişimi */
+      switchZone(newZone);
+    }
+  }, 250);
+}
+
+/* ══ GERİ TUŞU ══ */
+
+function handleBack(e) {
+  var z = NF.zone;
+
+  /* Login → mevcut sisteme bırak */
+  if (z === 'login') return false;
+
+  /* Sidebar → kapat */
+  if (z === 'sidebar') {
+    var closeBtn = document.getElementById('btnCloseSidebar') ||
+                   document.querySelector('.sidebar-close, .sidebar .close-btn');
+    if (closeBtn) closeBtn.click();
+    else {
+      var sb = document.getElementById('sidebar');
+      if (sb) sb.classList.remove('open');
+    }
+    setTimeout(function() { switchZone('channels'); }, 150);
+    return true;
+  }
+
+  /* Player → mevcut sisteme bırak */
+  if (z === 'player') return false;
+
+  /* Diğer modal/zone'lar → mevcut handleBackButton'u çağır */
+  return false;
+}
+
+/* ══ SES GERİ BİLDİRİMİ ══ */
+
+function soundNav() {
+  if (typeof window.playKeySound === 'function') {
+    try { window.playKeySound('navigate'); } catch(ex) {}
+  }
+}
+
+function soundSelect() {
+  if (typeof window.playKeySound === 'function') {
+    try { window.playKeySound('select'); } catch(ex) {}
+  }
+}
+
+/* ══ KEYBOARD EVENT ══ */
+
+function onKeyDown(e) {
+  var k = e.key || '';
+  var kc = e.keyCode || 0;
+
+  /* Nav tuşları mı? */
+  var isArrow = (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowUp' || k === 'ArrowDown' ||
+                 kc === 37 || kc === 38 || kc === 39 || kc === 40);
+  var isEnter = (k === 'Enter' || k === 'OK' || kc === 13);
+  var isBack  = (k === 'Backspace' || k === 'Escape' || k === 'Back' || k === 'GoBack' ||
+                 k === 'BrowserBack' || kc === 27 || kc === 4);
+
+  if (!isArrow && !isEnter && !isBack) return;
+
+  /* Aktif input'ta ok tuşları: engelleme — yazma devam etsin */
+  var ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') && isArrow) return;
+  /* Input'ta Escape → blur */
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') && isBack) {
+    ae.blur();
+    e.preventDefault();
+    return;
+  }
+
+  /* İlk tuş → kumandayı aktif et */
+  if (!NF.active) {
+    NF.active = true;
+    showDpadHint();
+    var zone = detectZone();
+    NF.zone = null; /* force zone değişimi */
+    switchZone(zone);
+    if (isArrow) { e.preventDefault(); return; }
+  }
+
+  if (isArrow) {
+    e.preventDefault();
+    if (k === 'ArrowLeft' || kc === 37) navigate('left');
+    else if (k === 'ArrowRight' || kc === 39) navigate('right');
+    else if (k === 'ArrowUp' || kc === 38) navigate('up');
+    else if (k === 'ArrowDown' || kc === 40) navigate('down');
+    return;
+  }
+
+  if (isEnter) {
+    /* mevcut sistemin handler'ları ilk çalışsın (vodModal play vb.) */
+    /* NavEngine sadece focus'u komit eder */
+    pressEnter();
+    return;
+  }
+
+  if (isBack) {
+    var handled = handleBack(e);
+    if (!handled) {
+      /* Mevcut sisteme bırak */
+      return;
+    }
+    e.preventDefault();
+  }
+}
+
+/* ══ POINTER KULLANIMI — Kumanda modundan çık ══ */
+
+function onPointer() {
+  if (!NF.active) return;
+  NF.active = false;
+  clearFocus();
+  var dpad = document.getElementById('nf-dpad-hint');
+  if (dpad) dpad.classList.remove('nf-visible');
+}
+
+/* ══ MUTATION OBSERVER — Zone otomatik güncelle ══ */
+
+var _mutRaf = null;
+function setupMutObs() {
+  if (typeof MutationObserver === 'undefined') return;
+  var obs = new MutationObserver(function() {
+    if (!NF.active) return;
+    if (_mutRaf) return; /* zaten bekliyor */
+    _mutRaf = setTimeout(function() {
+      _mutRaf = null;
+      var newZone = detectZone();
+      if (newZone !== NF.zone) {
+        NF.zone = null;
+        switchZone(newZone);
+      }
+    }, C.MUTATION_THROTTLE);
+  });
+  obs.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'hidden', 'open'],
+  });
+}
+
+/* ══ TEMA RENK SENKRONIZASYON ══ */
+
+function syncThemeColor() {
+  var root = document.documentElement;
+  var val = getComputedStyle(root).getPropertyValue('--accent-primary-rgb').trim();
+  if (!val) return;
+  var parts = val.split(',').map(function(s) { return parseInt(s.trim(), 10); });
+  if (parts.length >= 3 && !isNaN(parts[0])) {
+    root.style.setProperty('--nf-r', parts[0]);
+    root.style.setProperty('--nf-g', parts[1]);
+    root.style.setProperty('--nf-b', parts[2]);
+  }
+}
+
+/* ══ PUBLIC API ══ */
+
+window.nfEngine = {
+  version: '5.0',
+  switchZone: switchZone,
+  navigate: navigate,
+  refresh: function() {
+    var z = detectZone();
+    if (z !== NF.zone) { NF.zone = null; switchZone(z); }
+    else { refreshItems(); if (NF.items[NF.idx]) commitFocus(NF.items[NF.idx]); }
+  },
+  getZone: function() { return NF.zone; },
+  getIdx: function() { return NF.idx; },
+  setIdx: function(i) { NF.idx = i; },
+  enable: function() { NF.active = true; },
+  disable: function() { NF.active = false; clearFocus(); },
+  clearFocus: clearFocus,
+  applyFocus: applyFocus,
+};
+
+/* ══ LEGACY UYUMLULUK — updateRemoteFocus sarmalayıcı ══ */
+/* Mevcut kod updateRemoteFocus() çağırır → NavEngine de yenile */
+
+var _origURF = null;
+var _patchAttempts = 0;
+function patchUpdateRemoteFocus() {
+  if (typeof window.updateRemoteFocus === 'function' && !window.updateRemoteFocus._nfPatched) {
+    _origURF = window.updateRemoteFocus;
+    window.updateRemoteFocus = function() {
+      /* Önce orijinal çalışsın */
+      if (_origURF) {
+        try { _origURF.apply(this, arguments); } catch(ex) {}
+      }
+      /* Sonra NavEngine'i de senkronize et */
+      if (NF.active) {
+        requestAnimationFrame(function() {
+          var newZone = detectZone();
+          if (newZone !== NF.zone) { NF.zone = null; switchZone(newZone); }
+          else { refreshItems(); if (NF.items[NF.idx]) applyFocus(NF.items[NF.idx]); }
+        });
+      }
+    };
+    window.updateRemoteFocus._nfPatched = true;
+  } else if (_patchAttempts < 30) {
+    _patchAttempts++;
+    setTimeout(patchUpdateRemoteFocus, 300);
+  }
+}
+
+/* ══ BAŞLATMA ══ */
+
+function init() {
+  /* Capture phase: ok tuşlarını önce biz yakalalım */
+  document.addEventListener('keydown', onKeyDown, true);
+
+  /* Mouse/touch → kumanda modundan çık */
+  document.addEventListener('click', onPointer, { passive: true });
+  document.addEventListener('mousemove', onPointer, { passive: true });
+  /* Android TV: touch kumandayı kapatmasın */
+  if (!window._isAndroidTV) {
+    document.addEventListener('touchstart', onPointer, { passive: true });
+  }
+
+  /* Mutation observer */
+  setupMutObs();
+
+  /* Tema rengi senkronizasyon */
+  syncThemeColor();
+  setInterval(syncThemeColor, 2500);
+
+  /* updateRemoteFocus patch */
+  patchUpdateRemoteFocus();
+
+  /* İlk zone tespiti */
+  refreshItems();
+
+  /* TVBox mode sync */
+  if (window._tvBoxMode || document.body.classList.contains('tvbox-mode')) {
+    document.body.classList.add('tvbox-mode');
+  }
+
+  console.log('[ÜmitTV NavEngine v5.0] Başlatıldı — Zone:', NF.zone, '| Cols:', NF.cols, '| Items:', NF.items.length);
+}
+
+/* Geç yükleme için güvenlik ağı */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+/* 1.5sn sonra yenile (geç render için) */
+setTimeout(function() {
+  refreshItems();
+  syncThemeColor();
+  patchUpdateRemoteFocus();
+}, 1500);
+
+})();
+</script>
+

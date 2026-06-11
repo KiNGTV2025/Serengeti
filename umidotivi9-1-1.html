@@ -19807,7 +19807,7 @@ function processEPGForChannel(channelKey) {
     const epgModalChannelName = document.getElementById('epgModalChannelName');
     
     if (epgModalChannelName) epgModalChannelName.textContent = `${channel.name} - Program Rehberi`;
-    if (epgModal) { epgModal.style.display = 'flex'; document.body.classList.add('epg-open', 'epg-modal-open'); }
+    if (epgModal) epgModal.style.display = 'flex';
 
     
 
@@ -20027,7 +20027,7 @@ function processEPGForChannel(channelKey) {
     }
     
     const _epgModal = document.getElementById('epgModal');
-    if (_epgModal) { _epgModal.style.display = 'flex'; document.body.classList.add('epg-open', 'epg-modal-open'); }
+    if (_epgModal) _epgModal.style.display = 'flex';
     
     // EPG modalı için remote state ayarla
     state.remote.zone = 'epgModal';
@@ -20173,7 +20173,6 @@ function openEpgModal() {
 
     // showChannelEpg yoksa eski davranış (fallback)
     modal.style.display = 'flex';
-    document.body.classList.add('epg-open', 'epg-modal-open'); /* channelInfoBanner gizle */
 
     if (state.remote.active) {
         state.remote.zone = 'epgModal';
@@ -20201,7 +20200,6 @@ function closeEpgModal() {
     if (!modal) return;
     
     modal.style.display = 'none';
-    document.body.classList.remove('epg-open', 'epg-modal-open'); /* channelInfoBanner geri göster */
     
     // Focus sınıflarını temizle (style.cssText dokunma — flicker yapar)
     document.querySelectorAll('.epg-remote-focused').forEach(el => el.classList.remove('epg-remote-focused'));
@@ -31996,7 +31994,6 @@ function openEpgModalForTvBox() {
     if (!modal) return;
     
     modal.style.display = 'flex';
-    document.body.classList.add('epg-open', 'epg-modal-open'); /* channelInfoBanner gizle */
     
     // TV Box remote ayarları
     if (state.remote.active) {
@@ -67188,99 +67185,6 @@ window.umitSendPush      = window.umitSendPush;
 
 })(); /* ÜmitTV v3.9 — Voice + Push */
 </script>
-
-
-<style id="epg-modal-zindex-fix">
-/* ═══ EPG MODAL Z-INDEX DÜZELTMESİ ═══
-   channelInfoBanner EPG modalının üstünde kalıyor — düzelt
-   epgModal açıkken banner gizle, z-index yükselt */
-
-/* EPG modal z-index — channelInfoBanner (99999) üstünde olmalı */
-.epg-modal {
-    z-index: 100000 !important;
-}
-.epg-modal-content {
-    z-index: 100001 !important;
-    position: relative;
-}
-
-/* EPG modal açıkken channelInfoBanner gizle */
-body.epg-open #channelInfoBanner,
-body.epg-modal-open #channelInfoBanner {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
-/* EPG modal backdrop tam ekran opak */
-.epg-modal {
-    background: rgba(0, 0, 0, 0.97) !important;
-}
-
-/* EPG modal içeriği — temiz görünüm */
-.epg-modal-content {
-    background: var(--bg-panel, #1a1a2e) !important;
-    border: 2px solid var(--accent-primary, #FFD700) !important;
-    box-shadow: 0 0 0 1px rgba(255,215,0,0.15),
-                0 30px 80px rgba(0,0,0,0.9) !important;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-/* EPG header — temiz */
-.epg-modal-header {
-    background: rgba(0,0,0,0.5) !important;
-    border-bottom: 1px solid rgba(255,215,0,0.2) !important;
-    padding: 14px 16px !important;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.epg-modal-title {
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    color: var(--accent-primary, #FFD700) !important;
-    letter-spacing: 0.5px;
-}
-
-/* EPG kapat butonu — sağ üstte net */
-#epgModalCloseBtn {
-    background: rgba(255,255,255,0.08) !important;
-    border: 1.5px solid rgba(255,255,255,0.15) !important;
-    width: 38px !important;
-    height: 38px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    flex-shrink: 0 !important;
-    z-index: 10 !important;
-    position: relative !important;
-}
-#epgModalCloseBtn:hover,
-#epgModalCloseBtn.remote-focused,
-#epgModalCloseBtn.nf-focused {
-    background: rgba(255,60,60,0.25) !important;
-    border-color: rgba(255,80,80,0.7) !important;
-    box-shadow: 0 0 0 3px rgba(255,60,60,0.4) !important;
-}
-
-/* EPG body — scroll temiz */
-.epg-modal-body {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(255,215,0,0.3) transparent !important;
-}
-.epg-modal-body::-webkit-scrollbar { width: 4px !important; }
-.epg-modal-body::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3) !important; border-radius: 2px !important; }
-.epg-modal-body::-webkit-scrollbar-track { background: transparent !important; }
-</style>
 
 <!-- ═══════════════════════════════════════════════════════════════
      ÜMİT TV BOX — ULTRA NAVİGASYON ENGİNE v4.0

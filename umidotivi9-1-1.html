@@ -13706,10 +13706,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/m3u.svg" alt="Add M3U" class="svg-icon">
             </button>
-            <button class="header-btn" id="btnWatchStats" onclick="openStatsPanel()" title="İzleme İstatistikleri" tabindex="-1">
+            <button class="header-btn" id="btnWatchStats" onclick="openStatsPanel()" title="İzleme İstatistikleri" tabindex="0">
                 <span class="material-symbols-outlined">bar_chart</span>
             </button>
-            <button class="header-btn" id="btnHealthCheck" onclick="openHealthPanel()" title="Kanal Sağlık Kontrolü" tabindex="-1">
+            <button class="header-btn" id="btnHealthCheck" onclick="openHealthPanel()" title="Kanal Sağlık Kontrolü" tabindex="0">
                 <span class="material-symbols-outlined">monitor_heart</span>
             </button>
             <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
@@ -16808,7 +16808,7 @@ UmitSecurityManager.init({
     ua:       false,   // UA kontrolü kapalı — tüm ortamlar izinli
     domain:   false,   // Domain kilidi kapalı
     devtools: false,   // TVBox'ta false — yanlış pozitif riski var
-    proxy:    false,   // VPN/proxy tespiti kapalı
+    proxy:    true,    // VPN/proxy tespiti aktif
     ext:      false,   // HTTP intercept eklentisi tespiti kapalı
     tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
     block:    false,   // Kilitleme kapalı
@@ -18213,7 +18213,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -18223,7 +18223,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnChTimer', 'btnChNote', 'btnEpgAlarm', 'btnClosePlayer'];
         
         
 
@@ -45411,7 +45411,8 @@ function handleFavoriteChannelSelect(key) {
             'btnTheme': 'Tema', 'btnSettings': 'Ayarlar', 'btnRefresh': 'Yenile',
             'btnControlSettings': 'Kontrol Ayarları', 'btnAddM3U': 'M3U Ekle',
             'btnUrlKopi': 'URL Kopi', 'btnDestek': 'Destek', 'btnStore': 'Store',
-            'btnWatchParty': 'Watch Party', 'btnNotifTest': 'Bildirimler', 'btnProfile': 'Profil', 'btnExitHeader': 'Çıkış'
+            'btnWatchParty': 'Watch Party', 'btnNotifTest': 'Bildirimler', 'btnProfile': 'Profil', 'btnExitHeader': 'Çıkış',
+                            'btnWatchStats': 'İzleme İstatistikleri', 'btnHealthCheck': 'Kanal Sağlık Kontrolü', 'btnVoiceSearch': 'Sesli Arama'
         };
         hint = _hbHints2[_hbId2] || (el && el.title) || 'Menü';
     }
@@ -64948,7 +64949,21 @@ document.addEventListener('keydown', function(e) {
         alarmBtn.onclick = function() { openEpgAlarmModal(); };
         alarmBtn.innerHTML = '<span class="material-symbols-outlined">notifications</span><span class="btn-label">Bildirim</span>';
         group.insertBefore(alarmBtn, closeBtn);
-    }
+
+        // Kumanda navigasyonu: PLAYER_BOX_BUTTONS'a dinamik olarak ekle (zaten ekliyse atla)
+        if (typeof PLAYER_BOX_BUTTONS !== 'undefined') {
+            ['btnChTimer', 'btnChNote', 'btnEpgAlarm'].forEach(function(id) {
+                var insertBefore = PLAYER_BOX_BUTTONS.indexOf('btnClosePlayer');
+                if (PLAYER_BOX_BUTTONS.indexOf(id) < 0) {
+                    if (insertBefore >= 0) {
+                        PLAYER_BOX_BUTTONS.splice(insertBefore, 0, id);
+                    } else {
+                        PLAYER_BOX_BUTTONS.push(id);
+                    }
+                }
+            });
+        }
+    }   // _tryInject sonu
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() { setTimeout(_tryInject, 800); });
     } else {

@@ -1667,25 +1667,10 @@ img {
             b.classList.add('tvbox-mode');
         }
 
-        // requestAnimationFrame throttle — TVBox'ta 30fps yeterli
-        if (isTvBox && window.requestAnimationFrame) {
-            var _origRAF = window.requestAnimationFrame;
-            var _lastRAF = 0;
-            var _RAF_MIN = 32; // ~30fps
-            window.requestAnimationFrame = function(cb) {
-                var now = Date.now();
-                var delay = Math.max(0, _RAF_MIN - (now - _lastRAF));
-                if (delay === 0) {
-                    _lastRAF = now;
-                    return _origRAF.call(window, cb);
-                } else {
-                    return setTimeout(function() {
-                        _lastRAF = Date.now();
-                        cb(_lastRAF);
-                    }, delay);
-                }
-            };
-        }
+        // requestAnimationFrame throttle: tvbox-ultra-v3 bloğunda (window._UTV)
+        // tek noktadan, _origRAF referansı korunarak yapılıyor.
+        // Burada AYRICA sarmıyoruz — çift throttle iki kat setTimeout/RAF
+        // gecikmesine ve frame zamanlama çakışmasına yol açıyordu (kasma kaynağı).
     }
 
     // DOM hazır mı?
@@ -20990,6 +20975,12 @@ function applyTVBoxOptimizations() {
     });
 
     // E) cwInterval + tüm kısa interval'ları optimize et
+    // NOT: window.setInterval BURADA AYRICA SARILMIYOR.
+    // tvbox-ultra-v3 bloğu zaten window.setInterval'ı sarıp native'e
+    // (_origSetInterval) referans tutuyor; burada da sarmak çift katman
+    // (fn.toString() + 4x indexOf taraması her interval çağrısında) yaratıp
+    // TVBox'ta gereksiz CPU yüküne / kasmaya sebep oluyordu.
+    // Aynı kuralları, native interval'a doğrudan erişimi olan tek noktada uyguluyoruz:
     var _origSetInterval = window.setInterval;
     var _origClearInterval = window.clearInterval;
     // Güvenlik countdown gibi kritik timer'ların throttle'dan kaçması için global'e aç
@@ -20998,24 +20989,29 @@ function applyTVBoxOptimizations() {
     // setTimeout/clearTimeout native referanslarını da sakla
     window._origSetTimeout = window.setTimeout;
     window._origClearTimeout = window.clearTimeout;
-    window.setInterval = function(fn, ms) {
-        var args = Array.prototype.slice.call(arguments, 2);
-        var fnStr = (typeof fn === 'function') ? fn.toString() : '';
-        // updateContinuousWatching → 10sn
-        if (ms === 2000 && fnStr.indexOf('updateContinuousWatching') > -1) ms = 10000;
-        // Çok kısa poll interval'larını min 500ms yap (100ms altı hariç - timer/countdown)
-        if (ms > 0 && ms < 500 && ms > 100) ms = 500;
-        // Orta interval'ları (500-1999ms) → 2sn (video/HLS watchdog hariç)
-        if (ms >= 500 && ms < 2000) {
-            var skip = fnStr.indexOf('hls') > -1 || fnStr.indexOf('videoPlayer') > -1 ||
-                       fnStr.indexOf('watchdog') > -1 || fnStr.indexOf('Watchdog') > -1 ||
-                       fnStr.indexOf('stall') > -1 || fnStr.indexOf('recover') > -1 ||
-                       fnStr.indexOf('__umit_sec') > -1 || fnStr.indexOf('_secLeft') > -1 ||
-                       fnStr.indexOf('_forceClose') > -1; // Güvenlik countdown throttle edilemez
-            if (!skip) ms = 2000;
-        }
-        return _origSetInterval.apply(window, [fn, ms].concat(args));
-    };
+    if (!window._UTV || !window._UTV._secondarySetIntervalRulesApplied) {
+        window._UTV = window._UTV || {};
+        window._UTV._secondarySetIntervalRulesApplied = true;
+        var _prevSetInterval = window.setInterval; /* tvbox-ultra-v3'ün sarması (varsa) */
+        window.setInterval = function(fn, ms) {
+            var args = Array.prototype.slice.call(arguments, 2);
+            var fnStr = (typeof fn === 'function') ? fn.toString() : '';
+            // updateContinuousWatching → 10sn
+            if (ms === 2000 && fnStr.indexOf('updateContinuousWatching') > -1) ms = 10000;
+            // Çok kısa poll interval'larını min 500ms yap (100ms altı hariç - timer/countdown)
+            if (ms > 0 && ms < 500 && ms > 100) ms = 500;
+            // Orta interval'ları (500-1999ms) → 2sn (video/HLS watchdog hariç)
+            if (ms >= 500 && ms < 2000) {
+                var skip = fnStr.indexOf('hls') > -1 || fnStr.indexOf('videoPlayer') > -1 ||
+                           fnStr.indexOf('watchdog') > -1 || fnStr.indexOf('Watchdog') > -1 ||
+                           fnStr.indexOf('stall') > -1 || fnStr.indexOf('recover') > -1 ||
+                           fnStr.indexOf('__umit_sec') > -1 || fnStr.indexOf('_secLeft') > -1 ||
+                           fnStr.indexOf('_forceClose') > -1; // Güvenlik countdown throttle edilemez
+                if (!skip) ms = 2000;
+            }
+            return _prevSetInterval.apply(window, [fn, ms].concat(args));
+        };
+    }
 
     // F) localStorage yazma debounce — TVBox'ta eMMC yavaş, canlı yayında bloke önleme
     var _origLsSet = Storage.prototype.setItem;
@@ -26661,8 +26657,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
     
-    // Loading overlay'i kapat — TV Box'ta 3s çok uzun, 1.5s yeterli
-    setTimeout(hideLoadingOverlay, 200); // ULTRA-FAST
+    // NOT: loadingOverlay artık burada KAPATILMIYOR.
+    // Kapanış, gerçek kanal/içerik yüklemesi tamamlandığında
+    // loadAllChannels() / processConfig() akışı içinde tetiklenir.
+    // (Önceki sabit 200ms kapanış, içerik gelmeden overlay'i kapatıp
+    //  kullanıcının yükleme mesajlarını görmesini engelliyordu.)
+    // Güvenlik ağı: 25 saniye içinde hiçbir şey olmazsa overlay'i zorla kapat.
+    setTimeout(() => {
+        try {
+            const _ov = document.getElementById('loadingOverlay');
+            if (_ov && _ov.style.display !== 'none') {
+                hideLoadingOverlay();
+            }
+        } catch(e) {}
+    }, 25000);
     
     // 8️⃣ ASENKRON BAŞLATMA İŞLEMLERİ
     // TV Box / düşük RAM cihazlar için sıralı başlatma (paralel Promise.all bellek spike yaratıyordu)
@@ -26813,7 +26821,7 @@ function updateLoadingProgress(message = null, forcePercent = null) {
             percentText.textContent = `%${newWidth}`;
         }
         
-        // Büyük durum yazısı
+        // Büyük durum yazısı — yüzdeye göre aşamalı, Netflix tarzı mesajlar
         if (bigStatus) {
             if (newWidth >= 100) {
                 bigStatus.textContent = 'Yüklendi!';
@@ -26821,7 +26829,12 @@ function updateLoadingProgress(message = null, forcePercent = null) {
                 bigStatus.style.textShadow = '0 0 20px rgba(0,230,118,0.8)';
                 if (percentText) percentText.style.color = '#00e676';
             } else {
-                bigStatus.textContent = 'Ümit Listesi Yükleniyor...';
+                let _stage;
+                if (newWidth < 25) _stage = 'Binlerce dizi ve film hazırlanıyor...';
+                else if (newWidth < 50) _stage = 'Kanallar ve VOD içerikleri taranıyor...';
+                else if (newWidth < 75) _stage = 'Anlık izlemeye hazırlanıyor...';
+                else _stage = 'Son rötuşlar yapılıyor...';
+                bigStatus.textContent = _stage;
                 bigStatus.style.color = '#FFD700';
                 bigStatus.style.textShadow = '0 0 20px rgba(255,215,0,0.7)';
                 if (percentText) percentText.style.color = '#ffffff';
@@ -26884,7 +26897,12 @@ function hideLoadingOverlay() {
         // 400ms sonra tamamen gizle
         setTimeout(() => {
             overlay.style.display = 'none';
-            showToast("Ümit TV Player Hazır! İyi seyirler...");
+            let _finalCount = 0;
+            try { _finalCount = (window.state && window.state.filtered) ? window.state.filtered.length : 0; } catch(e) {}
+            const _msg = _finalCount > 0
+                ? `${_finalCount.toLocaleString('tr-TR')} dizi/film/kanal hazır! İyi seyirler 🍿`
+                : 'Ümit TV Player Hazır! İyi seyirler...';
+            showToast(_msg);
         }, 400);
     }, 800);
 }
@@ -29835,8 +29853,23 @@ function openPasswordModal(m3uIndex, m3uName) {
 
         async function loadConfig() {
     window.loadConfig = loadConfig; // global scope
+
+    // ── STALE-WHILE-REVALIDATE ──────────────────────────────────
+    // Cache'lenmiş config varsa ÖNCE onunla anında başlat (kullanıcı beklemesin).
+    // Ardından arka planda taze config çekilir; gelince state güncellenir.
+    // Bu sayede ikinci+ açılışlar her zaman hızlı olur, ağ sadece arka planda
+    // çalışıp listeyi günceller.
+    let _hadCachedConfig = false;
     try {
-        
+        const _cachedCfgRaw = localStorage.getItem('app_config_backup');
+        if (_cachedCfgRaw) {
+            const _cachedCfg = JSON.parse(_cachedCfgRaw);
+            _hadCachedConfig = true;
+            processConfig(_cachedCfg);
+        }
+    } catch(e) {}
+
+    try {
 
         // file:// ortamında fetch proxy zinciri
         const _CFGPROXIES = [
@@ -29898,28 +29931,30 @@ function openPasswordModal(m3uIndex, m3uName) {
             throw new Error('Config JSON parse hatası: ' + e.message);
         }
         
-        
 
-        processConfig(conf);
+        processConfig(conf, _hadCachedConfig);
         
     } catch (error) {
         
-        
+        // Taze config çekilemedi. Önceden cache'den zaten başlatmışsak
+        // (yukarıda _hadCachedConfig=true), kullanıcı hâlâ eski listeyle
+        // çalışıyor olduğu için ekstra bir şey yapmaya gerek yok.
+        if (!_hadCachedConfig) {
+            try {
+                const cached = localStorage.getItem('app_config_backup');
+                if (cached) {
+                    const conf = JSON.parse(cached);
+                    processConfig(conf);
+                    loadAllChannels();
+                    showToast("Önbellekten yüklendi");
+                } else {
+                    
 
-        try {
-            const cached = localStorage.getItem('app_config_backup');
-            if (cached) {
-                const conf = JSON.parse(cached);
-                processConfig(conf);
-                loadAllChannels();
-                showToast("Önbellekten yüklendi");
-            } else {
-                
-
+                    showNoConfigUI();
+                }
+            } catch (e) {
                 showNoConfigUI();
             }
-        } catch (e) {
-            showNoConfigUI();
         }
     }
 }
@@ -29938,7 +29973,8 @@ function showNoConfigUI() {
     // 5 saniye sonra tekrar loading varsa kapat
     setTimeout(() => { try { hideLoadingOverlay(); } catch(e) {} }, 5000);
 }
-        function processConfig(conf) {
+        function processConfig(conf, _isBackgroundRefresh) {
+            const _prevM3UListJSON = _isBackgroundRefresh ? JSON.stringify(state.m3uList || []) : null;
             state.m3uList = conf.m3uList || conf.m3u_list || [];
             
             state.themes = conf.themes || [];
@@ -30008,7 +30044,16 @@ function showNoConfigUI() {
                 ))
             ); } catch(e) {}
             renderM3USelector();
-            (async function() { await loadAllChannels(!!window._refreshForce); })();
+            const _newM3UListJSON = JSON.stringify(state.m3uList || []);
+            const _shouldLoadChannels = !_isBackgroundRefresh || _newM3UListJSON !== _prevM3UListJSON || !state.channels || state.channels.length === 0;
+            if (_shouldLoadChannels) {
+                (async function() { await loadAllChannels(!!window._refreshForce); })();
+            } else {
+                // Arka plan yenilemesi ve liste içerik olarak değişmedi —
+                // kullanıcının ekranını gereksiz yere yeniden yüklemeye gerek yok.
+                // Yine de loading overlay açıksa (cache yoktu, ilk istekteyiz) kapatalım.
+                try { if (typeof hideLoadingOverlay === 'function') hideLoadingOverlay(); } catch(e) {}
+            }
             
             renderDynamicButtons(conf.buttons || []);
         }
@@ -30237,7 +30282,7 @@ async function loadAllChannels(forceRefresh = false) {
     
     
 
-    updateLoadingProgress('Kanallar hızlı yükleniyor...', 10);
+    updateLoadingProgress('Binlerce dizi, film ve kanal yükleniyor...', 10);
 
     
 
@@ -30249,15 +30294,23 @@ async function loadAllChannels(forceRefresh = false) {
             if (idbMetaRaw) {
                 const idbMeta = JSON.parse(idbMetaRaw);
                 const lists = idbMeta.lists || [];
-                let idbChannels = [];
-                for (const m of lists) {
-                    if (!m.url) continue;
+                // ÖNEMLİ: sırayla (await for-of) değil PARALEL okuma.
+                // Liste sayısı arttığında sırayla okuma çok uzun sürüyordu ve
+                // bazı açılışlarda yarıda kalmış gibi az sayıda kanal görünmesine
+                // yol açıyordu. Promise.all ile tüm M3U cache kayıtları aynı anda
+                // istenir, IndexedDB bunları kendi içinde sıraya alır.
+                const idbReadResults = await Promise.all(lists.map(async (m) => {
+                    if (!m.url) return null;
                     try {
                         const cached = await state.db.get(state.db.stores.M3U_CACHE, m.url);
-                        if (cached && cached.channels && cached.channels.length > 0) {
-                            idbChannels.push(...cached.channels);
-                        }
-                    } catch(e2) {}
+                        return (cached && cached.channels && cached.channels.length > 0) ? cached.channels : null;
+                    } catch(e2) { return null; }
+                }));
+                let idbChannels = [];
+                let _missingListCount = 0;
+                for (const chArr of idbReadResults) {
+                    if (chArr) idbChannels.push(...chArr);
+                    else _missingListCount++;
                 }
                 if (idbChannels.length > 0) {
                     const unique = removeDuplicateChannels(idbChannels);
@@ -30289,11 +30342,28 @@ async function loadAllChannels(forceRefresh = false) {
                         }
                     }, 400);
 
-                    setTimeout(() => _checkAndRefreshIfChanged(), 3000); // IDB cache gösterdik, sadece değişiklik varsa yenile
+                    // Cache'den hızlı yükleme — kullanıcının görebilmesi için kısa aşamalı mesaj dizisi
+                    const _cacheCount = state.filtered ? state.filtered.length : 0;
+                    updateLoadingProgress(`${_cacheCount.toLocaleString('tr-TR')} içerik önbellekten yüklendi...`, 55);
+                    setTimeout(() => updateLoadingProgress('Diziler ve filmler hazırlanıyor...', 80), 350);
+
                     setTimeout(() => {
                         updateLoadingProgress('Kanallar hazır!', 100);
                         setTimeout(hideLoadingOverlay, 600);
-                    }, 200);
+                    }, 750);
+
+                    // Cache'deki bazı listeler eksikse (örn. henüz hiç taranmamış ya
+                    // da yazma sırasında kesintiye uğramış M3U'lar varsa), bunu
+                    // arka planda tamamla. _checkAndRefreshIfChanged() sadece config
+                    // DEĞİŞTİYSE çalışır; burada listelerin kendisi eksik olabilir.
+                    if (_missingListCount > 0) {
+                        setTimeout(() => {
+                            showToast(`${_missingListCount} liste tamamlanıyor...`);
+                            loadFreshChannelsInBackground(false);
+                        }, 1200);
+                    } else {
+                        setTimeout(() => _checkAndRefreshIfChanged(), 3000); // IDB cache gösterdik, sadece değişiklik varsa yenile
+                    }
                     return;
                 }
             }
@@ -30986,7 +31056,9 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
                         completedM3Us++;
                         const pct = 15 + Math.round((completedM3Us / totalM3Us) * 75);
-                        updateLoadingProgress(`Kanal listesi yükleniyor... (${completedM3Us}/${totalM3Us})`, pct);
+                        const _liveCount = quickChannels.length;
+                        const _countTxt = _liveCount > 0 ? `${_liveCount.toLocaleString('tr-TR')} içerik bulundu — ` : '';
+                        updateLoadingProgress(`${_countTxt}Liste taranıyor (${completedM3Us}/${totalM3Us})...`, pct);
                         
              } catch (error) {
     
@@ -31738,7 +31810,23 @@ function parseM3UOptimized(text, listIdx) {
     const lines = text.split('\n');
     const channels = [];
     let currentItem = null;
-    
+
+    // list.json'daki m3u_list girdisine "contentType":"live" veya "vod" eklenerek
+    // bu listenin tamamı için group-title tahminini ezmek mümkün.
+    // contentType:"live" → tüm kanallar canlı (Dizi/Film grup adı olsa da)
+    // contentType:"vod"  → tüm kanallar VOD (canlı grup adı olsa da)
+    let _forceLiveSource = false;
+    let _forceVodSource = false;
+    try {
+        const _srcM3U = state.m3uList[listIdx];
+        const _srcType = (_srcM3U && _srcM3U.contentType || '').toLowerCase();
+        if (_srcType === 'live') _forceLiveSource = true;
+        else if (_srcType === 'vod') _forceVodSource = true;
+        // Geriye dönük uyumluluk: eski hardcoded domain kuralı
+        const _srcUrl = ((_srcM3U && _srcM3U.url) || '').toLowerCase();
+        if (!_srcType && _srcUrl.includes('kablotvumit.umitm0d.workers.dev')) _forceLiveSource = true;
+    } catch(e) {}
+
     
 
     if (lines[0] && lines[0].includes('x-tvg-url')) {
@@ -31779,7 +31867,7 @@ function parseM3UOptimized(text, listIdx) {
     
 
     const vodExtensions = ['.mp4', '.mkv', '.avi', '.m4v', '.mov', '.wmv', '.flv', '.webm'];
-    const vodKeywords = ['youtube.com/watch', 'youtu.be/', '/film/', '/movie/', '/dizi/', '/series/', 'vidmody.com'];
+    const vodKeywords = ['youtube.com/watch', 'youtu.be/', '/film/', '/movie/', '/dizi/', '/series/', 'vidmody.com', 'filmmodu.umitm0d.workers.dev'];
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -31958,6 +32046,16 @@ function parseM3UOptimized(text, listIdx) {
                         currentItem.isLive = false;
                     }
                 }
+            }
+            
+            // Bu kaynaktaki tüm kanallar canlı — group-title bazlı VOD kararını ez
+            if (_forceLiveSource) {
+                currentItem.isLive = true;
+                currentItem.isVod = false;
+                currentItem.isSeries = false;
+            } else if (_forceVodSource) {
+                currentItem.isLive = false;
+                currentItem.isVod = true;
             }
             
             // Channel'i ekle
@@ -32657,6 +32755,19 @@ function parseM3U(text, listIdx) {
     const MAX_CHUNK_CHARS = 256 * 1024; // 256KB
     const channels = [];
     let currentItem = null;
+
+    // list.json'daki m3u_list girdisine "contentType":"live" veya "vod" eklenerek
+    // bu listenin tamamı için group-title tahminini ezmek mümkün.
+    let _forceLiveSource = false;
+    let _forceVodSource = false;
+    try {
+        const _srcM3U2 = state.m3uList[listIdx];
+        const _srcType2 = (_srcM3U2 && _srcM3U2.contentType || '').toLowerCase();
+        if (_srcType2 === 'live') _forceLiveSource = true;
+        else if (_srcType2 === 'vod') _forceVodSource = true;
+        const _srcUrl2 = ((_srcM3U2 && _srcM3U2.url) || '').toLowerCase();
+        if (!_srcType2 && _srcUrl2.includes('kablotvumit.umitm0d.workers.dev')) _forceLiveSource = true;
+    } catch(e) {}
     
     // Kategori sıralamasını takip et
     if (!state.m3uCategoryOrder) state.m3uCategoryOrder = {};
@@ -32682,7 +32793,7 @@ function parseM3U(text, listIdx) {
     const vodPrefixes = ['film', 'dizi', 'vod', 'movie', 'series', 'yabancı'];
     const livePrefixes = ['ulusal', 'haber', 'spor', 'belgesel', 'eğlence', 'müzik', 'çocuk', 'dini', 'canlı'];
     const vodUrlIndicators = ['.mp4', '.mkv', '.avi', '.m4v', '.mov', '.wmv', '.flv', '.webm'];
-    const vodDomainIndicators = ['youtube.com/watch', 'youtu.be/', 'vidmody.com', '/movie/', '/film/', '/dizi/'];
+    const vodDomainIndicators = ['youtube.com/watch', 'youtu.be/', 'vidmody.com', '/movie/', '/film/', '/dizi/', 'filmmodu.umitm0d.workers.dev'];
 
     // Header: ilk satırdan EPG URL çek (güvenli yol)
     const firstNl = text.indexOf('\n');
@@ -32764,6 +32875,15 @@ function parseM3U(text, listIdx) {
                     currentItem.isLive = false;
                 }
             }
+            // Bu kaynaktaki tüm kanallar canlı — group-title bazlı VOD kararını ez
+            if (_forceLiveSource) {
+                currentItem.isLive = true;
+                currentItem.isVod = false;
+                currentItem.isSeries = false;
+            } else if (_forceVodSource) {
+                currentItem.isLive = false;
+                currentItem.isVod = true;
+            }
             channels.push(currentItem);
             currentItem = null;
         }
@@ -32835,7 +32955,23 @@ function groupChannelsBySeries(channels) {
     channels.forEach((channel, index) => {
         if (processed.has(index)) return;
         
+        // Force-live kaynaktan gelen kanallara dokunma — bu liste tamamen canlı yayın
+        let _chForceLive = false;
+        try {
+            const _chM3U = state.m3uList[channel.listIdx];
+            const _chType = (_chM3U && _chM3U.contentType || '').toLowerCase();
+            if (_chType === 'live') _chForceLive = true;
+            const _chSrcUrl = ((_chM3U && _chM3U.url) || '').toLowerCase();
+            if (!_chType && _chSrcUrl.includes('kablotvumit.umitm0d.workers.dev')) _chForceLive = true;
+        } catch(e) {}
+
         // Sadece VOD/dizi olanları grupla
+        if (channel.isLive === true && _chForceLive) {
+            // Force-live kaynak: hiçbir VOD/dizi tahminine girmeden direkt canlı kanal olarak bırak
+            grouped.push(channel);
+            processed.add(index);
+            return;
+        }
         if (channel.isLive === true) {
             // Grup adında dizi/VOD ipucu varsa CANLI sayma, VOD olarak işle
             const _grpLow = (channel.group || '').toLowerCase();
@@ -33423,9 +33559,15 @@ function updateCategoriesFromFiltered() {
     });
     
     const radioName = typeof RADIO_CATEGORY_NAME !== 'undefined' ? RADIO_CATEGORY_NAME : 'Radyo';
-    
+
+    // ⚽ Canlı Maçlar: sadece listede gerçek canlı (VOD olmayan) kanal varsa göster.
+    // Film/dizi modu listelerinde (hepsi VOD) bu kategori artık kategori barında görünmez.
+    const _hasLiveChannel = state.filtered.some(c => c && c.isLive === true && c.isVod !== true);
+
     // Temel kategoriler her zaman en başta
-    let newCats = ['Tümü', 'Favoriler', 'Devam Et', '⚽ Canlı Maçlar'];
+    let newCats = _hasLiveChannel
+        ? ['Tümü', 'Favoriler', 'Devam Et', '⚽ Canlı Maçlar']
+        : ['Tümü', 'Favoriler', 'Devam Et'];
     
     // 😄 YENİ: M3U'daki orijinal sıralamayı kullan
     if (currentIdx !== 'all' && state.m3uCategoryOrder && state.m3uCategoryOrder[currentIdx]) {
@@ -34099,14 +34241,20 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
           
           
         function updateCategories() {
-            const set = new Set(['Favoriler', 'Devam Et', '⚽ Canlı Maçlar']);
+            // ⚽ Canlı Maçlar: sadece seçili M3U listesinde gerçek canlı (VOD olmayan) kanal varsa ekle
+            let _hasLiveCh = false;
+            const set = new Set();
             state.channels.forEach(c => {
                 if (state.selectedM3U === 'all' || c.listIdx == state.selectedM3U) { 
                     if(c.group) set.add(c.group); 
+                    if (c.isLive === true && c.isVod !== true) _hasLiveCh = true;
                 }
             });
-            state.cats = ['Tümü', ...Array.from(set)].filter(c => c !== RADIO_CATEGORY_NAME);
-            if (Array.from(set).includes(RADIO_CATEGORY_NAME)) state.cats.push(RADIO_CATEGORY_NAME);
+            const _restCats = Array.from(set).filter(c => c !== RADIO_CATEGORY_NAME);
+            state.cats = ['Tümü', 'Favoriler', 'Devam Et'];
+            if (_hasLiveCh) state.cats.push('⚽ Canlı Maçlar');
+            state.cats.push(..._restCats);
+            if (set.has(RADIO_CATEGORY_NAME)) state.cats.push(RADIO_CATEGORY_NAME);
             renderCats();
         }
 
@@ -45899,7 +46047,9 @@ function handleFavoriteChannelSelect(key) {
                 }
             }
         } else {
-            const cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+            const cards = (window._tvBoxCardMap && window._tvBoxCardMap.length)
+                ? Array.prototype.filter.call(window._tvBoxCardMap, c => !c.classList.contains('continue-card-in-grid'))
+                : document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
             if (cards.length > 0 && state.remote.index < cards.length) {
                 el = cards[state.remote.index];
                 const channelName = el.dataset.channelName;

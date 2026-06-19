@@ -16886,7 +16886,7 @@ const UmitSecurityManager = (function () {
             }).observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['inert','style'] });
         } catch(e) {}
 
-        if (typeof onBlock === 'function') { try { onBlock(); } catch(e) {} }
+        if (typeof onBlock === 'function') { try { onBlock(reason); } catch(e) {} }
     }
 
     // ════════════════════════════════════════════════════
@@ -16979,6 +16979,7 @@ const UmitSecurityManager = (function () {
         startWatch:      (ms,cb) => startPeriodicCheck(ms, cb),
         stopWatch:       ()      => { if (_checkInterval) clearInterval(_checkInterval); },
         isBlocked:       ()      => _blocked,
+        MSG, // dışarıdan reason eşleme için (Telegram bildirim etiketleri)
 
         // Katman 8: şifreli auth yardımcıları
         saveSecureAuth,
@@ -16999,7 +17000,32 @@ UmitSecurityManager.init({
     tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
     block:    true,    // Kilitleme aktif
     threshold:160,
-    onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },
+    onBlock:  (reason) => {
+        // İlk yükleme anındaki ihlal (UA/domain/devtools/proxy/ext/tamper) → Telegram'a bildir
+        try {
+            const _M = (window.UmitSecurityManager && UmitSecurityManager.MSG) || {};
+            const _label = (function() {
+                if (reason === _M.ua)       return 'Yetkisiz tarayıcı erişimi (UA kontrolü)';
+                if (reason === _M.domain)   return 'İzinsiz domain erişimi';
+                if (reason === _M.devtools) return 'DevTools / İnceleyici tespiti';
+                if (reason === _M.proxy)    return 'VPN / Proxy tespiti';
+                if (reason === _M.ext)      return 'HTTP izleme eklentisi tespiti';
+                if (reason === _M.tamper)   return 'Kod müdahalesi tespiti';
+                return 'Tarayıcı erişim denemesi — Yetkisiz erişim';
+            })();
+            const _doSend = () => {
+                if (window.UmitSecurityExtras && typeof UmitSecurityExtras.sendSecurityAlert === 'function') {
+                    UmitSecurityExtras.sendSecurityAlert(_label);
+                    return true;
+                }
+                return false;
+            };
+            if (!_doSend()) {
+                // Extras henüz yüklenmediyse kısa süre sonra tekrar dene
+                setTimeout(_doSend, 500);
+            }
+        } catch(e) {}
+    },
 });
 
 // ── Login sonrası periyodik izleme + parmak izi doğrulama ────────────────

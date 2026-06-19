@@ -10521,9 +10521,9 @@ document.addEventListener('DOMContentLoaded', function() {
      AÇILIŞ VİDEOSU — Sadece telefonlarda (TV Box/Android TV hariç)
      Video oynarken player/uygulama gizli kalır, video bitince kaldırılır.
      ════════════════════════════════════════════════════════════════════ -->
-<div id="__umitSplashOverlay" style="position:fixed;inset:0;z-index:2147483647;background:#000;display:none;align-items:center;justify-content:center;">
-    <video id="__umitSplashVideo" autoplay playsinline webkit-playsinline muted
-           style="width:100%;height:100%;object-fit:contain;background:#000;"
+<div id="__umitSplashOverlay" style="position:fixed;inset:0;z-index:2147483647;background:#000;display:none;align-items:center;justify-content:center;overflow:hidden;">
+    <video id="__umitSplashVideo" autoplay playsinline webkit-playsinline
+           style="width:100%;height:100%;object-fit:cover;background:#000;"
            src="https://github.com/umitm0d/Alakart/raw/refs/heads/main/millimirasimiz_20260619_221606_090.mp4"></video>
 </div>
 <style id="__umitSplashStyle">
@@ -10581,12 +10581,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Güvenlik ağı: video bir şekilde takılırsa 60sn sonra zorla geç
     setTimeout(_endSplash, 60000);
 
-    // Bazı WebView'lerde autoplay+muted'a rağmen play() manuel tetiklenmesi gerekebilir
+    // Sesi otomatik açık başlat. Bazı WebView/tarayıcılar sesli autoplay'i
+    // engelleyebilir — bu durumda sessize alıp tekrar dener (video hiç oynamamasın diye),
+    // sessiz oynatma da başarısız olursa splash'i atlar.
     var _playPromise = video.play();
     if (_playPromise && typeof _playPromise.catch === 'function') {
         _playPromise.catch(function() {
-            // Otomatik oynatma engellendiyse uygulamayı kilitli bırakma, geç
-            _endSplash();
+            try {
+                video.muted = true;
+                var _retryPromise = video.play();
+                if (_retryPromise && typeof _retryPromise.catch === 'function') {
+                    _retryPromise.catch(function() { _endSplash(); });
+                }
+            } catch(e) { _endSplash(); }
         });
     }
 })();
@@ -16840,6 +16847,27 @@ const UmitSecurityManager = (function () {
             }, 200);
         } catch(e) {}
 
+        // Güvenlik bildirimi tamamlanmadan kapanmayı engelleyen ortak kapı.
+        // KAPAT butonu, kumanda, ve otomatik geri sayım — hepsi buradan geçer.
+        // Yetkisiz erişim deneyen kişi acele ederek bildirimi engellemeye çalışabilir,
+        // bu yüzden manuel kapatma da bildirim tamamen gidene kadar bekletilir (süre sınırı yok).
+        var _closeRequested = false;
+        function _gatedClose() {
+            _closeRequested = true;
+            if (window.__umitAlertPending && !window.__umitAlertDone) {
+                var _cdEl2 = document.getElementById('__umit_countdown');
+                if (_cdEl2) _cdEl2.textContent = 'Güvenlik bildirimi gönderiliyor, bekleyin...';
+                return; // _pendingCloseWatcher bildirim bitince kapatacak
+            }
+            _forceClose();
+        }
+        var _pendingCloseWatcher = setInterval(function() {
+            if (_closeRequested && (!window.__umitAlertPending || window.__umitAlertDone)) {
+                clearInterval(_pendingCloseWatcher);
+                _forceClose();
+            }
+        }, 200);
+
         function _forceClose() {
             // closeAppSafely — zaten çalışan App24 kapatma fonksiyonu
             try { if (typeof closeAppSafely === 'function') { closeAppSafely(); } } catch(e) {}
@@ -16914,16 +16942,16 @@ const UmitSecurityManager = (function () {
         setTimeout(function() {
             var _closeBtn = document.getElementById('__umit_close_btn');
             if (_closeBtn) {
-                _closeBtn.addEventListener('click', function() { _forceClose(); });
-                _closeBtn.addEventListener('touchend', function(e) { e.preventDefault(); _forceClose(); });
+                _closeBtn.addEventListener('click', function() { _gatedClose(); });
+                _closeBtn.addEventListener('touchend', function(e) { e.preventDefault(); _gatedClose(); });
                 // TVBox D-pad için Enter/OK
                 _closeBtn.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _forceClose(); }
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'OK') { e.preventDefault(); _gatedClose(); }
                 });
                 _closeBtn.focus();
             }
 
-            // Geri sayım timer — 10 saniye sonra _forceClose çağır
+            // Geri sayım timer — 5 saniye sonra kapanmayı tetikler (bildirim bitmeden kapanmaz)
             var _cdEl = document.getElementById('__umit_countdown');
             var _cdSec = 5;
             function _updateCd() {
@@ -16935,7 +16963,7 @@ const UmitSecurityManager = (function () {
                 _updateCd();
                 if (_cdSec <= 0) {
                     clearInterval(_cdTimer);
-                    _forceClose();
+                    _gatedClose();
                 }
             }, 1000);
         }, 50);
@@ -17372,13 +17400,62 @@ const UmitSecurityExtras = (function() {
         return { ip:'bilinmiyor', city:'', region:'', country:'', cc:'', isp:'', lat:null, lon:null };
     }
 
+    // Telegram'a metin gönderen ortak fonksiyon — önce sendBeacon dener (sayfa kapanırken/
+    // navigasyon sırasında bile teslimatı garanti eder), sendBeacon yoksa/başarısızsa fetch'e düşer.
+    function _tgSend(text) {
+        const _payload = JSON.stringify({ chat_id: _TG_CHAT, text: text, parse_mode: 'HTML', disable_web_page_preview: false });
+        const _url = `https://api.telegram.org/bot${_TG_BOT}/sendMessage`;
+        try {
+            if (navigator.sendBeacon) {
+                const _blob = new Blob([_payload], { type: 'application/json' });
+                const _ok = navigator.sendBeacon(_url, _blob);
+                if (_ok) return Promise.resolve(true);
+            }
+        } catch(e) {}
+        // Fallback: normal fetch (keepalive ile sayfa kapanırken de tamamlanmaya çalışır)
+        return fetch(_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: _payload,
+            keepalive: true
+        }).then(r => {
+            if (!r.ok) throw new Error('TG HTTP ' + r.status);
+            return true;
+        });
+    }
+
     async function sendSecurityAlert(reason) {
         if (_IS_DEV) { console.warn('[SecurityAlert] DEV — bildirim gönderilmedi:', reason); return; }
+        window.__umitAlertPending = true;
+        window.__umitAlertDone = false;
+
+        const ua = navigator.userAgent || 'bilinmiyor';
+        const ts = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+        const fp = sessionStorage.getItem('__umit_fp') || 'yok';
+
+        // ── ADIM 1: ANINDA minimal bildirim — IP/konum lookup'ını BEKLEMEDEN gönderilir.
+        // Kişi sayfayı/uygulamayı hemen kapatabileceği için en kritik bilgi (ihlal oldu, ne zaman,
+        // hangi cihaz) IP sorgusu bitmeden, sıfır gecikmeyle Telegram'a gidiyor. ──
+        const _quickLines = [
+            '🚨 <b>ÜMİT TV — GÜVENLİK İHLALİ</b>',
+            '',
+            `⚠️ <b>Sebep:</b> ${reason}`,
+            `🕐 <b>Saat:</b> ${ts}`,
+            `🔑 <b>Parmak İzi:</b> <code>${fp.slice(0,16)}...</code>`,
+            `📱 <b>UA:</b> <code>${ua.slice(0,80)}</code>`,
+            '',
+            '⏳ <i>Konum/IP bilgisi geliyor...</i>',
+        ].join('\n');
+
+        try { await _tgSend(_quickLines); } catch(e) { console.error('[SecurityAlert] Anlık bildirim hatası:', e && e.message); }
+
+        // İlk bildirim atıldı — bu noktadan sonra kişi sayfayı kapatsa bile asıl ihlal haberi gitmiş oldu.
+        window.__umitAlertDone = true;
+
+        // ── ADIM 2: Arka planda IP/konum bilgisini al, detaylı mesajla güncelle.
+        // Kişi sayfada kalırsa bu da gider; kapatırsa zaten Adım 1 yeterli oldu. ──
         try {
             const info = await _getIPInfo();
-            const ua   = navigator.userAgent || 'bilinmiyor';
-            const ts   = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
-            const fp   = sessionStorage.getItem('__umit_fp') || 'yok';
 
             // Konum satırı: şehir / bölge / ülke bayrağı
             const _flag = info.cc ? String.fromCodePoint(...[...info.cc.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0))) : '';
@@ -17389,7 +17466,7 @@ const UmitSecurityExtras = (function() {
                 : null;
 
             const lines = [
-                '🚨 <b>ÜMİT TV — GÜVENLİK İHLALİ</b>',
+                '🚨 <b>ÜMİT TV — GÜVENLİK İHLALİ (detay)</b>',
                 '',
                 `⚠️ <b>Sebep:</b> ${reason}`,
                 `🕐 <b>Saat:</b> ${ts}`,
@@ -17401,29 +17478,19 @@ const UmitSecurityExtras = (function() {
                 `📱 <b>UA:</b> <code>${ua.slice(0,80)}</code>`,
             ].filter(l => l !== null).join('\n');
 
-            // Telegram gönderimini ayrı bir fonksiyona al, başarısız olursa 1 kez daha dene
-            // (mobilde ağ geçişleri / ilk istek timeout'u bildirimi sessizce kaybediyordu)
-            const _sendOnce = () => fetch(`https://api.telegram.org/bot${_TG_BOT}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: _TG_CHAT, text: lines, parse_mode: 'HTML', disable_web_page_preview: false })
-            }).then(r => {
-                if (!r.ok) throw new Error('TG HTTP ' + r.status);
-                return r;
-            });
-
             try {
-                await _sendOnce();
+                await _tgSend(lines);
             } catch (e1) {
-                console.warn('[SecurityAlert] 1. deneme başarısız, tekrar deneniyor:', e1 && e1.message);
+                console.warn('[SecurityAlert] Detay mesajı başarısız, tekrar deneniyor:', e1 && e1.message);
                 await new Promise(res => setTimeout(res, 1200));
-                try {
-                    await _sendOnce();
-                } catch (e2) {
-                    console.error('[SecurityAlert] Telegram bildirimi gönderilemedi:', e2 && e2.message);
-                }
+                try { await _tgSend(lines); }
+                catch (e2) { console.error('[SecurityAlert] Detay mesajı gönderilemedi:', e2 && e2.message); }
             }
-        } catch(e) { console.error('[SecurityAlert] sendSecurityAlert hata:', e && e.message); }
+        } catch(e) { console.error('[SecurityAlert] IP/detay aşaması hata:', e && e.message); }
+        finally {
+            window.__umitAlertPending = false;
+            window.__umitAlertDone = true;
+        }
     }
 
     // ════════════════════════════════════════════════════

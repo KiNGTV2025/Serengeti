@@ -16193,14 +16193,31 @@ const UmitSecurityManager = (function () {
     // ════════════════════════════════════════════════════
     // Sadece AppCreator24 APK WebView'dan açılabilir.
     // Normal tarayıcı (Chrome, Firefox, Safari) engellenir.
-    const ALLOWED_UA_PATTERNS = [
-        'okhttp',        // AppCreator24 APK WebView
-        'okhttp/4',      // AppCreator24 v4.x
-    ];
+    // ════════════════════════════════════════════════════
+    // KATMAN 10 — GİZLİ TOKEN KONTROLÜ
+    // APK linke ?auth=umittv2026 ekler → localStorage'a kaydedilir
+    // Tarayıcıdan direkt açılırsa token yok → BLOK
+    // ════════════════════════════════════════════════════
+    const _AUTH_TOKEN  = 'umittv2026';
+    const _AUTH_LS_KEY = '__umit_apk_auth';
+    const _AUTH_PARAM  = 'auth';
 
     function _isUAAllowed() {
-        const ua = (navigator.userAgent || '').toLowerCase();
-        return ALLOWED_UA_PATTERNS.some(p => ua.includes(p));
+        // 1) URL'de token var mı? (APK her açılışta ?auth=umittv2026 ile açar)
+        try {
+            const urlToken = new URLSearchParams(location.search).get(_AUTH_PARAM);
+            if (urlToken === _AUTH_TOKEN) {
+                try { localStorage.setItem(_AUTH_LS_KEY, _AUTH_TOKEN); } catch(e) {}
+                try { history.replaceState(null, '', location.pathname); } catch(e) {}
+                return true;
+            }
+        } catch(e) {}
+        // 2) localStorage'da daha önce kaydedilmiş token var mı?
+        try {
+            if (localStorage.getItem(_AUTH_LS_KEY) === _AUTH_TOKEN) return true;
+        } catch(e) {}
+        // 3) İkisi de yok → yetkisiz tarayıcı erişimi
+        return false;
     }
 
     // ════════════════════════════════════════════════════

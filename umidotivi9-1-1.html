@@ -16179,7 +16179,6 @@ const UmitSecurityManager = (function () {
     const ALLOWED_DOMAINS = [
         'localhost',
         '127.0.0.1',
-        'kingtv2025.github.io',
         // dosyayı local açıyorsan boş hostname da izinli:
         '',
     ];
@@ -16200,7 +16199,8 @@ const UmitSecurityManager = (function () {
     ];
 
     function _isUAAllowed() {
-        return true; // Tüm ortamlar izinli (App24, tarayıcı, WebView)
+        const ua = (navigator.userAgent || '').toLowerCase();
+        return ALLOWED_UA_PATTERNS.some(p => ua.includes(p));
     }
 
     // ════════════════════════════════════════════════════
@@ -16783,14 +16783,40 @@ const UmitSecurityManager = (function () {
         // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
         (document.documentElement || document.body).appendChild(overlay);
 
-        // Gerçek IP'yi göster — korkutucu etki için
+        // Gerçek IP + konum bilgisini göster — korkutucu etki için
         try {
-            fetch('https://api.ipify.org?format=json')
+            fetch('http://ip-api.com/json/?fields=status,country,countryCode,regionName,city,isp,lat,lon,query')
                 .then(function(r){ return r.json(); })
                 .then(function(d){
                     var el = document.getElementById('__umit_ip_line');
-                    if (el && d && d.ip) el.textContent = '🌐 IP: ' + d.ip + ' → ÜmitMod\'a iletildi ✓';
-                }).catch(function(){});
+                    if (!el) return;
+                    if (d && d.status === 'success') {
+                        var flag = '';
+                        try {
+                            flag = d.countryCode
+                                ? String.fromCodePoint.apply(null, [...d.countryCode.toUpperCase()].map(function(c){ return 0x1F1E6 - 65 + c.charCodeAt(0); }))
+                                : '';
+                        } catch(_) {}
+                        var lokasyon = [d.city, d.regionName, d.country].filter(Boolean).join(' / ');
+                        el.style.lineHeight = '1.7';
+                        el.innerHTML =
+                            '🌐 <b>IP:</b> ' + d.query + ' → ÜmitMod\'a iletildi ✓<br>' +
+                            flag + ' <b>Konum:</b> ' + lokasyon + (d.isp ? '<br>🏢 <b>İSS:</b> ' + d.isp : '');
+                    } else {
+                        fetch('https://api.ipify.org?format=json')
+                            .then(function(r2){ return r2.json(); })
+                            .then(function(d2){
+                                if (el && d2 && d2.ip) el.textContent = '🌐 IP: ' + d2.ip + ' → ÜmitMod\'a iletildi ✓';
+                            }).catch(function(){});
+                    }
+                }).catch(function(){
+                    fetch('https://api.ipify.org?format=json')
+                        .then(function(r){ return r.json(); })
+                        .then(function(d){
+                            var el = document.getElementById('__umit_ip_line');
+                            if (el && d && d.ip) el.textContent = '🌐 IP: ' + d.ip + ' → ÜmitMod\'a iletildi ✓';
+                        }).catch(function(){});
+                });
         } catch(e) {}
 
         // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
@@ -17169,36 +17195,87 @@ const UmitSecurityExtras = (function() {
     // ════════════════════════════════════════════════════
     // İhlal tespit edilince Telegram grubuna detaylı mesaj atar.
 
-    async function _getPublicIP() {
+    // IP + konum + ISP bilgisi — ip-api.com (ücretsiz, CORS açık, 45 req/dk limit)
+    async function _getIPInfo() {
+        // 1) ip-api.com — en detaylı (HTTP — bazı ortamlarda bloklanabilir)
         try {
-            const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+            const r = await fetch(
+                'http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,zip,lat,lon,isp,org,as,query',
+                { signal: AbortSignal.timeout(4000) }
+            );
             const d = await r.json();
-            return d.ip || 'bilinmiyor';
-        } catch(e) { return 'bilinmiyor'; }
+            if (d && d.status === 'success') {
+                return {
+                    ip:      d.query       || 'bilinmiyor',
+                    city:    d.city        || '',
+                    region:  d.regionName  || '',
+                    country: d.country     || '',
+                    cc:      d.countryCode || '',
+                    isp:     d.isp         || d.org || '',
+                    lat:     d.lat         || null,
+                    lon:     d.lon         || null,
+                };
+            }
+        } catch(e) {}
+        // 2) ipwho.is — HTTPS, ücretsiz
+        try {
+            const r2 = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(4000) });
+            const d2 = await r2.json();
+            if (d2 && d2.success) {
+                return {
+                    ip:      d2.ip          || 'bilinmiyor',
+                    city:    d2.city        || '',
+                    region:  d2.region      || '',
+                    country: d2.country     || '',
+                    cc:      d2.country_code|| '',
+                    isp:     d2.connection && (d2.connection.isp || d2.connection.org) || '',
+                    lat:     d2.latitude    || null,
+                    lon:     d2.longitude   || null,
+                };
+            }
+        } catch(e) {}
+        // 3) Fallback: sadece IP
+        try {
+            const r3 = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+            const d3 = await r3.json();
+            return { ip: d3.ip || 'bilinmiyor', city:'', region:'', country:'', cc:'', isp:'', lat:null, lon:null };
+        } catch(e) {}
+        return { ip:'bilinmiyor', city:'', region:'', country:'', cc:'', isp:'', lat:null, lon:null };
     }
 
     async function sendSecurityAlert(reason) {
         if (_IS_DEV) { console.warn('[SecurityAlert] DEV — bildirim gönderilmedi:', reason); return; }
         try {
-            const ip  = await _getPublicIP();
-            const ua  = navigator.userAgent || 'bilinmiyor';
-            const ts  = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
-            const fp  = sessionStorage.getItem('__umit_fp') || 'yok';
+            const info = await _getIPInfo();
+            const ua   = navigator.userAgent || 'bilinmiyor';
+            const ts   = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+            const fp   = sessionStorage.getItem('__umit_fp') || 'yok';
 
-            const msg = [
+            // Konum satırı: şehir / bölge / ülke bayrağı
+            const _flag = info.cc ? String.fromCodePoint(...[...info.cc.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0))) : '';
+            const _lokasyon = [info.city, info.region, info.country].filter(Boolean).join(' / ') || 'bilinmiyor';
+            // Google Maps linki (koordinat varsa)
+            const _mapsLink = (info.lat && info.lon)
+                ? `https://maps.google.com/?q=${info.lat},${info.lon}`
+                : null;
+
+            const lines = [
                 '🚨 <b>ÜMİT TV — GÜVENLİK İHLALİ</b>',
                 '',
                 `⚠️ <b>Sebep:</b> ${reason}`,
                 `🕐 <b>Saat:</b> ${ts}`,
-                `🌐 <b>IP:</b> <code>${ip}</code>`,
+                `🌐 <b>IP:</b> <code>${info.ip}</code>`,
+                `${_flag} <b>Konum:</b> ${_lokasyon}`,
+                info.isp ? `🏢 <b>İSS/Org:</b> ${info.isp}` : null,
+                _mapsLink ? `📍 <b>Harita:</b> <a href="${_mapsLink}">${info.lat.toFixed(4)}, ${info.lon.toFixed(4)}</a>` : null,
                 `🔑 <b>Parmak İzi:</b> <code>${fp.slice(0,16)}...</code>`,
                 `📱 <b>UA:</b> <code>${ua.slice(0,80)}</code>`,
-            ].join('\n');
+            ].filter(l => l !== null).join('\n');
 
             await fetch(`https://api.telegram.org/bot${_TG_BOT}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: _TG_CHAT, text: msg, parse_mode: 'HTML' })
+                body: JSON.stringify({ chat_id: _TG_CHAT, text: lines, parse_mode: 'HTML', disable_web_page_preview: false })
             });
         } catch(e) { /* sessizce geç */ }
     }

@@ -10517,6 +10517,80 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </head>
 <body class="fast-mode low-performance-mode"> 
+<!-- ════════════════════════════════════════════════════════════════════
+     AÇILIŞ VİDEOSU — Sadece telefonlarda (TV Box/Android TV hariç)
+     Video oynarken player/uygulama gizli kalır, video bitince kaldırılır.
+     ════════════════════════════════════════════════════════════════════ -->
+<div id="__umitSplashOverlay" style="position:fixed;inset:0;z-index:2147483647;background:#000;display:none;align-items:center;justify-content:center;">
+    <video id="__umitSplashVideo" autoplay playsinline webkit-playsinline muted
+           style="width:100%;height:100%;object-fit:contain;background:#000;"
+           src="https://github.com/umitm0d/Alakart/raw/refs/heads/main/millimirasimiz_20260619_221606_090.mp4"></video>
+</div>
+<style id="__umitSplashStyle">
+    /* Video gösterilirken altındaki tüm uygulama içeriğini gizle (player dahil) */
+    body.__umit-splash-active > *:not(#__umitSplashOverlay) { visibility: hidden !important; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    // ── Telefon tespiti: Android TV / TV Box / büyük ekran HARİÇ ──
+    // (isTvBox mantığının tersi — yukarıdaki TVBox tespit scriptiyle aynı kriterler)
+    var _ua = navigator.userAgent || '';
+    var _isTvLike = /Android/.test(_ua) &&
+        (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(_ua) ||
+         window.screen.width >= 1280 ||
+         /Box|STB|Set\.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_ua));
+    // Telefon: Android + TV/Box değil + ekran küçük (telefon/tablet boyutu)
+    var _isPhone = /Android/.test(_ua) && !_isTvLike && window.screen.width < 1280;
+
+    if (!_isPhone) {
+        // Telefon değilse overlay'i tamamen kaldır, hiç müdahale etme
+        var _ov = document.getElementById('__umitSplashOverlay');
+        if (_ov) _ov.remove();
+        return;
+    }
+
+    // Daha önce bu oturumda/cihazda gösterildiyse tekrar gösterme istenirse
+    // aşağıdaki satırı aktif edebilirsin (şimdilik her açılışta gösteriliyor):
+    // if (sessionStorage.getItem('__umit_splash_shown')) { document.getElementById('__umitSplashOverlay').remove(); return; }
+
+    var overlay = document.getElementById('__umitSplashOverlay');
+    var video   = document.getElementById('__umitSplashVideo');
+    if (!overlay || !video) return;
+
+    document.body.classList.add('__umit-splash-active');
+    overlay.style.display = 'flex';
+
+    var _finished = false;
+    function _endSplash() {
+        if (_finished) return;
+        _finished = true;
+        try { sessionStorage.setItem('__umit_splash_shown', '1'); } catch(e) {}
+        try { video.pause(); video.src = ''; video.removeAttribute('src'); video.load(); } catch(e) {}
+        overlay.style.display = 'none';
+        document.body.classList.remove('__umit-splash-active');
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        var st = document.getElementById('__umitSplashStyle');
+        if (st && st.parentNode) st.parentNode.removeChild(st);
+    }
+
+    video.addEventListener('ended', _endSplash);
+    // Video açılamaz/oynatılamazsa (codec, ağ vb.) uygulamayı sonsuza kadar bekletme
+    video.addEventListener('error', _endSplash);
+    // Güvenlik ağı: video bir şekilde takılırsa 60sn sonra zorla geç
+    setTimeout(_endSplash, 60000);
+
+    // Bazı WebView'lerde autoplay+muted'a rağmen play() manuel tetiklenmesi gerekebilir
+    var _playPromise = video.play();
+    if (_playPromise && typeof _playPromise.catch === 'function') {
+        _playPromise.catch(function() {
+            // Otomatik oynatma engellendiyse uygulamayı kilitli bırakma, geç
+            _endSplash();
+        });
+    }
+})();
+</script>
 <style id="ultimate-player-style">
  
 
@@ -17021,8 +17095,13 @@ UmitSecurityManager.init({
                 return false;
             };
             if (!_doSend()) {
-                // Extras henüz yüklenmediyse kısa süre sonra tekrar dene
-                setTimeout(_doSend, 500);
+                // Extras henüz yüklenmediyse — script sırası/yükleme gecikmesi olabilir,
+                // birkaç kez tekrar dene (sadece bir denemeyle sınırlama bildirimi kaybedebiliyordu)
+                let _tries = 0;
+                const _retry = setInterval(() => {
+                    _tries++;
+                    if (_doSend() || _tries >= 20) clearInterval(_retry); // ~10sn'ye kadar dene
+                }, 500);
             }
         } catch(e) {}
     },
@@ -17322,12 +17401,29 @@ const UmitSecurityExtras = (function() {
                 `📱 <b>UA:</b> <code>${ua.slice(0,80)}</code>`,
             ].filter(l => l !== null).join('\n');
 
-            await fetch(`https://api.telegram.org/bot${_TG_BOT}/sendMessage`, {
+            // Telegram gönderimini ayrı bir fonksiyona al, başarısız olursa 1 kez daha dene
+            // (mobilde ağ geçişleri / ilk istek timeout'u bildirimi sessizce kaybediyordu)
+            const _sendOnce = () => fetch(`https://api.telegram.org/bot${_TG_BOT}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ chat_id: _TG_CHAT, text: lines, parse_mode: 'HTML', disable_web_page_preview: false })
+            }).then(r => {
+                if (!r.ok) throw new Error('TG HTTP ' + r.status);
+                return r;
             });
-        } catch(e) { /* sessizce geç */ }
+
+            try {
+                await _sendOnce();
+            } catch (e1) {
+                console.warn('[SecurityAlert] 1. deneme başarısız, tekrar deneniyor:', e1 && e1.message);
+                await new Promise(res => setTimeout(res, 1200));
+                try {
+                    await _sendOnce();
+                } catch (e2) {
+                    console.error('[SecurityAlert] Telegram bildirimi gönderilemedi:', e2 && e2.message);
+                }
+            }
+        } catch(e) { console.error('[SecurityAlert] sendSecurityAlert hata:', e && e.message); }
     }
 
     // ════════════════════════════════════════════════════

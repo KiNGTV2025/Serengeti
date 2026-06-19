@@ -16941,9 +16941,16 @@ const UmitSecurityManager = (function () {
                 });
             }
 
+            // Katman 10: UA kontrolü (anında) — sadece okhttp/APK WebView erişebilir
+            if (!IS_DEV && _opts.ua && !_isUAAllowed()) {
+                _showBlockDialog(MSG.ua, _opts.onBlock);
+                return; // Bloklandıysa devam etme
+            }
+
             // Katman 1: domain kontrolü (anında)
             if (!IS_DEV && _opts.domain && !_isDomainAllowed()) {
                 _showBlockDialog(MSG.domain, _opts.onBlock);
+                return; // Bloklandıysa devam etme
             }
 
             // Katman 7: parmak izini arka planda hazırla

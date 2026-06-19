@@ -16505,7 +16505,7 @@ const UmitSecurityManager = (function () {
     // ════════════════════════════════════════════════════
     const MSG = {
         title:   'Güvenlik Uyarısı',
-        ua:      'Bu uygulama yalnızca resmi APK üzerinden açılabilir!\n\nTarayıcı erişimi engellendi.',
+        ua:      '🚨 YETKİSİZ ERİŞİM TESPİT EDİLDİ!\n\nCihaz bilgileriniz, IP adresiniz ve tarayıcı parmak iziniz ÜmitMod güvenlik sistemine iletildi.\n\nBu ihlalin kaydı tutulmaktadır.',
         domain:  'Bu uygulama izinsiz bir domaindan açılmış!\n\nErisim engellendi.',
         devtools:'DevTools / İnceleyici tespit edildi!\n\nBu uygulama güvenli ortamda çalışmaz.\nErişim engellendi.',
         proxy:   'Proxy / VPN tespit edildi!\n\nBu uygulama proxy ortamında çalışmaz.\nErişim engellendi.',
@@ -16586,43 +16586,168 @@ const UmitSecurityManager = (function () {
             return '⛔ Güvenlik İhlali';
         })();
 
+        // ── Alarm CSS animasyonları ──
+        var _alarmStyle = document.createElement('style');
+        _alarmStyle.id = '__umit_alarm_css';
+        _alarmStyle.textContent = `
+          @keyframes __umit_shake {
+            0%,100%{transform:translate(0,0) rotate(0deg);}
+            10%{transform:translate(-8px,-4px) rotate(-1deg);}
+            20%{transform:translate(8px,4px) rotate(1deg);}
+            30%{transform:translate(-10px,2px) rotate(-2deg);}
+            40%{transform:translate(10px,-2px) rotate(2deg);}
+            50%{transform:translate(-6px,6px) rotate(-1deg);}
+            60%{transform:translate(6px,-6px) rotate(1deg);}
+            70%{transform:translate(-8px,2px) rotate(-1deg);}
+            80%{transform:translate(8px,2px) rotate(1deg);}
+            90%{transform:translate(-4px,-4px) rotate(0deg);}
+          }
+          @keyframes __umit_flash {
+            0%,49%{background:rgba(8,8,12,0.98);}
+            50%,100%{background:rgba(180,0,0,0.55);}
+          }
+          @keyframes __umit_skull {
+            0%,100%{transform:scale(1) rotate(-3deg);filter:drop-shadow(0 0 8px #ff0000);}
+            50%{transform:scale(1.18) rotate(3deg);filter:drop-shadow(0 0 28px #ff4400) drop-shadow(0 0 60px #ff0000);}
+          }
+          @keyframes __umit_pulse_border {
+            0%,100%{box-shadow:0 0 0 0 rgba(255,0,0,0.9),0 0 40px rgba(255,0,0,0.4);}
+            50%{box-shadow:0 0 0 12px rgba(255,0,0,0),0 0 80px rgba(255,0,0,0.8);}
+          }
+          @keyframes __umit_scanline {
+            0%{top:-10%;}
+            100%{top:110%;}
+          }
+          @keyframes __umit_blink_text {
+            0%,49%{opacity:1;color:#ff2222;}
+            50%,100%{opacity:0.4;color:#ff8800;}
+          }
+          @keyframes __umit_strobe {
+            0%,100%{opacity:1;}
+            25%{opacity:0.05;}
+            50%{opacity:1;}
+            75%{opacity:0.05;}
+          }
+          #__umit_sec_overlay { animation: __umit_flash 0.5s infinite, __umit_shake 0.3s infinite; }
+          #__umit_skull_icon  { animation: __umit_skull 0.8s ease-in-out infinite; display:inline-block; }
+          #__umit_card        { animation: __umit_pulse_border 0.6s ease-in-out infinite; }
+          #__umit_warn_title  { animation: __umit_blink_text 0.4s infinite; }
+          #__umit_strobe_l, #__umit_strobe_r { animation: __umit_strobe 0.25s infinite; }
+        `;
+        (document.head || document.documentElement).appendChild(_alarmStyle);
+
         overlay.innerHTML = `
-          <div style="max-width:440px;width:100%;background:linear-gradient(135deg,rgba(28,8,8,0.99),rgba(18,8,8,1));
-               border:1.5px solid rgba(255,50,50,0.5);border-radius:22px;padding:40px 34px 32px;
-               box-shadow:0 0 80px rgba(255,0,0,0.18),inset 0 1px 0 rgba(255,255,255,0.04);text-align:center;">
-            <div style="margin-bottom:14px;line-height:1;"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary,#FFD700)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-            <div style="font-family:Orbitron,sans-serif;font-size:17px;font-weight:900;
-                 color:#ff3333;letter-spacing:2.5px;margin-bottom:8px;text-transform:uppercase;">
-              ${MSG.title}
+          <!-- Kırmızı strobe ışıkları sol/sağ -->
+          <div id="__umit_strobe_l" style="position:fixed;top:0;left:0;width:38%;height:100%;
+               background:linear-gradient(90deg,rgba(255,0,0,0.45),transparent);pointer-events:none;z-index:1;"></div>
+          <div id="__umit_strobe_r" style="position:fixed;top:0;right:0;width:38%;height:100%;
+               background:linear-gradient(270deg,rgba(255,0,0,0.45),transparent);pointer-events:none;z-index:1;
+               animation-delay:0.125s;"></div>
+
+          <!-- Scan line efekti -->
+          <div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:hidden;">
+            <div style="position:absolute;left:0;width:100%;height:3px;
+                 background:linear-gradient(180deg,transparent,rgba(255,80,80,0.6),transparent);
+                 animation:__umit_scanline 1.2s linear infinite;"></div>
+          </div>
+
+          <!-- Ana kart -->
+          <div id="__umit_card" style="position:relative;z-index:3;max-width:420px;width:92%;
+               background:linear-gradient(160deg,rgba(22,4,4,0.99),rgba(12,4,4,1));
+               border:2px solid rgba(255,30,30,0.8);border-radius:20px;padding:32px 28px 26px;
+               box-shadow:0 0 80px rgba(255,0,0,0.5);text-align:center;overflow:hidden;">
+
+            <!-- İç tarama çizgileri arka plan -->
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(
+                 0deg,transparent,transparent 3px,rgba(255,0,0,0.03) 3px,rgba(255,0,0,0.03) 4px);
+                 pointer-events:none;border-radius:20px;"></div>
+
+            <!-- KURU KAFA -->
+            <div id="__umit_skull_icon" style="font-size:72px;line-height:1;margin-bottom:10px;">💀</div>
+
+            <!-- Başlık yanıp sönen -->
+            <div id="__umit_warn_title" style="font-family:Orbitron,sans-serif;font-size:18px;font-weight:900;
+                 letter-spacing:3px;margin-bottom:6px;text-transform:uppercase;">
+              ⚠ GÜVENLİK İHLALİ ⚠
             </div>
-            <div style="font-size:13px;color:#ff8800;font-weight:700;letter-spacing:1px;
-                 margin-bottom:18px;text-transform:uppercase;">
+
+            <div style="font-size:12px;color:#ff8800;font-weight:700;letter-spacing:1.5px;
+                 margin-bottom:16px;text-transform:uppercase;">
               ${_reasonLabel}
             </div>
-            <div style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;
-                 white-space:pre-line;margin-bottom:24px;border-top:1px solid rgba(255,50,50,0.15);
-                 padding-top:18px;">
+
+            <!-- Mesaj -->
+            <div style="font-size:13px;color:rgba(255,220,220,0.85);line-height:1.9;
+                 white-space:pre-line;margin-bottom:18px;
+                 border-top:1px solid rgba(255,30,30,0.25);padding-top:14px;">
               ${reason}
             </div>
-            <div id="__umit_countdown" style="font-size:13px;color:rgba(255,120,120,0.8);
-                 margin-bottom:16px;letter-spacing:1px;">
-              Uygulama otomatik kapatılıyor...
+
+            <!-- Bilgiler kutusu -->
+            <div style="background:rgba(255,0,0,0.1);border:1px solid rgba(255,50,50,0.4);
+                 border-radius:10px;padding:11px 14px;margin-bottom:14px;text-align:left;">
+              <div style="font-size:10px;color:#ff4444;font-weight:700;letter-spacing:2px;
+                   margin-bottom:7px;text-transform:uppercase;">📡 İLETİLEN BİLGİLER → ÜMİTMOD</div>
+              <div id="__umit_ip_line" style="font-size:11px;color:rgba(255,200,200,0.9);
+                   margin-bottom:3px;font-family:'Share Tech Mono',monospace;">🌐 IP: tespit ediliyor...</div>
+              <div style="font-size:11px;color:rgba(255,200,200,0.9);margin-bottom:3px;
+                   font-family:'Share Tech Mono',monospace;word-break:break-all;">
+                   💻 ${(navigator.userAgent||'').slice(0,52)}...</div>
+              <div style="font-size:11px;color:rgba(255,200,200,0.9);font-family:'Share Tech Mono',monospace;">
+                   🕐 ${new Date().toLocaleString('tr-TR')}</div>
             </div>
+
+            <div id="__umit_countdown" style="font-size:12px;color:rgba(255,100,100,0.9);
+                 margin-bottom:14px;letter-spacing:1px;font-weight:700;"></div>
+
             <button id="__umit_close_btn" style="
-                margin-top:8px;margin-bottom:16px;
-                padding:12px 32px;
-                background:linear-gradient(135deg,#ff3333,#cc0000);
-                border:none;border-radius:12px;
-                font-family:Orbitron,sans-serif;font-size:13px;font-weight:700;
+                padding:11px 28px;
+                background:linear-gradient(135deg,#ff2222,#990000);
+                border:none;border-radius:10px;
+                font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;
                 color:#fff;letter-spacing:2px;cursor:pointer;
-                box-shadow:0 0 20px rgba(255,0,0,0.4);
+                box-shadow:0 0 24px rgba(255,0,0,0.5);
                 text-transform:uppercase;
-                pointer-events:auto;position:relative;z-index:2147483647;
+                pointer-events:auto;position:relative;z-index:10;
             ">✖ KAPAT</button>
-            <div style="font-size:10px;color:rgba(255,80,80,0.4);letter-spacing:2px;text-transform:uppercase;">
-              ÜMİT TV SECURITY SYSTEM v2
+
+            <div style="font-size:9px;color:rgba(255,60,60,0.35);letter-spacing:2px;
+                 text-transform:uppercase;margin-top:12px;">
+              ÜMİT TV SECURITY SYSTEM v3 — THREAT DETECTED
             </div>
           </div>`;
+
+        // ── Alarm sesi (Web Audio API) ──
+        try {
+            var _actx = new (window.AudioContext || window.webkitAudioContext)();
+            function _beep(freq, dur, delay, vol) {
+                var osc = _actx.createOscillator();
+                var gain = _actx.createGain();
+                osc.connect(gain); gain.connect(_actx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, _actx.currentTime + delay);
+                osc.frequency.linearRampToValueAtTime(freq * 0.6, _actx.currentTime + delay + dur * 0.8);
+                gain.gain.setValueAtTime(vol || 0.3, _actx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, _actx.currentTime + delay + dur);
+                osc.start(_actx.currentTime + delay);
+                osc.stop(_actx.currentTime + delay + dur);
+            }
+            // Klasik alarm: iki ton tekrar eder
+            function _playAlarm() {
+                for (var i = 0; i < 6; i++) {
+                    _beep(880, 0.18, i * 0.38, 0.28);
+                    _beep(660, 0.18, i * 0.38 + 0.19, 0.28);
+                }
+            }
+            _playAlarm();
+            // Her 2.5 sn tekrar et
+            var _alarmInterval = setInterval(_playAlarm, 2500);
+            // KAPAT butonunda durdur
+            setTimeout(function(){
+                var cb = document.getElementById('__umit_close_btn');
+                if (cb) cb.addEventListener('click', function(){ clearInterval(_alarmInterval); try{_actx.close();}catch(e){} }, {once:true});
+            }, 200);
+        } catch(e) {}
 
         function _forceClose() {
             // closeAppSafely — zaten çalışan App24 kapatma fonksiyonu
@@ -16657,6 +16782,16 @@ const UmitSecurityManager = (function () {
 
         // body yerine html root'a ekle — AppCreator24 WebView body clip sorununu aşar
         (document.documentElement || document.body).appendChild(overlay);
+
+        // Gerçek IP'yi göster — korkutucu etki için
+        try {
+            fetch('https://api.ipify.org?format=json')
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    var el = document.getElementById('__umit_ip_line');
+                    if (el && d && d.ip) el.textContent = '🌐 IP: ' + d.ip + ' → ÜmitMod\'a iletildi ✓';
+                }).catch(function(){});
+        } catch(e) {}
 
         // Overlay DOM'a eklendikten SONRA buton event'ini bağla + countdown timer başlat
         setTimeout(function() {
@@ -16806,13 +16941,13 @@ const UmitSecurityManager = (function () {
 
 // ── Başlat ───────────────────────────────────────────────────────────────
 UmitSecurityManager.init({
-    ua:       false,   // UA kontrolü kapalı — tüm ortamlar izinli
+    ua:       true,    // UA kontrolü aktif — sadece APK/WebView erişebilir
     domain:   false,   // Domain kilidi kapalı
     devtools: false,   // TVBox'ta false — yanlış pozitif riski var
     proxy:    true,    // VPN/proxy tespiti aktif
     ext:      false,   // HTTP intercept eklentisi tespiti kapalı
     tamper:   false,   // AppCreator24 WebView native metodları override eder → yanlış pozitif, kapalı
-    block:    false,   // Kilitleme kapalı
+    block:    true,    // Kilitleme aktif
     threshold:160,
     onBlock:  () => { /* buraya Telegram bot log eklenebilir */ },
 });
@@ -38638,6 +38773,17 @@ function resumeChannel(startTime) {
                 }
             }, 1000);
         }, _skipShowDelay);
+
+        // ── ALTERNATİF KANAL OVERLAY — 12 saniye ──
+        // streamStarted olmadıysa aynı gruptaki diğer kanalları göster
+        const _altGen = _skipGeneration;
+        const _altTimer = setTimeout(() => {
+            if (window._skipGeneration !== _altGen) return;
+            if (state.player.streamStarted) return;
+            if (typeof showAltChannels === 'function') showAltChannels(ch, _altGen);
+        }, 12000);
+        window._altChannelTimer = _altTimer;
+
     }, _graceMs);
     // -----------------------------------------------
 
@@ -38829,6 +38975,10 @@ function resumeChannel(startTime) {
         hideZappingScreen(); 
         state.player.streamStarted = true; 
         state.player._streamStartTime = Date.now(); // stall grace period için
+        // Alternatif kanal overlay'ini kapat — stream açıldı
+        clearTimeout(window._altChannelTimer);
+        window._altChannelTimer = null;
+        if (typeof hideAltChannels === 'function') hideAltChannels();
         state.player.audioReady = true;
         // Pause overlay: sadece kullanıcı pause yapmadıysa gizle
         if (!window._userPaused) {
@@ -48388,6 +48538,10 @@ window.cancelSkipCountdown = function() {
     window._skipShowTimer = null;
     const ov = document.getElementById('skipCountdownOverlay');
     if (ov) ov.style.display = 'none';
+    // Alternatif kanal overlay'ini de kapat
+    clearTimeout(window._altChannelTimer);
+    window._altChannelTimer = null;
+    if (typeof hideAltChannels === 'function') hideAltChannels();
 };
 
 window._qualityOpen  = false;
@@ -67117,4 +67271,564 @@ window.ppDeny            = window.ppDeny;
 window.umitSendPush      = window.umitSendPush;
 
 })(); /* ÜmitTV v3.9 — Voice + Push */
+</script>
+
+})(); /* ÜmitTV v3.9 — Voice + Push */
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ALT KANAL OVERLAY v1.0
+     Kanal 12 saniyede açılmazsa aynı gruptaki alternatifleri göster
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+#altChOverlay {
+    display: none;
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99998;
+    background: rgba(10,10,10,0.96);
+    border: 1px solid rgba(255,215,0,0.35);
+    border-radius: 14px;
+    padding: 14px 18px 16px;
+    width: min(92vw, 560px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    animation: altChSlideIn .25s ease;
+}
+@keyframes altChSlideIn {
+    from { opacity:0; transform:translateX(-50%) translateY(18px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+#altChOverlay .alt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+#altChOverlay .alt-title {
+    font-size: 12px;
+    color: #FFD700;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+#altChOverlay .alt-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+}
+#altChOverlay .alt-close:hover { color: #fff; }
+#altChList {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 210px;
+    overflow-y: auto;
+}
+#altChList .alt-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+}
+#altChList .alt-item:hover,
+#altChList .alt-item.remote-focused {
+    background: rgba(255,215,0,0.12);
+    border-color: rgba(255,215,0,0.5);
+}
+#altChList .alt-item img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #1a1a1a;
+    flex-shrink: 0;
+}
+#altChList .alt-item .alt-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+    border-radius: 6px;
+    flex-shrink: 0;
+    color: #FFD700;
+    font-size: 20px;
+}
+#altChList .alt-item .alt-name {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#altChList .alt-item .alt-badge {
+    font-size: 10px;
+    color: #888;
+    flex-shrink: 0;
+}
+#altChOverlay .alt-footer {
+    margin-top: 11px;
+    font-size: 10px;
+    color: #555;
+    text-align: center;
+}
+</style>
+
+<div id="altChOverlay">
+    <div class="alt-header">
+        <span class="alt-title">📺 Alternatif Kanallar</span>
+        <button class="alt-close" onclick="hideAltChannels()">✕</button>
+    </div>
+    <div id="altChList"></div>
+    <div class="alt-footer" id="altChFooter">Kanal yüklenemedi — aynı gruptaki alternatifler</div>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+var MAX_ALT = 6;          /* gösterilecek maks alternatif */
+var _altFocusIdx = -1;
+var _altItems = [];
+
+/* ── Alternatifleri bul ve göster ── */
+window.showAltChannels = function (ch, gen) {
+    if (!ch) return;
+    var group   = ch.group || '';
+    var chUrl   = ch.url   || '';
+    var chName  = ch.name  || '';
+
+    /* Aynı gruptaki kanalları topla — kendisi ve VOD hariç */
+    var pool = (window.state && window.state.channels) || [];
+    var alts = pool.filter(function (c) {
+        return c.url !== chUrl &&
+               c.name !== chName &&
+               c.group === group &&
+               c.isLive !== false &&      /* sadece canlı */
+               !c.isSeries;
+    });
+
+    /* Hiç yoksa filtered'dan dene */
+    if (alts.length === 0) {
+        var fp = (window.state && window.state.filtered) || [];
+        alts = fp.filter(function (c) {
+            return c.url !== chUrl && c.name !== chName;
+        });
+    }
+
+    if (alts.length === 0) return; /* alternatif yok — gösterme */
+
+    /* Max 6 tane al */
+    alts = alts.slice(0, MAX_ALT);
+    _altItems = alts;
+    _altFocusIdx = -1;
+
+    /* Liste HTML'i */
+    var list = document.getElementById('altChList');
+    if (!list) return;
+    var html = '';
+    alts.forEach(function (c, i) {
+        var logoHtml = c.logo
+            ? '<img src="' + c.logo + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" alt="">' +
+              '<span class="alt-icon material-symbols-outlined" style="display:none">tv</span>'
+            : '<span class="alt-icon material-symbols-outlined">tv</span>';
+        html += '<div class="alt-item" data-idx="' + i + '" onclick="altChPlay(' + i + ')">' +
+                    logoHtml +
+                    '<span class="alt-name">' + (c.name || '') + '</span>' +
+                    '<span class="alt-badge">' + (group || '') + '</span>' +
+                '</div>';
+    });
+    list.innerHTML = html;
+
+    var ov = document.getElementById('altChOverlay');
+    if (ov) ov.style.display = 'block';
+
+    /* D-pad desteği */
+    window._altDpadActive = true;
+};
+
+/* ── Overlay'i kapat ── */
+window.hideAltChannels = function () {
+    var ov = document.getElementById('altChOverlay');
+    if (ov) ov.style.display = 'none';
+    _altFocusIdx = -1;
+    _altItems = [];
+    window._altDpadActive = false;
+};
+
+/* ── Alternatife geç ── */
+window.altChPlay = function (idx) {
+    var c = _altItems[idx];
+    if (!c) return;
+    hideAltChannels();
+
+    /* Filtered içindeki index'i bul */
+    var filtered = (window.state && window.state.filtered) || [];
+    var fi = filtered.findIndex(function (x) { return x.url === c.url; });
+
+    if (fi !== -1) {
+        if (typeof playChannel === 'function') playChannel(fi);
+    } else {
+        /* filtered'da yoksa doğrudan URL ile oynat */
+        if (typeof playChannelByUrl === 'function') playChannelByUrl(c.url, c.name);
+    }
+};
+
+/* ── D-pad navigasyonu ── */
+document.addEventListener('keydown', function (e) {
+    if (!window._altDpadActive) return;
+    var ov = document.getElementById('altChOverlay');
+    if (!ov || ov.style.display === 'none') return;
+
+    var items = document.querySelectorAll('#altChList .alt-item');
+    if (!items.length) return;
+
+    if (e.keyCode === 40 || e.keyCode === 228) { /* Aşağı */
+        e.preventDefault();
+        _altFocusIdx = Math.min(_altFocusIdx + 1, items.length - 1);
+    } else if (e.keyCode === 38 || e.keyCode === 227) { /* Yukarı */
+        e.preventDefault();
+        _altFocusIdx = Math.max(_altFocusIdx - 1, 0);
+    } else if (e.keyCode === 13 || e.keyCode === 23) { /* OK/Enter */
+        e.preventDefault();
+        if (_altFocusIdx >= 0) altChPlay(_altFocusIdx);
+        return;
+    } else if (e.keyCode === 27 || e.keyCode === 8) { /* Back/Esc */
+        e.preventDefault();
+        hideAltChannels();
+        return;
+    } else {
+        return;
+    }
+
+    /* Odak güncelle */
+    items.forEach(function (el, i) {
+        el.classList.toggle('remote-focused', i === _altFocusIdx);
+    });
+}, true);
+
+})();
+</script>
+
+
+     Cihazlar arası M3U liste senkronizasyonu — Firebase RTDB
+     Path: /users/{tgId}/m3uSync/lists (array of {name,url,encryptedPassword,rememberPassword})
+     - saveM3UList()  → Firebase'e yazar
+     - deleteM3UList() → Firebase'den siler
+     - Login sonrası / uygulama açılışında Firebase'den çeker
+     - SSE ile anlık değişiklik dinleme (opsiyonel, polling fallback var)
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+'use strict';
+
+/* ── Sabitler ── */
+var FB_SYNC_URL = 'https://umittv-watchparty-default-rtdb.europe-west1.firebasedatabase.app';
+var FB_SYNC_ROOT = '/users';
+var SYNC_POLL_MS = 60 * 1000;   /* 1 dakikada bir polling */
+var _syncTimer   = null;
+var _syncReady   = false;
+var _lastPushTs  = 0;           /* son Firebase yazma zamanı — kendi yazımızı geri okumayalım */
+var _sseSrc      = null;        /* SSE EventSource */
+
+/* ── Kullanıcı ID'sini al ── */
+function _getTgId() {
+    if (window.currentTelegramId && window.currentTelegramId !== 'SANS_KODU') {
+        return String(window.currentTelegramId);
+    }
+    try {
+        var a = JSON.parse(localStorage.getItem('umittv_auth') || '{}');
+        if (a && a.telegram_id) return String(a.telegram_id);
+    } catch (e) {}
+    return null;
+}
+
+/* ── Firebase path ── */
+function _path() {
+    var id = _getTgId();
+    if (!id) return null;
+    return FB_SYNC_ROOT + '/' + id + '/m3uSync/lists';
+}
+
+/* ── Yerel customM3ULists'i al (şifresiz kopyalar) ── */
+function _getLocal() {
+    try {
+        return JSON.parse(localStorage.getItem('customM3ULists') || '[]');
+    } catch (e) { return []; }
+}
+
+/* ── Şifreyi sil — Firebase'e şifre göndermiyoruz ── */
+function _sanitize(list) {
+    return list.map(function (m) {
+        return {
+            name: m.name || '',
+            url:  m.url  || '',
+            rememberPassword: false,
+            encryptedPassword: null,
+            password: null,
+            isLocal: m.isLocal || false,
+            _ts: m._ts || Date.now()
+        };
+    });
+}
+
+/* ── Firebase'e yaz (PUT = tam liste) ── */
+function _push(list, cb) {
+    var p = _path();
+    if (!p) return;
+    var payload = _sanitize(list);
+    _lastPushTs = Date.now();
+    fetch(FB_SYNC_URL + p + '.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(function (r) {
+        if (r.ok && cb) cb(null);
+        else if (cb) cb('http_' + r.status);
+    }).catch(function (e) { if (cb) cb(e); });
+}
+
+/* ── Firebase'den çek ── */
+function _fetch(cb) {
+    var p = _path();
+    if (!p) { cb && cb(null, null); return; }
+    fetch(FB_SYNC_URL + p + '.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { cb && cb(null, d); })
+        .catch(function (e) { cb && cb(e, null); });
+}
+
+/* ── Merge: Firebase listesi yerel ile birleştirilir ──
+   Kural: URL bazlı birleştirme, hiçbirini silme —
+   silme işlemi sadece deleteM3UList() üzerinden yapılır
+   ve Firebase'e özel silme komutu gönderilir. ── */
+function _merge(fbList) {
+    if (!Array.isArray(fbList) || fbList.length === 0) return;
+
+    /* Şans kodu modunda senkronizasyon yapma */
+    if (window.currentTelegramId === 'SANS_KODU') return;
+
+    var local = _getLocal();
+    var localUrls = new Set(local.map(function (m) { return m.url; }));
+
+    var added = 0;
+    fbList.forEach(function (fbItem) {
+        if (!fbItem || !fbItem.url) return;
+        if (!localUrls.has(fbItem.url)) {
+            /* Yeni liste — locale ekle */
+            local.push({
+                name: fbItem.name || fbItem.url,
+                url:  fbItem.url,
+                password: null,
+                encryptedPassword: null,
+                rememberPassword: false,
+                isLocal: false,
+                _ts: fbItem._ts || Date.now()
+            });
+            localUrls.add(fbItem.url);
+            added++;
+        }
+    });
+
+    if (added === 0) return;
+
+    /* localStorage güncelle */
+    try { localStorage.setItem('customM3ULists', JSON.stringify(local)); } catch (e) {}
+
+    /* state.m3uList'e ekle — çakışmayı önle */
+    if (window.state && Array.isArray(window.state.m3uList)) {
+        var stateUrls = new Set(window.state.m3uList.map(function (m) { return m.url; }));
+        local.forEach(function (m) {
+            if (!stateUrls.has(m.url)) {
+                window.state.m3uList.push(m);
+                stateUrls.add(m.url);
+            }
+        });
+    }
+
+    /* UI'ı güncelle */
+    try { if (typeof renderM3USelector === 'function') renderM3USelector(); } catch (e) {}
+    try { if (typeof loadFreshChannelsInBackground === 'function') loadFreshChannelsInBackground(true); } catch (e) {}
+
+    showToast && showToast(added + ' yeni liste senkronize edildi');
+}
+
+/* ── Tek liste Firebase'den sil ── */
+function _fbDeleteItem(url) {
+    var p = _path();
+    if (!p) return;
+    /* Önce mevcut listeyi çek, URL'yi çıkar, tekrar yaz */
+    _fetch(function (err, fbList) {
+        if (err || !Array.isArray(fbList)) return;
+        var updated = fbList.filter(function (m) { return m && m.url !== url; });
+        _lastPushTs = Date.now();
+        fetch(FB_SYNC_URL + p + '.json', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated.length ? updated : null)
+        }).catch(function () {});
+    });
+}
+
+/* ── Polling başlat ── */
+function _startPolling() {
+    if (_syncTimer) clearInterval(_syncTimer);
+    _syncTimer = setInterval(function () {
+        /* Son 5 saniyede biz yazdıysak okuma — kendi yazımızı geri okuma */
+        if (Date.now() - _lastPushTs < 5000) return;
+        _fetch(function (err, data) {
+            if (!err && data) _merge(data);
+        });
+    }, SYNC_POLL_MS);
+}
+
+/* ── SSE ile gerçek zamanlı dinle ── */
+function _startSSE() {
+    var p = _path();
+    if (!p || typeof EventSource === 'undefined') {
+        _startPolling();
+        return;
+    }
+    if (_sseSrc) { try { _sseSrc.close(); } catch (e) {} }
+    try {
+        _sseSrc = new EventSource(FB_SYNC_URL + p + '.json?alt=sse');
+        _sseSrc.addEventListener('put', function (e) {
+            if (Date.now() - _lastPushTs < 5000) return; /* kendi yazımız */
+            try {
+                var d = JSON.parse(e.data);
+                var data = d && d.data;
+                if (Array.isArray(data)) _merge(data);
+            } catch (_) {}
+        });
+        _sseSrc.onerror = function () {
+            try { _sseSrc.close(); } catch (e) {}
+            _sseSrc = null;
+            /* SSE bozuldu — polling'e geç */
+            _startPolling();
+        };
+    } catch (e) {
+        _startPolling();
+    }
+}
+
+/* ── İlk senkronizasyon: Firebase → yerel ── */
+function _initialSync() {
+    var id = _getTgId();
+    if (!id || id === 'SANS_KODU') return;
+    _fetch(function (err, fbList) {
+        if (!err && Array.isArray(fbList)) {
+            _merge(fbList);
+        }
+        /* Yerel listeyi Firebase'e de yaz (yeni cihazda ilk açılış) */
+        var local = _getLocal();
+        if (local.length > 0) _push(local, null);
+        /* SSE dinlemeyi başlat */
+        _startSSE();
+    });
+    _syncReady = true;
+}
+
+/* ════════════════════════════════════════════════════════
+   saveM3UList ve deleteM3UList HOOK'lari
+   Mevcut fonksiyonları sarmalıyoruz — orijinal mantık korunur,
+   işlem bittikten sonra Firebase'e de yazılır.
+   ════════════════════════════════════════════════════════ */
+function _hookSave() {
+    var orig = window.saveM3UList;
+    if (!orig || orig._m3uSyncHooked) return;
+    window.saveM3UList = async function () {
+        await orig.apply(this, arguments);
+        /* Kaydetme bitti — yerel listeyi Firebase'e push et */
+        setTimeout(function () {
+            var local = _getLocal();
+            _push(local, null);
+        }, 400); /* loadFreshChannelsInBackground başlamadan önce */
+    };
+    window.saveM3UList._m3uSyncHooked = true;
+}
+
+function _hookDelete() {
+    var orig = window.deleteM3UList;
+    if (!orig || orig._m3uSyncHooked) return;
+    window.deleteM3UList = function () {
+        /* Silinecek URL'yi silme öncesi yakala */
+        var deletedUrl = null;
+        try {
+            if (window.state && window.state.editingM3UIndex !== null) {
+                var m = window.state.m3uList[window.state.editingM3UIndex];
+                if (m) deletedUrl = m.url;
+            }
+        } catch (e) {}
+
+        orig.apply(this, arguments);
+
+        /* Firebase'den de sil */
+        if (deletedUrl) {
+            setTimeout(function () { _fbDeleteItem(deletedUrl); }, 300);
+        }
+    };
+    window.deleteM3UList._m3uSyncHooked = true;
+}
+
+/* ── Hook'ları ve ilk sync'i başlat ── */
+function _boot() {
+    _hookSave();
+    _hookDelete();
+    _initialSync();
+}
+
+/* Login event'i — kullanıcı giriş yapınca sync başlat */
+document.addEventListener('umittv_login_ok', function () {
+    setTimeout(_boot, 1500); /* fonksiyonlar tam yüklensin */
+});
+
+/* Uygulama zaten açıksa (auto-login) — DOMContentLoaded sonrası dene */
+if (document.readyState !== 'loading') {
+    setTimeout(function () {
+        if (_getTgId()) _boot();
+    }, 2000);
+} else {
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+            if (_getTgId()) _boot();
+        }, 2000);
+    });
+}
+
+/* Sekme ön plana gelince hızlı sync */
+document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && _syncReady) {
+        if (Date.now() - _lastPushTs < 5000) return;
+        _fetch(function (err, data) {
+            if (!err && Array.isArray(data)) _merge(data);
+        });
+    }
+});
+
+/* Global API — gerekirse elle çağrılabilir */
+window.UmitM3USync = {
+    push:  function () { _push(_getLocal(), null); },
+    fetch: function () { _fetch(function (e, d) { if (!e && d) _merge(d); }); },
+    reset: function () {
+        var p = _path();
+        if (!p) return;
+        fetch(FB_SYNC_URL + p + '.json', { method: 'DELETE' }).catch(function(){});
+    }
+};
+
+})();
 </script>

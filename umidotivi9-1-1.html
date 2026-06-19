@@ -1952,7 +1952,7 @@ body {
  
 .low-performance-mode .modern-logo {
     animation: none !important;  
-    filter: none !important;  
+    filter: drop-shadow(0 0 8px var(--accent-primary)) brightness(1.12) !important;  
 }
 
 .low-performance-mode .loading-dot-top {
@@ -2069,7 +2069,7 @@ body {
 
 .fast-mode .modern-logo {
     animation: none !important;  
-    filter: none !important;
+    filter: drop-shadow(0 0 8px var(--accent-primary)) brightness(1.12) !important;
 }
 
 .fast-mode .loading-dot-top {
@@ -2161,10 +2161,7 @@ body {
  
 .low-performance-mode .modern-logo[src*=".svg"],
 .fast-mode .modern-logo[src*=".svg"] {
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)) !important;
-     
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))
-            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='colormatrix'><feColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1000 -900'></feColorMatrix></filter></svg>#colormatrix") !important;
+    filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 22px var(--accent-primary)) brightness(1.15) !important;
 }
 
  
@@ -7053,9 +7050,9 @@ select.sort-dpad-focused {
     height: 160px;
     background: radial-gradient(
         circle at center,
-        rgba(255, 215, 0, 0.4) 0%,
-        rgba(255, 215, 0, 0.2) 30%,
-        rgba(255, 215, 0, 0.05) 60%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.4) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.2) 30%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.05) 60%,
         transparent 80%
     );
     border-radius: 50%;
@@ -7255,7 +7252,7 @@ select.sort-dpad-focused {
     width: 120px; 
     height: 120px; 
     object-fit: contain; 
-    filter: none;  
+    filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 22px var(--accent-primary)) brightness(1.15);  
     animation: none;  
     transform-style: flat;  
 }
@@ -10535,19 +10532,42 @@ document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
     // ── Telefon tespiti: Android TV / TV Box / büyük ekran HARİÇ ──
-    // (isTvBox mantığının tersi — yukarıdaki TVBox tespit scriptiyle aynı kriterler)
+    // Whitelist mantığı: TELEFON OLDUĞU KESİN DEĞİLSE VİDEO GÖSTERME.
+    // (TV box'larda user-agent/ekran ölçümü güvenilmez olabileceğinden,
+    //  şüpheli durumda varsayılan davranış "telefon değil" kabul edilir.)
     var _ua = navigator.userAgent || '';
-    var _isTvLike = /Android/.test(_ua) &&
+
+    // 1) Daha önce body'e tvbox-mode eklendiyse (üstteki TVBox tespit scripti
+    //    zaten karar vermiş demektir) — buna kesin öncelik ver.
+    //    NOT: "fast-mode" class'ı body'de varsayılan olarak HTML'de yazılı
+    //    (tüm cihazlarda baştan var), bu yüzden TV sinyali olarak kullanılamaz.
+    var _bodyHasTvClass = document.body &&
+        document.body.classList.contains('tvbox-mode');
+
+    var _isTvLike = _bodyHasTvClass || (
+        /Android/.test(_ua) &&
         (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(_ua) ||
          window.screen.width >= 1280 ||
-         /Box|STB|Set\.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_ua));
-    // Telefon: Android + TV/Box değil + ekran küçük (telefon/tablet boyutu)
-    var _isPhone = /Android/.test(_ua) && !_isTvLike && window.screen.width < 1280;
+         window.screen.height >= 1280 ||
+         /Box|STB|Set\.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_ua) ||
+         // Dokunma desteği olmayan / kaba imleç (uzaktan kumanda) cihazlar TV'dir
+         (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: coarse)').matches) ||
+         (navigator.maxTouchPoints === 0 && !('ontouchstart' in window))
+        )
+    );
+
+    // Telefon: Android + TV/Box olmadığı KESİN + ekran küçük + dokunmatik var
+    var _hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    var _isPhone = /Android/.test(_ua) && !_isTvLike && _hasTouch &&
+                   window.screen.width < 1280 && window.screen.height < 1280;
 
     if (!_isPhone) {
-        // Telefon değilse overlay'i tamamen kaldır, hiç müdahale etme
+        // Telefon olduğu kesin değilse (TV box dahil) overlay'i tamamen kaldır
         var _ov = document.getElementById('__umitSplashOverlay');
         if (_ov) _ov.remove();
+        var _ovStyle = document.getElementById('__umitSplashStyle');
+        if (_ovStyle) _ovStyle.remove();
+        document.body.classList.remove('__umit-splash-active');
         return;
     }
 
@@ -30133,11 +30153,28 @@ function showNoConfigUI() {
     setTimeout(() => { try { hideLoadingOverlay(); } catch(e) {} }, 5000);
 }
         function processConfig(conf) {
+            window.appConfig = conf; // ← vodGroups/liveGroups parse fonksiyonlarına ulaşsın
             state.m3uList = conf.m3uList || conf.m3u_list || [];
             
             state.themes = conf.themes || [];
             const customM3ULists = JSON.parse(localStorage.getItem('customM3ULists') || '[]');
             state.m3uList = state.m3uList.concat(customM3ULists);
+
+            // ── KabloTV: her zaman canlı yayın olarak zorla ekle ──
+            const _kabloUrl = 'https://kablotvumit.umitm0d.workers.dev/playlist.m3u';
+            const _kabloExists = state.m3uList.some(m => m.url === _kabloUrl);
+            if (!_kabloExists) {
+                state.m3uList.push({
+                    url: _kabloUrl,
+                    name: 'KabloTV',
+                    contentType: 'live'
+                });
+            } else {
+                // Zaten varsa contentType'ını live yap
+                state.m3uList.forEach(m => {
+                    if (m.url === _kabloUrl) m.contentType = 'live';
+                });
+            }
             
             
 
@@ -30850,6 +30887,12 @@ async function loadRemainingM3UsInBackground(startIndex) {
             let channels = [];
             if (response.body && typeof response.body.getReader === 'function') {
                 channels = await parseM3UStream(response, actualIndex, (batch) => {
+                    // contentType zorlaması — batch geldikçe uygula
+                    if (m3uItem.contentType === 'live') {
+                        batch.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                    } else if (m3uItem.contentType === 'vod') {
+                        batch.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                    }
                     const existingUrls = new Set(state.channels.map(c => c.url));
                     const fresh = batch.filter(ch => !existingUrls.has(ch.url));
                     if (fresh.length > 0) {
@@ -30863,6 +30906,13 @@ async function loadRemainingM3UsInBackground(startIndex) {
             } else {
                 const text = await response.text().catch(() => null);
                 if (text) channels = (window.parseM3UOptimized || window.parseM3U || parseM3U)(text, actualIndex) || [];
+            }
+            
+            // contentType zorlaması — parse bitti, tüm kanalları override et
+            if (m3uItem.contentType === 'live') {
+                channels.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+            } else if (m3uItem.contentType === 'vod') {
+                channels.forEach(ch => { ch.isLive = false; ch.isVod = true; });
             }
             
             if (channels.length > 0) {
@@ -31074,6 +31124,12 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                         
 
                         if (cachedChannels) {
+                            // contentType zorlaması — cache'den gelen kanallar için de uygula
+                            if (m3u.contentType === 'live') {
+                                cachedChannels.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                            } else if (m3u.contentType === 'vod') {
+                                cachedChannels.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                            }
                             quickChannels.push(...cachedChannels);
                             m3uContent = '__streamed__';
                             // Cache'den gelen kanallar hemen göster
@@ -31102,8 +31158,12 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                                     
 
                                     streamedChannels = await parseM3UStream(resp, i, (batch) => {
-                                        
-
+                                        // contentType zorlaması — batch geldikçe uygula
+                                        if (m3u.contentType === 'live') {
+                                            batch.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                                        } else if (m3u.contentType === 'vod') {
+                                            batch.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                                        }
                                         quickChannels.push(...batch);
                                         if (quickChannels.length > 0) {
                                             const partial = removeDuplicateChannels([...quickChannels]);
@@ -31149,6 +31209,12 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
                         
                         if (m3uContent && m3uContent !== '__streamed__') {
                             const parsed = parseM3U(m3uContent, i);
+                            // contentType zorlaması — text parse sonrası uygula
+                            if (m3u.contentType === 'live') {
+                                parsed.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                            } else if (m3u.contentType === 'vod') {
+                                parsed.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                            }
                             quickChannels.push(...parsed);
                             
                             
@@ -31308,6 +31374,12 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                         }
 
                         if (cachedChannels) {
+                            // contentType zorlaması — cache'den gelen kanallar için de uygula
+                            if (m3u.contentType === 'live') {
+                                cachedChannels.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                            } else if (m3u.contentType === 'vod') {
+                                cachedChannels.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                            }
                             fetchedChannels.push(...cachedChannels);
                             m3uContent = '__cached__';
                         }
@@ -31331,6 +31403,12 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                                 } else if (typeof resp === 'string' && resp.length > 10) {
                                     parsedFromNet = parseM3U(resp, i);
                                 }
+                                // contentType zorlaması — ağdan gelen kanallar için uygula
+                                if (m3u.contentType === 'live') {
+                                    parsedFromNet.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                                } else if (m3u.contentType === 'vod') {
+                                    parsedFromNet.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                                }
                                 if (parsedFromNet.length > 0) {
                                     fetchedChannels.push(...parsedFromNet);
                                     m3uContent = '__streamed__';
@@ -31348,6 +31426,12 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
 
                         if (m3uContent && m3uContent !== '__streamed__' && m3uContent !== '__cached__') {
                             const parsed = parseM3U(m3uContent, i);
+                            // contentType zorlaması — text parse sonrası uygula
+                            if (m3u.contentType === 'live') {
+                                parsed.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                            } else if (m3u.contentType === 'vod') {
+                                parsed.forEach(ch => { ch.isLive = false; ch.isVod = true; });
+                            }
                             fetchedChannels.push(...parsed);
                             anyNetworkFetch = true;
                             if (parsed.length > 0 && state.useIndexedDB && state.db.isReady()) {
@@ -31609,6 +31693,11 @@ async function parseM3UStream(response, listIdx, onBatch) {
 
     
 
+    // forceContentType: liste config'inden contentType oku — 'live' ise grup adı VOD tespitini bypass et
+    const forceContentType = (window.state && window.state.m3uList && window.state.m3uList[listIdx])
+        ? (window.state.m3uList[listIdx].contentType || null)
+        : null;
+
     let currentItem = null;
     let leftover = '';
     let batchBuffer = [];
@@ -31658,7 +31747,8 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 const gl = currentItem.group.toLowerCase();
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false; currentItem.isSeries = true;
-                } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
+                } else if (forceContentType !== 'live' && (
+                    vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.includes('eklen') || gl.includes('yeni') ||
                     extraVodGroups.has(gl) ||
@@ -31673,7 +31763,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
                     gl.includes('macera') || gl.includes('bilim') || gl.includes('western') ||
                     gl.includes('suç') || gl.includes('suc') || gl.includes('tarih') ||
                     gl.includes('müzik') || gl.includes('muzik') || gl.includes('spor') ||
-                    gl.includes('tvg-lo') || gl.includes('"tvg-lo')) {
+                    gl.includes('tvg-lo') || gl.includes('"tvg-lo'))) {
                     currentItem.isLive = false;
                 }
             }
@@ -31695,14 +31785,14 @@ async function parseM3UStream(response, listIdx, onBatch) {
             const durMatch = line.match(/#EXTINF:(-?\d+)/);
             if (durMatch) {
                 const dur = parseInt(durMatch[1]);
-                if (dur > 0) currentItem.isLive = false;
+                if (dur > 0 && forceContentType !== 'live') currentItem.isLive = false;
             }
         } else if (line.startsWith('#EXTVLCOPT:') && currentItem) {
             if (line.includes('http-user-agent=')) currentItem.userAgent = line.split('http-user-agent=')[1].trim();
             else if (line.includes('http-referrer=')) currentItem.referrer = line.split('http-referrer=')[1].trim();
         } else if (line && !line.startsWith('#') && currentItem) {
             currentItem.url = line;
-            if (currentItem.isLive) {
+            if (currentItem.isLive && forceContentType !== 'live') {
                 const ul = line.toLowerCase();
                 if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
                     currentItem.isLive = false;
@@ -31932,7 +32022,12 @@ function parseM3UOptimized(text, listIdx) {
     const lines = text.split('\n');
     const channels = [];
     let currentItem = null;
-    
+
+    // forceContentType: liste config'inden contentType oku — 'live' ise grup adı VOD tespitini bypass et
+    const forceContentType = (window.state && window.state.m3uList && window.state.m3uList[listIdx])
+        ? (window.state.m3uList[listIdx].contentType || null)
+        : null;
+
     
 
     if (lines[0] && lines[0].includes('x-tvg-url')) {
@@ -32016,25 +32111,28 @@ function parseM3UOptimized(text, listIdx) {
                 const group = currentItem.group;
                 
                 // 1. Önce tam eşleşme (Set ile çok hızlı)
-                if (vodGroupSet.has(group) || isVodGroupDynamic(group)) {
+                if (!group.startsWith('😄') && forceContentType === 'live') {
+                    // forceContentType='live' ise VOD tespitini tamamen atla
+                } else if (vodGroupSet.has(group) || isVodGroupDynamic(group)) {
                     currentItem.isLive = false;
                     // 😄 ile başlayan grup → dizi bölümü olarak işaretle
                     if (group.startsWith('😄')) currentItem.isSeries = true;
                 } 
-                // 2. Grup "Film" veya "Dizi" içeriyorsa (partial match)
-                else if (group.includes('Film') || group.includes('Dizi') || 
+                // 2. Grup "Film" veya "Dizi" içeriyorsa (partial match) — sadece forceContentType live değilse
+                else if (forceContentType !== 'live' && (
+                         group.includes('Film') || group.includes('Dizi') || 
                          group.includes('VOD') || group.includes('Movie') || 
                          group.includes('Series') || group.toLowerCase().includes('film') ||
                          group.toLowerCase().includes('dizi') || group.toLowerCase().includes('vod') ||
-                         group.toLowerCase().includes('eklen') || group.toLowerCase().includes('yeni')) {
+                         group.toLowerCase().includes('eklen') || group.toLowerCase().includes('yeni'))) {
                     currentItem.isLive = false;
                 }
                 // 3. Canlı grup kontrolü
                 else if (isLiveGroupDynamic(group) || liveGroupPrefixes.some(prefix => group.startsWith(prefix))) {
                     currentItem.isLive = true;
                 }
-                // 4. SERI FILM / 😄 kontrolü
-                else if (group.includes('SERI FILM') || group.includes('😄')) {
+                // 4. SERI FILM / 😄 kontrolü — sadece forceContentType live değilse
+                else if (forceContentType !== 'live' && (group.includes('SERI FILM') || group.includes('😄'))) {
                     currentItem.isLive = false;
                 }
                 // 5. group-title kanal adının başlangıcıyla eşleşiyorsa → dizi bölümü → VOD
@@ -32087,9 +32185,9 @@ function parseM3UOptimized(text, listIdx) {
             const durationMatch = line.match(/#EXTINF:(-?\d+)/);
             if (durationMatch) {
                 const duration = parseInt(durationMatch[1]);
-                if (duration > 0) {
+                if (duration > 0 && forceContentType !== 'live') {
                     currentItem.duration = duration;
-                    currentItem.isLive = false; // Pozitif duration = VOD
+                    currentItem.isLive = false; // Pozitif duration = VOD (live listesinde bypass)
                 } else if (duration === -1) {
                     // -1 = genel IPTV standardı — ama grup zaten VOD dediyse ezme
                     if (currentItem.isLive !== false) {
@@ -32111,7 +32209,7 @@ function parseM3UOptimized(text, listIdx) {
             currentItem.url = line.trim();
             
             // URL'ye göre VOD/LIVE kontrolü (PERFORMANS: Sadece gerekirse)
-            if (currentItem.isLive === true) {
+            if (currentItem.isLive === true && forceContentType !== 'live') {
                 const urlLower = currentItem.url.toLowerCase();
                 
                 // Hızlı uzantı kontrolü
@@ -32851,6 +32949,11 @@ function parseM3U(text, listIdx) {
     const MAX_CHUNK_CHARS = 256 * 1024; // 256KB
     const channels = [];
     let currentItem = null;
+
+    // forceContentType: liste config'inden contentType oku — 'live' ise grup adı VOD tespitini bypass et
+    const forceContentType = (window.state && window.state.m3uList && window.state.m3uList[listIdx])
+        ? (window.state.m3uList[listIdx].contentType || null)
+        : null;
     
     // Kategori sıralamasını takip et
     if (!state.m3uCategoryOrder) state.m3uCategoryOrder = {};
@@ -32920,14 +33023,15 @@ function parseM3U(text, listIdx) {
                 if (currentItem.group.startsWith('😄')) {
                     currentItem.isLive = false;
                     currentItem.isSeries = true;
-                } else if (vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
+                } else if (forceContentType !== 'live' && (
+                    vodGroupsSet.has(gl) || vodPrefixes.some(p => gl.startsWith(p)) ||
                     gl.includes('film') || gl.includes('dizi') || gl.includes('vod') ||
                     gl.includes('eklen') || gl.includes('yeni') ||
                     gl.includes('animasyon') || gl.includes('western') || gl.includes('bollywood') ||
                     gl.includes('imdb') || gl.includes('yerli') ||
                     currentItem.group.endsWith('Panel') || currentItem.group.endsWith('PANEL') ||
                     gl.includes('panel') || gl.includes('arşiv') || gl.includes('arsiv') ||
-                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon')) {
+                    gl.includes('bölüm') || gl.includes('bolum') || gl.includes('sezon'))) {
                     currentItem.isLive = false;
                 }
                 if (!seenCategories.has(currentItem.group)) {
@@ -32952,7 +33056,7 @@ function parseM3U(text, listIdx) {
             }
         } else if (line && !line.startsWith('#') && currentItem) {
             currentItem.url = line;
-            if (currentItem.isLive) {
+            if (currentItem.isLive && forceContentType !== 'live') {
                 const ul = currentItem.url.toLowerCase();
                 if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
                     currentItem.isLive = false;
@@ -53725,7 +53829,11 @@ document.addEventListener('umittv_login_ok', function() {
                         body: "grant_type=refresh_token&refresh_token=PdAh5kuSGkYAAAAAAAAAAeE4MhXqPM9hu0ZU5Van21b6sVJFxYgNib6WsowBSzS7"
                     });
                     
-                    if (!tokenResponse.ok) throw new Error('Token error');
+                    if (!tokenResponse.ok) {
+                        const errBody = await tokenResponse.text().catch(() => '');
+                        console.error('[UMD_TICKER] Token alınamadı. HTTP', tokenResponse.status, errBody);
+                        throw new Error('Token error: ' + tokenResponse.status + ' ' + errBody);
+                    }
                     const tokenData = await tokenResponse.json();
                     
                     const fileResponse = await fetch("https://content.dropboxapi.com/2/files/download", {
@@ -53736,14 +53844,20 @@ document.addEventListener('umittv_login_ok', function() {
                         }
                     });
                     
-                    if (!fileResponse.ok) throw new Error('File error');
+                    if (!fileResponse.ok) {
+                        const errBody = await fileResponse.text().catch(() => '');
+                        console.error('[UMD_TICKER] /altyazi.json indirilemedi. HTTP', fileResponse.status, errBody);
+                        throw new Error('File error: ' + fileResponse.status + ' ' + errBody);
+                    }
                     
                     const jsonText = await fileResponse.text();
                     this.state.json = JSON.parse(jsonText);
+                    console.log('[UMD_TICKER] altyazi.json başarıyla yüklendi.');
                     
                     this.check();
                     
                 } catch(error) {
+                    console.error('[UMD_TICKER] sync() hata, demo metne düşülüyor:', error);
                     this.state.json = {
                         text: "DenemeSelamlar  [flash] umido[tg] [pre]  [vip] Ümit [ig] [yt] [web]",
                         schedule: {

@@ -39657,11 +39657,24 @@ function resumeChannel(startTime) {
     // sadece display:none yapılıp kutu tamamen boş kalıyordu. Artık img hata
     // verirse otomatik olarak TV ikonuna düşüyor, böylece sol üstte her zaman
     // bir şey görünür.
-    const _fallbackIconHtml = '<span class="material-symbols-outlined" style="font-size:20px; color:white;">tv</span>';
+    // DÜZELTME 2: onerror'u inline HTML string attribute'u olarak değil,
+    // gerçek bir JS fonksiyonu olarak atıyoruz — önceki sürüm HTML'i
+    // attribute string'i içine gömüyordu ve tarayıcı bunu yanlış parse edip
+    // 'tv"' gibi bozuk metni ekrana basıyordu.
+    function _showFallbackTvIcon() {
+        logoDisplay.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px; color:white;">tv</span>';
+    }
     if (logoSrc) {
-        logoDisplay.innerHTML = `<img src="${logoSrc}" loading="eager" referrerpolicy="no-referrer" style="opacity:1" onerror="this.parentElement.innerHTML='${_fallbackIconHtml.replace(/'/g, "\\'")}'">`;
+        const _logoImg = document.createElement('img');
+        _logoImg.loading = 'eager';
+        _logoImg.referrerPolicy = 'no-referrer';
+        _logoImg.style.opacity = '1';
+        _logoImg.onerror = _showFallbackTvIcon;
+        _logoImg.src = logoSrc;
+        logoDisplay.innerHTML = '';
+        logoDisplay.appendChild(_logoImg);
     } else {
-        logoDisplay.innerHTML = _fallbackIconHtml;
+        _showFallbackTvIcon();
     }
 
     video.className = `video-${state.player.objectFit}`;
@@ -40880,23 +40893,17 @@ function resumeChannel(startTime) {
         }
     } else {
         // MP4 / MKV / diğer direkt medya
-        // App24'te http:// direkt dene (App24 manifest cleartext açık olabilir)
-        // hata olursa proxy zinciri
-        // DÜZELTME: App24 WebView'da cleartext (http://) izni YOKSA, http:// isteği
-        // sunucuya hiç gitmeden anında reddedilir (network security policy).
-        // Önceden _isMixedContent hardcoded false'tu — bu da App24'te garanti
-        // başarısız olacak bir "direkt deneme" yapıp sonra proxy'e düşüyordu.
-        // Artık App24/okhttp ortamında http:// kaynaklar için direkt deneme
-        // atlanıp baştan proxy zinciriyle açılıyor.
-        const _isMixedContent = _isApp24WebView && /^http:\/\//i.test(rawUrl);
-
-        if (window._tvDebug) console.log('[MKV] _isMixedContent=', _isMixedContent, 'isApp24=', _isApp24WebView, 'rawUrl=', rawUrl);
+        // BASİTLEŞTİRME: okhttp/App24 UA ayrımı kaldırıldı — bu sunucuda
+        // (45.159.95.10) hem "her zaman direkt" hem "App24'te zorla proxy"
+        // denendi, ikisi de App24'te aynı sonucu verdi. UA bazlı dallanma
+        // sorunu çözmüyor, sadece karmaşıklık ekliyordu. Artık her ortamda
+        // (App24 dahil) aynı sıra: önce direkt, olmazsa proxy zinciri.
+        if (window._tvDebug) console.log('[MKV] rawUrl=', rawUrl);
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        // ── MKV/MP4 proxy zinciri: STREAM_PROXY2 → STREAM_PROXY → direkt ──
-        // http:// → Cleartext engeli → https proxy üzerinden geç
+        // ── MKV/MP4 proxy zinciri: direkt → proxy2 → proxy1 → proxy3 ──
         const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
             ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
             : null;
@@ -40904,19 +40911,46 @@ function resumeChannel(startTime) {
         const _proxy3Url = (typeof STREAM_PROXY3 !== 'undefined')
             ? STREAM_PROXY3 + encodeURIComponent(rawUrl)
             : null;
-        const _directMediaUrl = _isMixedContent
-            ? (_proxy2Url || _proxy1Url)  // http:// → turk.sadecenjoy proxy
-            : rawUrl;
+        const _directMediaUrl = rawUrl;
 
         function _tryPlayMkv(url, fallbacks) {
             video.src = url;
             video.load();
+
+            // DÜZELTME: error event hiç tetiklenmezse (proxy/sunucu isteği
+            // cevapsız asılı kalırsa) eskiden sonsuza dek siyah ekranda
+            // kalınıyordu. Artık her denemeye bir zaman sınırı var —
+            // süre dolup video hâlâ veri almadıysa otomatik sıradaki
+            // fallback'e geçilir.
+            let _settled = false;
+            const _stallTimeout = setTimeout(() => {
+                if (_settled) return;
+                // readyState 0-1 = hâlâ metadata/veri yok → asılı kalmış say
+                if (video.readyState < 2) {
+                    _settled = true;
+                    video.removeEventListener('error', _errHandler);
+                    if (fallbacks && fallbacks.length > 0) {
+                        const next = fallbacks.shift();
+                        showToast('Alternatif proxy deneniyor...');
+                        _tryPlayMkv(next, fallbacks);
+                    } else {
+                        showToast('Yayın açılamadı');
+                    }
+                }
+            }, 9000);
+
             const _p = video.play();
             if (_p) _p.then(() => {
+                if (_settled) return;
+                _settled = true;
+                clearTimeout(_stallTimeout);
                 hideZappingScreen();
                 if (state.player.loadTimeout) clearTimeout(state.player.loadTimeout);
             }).catch(e => {
                 if (e.name === 'AbortError') return;
+                if (_settled) return;
+                _settled = true;
+                clearTimeout(_stallTimeout);
                 if (fallbacks && fallbacks.length > 0) {
                     const next = fallbacks.shift();
                     showToast('Alternatif proxy deneniyor...');
@@ -40926,33 +40960,26 @@ function resumeChannel(startTime) {
 
             // video error olayını da yakala
             const _errHandler = function() {
+                if (_settled) return;
+                _settled = true;
+                clearTimeout(_stallTimeout);
                 video.removeEventListener('error', _errHandler);
                 if (fallbacks && fallbacks.length > 0) {
                     const next = fallbacks.shift();
                     showToast('Alternatif proxy deneniyor...');
                     _tryPlayMkv(next, fallbacks);
-                } else if (url !== rawUrl && !_isMixedContent) {
-                    // Tüm proxy'ler başarısız → direkt dene
-                    video.src = rawUrl; video.load(); video.play().catch(() => {});
+                } else {
+                    showToast('Yayın açılamadı');
                 }
             };
             video.addEventListener('error', _errHandler, { once: true });
         }
 
-        // Fallback zinciri oluştur
+        // Fallback zinciri: direkt başarısız olursa proxy'leri sırayla dene
         const _fallbacks = [];
-        if (_isMixedContent) {
-            // http:// → proxy zinciri: Render → proxy2 → proxy1 → direkt
-            if (_proxy2Url) _fallbacks.push(_proxy2Url);
-            if (_proxy1Url) _fallbacks.push(_proxy1Url);
-            if (_proxy3Url) _fallbacks.push(_proxy3Url);
-            _fallbacks.push(rawUrl); // son çare: direkt (bazı App24 versiyonları http açar)
-        } else {
-            // https:// → direkt önce, hata olursa proxy zinciri
-            if (_proxy2Url) _fallbacks.push(_proxy2Url);
-            _fallbacks.push(_proxy1Url);
-            if (_proxy3Url) _fallbacks.push(_proxy3Url);
-        }
+        if (_proxy2Url) _fallbacks.push(_proxy2Url);
+        _fallbacks.push(_proxy1Url);
+        if (_proxy3Url) _fallbacks.push(_proxy3Url);
 
         _tryPlayMkv(_directMediaUrl, _fallbacks);
     }

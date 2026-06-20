@@ -10527,7 +10527,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="__umitSplashOverlay" style="position:fixed;inset:0;z-index:2147483647;background:#000;display:none;align-items:center;justify-content:center;overflow:hidden;">
     <video id="__umitSplashVideo" autoplay playsinline webkit-playsinline
            style="width:100%;height:100%;object-fit:cover;background:#000;"
-           src="https://github.com/umitm0d/Alakart/raw/refs/heads/main/millimirasimiz_20260619_221606_090.mp4"></video>
+           data-default-src="https://github.com/umitm0d/Alakart/raw/refs/heads/main/millimirasimiz_20260619_221606_090.mp4"></video>
 </div>
 <style id="__umitSplashStyle">
     /* Video gösterilirken altındaki tüm uygulama içeriğini gizle (player dahil) */
@@ -10587,9 +10587,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // aşağıdaki satırı aktif edebilirsin (şimdilik her açılışta gösteriliyor):
     // if (sessionStorage.getItem('__umit_splash_shown')) { document.getElementById('__umitSplashOverlay').remove(); return; }
 
+    // ── list.json'dan açılış videosu ayarı ──
+    // Config henüz network'ten gelmediği için burada en son cache'lenmiş
+    // config (app_config_backup) senkron okunur. list.json içine şu alan
+    // eklenerek video kapatılıp açılabilir:
+    //   "splashVideo": { "enabled": false }              → video tamamen kapalı
+    //   "splashVideo": { "enabled": true, "url": "..." } → farklı bir video
+    // Alan hiç yoksa veya cache henüz oluşmadıysa varsayılan: video gösterilir.
+    var _splashCfg = null;
+    try {
+        var _cachedConf = localStorage.getItem('app_config_backup');
+        if (_cachedConf) {
+            var _parsedConf = JSON.parse(_cachedConf);
+            if (_parsedConf && _parsedConf.splashVideo) _splashCfg = _parsedConf.splashVideo;
+        }
+    } catch(e) {}
+
+    function _removeSplashDom() {
+        var _ov2 = document.getElementById('__umitSplashOverlay');
+        if (_ov2) _ov2.remove();
+        var _ovStyle2 = document.getElementById('__umitSplashStyle');
+        if (_ovStyle2) _ovStyle2.remove();
+        document.body.classList.remove('__umit-splash-active');
+    }
+
+    if (_splashCfg && _splashCfg.enabled === false) {
+        // list.json üzerinden açılış videosu kapatılmış
+        _removeSplashDom();
+        return;
+    }
+
     var overlay = document.getElementById('__umitSplashOverlay');
     var video   = document.getElementById('__umitSplashVideo');
     if (!overlay || !video) return;
+
+    // Video URL'si: config'te özel url verilmişse onu kullan, yoksa varsayılan
+    var _splashUrl = (_splashCfg && _splashCfg.url) ? _splashCfg.url : video.getAttribute('data-default-src');
+    if (!_splashUrl) { _removeSplashDom(); return; }
+    video.src = _splashUrl;
 
     document.body.classList.add('__umit-splash-active');
     overlay.style.display = 'flex';
@@ -21540,7 +21575,20 @@ function initPerformanceMonitor() {
             const c = state.filtered[index];
             if (!c) return document.createElement('div');
             
-            const isVod = c.isLive === false;
+            let isVod = c.isLive === false;
+            // ── KabloTV güvenlik kontrolü: bu worker domaininden gelen kanal her zaman canlıdır.
+            // Hem kanalın kendi stream URL'sine hem de ait olduğu LİSTENİN URL'sine bakılır
+            // (stream farklı bir CDN'den gelebilir, liste adresi daha güvenilir kaynaktır). ──
+            if (isVod) {
+                var _kbUrl1 = (c.url && c.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1);
+                if (!_kbUrl1) {
+                    try {
+                        var _kbM1 = state.m3uList && state.m3uList[c.listIdx];
+                        if (_kbM1 && _kbM1.url && _kbM1.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _kbUrl1 = true;
+                    } catch(e) {}
+                }
+                if (_kbUrl1) isVod = false;
+            }
             const hasContinue = state.continueWatching[c.name] && 
                 state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
                 state.continueWatching[c.name].progress < MAX_WATCH_PERCENT;
@@ -24933,7 +24981,21 @@ function createChannelCard(channel, index) {
         card.setAttribute('data-series-info', seriesInfo);
     }
     
-    const isVodChannel = (channel.isVod === true) || (channel.isLive === false);
+    let isVodChannel = (channel.isVod === true) || (channel.isLive === false);
+    // ── KabloTV güvenlik kontrolü: bu worker domaininden gelen her kanal canlı yayındır.
+    // Grup adı "Sinema/Film/Aksiyon" içerse de, ya da cache'den eski listIdx ile gelmiş olsa da,
+    // burada hem kanal URL'sine hem listenin kendi URL'sine bakarak VOD rozetinin
+    // yanlış basılması kesin olarak engellenir.
+    if (isVodChannel) {
+        let _kbUrl2 = (channel.url && channel.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1);
+        if (!_kbUrl2) {
+            try {
+                const _kbM2 = state.m3uList && state.m3uList[channel.listIdx];
+                if (_kbM2 && _kbM2.url && _kbM2.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _kbUrl2 = true;
+            } catch(e) {}
+        }
+        if (_kbUrl2) isVodChannel = false;
+    }
     card.setAttribute('data-is-vod', isVodChannel ? 'true' : 'false');
     card.setAttribute('data-url', channel.url || '');
     card.setAttribute('data-name', channelName);
@@ -29021,7 +29083,17 @@ function renderSidebarChannels() {
     function buildItemHTML(channel, i) {
         const isActive = channel.url === currentUrl;
         const isFav = state.favs.has(channel.name);
-        const isVod = channel.isLive === false;
+        let isVod = channel.isLive === false;
+        if (isVod) {
+            let _kbUrl3 = (channel.url && channel.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1);
+            if (!_kbUrl3) {
+                try {
+                    const _kbM3 = state.m3uList && state.m3uList[channel.listIdx];
+                    if (_kbM3 && _kbM3.url && _kbM3.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _kbUrl3 = true;
+                } catch(e) {}
+            }
+            if (_kbUrl3) isVod = false;
+        }
         const { html: epgHtml, hasEpg } = buildEpgHtml(channel, isVod);
         const logo = channel.logo && channel.logo.trim() ? channel.logo.trim() : FALLBACK_LOGO;
         const activeClass = isActive ? ' active' : '';
@@ -30167,27 +30239,44 @@ function showNoConfigUI() {
         function processConfig(conf) {
             window.appConfig = conf; // ← vodGroups/liveGroups parse fonksiyonlarına ulaşsın
             state.m3uList = conf.m3uList || conf.m3u_list || [];
+
+            // ── Açılış videosu (splash) ayarı — list.json'dan canlı olarak uygulanır ──
+            // Sayfa daha önce localStorage'daki eski config ile splash'i göstermeye
+            // başlamış olabilir (yavaş ağ); yeni config "enabled":false derse,
+            // video hâlâ oynuyorsa burada anında kapatılır.
+            try {
+                if (conf.splashVideo && conf.splashVideo.enabled === false) {
+                    var _sOverlay = document.getElementById('__umitSplashOverlay');
+                    if (_sOverlay) {
+                        var _sVideo = document.getElementById('__umitSplashVideo');
+                        if (_sVideo) { try { _sVideo.pause(); } catch(e2) {} }
+                        _sOverlay.remove();
+                        var _sStyle = document.getElementById('__umitSplashStyle');
+                        if (_sStyle) _sStyle.remove();
+                        document.body.classList.remove('__umit-splash-active');
+                    }
+                }
+            } catch(e) {}
             
             state.themes = conf.themes || [];
             const customM3ULists = JSON.parse(localStorage.getItem('customM3ULists') || '[]');
             state.m3uList = state.m3uList.concat(customM3ULists);
 
-            // ── KabloTV: her zaman canlı yayın olarak zorla ekle ──
-            const _kabloUrl = 'https://kablotvumit.umitm0d.workers.dev/playlist.m3u';
-            const _kabloExists = state.m3uList.some(m => m.url === _kabloUrl);
-            if (!_kabloExists) {
-                state.m3uList.push({
-                    url: _kabloUrl,
-                    name: 'KabloTV',
-                    contentType: 'live'
-                });
-            } else {
-                // Zaten varsa contentType'ını live yap
-                state.m3uList.forEach(m => {
-                    if (m.url === _kabloUrl) m.contentType = 'live';
-                });
-            }
-            
+            // ── KabloTV: tüm içeriği canlı yayındır (grup adları "Sinema/Film/Aksiyon"
+            // içerse de bunlar VOD değil, canlı sinema temalı TV kanallarıdır) ──
+            // URL'ye göre eşleştir (tam path değil, sadece domain fragment'ı —
+            // path/query farklı olsa da yakalar); URL bulunamazsa isim ile de eşleştir.
+            const _kabloUrlFragment = 'kablotvumit.umitm0d.workers.dev';
+            state.m3uList.forEach(m => {
+                if (!m) return;
+                const nameMatch = m.name && /kablo\s*tv/i.test(m.name);
+                const urlMatch = m.url && m.url.indexOf(_kabloUrlFragment) !== -1;
+                if (urlMatch || nameMatch) {
+                    m.contentType = 'live';
+                }
+            });
+            try { console.log('[KabloTV-fix] m3uList:', state.m3uList.map(m => ({name: m && m.name, url: m && m.url, contentType: m && m.contentType}))); } catch(e) {}
+
             
 
             try {
@@ -31702,6 +31791,16 @@ async function parseM3UStream(response, listIdx, onBatch) {
         ? (window.state.m3uList[listIdx].contentType || null)
         : null;
 
+    // ── KabloTV güvenlik kontrolü: listenin kendi URL'si worker domaininden
+    // geliyorsa group-title bazlı VOD tahmini tamamen ezilir. ──
+    let _forceLiveSource = (forceContentType === 'live');
+    let _forceVodSource = (forceContentType === 'vod');
+    try {
+        const _srcM3U3 = window.state && window.state.m3uList && window.state.m3uList[listIdx];
+        const _srcUrl3 = ((_srcM3U3 && _srcM3U3.url) || '').toLowerCase();
+        if (!forceContentType && _srcUrl3.includes('kablotvumit.umitm0d.workers.dev')) _forceLiveSource = true;
+    } catch(e) {}
+
     let currentItem = null;
     let leftover = '';
     let batchBuffer = [];
@@ -31731,7 +31830,7 @@ async function parseM3UStream(response, listIdx, onBatch) {
         if (line.startsWith('#EXTINF:')) {
             currentItem = {
                 name: 'Kanal', group: 'Diğer', logo: null,
-                listIdx, isRadio: false, isLive: true, url: '', tvgId: null, isSeries: false
+                listIdx, isRadio: false, isLive: (forceContentType === 'vod' ? false : true), url: '', tvgId: null, isSeries: false
             };
             // M3U standardı: kanal adı her zaman son virgülden sonra gelir
             const _ci = line.lastIndexOf(',');
@@ -31801,6 +31900,15 @@ async function parseM3UStream(response, listIdx, onBatch) {
                 if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
                     currentItem.isLive = false;
                 }
+            }
+            // Bu kaynaktaki tüm kanallar canlı/VOD ise tahminleri ez
+            if (_forceLiveSource) {
+                currentItem.isLive = true;
+                currentItem.isVod = false;
+                currentItem.isSeries = false;
+            } else if (_forceVodSource) {
+                currentItem.isLive = false;
+                currentItem.isVod = true;
             }
             batchBuffer.push(currentItem);
             totalCount++;
@@ -32032,6 +32140,18 @@ function parseM3UOptimized(text, listIdx) {
         ? (window.state.m3uList[listIdx].contentType || null)
         : null;
 
+    // ── KabloTV güvenlik kontrolü: bu listenin (m3u dosyasının) kendi URL'si
+    // worker domaininden geliyorsa, group-title bazlı VOD tahmini tamamen ezilir.
+    // ÖNEMLİ: burada channel.url (stream linki) değil, LİSTENİN kendi url'si
+    // kontrol edilir — stream'ler farklı bir CDN'den gelebilir. ──
+    let _forceLiveSource = (forceContentType === 'live');
+    let _forceVodSource = (forceContentType === 'vod');
+    try {
+        const _srcM3U = window.state && window.state.m3uList && window.state.m3uList[listIdx];
+        const _srcUrl = ((_srcM3U && _srcM3U.url) || '').toLowerCase();
+        if (!forceContentType && _srcUrl.includes('kablotvumit.umitm0d.workers.dev')) _forceLiveSource = true;
+    } catch(e) {}
+
     
 
     if (lines[0] && lines[0].includes('x-tvg-url')) {
@@ -32084,7 +32204,7 @@ function parseM3UOptimized(text, listIdx) {
                 logo: null,
                 listIdx,
                 isRadio: false,
-                isLive: true,
+                isLive: (forceContentType === 'vod' ? false : true),
                 url: '',
                 tvgId: null,
                 duration: null,
@@ -32254,6 +32374,17 @@ function parseM3UOptimized(text, listIdx) {
                         currentItem.isLive = false;
                     }
                 }
+            }
+            
+            // Bu kaynaktaki (listenin kendisi) tüm kanallar canlı/VOD olarak işaretliyse
+            // group-title/URL bazlı tüm tahminleri ez — en son ve en kesin karar burası.
+            if (_forceLiveSource) {
+                currentItem.isLive = true;
+                currentItem.isVod = false;
+                currentItem.isSeries = false;
+            } else if (_forceVodSource) {
+                currentItem.isLive = false;
+                currentItem.isVod = true;
             }
             
             // Channel'i ekle
@@ -32958,6 +33089,16 @@ function parseM3U(text, listIdx) {
     const forceContentType = (window.state && window.state.m3uList && window.state.m3uList[listIdx])
         ? (window.state.m3uList[listIdx].contentType || null)
         : null;
+
+    // ── KabloTV güvenlik kontrolü: listenin kendi URL'si worker domaininden
+    // geliyorsa group-title bazlı VOD tahmini tamamen ezilir. ──
+    let _forceLiveSource = (forceContentType === 'live');
+    let _forceVodSource = (forceContentType === 'vod');
+    try {
+        const _srcM3U2 = window.state && window.state.m3uList && window.state.m3uList[listIdx];
+        const _srcUrl2 = ((_srcM3U2 && _srcM3U2.url) || '').toLowerCase();
+        if (!forceContentType && _srcUrl2.includes('kablotvumit.umitm0d.workers.dev')) _forceLiveSource = true;
+    } catch(e) {}
     
     // Kategori sıralamasını takip et
     if (!state.m3uCategoryOrder) state.m3uCategoryOrder = {};
@@ -33004,7 +33145,7 @@ function parseM3U(text, listIdx) {
         if (line.startsWith('#EXTINF:')) {
             currentItem = {
                 name: 'Kanal', group: 'Diğer', logo: null,
-                listIdx, isRadio: false, isLive: true, url: '', tvgId: null, isSeries: false
+                listIdx, isRadio: false, isLive: (forceContentType === 'vod' ? false : true), url: '', tvgId: null, isSeries: false
             };
             // M3U standardı: kanal adı her zaman son virgülden sonra gelir
             const _commaIdx = line.lastIndexOf(',');
@@ -33065,6 +33206,16 @@ function parseM3U(text, listIdx) {
                 if (vodUrlIndicators.some(e => ul.includes(e)) || vodDomainIndicators.some(d => ul.includes(d))) {
                     currentItem.isLive = false;
                 }
+            }
+            // Bu kaynaktaki (listenin kendisi) tüm kanallar canlı/VOD ise grup/URL
+            // bazlı tüm tahminleri ez — en son ve en kesin karar burası.
+            if (_forceLiveSource) {
+                currentItem.isLive = true;
+                currentItem.isVod = false;
+                currentItem.isSeries = false;
+            } else if (_forceVodSource) {
+                currentItem.isLive = false;
+                currentItem.isVod = true;
             }
             channels.push(currentItem);
             currentItem = null;
@@ -33136,6 +33287,33 @@ function groupChannelsBySeries(channels) {
     
     channels.forEach((channel, index) => {
         if (processed.has(index)) return;
+        
+        // ── KabloTV güvenlik kontrolü (en üstte, her şeyden önce): bu kanalın
+        // ait olduğu LİSTENİN (m3u playlist dosyasının) kendi URL'si worker
+        // domaininden geliyorsa, kanal ne durumda gelmiş olursa olsun
+        // (isLive false/undefined gelmiş olsa bile) canlı kabul edilir ve
+        // hiçbir dizi/film gruplama mantığına girmeden doğrudan geçirilir.
+        // NOT: channel.url (stream linki) değil, channel.listIdx ile
+        // state.m3uList'teki LİSTE URL'si kontrol edilir — stream'ler farklı
+        // bir CDN'den gelebileceği için liste URL'si daha güvenilir kaynaktır.
+        // Ayrıca stream URL'sinde de aynı domain geçiyorsa (eski davranış)
+        // o da ek güvenlik olarak kabul edilir. ──
+        let _chIsKablo = channel.url && channel.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1;
+        if (!_chIsKablo) {
+            try {
+                const _chM3UList = window.state && window.state.m3uList && window.state.m3uList[channel.listIdx];
+                const _chListUrl = ((_chM3UList && _chM3UList.url) || '').toLowerCase();
+                if (_chListUrl.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _chIsKablo = true;
+                else if (_chM3UList && (_chM3UList.contentType || '').toLowerCase() === 'live') _chIsKablo = true;
+            } catch(e) {}
+        }
+        if (_chIsKablo) {
+            channel.isLive = true;
+            channel.isVod = false;
+            grouped.push(channel);
+            processed.add(index);
+            return;
+        }
         
         // Sadece VOD/dizi olanları grupla
         if (channel.isLive === true) {
@@ -33760,6 +33938,78 @@ function updateCategoriesFromFiltered() {
     state.sidebar.currentCategory = 'all';
     
 }
+
+// ── Liste config'inde contentType:'live'/'vod' zorlaması olan listelerin
+// kanallarını render öncesi normalize eder. Kanallar IndexedDB/localStorage
+// cache'inden eski/yanlış sınıflandırmayla gelmiş olsa bile burada düzeltilir.
+// Performans için: aynı m3uList + aynı channels uzunluğunda tekrar çalışmaz.
+let _normalizedContentTypesKey = null;
+// KabloTV'nin sabit URL'si/adı — listIdx eşleşmesi (cache'den eski index ile gelmiş olabilir)
+// başarısız olursa bu fallback ile yine de yakalanır.
+const _KABLO_URL_FRAGMENT = 'kablotvumit.umitm0d.workers.dev';
+function _isKabloTvList(m) {
+    if (!m) return false;
+    if (m.url && m.url.indexOf(_KABLO_URL_FRAGMENT) !== -1) return true;
+    if (m.name && /kablo\s*tv/i.test(m.name)) return true;
+    return false;
+}
+// ── Bir KANAL objesinin KabloTV'den gelip gelmediğini tespit eder.
+// Önce kanalın kendi stream URL'sine bakar (eski/geriye dönük uyumluluk),
+// bulamazsa kanalın ait olduğu LİSTENİN (channel.listIdx ile state.m3uList)
+// URL'sine bakar — bu, asıl güvenilir kaynaktır çünkü stream'ler farklı bir
+// CDN'den gelebilirken liste adresi sabittir. ──
+function isChannelFromKabloTv(ch) {
+    if (!ch) return false;
+    if (ch.url && ch.url.indexOf(_KABLO_URL_FRAGMENT) !== -1) return true;
+    try {
+        const _m = window.state && window.state.m3uList && window.state.m3uList[ch.listIdx];
+        if (_isKabloTvList(_m)) return true;
+    } catch(e) {}
+    return false;
+}
+window.isChannelFromKabloTv = isChannelFromKabloTv;
+function normalizeForcedContentTypes() {
+    try {
+        if (!state.m3uList || !state.channels || state.channels.length === 0) return;
+        const forced = [];
+        state.m3uList.forEach((m, i) => {
+            if (m && (m.contentType === 'live' || m.contentType === 'vod' || _isKabloTvList(m))) {
+                forced.push(i + ':' + (m.contentType || 'live'));
+            }
+        });
+        if (forced.length === 0) { try { console.log('[normalizeForcedContentTypes] forced boş — hiçbir liste contentType işaretli değil'); } catch(e){} return; }
+        const key = forced.join(',') + '|' + state.channels.length;
+        if (key === _normalizedContentTypesKey) return; // zaten normalize edildi
+        _normalizedContentTypesKey = key;
+
+        const forceMap = {};
+        // KabloTV URL'sine sahip listelerin index'lerini ayrıca işaretle (listIdx kayması güvencesi)
+        const kabloIdxSet = new Set();
+        state.m3uList.forEach((m, i) => {
+            if (m && (m.contentType === 'live' || m.contentType === 'vod')) {
+                forceMap[i] = m.contentType;
+            }
+            if (_isKabloTvList(m)) {
+                forceMap[i] = 'live';
+                kabloIdxSet.add(i);
+            }
+        });
+        // Kanalın URL'i doğrudan KabloTV worker domain'inden geliyorsa, listIdx ne olursa olsun canlı say
+        let _changed = 0;
+        for (let i = 0; i < state.channels.length; i++) {
+            const ch = state.channels[i];
+            let ft = forceMap[ch.listIdx];
+            if (!ft && ch.url && ch.url.indexOf(_KABLO_URL_FRAGMENT) !== -1) ft = 'live';
+            if (ft === 'live') {
+                if (ch.isLive !== true || ch.isVod === true) { ch.isLive = true; ch.isVod = false; _changed++; }
+            } else if (ft === 'vod') {
+                if (ch.isLive !== false || ch.isVod !== true) { ch.isLive = false; ch.isVod = true; _changed++; }
+            }
+        }
+        try { console.log('[normalizeForcedContentTypes] forced=', forced, 'değişen kanal sayısı=', _changed); } catch(e){}
+    } catch(e) { try { console.warn('[normalizeForcedContentTypes] hata:', e); } catch(e2){} }
+}
+window.normalizeForcedContentTypes = normalizeForcedContentTypes;
 
 // 😄 selectM3U fonksiyonu - güncellendi
 function selectM3U(idx) {
@@ -34400,6 +34650,7 @@ var _vhs = {
 function _getVodPool() {
     var st = window.state;
     if (!st || !st.channels) return [];
+    if (typeof window.normalizeForcedContentTypes === 'function') { try { window.normalizeForcedContentTypes(); } catch(e) {} }
     var sel = st.selectedM3U;
     var pool = (sel === 'all' || sel === undefined || sel === null)
         ? st.channels
@@ -37809,6 +38060,14 @@ function addContinueCardStyles() {
         
         let list = state.channels;
         
+        // ── KabloTV normalizasyonu: bu listenin TÜM içeriği canlı yayındır.
+        // Kanallar IndexedDB/localStorage cache'inden (eski/yanlış sınıflandırmayla)
+        // gelmiş olabileceğinden, render öncesi burada her zaman düzeltiyoruz —
+        // parse aşamasına bağımlı değil, kaynak ne olursa olsun çalışır.
+        if (typeof window.normalizeForcedContentTypes === 'function') {
+            window.normalizeForcedContentTypes();
+        }
+        
         // 1. M3U listesine göre filtrele
         if (state.selectedM3U !== 'all') {
             list = list.filter(c => c.listIdx == state.selectedM3U);
@@ -38194,7 +38453,21 @@ function renderChannels() {
 
     for (let i = startIdx; i < maxDisplay; i++) {
         const c = displayChannels[i];
-        const isVod = c.isLive === false;
+        let isVod = c.isLive === false;
+        // ── KabloTV güvenlik kontrolü: bu worker domaininden gelen kanal her zaman canlıdır.
+        // Grup adı "Sinema/Film/Aksiyon" içerse bile, ya da cache eski listIdx taşısa bile
+        // burada hem kanal URL'sine hem listenin kendi URL'sine bakılarak VOD rozetinin
+        // hatalı basılması engellenir.
+        if (isVod) {
+            let _kbUrl4 = (c.url && c.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1);
+            if (!_kbUrl4) {
+                try {
+                    const _kbM4 = state.m3uList && state.m3uList[c.listIdx];
+                    if (_kbM4 && _kbM4.url && _kbM4.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _kbUrl4 = true;
+                } catch(e) {}
+            }
+            if (_kbUrl4) isVod = false;
+        }
         const isFav = state.favs.has(c.name);
         const hasContinue = state.continueWatching[c.name] && 
             state.continueWatching[c.name].progress > MIN_WATCH_PERCENT && 
@@ -38405,7 +38678,9 @@ async function fetchTMDBPostersForVisible(displayChannels, maxDisplay, startIdx)
         }
     }
 
-    const vodChannels = displayChannels.slice(startIdx, maxDisplay).filter(c => c && !c.isLive);
+    const vodChannels = displayChannels.slice(startIdx, maxDisplay).filter(c => c && !c.isLive &&
+        !(c.url && c.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1)
+    );
     for (let i = 0; i < vodChannels.length; i += BATCH) {
         const batch = vodChannels.slice(i, i + BATCH).map(c => fetchAndUpdate(c));
         await Promise.allSettled(batch);
@@ -38573,7 +38848,9 @@ function setupContinueCategoryCards() {
 }
 // VOD metadata'sını background'da yükle
 async function loadVodMetadataInBackground() {
-    const vodChannels = state.filtered.filter(c => !c.isLive).slice(0, 20); // İlk 20 VOD
+    const vodChannels = state.filtered.filter(c => !c.isLive &&
+        !(c.url && c.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1)
+    ).slice(0, 20); // İlk 20 VOD
     
     for (const channel of vodChannels) {
         if (!state.vodCache[channel.name]) {
@@ -52614,18 +52891,26 @@ window.getProfileAvatarUrlAsync = async function() {
         var glow1 = Math.round(3 + pulse * 8);
         var glow2 = Math.round(6 + pulse * 14);
         var bright = (1.05 + pulse * 0.20).toFixed(2);
-        var opac = (0.85 + pulse * 0.15).toFixed(2);
 
         var rgb1 = _h2rgb(_logoP);
         var r = rgb1[0], g = rgb1[1], b = rgb1[2];
         var glowColor  = 'rgba('+r+','+g+','+b+',0.85)';
         var glowColor2 = 'rgba('+r+','+g+','+b+',0.40)';
 
-        logo.style.filter =
-            'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
-            'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
-            'brightness(' + bright + ')';
-        logo.style.opacity = opac;
+        var _isTVB2 = !!(document.body && document.body.classList.contains('tvbox-mode'));
+        if (_isTVB2) {
+            // ── TVBox: çift drop-shadow yerine tek, daha hafif filtre.
+            // Zayıf GPU'larda çift drop-shadow ara karelerde render edilemeyip
+            // logo soluk/donuk kalıyordu. ──
+            logo.style.filter = 'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor + ') brightness(' + bright + ')';
+            logo.style.opacity = '1';
+        } else {
+            logo.style.filter =
+                'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
+                'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
+                'brightness(' + bright + ')';
+            logo.style.opacity = (0.85 + pulse * 0.15).toFixed(2);
+        }
         // RAF kaldırıldı — interval ile çağrılıyor
     }
 
@@ -55055,6 +55340,16 @@ function _itemHTML(ch, i, currentUrl, st, RADIO, FALLBACK) {
     var isActive = ch.url === currentUrl;
     var isFav    = st.favs && st.favs.has(ch.name);
     var isVod    = ch.isLive === false;
+    if (isVod) {
+        var _kbUrl5 = (ch.url && ch.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1);
+        if (!_kbUrl5) {
+            try {
+                var _kbM5 = st.m3uList && st.m3uList[ch.listIdx];
+                if (_kbM5 && _kbM5.url && _kbM5.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _kbUrl5 = true;
+            } catch(e) {}
+        }
+        if (_kbUrl5) isVod = false;
+    }
     var logo     = (ch.logo && ch.logo.trim()) ? ch.logo.trim() : FALLBACK;
     var safeName = ch.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
@@ -67238,7 +67533,14 @@ function _vsRenderResults(results) {
         var logoHtml = ch.logo
             ? '<img class="vs-result-logo" src="' + ch.logo + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="vs-result-logo-placeholder" style="display:none">' + (ch.name[0]||'?').toUpperCase() + '</div>'
             : '<div class="vs-result-logo-placeholder">' + (ch.name[0]||'?').toUpperCase() + '</div>';
-        var badge = ch.isLive ? 'CANLI' : (ch.isVod ? 'VOD' : '');
+        var _isKabloCh = ch.url && ch.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1;
+        if (!_isKabloCh) {
+            try {
+                var _kbM6 = window.state && window.state.m3uList && window.state.m3uList[ch.listIdx];
+                if (_kbM6 && _kbM6.url && _kbM6.url.indexOf('kablotvumit.umitm0d.workers.dev') !== -1) _isKabloCh = true;
+            } catch(e) {}
+        }
+        var badge = (ch.isLive || _isKabloCh) ? 'CANLI' : (ch.isVod ? 'VOD' : '');
         return '<div class="vs-result-item" data-idx="' + i + '" onclick="vsPlayResult(' + i + ')">' +
             logoHtml +
             '<div class="vs-result-info">' +
@@ -67719,9 +68021,6 @@ window.vsPlayResult      = window.vsPlayResult;
 window.ppGrant           = window.ppGrant;
 window.ppDeny            = window.ppDeny;
 window.umitSendPush      = window.umitSendPush;
-
-})(); /* ÜmitTV v3.9 — Voice + Push */
-</script>
 
 })(); /* ÜmitTV v3.9 — Voice + Push */
 </script>

@@ -10518,6 +10518,39 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+<script id="tvbox-backkey-normalize">
+/* ── Kumanda Geri Tuşu Normalizasyonu ──────────────────────────────────
+   Bazı TVBox kumandaları Geri tuşunu standart 'Backspace'/'Escape'/'GoBack'
+   keyCode 4 yerine keyCode 461 ile gönderiyor (dosyada seekAmountPanel gibi
+   bazı yerlerde zaten 461 ayrıca kontrol ediliyordu — handleBackButton ve
+   modal handler'ların büyük çoğunluğu bunu TANIMIYORDU).
+   Sonuç: JS hiçbir koşulu yakalamıyor → event WebView'in native "geri"
+   davranışına düşüyor → history popstate ile DİREKT 'main' ekranına
+   resetleniyor → açık modal/kanal listesi düzgün kapanma akışından geçmeden
+   ana sayfaya (kartlara) atlanıyor.
+   Çözüm: en erken noktada (window + capture:true, document'tan bile önce)
+   461 kodunu standart Escape/keyCode 4'e çeviriyoruz. Dosyadaki TÜM
+   "case 'Escape':" blokları zaten bunu kapsadığı için tek tek her handler'ı
+   patchlemeye gerek kalmıyor. ── */
+(function() {
+    var STANDARD_BACK_KEYS = ['Backspace', 'Escape', 'GoBack', 'Back', 'BrowserBack'];
+    var BACK_KEYCODES = [461]; // TVBox kumandalarında yaygın "Return/Back" kodu
+
+    window.addEventListener('keydown', function(e) {
+        if (STANDARD_BACK_KEYS.indexOf(e.key) !== -1 || e.keyCode === 4) return; // zaten tanınıyor
+        if (BACK_KEYCODES.indexOf(e.keyCode) === -1) return; // bizi ilgilendirmeyen tuş
+
+        try {
+            Object.defineProperty(e, 'key',     { value: 'Escape', configurable: true });
+            Object.defineProperty(e, 'keyCode', { value: 4,        configurable: true });
+            Object.defineProperty(e, 'which',   { value: 4,        configurable: true });
+        } catch (err) {
+            /* defineProperty başarısız olursa sessizce geç */
+        }
+    }, true);
+})();
+</script>
+
 </head>
 <body class="fast-mode low-performance-mode"> 
 <!-- ════════════════════════════════════════════════════════════════════
@@ -20318,6 +20351,9 @@ function processEPGForChannel(channelKey) {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <div style="font-weight:600; color:var(--accent-primary);">Toplam ${epgInfo.totalPrograms} Program</div>
                     <div style="font-size:12px; color:var(--text-muted);">${new Date().toLocaleDateString('tr-TR')}</div>
+                </div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:-4px; margin-bottom:8px;">
+                    Eşleşen EPG ID: ${epgInfo.channelKey} ${channelTvgId ? `(m3u tvg-id: ${channelTvgId})` : '(tvg-id yok — isim eşleşmesi)'}
                 </div>
                 ${allPast ? `
                     <div style="background:rgba(255,100,0,0.15); padding:8px; border-radius:6px; border-left:3px solid #ff6400; margin-top:8px;">
@@ -68333,7 +68369,7 @@ document.addEventListener('keydown', function (e) {
 })();
 </script>
 
-
+<!-- ═══════════════════════════════════════════════════════════════
      Cihazlar arası M3U liste senkronizasyonu — Firebase RTDB
      Path: /users/{tgId}/m3uSync/lists (array of {name,url,encryptedPassword,rememberPassword})
      - saveM3UList()  → Firebase'e yazar

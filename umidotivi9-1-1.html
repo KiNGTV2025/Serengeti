@@ -1647,10 +1647,16 @@ img {
     'use strict';
 
     // TVBox tespiti: Android TV / FireTV / genel WebView
-    var isTvBox = /Android/.test(navigator.userAgent) &&
+    // NOT: AppCreator24 TVBox APK'si "okhttp" user-agent'ı ile gelir — bu UA'da
+    // "TV/Box/STB" gibi anahtar kelimeler YOK, bu yüzden okhttp varlığı tek
+    // başına TVBox/APK ortamı sinyali sayılır (aşağıda HLS_CONFIG'de de
+    // _isApp24WebView aynı mantıkla kullanılıyor).
+    var _uaLower = (navigator.userAgent || '').toLowerCase();
+    var isTvBox = _uaLower.indexOf('okhttp') !== -1 ||
+                  (/Android/.test(navigator.userAgent) &&
                   (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(navigator.userAgent) ||
                    window.screen.width >= 1280 ||          /* Android TV dokunmatik olsa da büyük ekran */
-                   /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(navigator.userAgent));
+                   /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(navigator.userAgent)));
     /* Android TV: BRAVIA, Philips, TCL vb. — dokunmatik katman olsa da kumandayla çalışır */
     window._isAndroidTV = isTvBox; /* setupRemote'ta touchstart kontrolü için global */
 
@@ -10537,14 +10543,20 @@ document.addEventListener('DOMContentLoaded', function() {
     //  şüpheli durumda varsayılan davranış "telefon değil" kabul edilir.)
     var _ua = navigator.userAgent || '';
 
-    // 1) Daha önce body'e tvbox-mode eklendiyse (üstteki TVBox tespit scripti
-    //    zaten karar vermiş demektir) — buna kesin öncelik ver.
-    //    NOT: "fast-mode" class'ı body'de varsayılan olarak HTML'de yazılı
-    //    (tüm cihazlarda baştan var), bu yüzden TV sinyali olarak kullanılamaz.
+    // 1) Üstteki TVBox tespit scripti (satır ~1644) window._isAndroidTV'yi
+    //    SENKRON olarak, sayfa daha <head> içindeyken set ediyor — bu yüzden
+    //    bu script çalışırken değeri kesinleşmiş olur.
+    //    ESKİ HATA: burada body.classList.contains('tvbox-mode') kontrol
+    //    ediliyordu, ama o class DOMContentLoaded'da ekleniyor — DOMContentLoaded
+    //    bu script çalışırken HENÜZ ATEŞLENMEMİŞ olur (doküman hâlâ parse
+    //    ediliyor), yani bu kontrol HER ZAMAN false dönüyordu ve TVBox'lar da
+    //    "telefon olabilir" heuristiğine düşüp splash'i görüyordu.
+    var _earlyTvFlag = (typeof window._isAndroidTV === 'boolean') ? window._isAndroidTV : null;
     var _bodyHasTvClass = document.body &&
         document.body.classList.contains('tvbox-mode');
 
-    var _isTvLike = _bodyHasTvClass || (
+    var _isTvLike = (_earlyTvFlag === true) || _bodyHasTvClass ||
+        /okhttp/i.test(_ua) || (
         /Android/.test(_ua) &&
         (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(_ua) ||
          window.screen.width >= 1280 ||
@@ -30945,27 +30957,19 @@ async function loadRemainingM3UsInBackground(startIndex) {
 
 function refreshChannelGrid() {
     
-
+    // ── GERÇEK FIX: Bu fonksiyon eskiden createChannelCard() ile
+    // state.filtered İÇİNDEKİ TÜM kanalları (binlerce olabilir) TEK SEFERDE,
+    // sayfalama olmadan DOM'a basıyordu. M3U yenilemede / uygulama açılışında
+    // tetiklendiği için TVBox'ta uzun süreli donmaya (UI thread blok) sebep
+    // oluyordu. Artık zaten sayfalı + append-mode render yapan renderChannels()
+    // fonksiyonuna devrediliyor (ilk 24 kart + scroll'da kademeli yükleme).
     const currentCategory = state.activeCat;
-    
-    
 
     filterChannels();
-    
-    
 
-    const grid = document.getElementById('channelsGrid');
-    const fragment = document.createDocumentFragment();
-    
-    state.filtered.forEach((channel, index) => {
-        const card = createChannelCard(channel, index);
-        fragment.appendChild(card);
-    });
-    
-    grid.innerHTML = '';
-    grid.appendChild(fragment);
-    
-    
+    if (typeof renderChannels === 'function') {
+        renderChannels();
+    }
 
     updateSeriesCards();
     
@@ -38160,19 +38164,35 @@ function renderChannels() {
     }
     
     const maxDisplay = Math.min(displayChannels.length, state.currentLoadedCards);
-    
 
-    // ── DÜZELTİLDİ: DocumentFragment kullan — DOM manipülasyonu minimuma indir ──
-    // grid.innerHTML her seferinde tüm DOM'u yıkıp yeniden kurar → TVBox'ta kasma
-    // Bunun yerine: Fragment'e ekle, tek seferde DOM'a yaz
-    const fragment = document.createDocumentFragment();
+    // ── GERÇEK FIX: scroll/"daha fazla yükle" ile gelen ek yüklemelerde SADECE
+    // yeni kartları DOM'a ekle, listeyi baştan kurma. ──
+    // ESKİ HATA: "DocumentFragment" değişkeni hiç kullanılmıyordu (dead code) —
+    // her scroll olayında i=0'dan maxDisplay'e kadar TÜM kartlar (önceden
+    // render edilmiş olanlar dahil) yeniden string'e basılıp grid.innerHTML
+    // ile DOM'a yazılıyordu. Liste büyüdükçe bu O(n²) hâle geliyor ve TVBox'ta
+    // her scroll'da tüm grid'in yıkılıp yeniden kurulması kasma/donmaya yol
+    // açıyordu. Şimdi: window._utvAppendRender bayrağı set edilmişse (sadece
+    // scroll/loadMoreChannels bunu yapar) ve liste/kategori değişmemişse,
+    // sadece state._utvRenderedCount..maxDisplay arası yeni kartlar üretilip
+    // grid'in SONUNA eklenir; mevcut kartlara dokunulmaz.
+    const _renderSig = state.activeCat + '|' + displayChannels.length;
+    const _appendMode = window._utvAppendRender === true &&
+        state._utvRenderSig === _renderSig &&
+        typeof state._utvRenderedCount === 'number' &&
+        state._utvRenderedCount > 0 &&
+        state._utvRenderedCount < maxDisplay &&
+        grid.children.length > 0;
+    window._utvAppendRender = false; // tek seferlik bayrak — kullanıldı
+
+    const startIdx = _appendMode ? state._utvRenderedCount : 0;
     let html = '';
 
     // Kanal notlarını önceden oku
     var _chNotes = (function(){ try { return JSON.parse(localStorage.getItem('umittv_channel_notes') || '{}'); } catch(e) { return {}; } })();
     var _noteBadgeHTML = '<div class="ch-note-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> NOT</div>';
 
-    for (let i = 0; i < maxDisplay; i++) {
+    for (let i = startIdx; i < maxDisplay; i++) {
         const c = displayChannels[i];
         const isVod = c.isLive === false;
         const isFav = state.favs.has(c.name);
@@ -38336,19 +38356,27 @@ function renderChannels() {
         `;
     }
     
-    // Tek seferde yaz
-    grid.innerHTML = html;
+    // DOM'a yaz: append modunda SONA ekle (eskiler dokunulmaz), aksi halde tam kurulum
+    if (_appendMode) {
+        const _oldLoadMore = document.getElementById('loadMoreBtn');
+        if (_oldLoadMore) _oldLoadMore.remove(); // eski "daha fazla yükle" kartı varsa kaldır, yenisi html içinde
+        grid.insertAdjacentHTML('beforeend', html);
+    } else {
+        grid.innerHTML = html;
+    }
+    state._utvRenderedCount = maxDisplay;
+    state._utvRenderSig = _renderSig;
     
-    
-    // Arka planda TMDB poster çek
-    fetchTMDBPostersForVisible(displayChannels, maxDisplay);
+    // Arka planda TMDB poster çek — sadece yeni eklenen kartlar için
+    fetchTMDBPostersForVisible(displayChannels, maxDisplay, startIdx);
     
     // Otomatik scroll yükleme
     setupAutoLoadOnScroll(displayChannels.length);
 }
 
 // VOD kartları için TMDB'den poster çek ve güncelle
-async function fetchTMDBPostersForVisible(displayChannels, maxDisplay) {
+async function fetchTMDBPostersForVisible(displayChannels, maxDisplay, startIdx) {
+    startIdx = startIdx || 0;
     const BATCH = 3;
     const cards = document.querySelectorAll('.channel-card[data-is-vod="true"]');
     if (!cards.length) return;
@@ -38377,7 +38405,7 @@ async function fetchTMDBPostersForVisible(displayChannels, maxDisplay) {
         }
     }
 
-    const vodChannels = displayChannels.slice(0, maxDisplay).filter(c => c && !c.isLive);
+    const vodChannels = displayChannels.slice(startIdx, maxDisplay).filter(c => c && !c.isLive);
     for (let i = 0; i < vodChannels.length; i += BATCH) {
         const batch = vodChannels.slice(i, i + BATCH).map(c => fetchAndUpdate(c));
         await Promise.allSettled(batch);
@@ -38411,6 +38439,7 @@ function setupAutoLoadOnScroll(totalChannels) {
             if (newLoad > currentLoaded) {
                 state.currentLoadedCards = newLoad;
                 const savedScroll = scrollTop;
+                window._utvAppendRender = true; // sadece yeni kartları ekle, grid'i baştan kurma
                 renderChannels();
                 setTimeout(() => { viewport.scrollTop = savedScroll; }, 30);
                 // Kumanda odağını geri yükle — renderChannels innerHTML'i sifirlar
@@ -38435,6 +38464,7 @@ function loadMoreChannels() {
     
     
     state.currentLoadedCards = newLoad;
+    window._utvAppendRender = true; // sadece yeni kartları ekle, grid'i baştan kurma
     renderChannels();
     
     setTimeout(() => {
@@ -57719,8 +57749,18 @@ var _ready = function(fn) {
     else document.addEventListener('DOMContentLoaded', fn);
 };
 
+// Bu IIFE'nin TÜM optimizasyonları SADECE TVBox/TV cihazlar için tasarlandı.
+// Önceden buradaki bloklar koşulsuz çalışıp telefonlarda da HLS_CONFIG'i
+// eziyor ve her canlı kanalda startLevel=0 zorluyordu — bu da telefonlarda
+// gereksiz kalite dalgalanmasına (her açılışta düşük kaliteden başlayıp
+// sonra yükselme) yol açıyordu. Artık sadece gerçek TVBox ortamında çalışır.
+var _isTvBoxRuntime = (typeof window._isAndroidTV === 'boolean')
+    ? window._isAndroidTV
+    : /okhttp/i.test(navigator.userAgent || '');
+
 /* ── 1. HLS CONFIG OVERRIDE: TVBox için optimize edilmiş buffer ── */
 _ready(function() {
+    if (!_isTvBoxRuntime) return; // Telefonlarda dokunma — ana HLS_CONFIG değerleri geçerli kalsın
     // HLS_CONFIG global'i varsa TVBox parametrelerini uygula
     if (typeof window.HLS_CONFIG !== 'undefined') {
         // Düşük başlangıç buffer — hızlı açılış (TVBox RAM kısıtlı)
@@ -58007,8 +58047,14 @@ _ready(function() {
     }, 5 * 60 * 1000);
 });
 
-/* ── 9. HLS startLevel override: canlı yayında düşükten başla ── */
+/* ── 9. HLS startLevel override: SADECE TVBox'ta canlı yayında düşükten başla ──
+   Önceden bu override TÜM cihazlarda (telefon dahil) çalışıyordu — bu da
+   telefonlarda her kanal açılışında ABR'nin otomatik seçtiği kaliteyi
+   görmezden gelip zorla en düşük kaliteden başlatıyor, sonra ABR tekrar
+   yükseltiyordu. Kullanıcı bunu "yayında kalite dalgalanması" olarak
+   yaşıyordu. Artık SADECE TVBox'ta (RAM/CPU kısıtlı donanımda) uygulanır. */
 _ready(function() {
+    if (!_isTvBoxRuntime) return; // Telefonda ABR'ye karışma
     // playChannel gibi fonksiyonlar çağrılmadan önce startLevel'i TVBox için sıfırla
     var _origPlay = window.playChannel;
     if (typeof _origPlay !== 'function') return;

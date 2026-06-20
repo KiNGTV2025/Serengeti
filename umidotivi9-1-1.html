@@ -39652,9 +39652,17 @@ function resumeChannel(startTime) {
     const channel = state.channels.find(c => c.name === ch.name);
     const logoSrc = (channel && channel.logo) ? channel.logo : (ch.logo || '');
     
-    logoDisplay.innerHTML = logoSrc 
-        ? `<img src="${logoSrc}" loading="eager" style="opacity:1" onerror="this.style.display='none'">` 
-        : '<span class="material-symbols-outlined" style="font-size:20px; color:white;">tv</span>';
+    // DÜZELTME (TVBox logo görünmüyor): logo resmi yüklenemediğinde (TVBox'ta
+    // ağ/CORS/karışık-içerik kısıtlamaları nedeniyle sık görülür) eskiden
+    // sadece display:none yapılıp kutu tamamen boş kalıyordu. Artık img hata
+    // verirse otomatik olarak TV ikonuna düşüyor, böylece sol üstte her zaman
+    // bir şey görünür.
+    const _fallbackIconHtml = '<span class="material-symbols-outlined" style="font-size:20px; color:white;">tv</span>';
+    if (logoSrc) {
+        logoDisplay.innerHTML = `<img src="${logoSrc}" loading="eager" referrerpolicy="no-referrer" style="opacity:1" onerror="this.parentElement.innerHTML='${_fallbackIconHtml.replace(/'/g, "\\'")}'">`;
+    } else {
+        logoDisplay.innerHTML = _fallbackIconHtml;
+    }
 
     video.className = `video-${state.player.objectFit}`;
 
@@ -40874,7 +40882,15 @@ function resumeChannel(startTime) {
         // MP4 / MKV / diğer direkt medya
         // App24'te http:// direkt dene (App24 manifest cleartext açık olabilir)
         // hata olursa proxy zinciri
-        const _isMixedContent = false; // direkt önce dene, error handler proxy'e düşer
+        // DÜZELTME: App24 WebView'da cleartext (http://) izni YOKSA, http:// isteği
+        // sunucuya hiç gitmeden anında reddedilir (network security policy).
+        // Önceden _isMixedContent hardcoded false'tu — bu da App24'te garanti
+        // başarısız olacak bir "direkt deneme" yapıp sonra proxy'e düşüyordu.
+        // Artık App24/okhttp ortamında http:// kaynaklar için direkt deneme
+        // atlanıp baştan proxy zinciriyle açılıyor.
+        const _isMixedContent = _isApp24WebView && /^http:\/\//i.test(rawUrl);
+
+        if (window._tvDebug) console.log('[MKV] _isMixedContent=', _isMixedContent, 'isApp24=', _isApp24WebView, 'rawUrl=', rawUrl);
 
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
@@ -54135,14 +54151,21 @@ document.addEventListener('umittv_login_ok', function() {
             async sync() {
                 try {
                     
-                    const tokenResponse = await fetch("https://api.dropbox.com/oauth2/token", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded",
-                            "Authorization": "Basic " + btoa("aysilp7ffgnsmu7:ef5h02y775jao4f")
-                        },
-                        body: "grant_type=refresh_token&refresh_token=PdAh5kuSGkYAAAAAAAAAAeE4MhXqPM9hu0ZU5Van21b6sVJFxYgNib6WsowBSzS7"
-                    });
+                    let tokenResponse;
+                    try {
+                        tokenResponse = await fetch("https://api.dropbox.com/oauth2/token", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                                "Authorization": "Basic " + btoa("aysilp7ffgnsmu7:ef5h02y775jao4f")
+                            },
+                            body: "grant_type=refresh_token&refresh_token=PdAh5kuSGkYAAAAAAAAAAeE4MhXqPM9hu0ZU5Van21b6sVJFxYgNib6WsowBSzS7"
+                        });
+                    } catch (netErr) {
+                        // fetch() kendisi patladı — DNS/CORS/ağ erişimi sorunu, HTTP cevabı hiç gelmedi
+                        console.error('[UMD_TICKER] Token isteği AĞ SEVİYESİNDE başarısız (CORS/DNS/bağlantı). name=', netErr && netErr.name, 'message=', netErr && netErr.message);
+                        throw netErr;
+                    }
                     
                     if (!tokenResponse.ok) {
                         const errBody = await tokenResponse.text().catch(() => '');
@@ -54151,13 +54174,19 @@ document.addEventListener('umittv_login_ok', function() {
                     }
                     const tokenData = await tokenResponse.json();
                     
-                    const fileResponse = await fetch("https://content.dropboxapi.com/2/files/download", {
-                        method: "POST",
-                        headers: {
-                            "Authorization": "Bearer " + tokenData.access_token,
-                            "Dropbox-API-Arg": JSON.stringify({ "path": "/altyazi.json" })
-                        }
-                    });
+                    let fileResponse;
+                    try {
+                        fileResponse = await fetch("https://content.dropboxapi.com/2/files/download", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + tokenData.access_token,
+                                "Dropbox-API-Arg": JSON.stringify({ "path": "/altyazi.json" })
+                            }
+                        });
+                    } catch (netErr2) {
+                        console.error('[UMD_TICKER] /altyazi.json isteği AĞ SEVİYESİNDE başarısız (CORS/DNS/bağlantı). name=', netErr2 && netErr2.name, 'message=', netErr2 && netErr2.message);
+                        throw netErr2;
+                    }
                     
                     if (!fileResponse.ok) {
                         const errBody = await fileResponse.text().catch(() => '');
@@ -54172,7 +54201,7 @@ document.addEventListener('umittv_login_ok', function() {
                     this.check();
                     
                 } catch(error) {
-                    console.error('[UMD_TICKER] sync() hata, demo metne düşülüyor:', error);
+                    console.error('[UMD_TICKER] sync() hata, demo metne düşülüyor. name=', error && error.name, 'message=', error && error.message, error);
                     this.state.json = {
                         text: "DenemeSelamlar  [flash] umido[tg] [pre]  [vip] Ümit [ig] [yt] [web]",
                         schedule: {
@@ -58355,11 +58384,15 @@ _ready(function() {
     if (typeof _origPlay !== 'function') return;
 
     window.playChannel = function(channel) {
-        // Canlı yayında: önce düşük kaliteden başla, buffer dolunca ABR yükseltsin
-        if (window.HLS_CONFIG && channel && channel.isLive !== false) {
-            window.HLS_CONFIG.startLevel = 0; // En düşük quality — hızlı açılış
-        } else if (window.HLS_CONFIG) {
-            window.HLS_CONFIG.startLevel = -1; // VOD: ABR otomatik
+        // DÜZELTME: startLevel=0 zorlaması kaldırıldı.
+        // Önceki davranış: canlı kanal her açıldığında en düşük kaliteden
+        // başlatılıyor, sonra ABR yukarı çekiyordu. Bu geçiş kullanıcı
+        // tarafından "yayında dalgalanma/kalite oynaması" olarak görülüyordu.
+        // ABR config (abrEwmaDefaultEstimate / abrBandWidthFactor) zaten
+        // TVBox için güvenli tahminlerle ayarlı, bu yüzden startLevel'i
+        // her zaman otomatığa (-1) bırakmak daha stabil sonuç verir.
+        if (window.HLS_CONFIG) {
+            window.HLS_CONFIG.startLevel = -1; // Canlı + VOD: ABR otomatik seçsin
         }
         return _origPlay.apply(this, arguments);
     };

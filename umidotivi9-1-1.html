@@ -892,13 +892,13 @@ button,
     touch-action: manipulation !important;
 }
 /* :active anında geri bildirim — 0ms gecikme */
+/* Not: box-shadow & opacity dokunmatik odak bloğunda üstte tanımlı */
 button:active,
 .header-btn:active,
 .m3u-pill:active,
 .cat-pill:active,
 .channel-card:active {
     transform: none !important;
-    opacity: 0.85;
     transition: opacity 0ms !important;
 }
 
@@ -1663,13 +1663,32 @@ img {
 /* Sürekli yanıp sönme — TVBox uyumlu: tek katman, spread yok, sadece opacity */
 /* PERF-FIX: 2. box-shadow katmanı (0 0 16px spread) kaldırıldı —
    her 1.4s döngüde tüm odaklı kartlar için ekstra compositing tetikliyordu. */
+/* REMOTE FOCUS COLOR — kumanda odak rengi & şeffaflığı ayarlardan değiştirilebilir */
+:root {
+    --remote-focus-rgb: 220, 0, 0;
+    --remote-focus-opacity-hi: 0.70;
+    --remote-focus-opacity-lo: 0.25;
+}
+
+/* focusPulse — CSS var() keyframe trick: hem remote hem touch :active için */
 @keyframes focusPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.85);
-    }
-    50% {
-        box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb, 255,215,0), 0.30);
-    }
+    0%, 100% { box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)); }
+    50%       { box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-lo)); }
+}
+
+/* ── DOKUNMATIK ODAK: :active pseudo-class ── */
+/* Kanal kartı, buton, pill — parmak basılıyken focusPulse box-shadow göster */
+.channel-card:active,
+.header-btn:active,
+.m3u-pill:active,
+.cat-pill:active,
+.sidebar-category-pill:active,
+.category-list-item:active,
+.vod-episode-card:active,
+.recent-card:active {
+    box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)) !important;
+    transform: none !important;
+    opacity: 1 !important;
 }
 
 /* Kartlar için — TVBox'ta scale repaint = kasma, sadece glow kullan */
@@ -1754,9 +1773,9 @@ img {
 .player-action-btn.focused {
     animation: none !important;
     transform: none !important;
-    outline: 3px solid var(--accent-primary, #FFD700) !important;
+    outline: 3px solid rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)) !important;
     outline-offset: 2px !important;
-    background: rgba(var(--accent-primary-rgb,255,215,0), 0.22) !important;
+    background: rgba(var(--remote-focus-rgb), 0.18) !important;
     will-change: auto !important;
 }
 
@@ -2651,8 +2670,9 @@ body {
          
         body.low-performance-mode .neon-logo-img,
         body.fast-mode .neon-logo-img {
-            /* RAF animasyonu JS tarafında low-perf modda yavaşlatılır */
-            filter: drop-shadow(0 0 5px var(--accent-primary)) brightness(1.12);
+            /* Statik ama belirgin tema rengi glow — animasyon olmadan */
+            filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.2) !important;
+            opacity: 1 !important;
         }
         
         .header-controls {
@@ -15516,6 +15536,35 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 (Kapalıyken bildirim ekranı kanal değiştirmez)
             </div>
 
+            <!-- KUMANDA ODAK RENGİ -->
+            <div style="margin-bottom:6px; font-size:13px; font-weight:600; color:var(--accent-primary); letter-spacing:0.5px;">Kumanda Odak Efekti</div>
+            <div class="toggle-container" style="align-items:center; gap:12px; flex-wrap:wrap;">
+                <span style="flex:1 1 auto;">Odak Rengi</span>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <label id="focusColorPreview" style="display:inline-block;width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);cursor:pointer;background:rgb(220,0,0);position:relative;overflow:hidden;" title="Renk seç">
+                        <input type="color" id="focusColorPicker" value="#dc0000" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;">
+                    </label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="focus-color-preset" data-rgb="220,0,0" style="width:22px;height:22px;border-radius:50%;background:rgb(220,0,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Kırmızı"></button>
+                        <button class="focus-color-preset" data-rgb="255,215,0" style="width:22px;height:22px;border-radius:50%;background:rgb(255,215,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Altın"></button>
+                        <button class="focus-color-preset" data-rgb="0,180,255" style="width:22px;height:22px;border-radius:50%;background:rgb(0,180,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mavi"></button>
+                        <button class="focus-color-preset" data-rgb="0,220,100" style="width:22px;height:22px;border-radius:50%;background:rgb(0,220,100);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Yeşil"></button>
+                        <button class="focus-color-preset" data-rgb="180,0,255" style="width:22px;height:22px;border-radius:50%;background:rgb(180,0,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mor"></button>
+                        <button class="focus-color-preset" data-rgb="255,255,255" style="width:22px;height:22px;border-radius:50%;background:rgb(255,255,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Beyaz"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="slider-container" style="margin-top:10px;">
+                <div class="slider-label">
+                    <span>Odak Şeffaflığı</span>
+                    <span id="focusOpacityValue">%70</span>
+                </div>
+                <input type="range" min="10" max="100" value="70" class="slider" id="focusOpacitySlider">
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                <div id="focusPreviewBox" style="width:80px;height:36px;border-radius:8px;background:rgba(30,30,40,0.8);animation:focusPulse 1.4s ease-in-out infinite;font-size:11px;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;letter-spacing:1px;opacity:0.9;">ÖNİZLEME</div>
+            </div>
+
             <div class="modal-btns" style="margin-top: 20px;">
                 <button class="continue-modal-btn cancel" id="btnControlClose" onclick="closeControlSettingsModal()">Kapat</button>
                 <button class="continue-modal-btn continue" id="btnControlSave" onclick="saveControlSettings()">Kaydet</button>
@@ -19012,7 +19061,7 @@ Object.defineProperty(window, 'state', {
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
         const CONTINUE_MODAL_BUTTONS = ['btnWatchLater', 'btnContinueDelete', 'btnStartOver', 'btnContinue'];
         const DELETE_MODAL_BUTTONS = ['btnDeleteCancel', 'btnDeleteConfirm'];
-        const CONTROL_SETTINGS_BUTTONS = ['lowPerformanceToggle', 'fastModeToggle', 'keySoundLevel', 'keySoundToggle', 'touchSensitivity', 'vibrationToggle', 'btnControlClose', 'btnControlSave', 'btnControlBack'];
+        const CONTROL_SETTINGS_BUTTONS = ['lowPerformanceToggle', 'fastModeToggle', 'keySoundLevel', 'keySoundToggle', 'touchSensitivity', 'vibrationToggle', 'swipeChannelToggle', 'focusOpacitySlider', 'btnControlClose', 'btnControlSave', 'btnControlBack'];
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
@@ -27764,6 +27813,8 @@ const DEFAULT_CONTROL_SETTINGS = {
     sleepTimeMinutes: 60,
     lowPerformanceMode: false,
     fastMode: false,
+    focusColorRgb: '220,0,0',
+    focusOpacity: 70,
     
 };
 
@@ -27887,6 +27938,16 @@ function saveControlSettings() {
             sleepModeEnabled: document.getElementById('sleepModeToggle')?.checked || false,
             sleepTimeMinutes: Number(document.getElementById('sleepTimeSlider')?.value || 60),
             swipeChannelChange: document.getElementById('swipeChannelToggle')?.checked !== false,
+            focusColorRgb: (function(){
+                const picker = document.getElementById('focusColorPicker');
+                if (!picker) return '220,0,0';
+                const hex = picker.value.replace('#','');
+                const r = parseInt(hex.substring(0,2),16);
+                const g = parseInt(hex.substring(2,4),16);
+                const b = parseInt(hex.substring(4,6),16);
+                return `${r},${g},${b}`;
+            })(),
+            focusOpacity: Number(document.getElementById('focusOpacitySlider')?.value || 70),
         };
 
         state.controlSettings = {
@@ -27972,6 +28033,9 @@ function applyAllSettingsImmediately() {
         TOUCH_SENSITIVITY = 100 - settings.touchSensitivity + 10;
     }
     
+    // Kumanda odak rengi & şeffaflığı
+    applyFocusColorSettings(settings);
+    
 }
 
 // YENİ: UI'ı güncelle
@@ -27991,6 +28055,23 @@ function updateSettingsUI() {
         if (document.getElementById('swipeChannelToggle')) {
             document.getElementById('swipeChannelToggle').checked = settings.swipeChannelChange !== false;
         }
+        // Odak rengi & şeffaflığı
+        const rgb = settings.focusColorRgb || '220,0,0';
+        const opacity = settings.focusOpacity !== undefined ? settings.focusOpacity : 70;
+        const picker = document.getElementById('focusColorPicker');
+        const preview = document.getElementById('focusColorPreview');
+        const opSlider = document.getElementById('focusOpacitySlider');
+        const opVal = document.getElementById('focusOpacityValue');
+        if (picker) {
+            // rgb → hex
+            const parts = rgb.split(',').map(s => parseInt(s.trim()));
+            const hex = '#' + parts.map(v => v.toString(16).padStart(2,'0')).join('');
+            picker.value = hex;
+            if (preview) preview.style.background = `rgb(${rgb})`;
+        }
+        if (opSlider) { opSlider.value = opacity; }
+        if (opVal) { opVal.textContent = `%${opacity}`; }
+        applyFocusColorSettings(settings);
     }
     
     // Sleep Mode Modal'daki inputları güncelle
@@ -27998,6 +28079,57 @@ function updateSettingsUI() {
         document.getElementById('sleepModeToggle').checked = settings.sleepModeEnabled;
         document.getElementById('sleepTimeSlider').value = settings.sleepTimeMinutes;
         document.getElementById('sleepTimeValue').textContent = `${settings.sleepTimeMinutes} dakika`;
+    }
+}
+
+// YENİ: Odak rengi & şeffaflık uygula
+function applyFocusColorSettings(settings) {
+    const rgb = (settings && settings.focusColorRgb) || '220,0,0';
+    const opacity = (settings && settings.focusOpacity !== undefined) ? settings.focusOpacity : 70;
+    const hi = (opacity / 100).toFixed(2);
+    const lo = Math.max(0.10, (opacity / 100) * 0.35).toFixed(2);
+    const r = document.documentElement;
+    r.style.setProperty('--remote-focus-rgb', rgb);
+    r.style.setProperty('--remote-focus-opacity-hi', hi);
+    r.style.setProperty('--remote-focus-opacity-lo', lo);
+
+    // Bazı Android WebKit sürümlerinde @keyframes içinde CSS var() çalışmaz.
+    // Çözüm: keyframe'i gerçek rgba değerleriyle dinamik <style> olarak yeniden yaz.
+    let dynStyle = document.getElementById('_focusDynStyle');
+    if (!dynStyle) {
+        dynStyle = document.createElement('style');
+        dynStyle.id = '_focusDynStyle';
+        document.head.appendChild(dynStyle);
+    }
+    dynStyle.textContent = `
+@keyframes focusPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(${rgb}, ${hi}); }
+    50%       { box-shadow: 0 0 0 3px rgba(${rgb}, ${lo}); }
+}
+.channel-card:active,
+.header-btn:active,
+.m3u-pill:active,
+.cat-pill:active,
+.sidebar-category-pill:active,
+.category-list-item:active,
+.vod-episode-card:active,
+.recent-card:active {
+    box-shadow: 0 0 0 3px rgba(${rgb}, ${hi}) !important;
+}
+.player-action-btn.remote-focused,
+.player-action-btn.focused {
+    outline: 3px solid rgba(${rgb}, ${hi}) !important;
+    background: rgba(${rgb}, 0.18) !important;
+}
+`;
+
+    // Önizleme kutusunu güncelle — animasyonu yeniden başlat
+    const prev = document.getElementById('focusPreviewBox');
+    if (prev) {
+        prev.style.animation = 'none';
+        // eslint-disable-next-line no-unused-expressions
+        prev.offsetWidth; // reflow — animasyonu sıfırla
+        prev.style.animation = 'focusPulse 1.4s ease-in-out infinite';
     }
 }
 
@@ -28025,6 +28157,47 @@ function openControlSettingsModal() {
     
     // State'deki ayarları forma yükle
     updateSettingsUI();
+    
+    // Renk seçici canlı önizleme
+    const picker = document.getElementById('focusColorPicker');
+    const previewLabel = document.getElementById('focusColorPreview');
+    const opSlider = document.getElementById('focusOpacitySlider');
+    const opVal = document.getElementById('focusOpacityValue');
+    if (picker) {
+        picker.oninput = function() {
+            const hex = picker.value.replace('#','');
+            const r = parseInt(hex.substring(0,2),16);
+            const g = parseInt(hex.substring(2,4),16);
+            const b = parseInt(hex.substring(4,6),16);
+            const rgb = `${r},${g},${b}`;
+            if (previewLabel) previewLabel.style.background = `rgb(${rgb})`;
+            const op = opSlider ? Number(opSlider.value) : 70;
+            applyFocusColorSettings({ focusColorRgb: rgb, focusOpacity: op });
+        };
+    }
+    if (opSlider) {
+        opSlider.oninput = function() {
+            if (opVal) opVal.textContent = `%${opSlider.value}`;
+            const hex = picker ? picker.value.replace('#','') : 'dc0000';
+            const r = parseInt(hex.substring(0,2),16);
+            const g = parseInt(hex.substring(2,4),16);
+            const b = parseInt(hex.substring(4,6),16);
+            applyFocusColorSettings({ focusColorRgb: `${r},${g},${b}`, focusOpacity: Number(opSlider.value) });
+        };
+    }
+    // Hazır renk butonları
+    document.querySelectorAll('.focus-color-preset').forEach(function(btn) {
+        btn.onclick = function() {
+            const rgb = btn.getAttribute('data-rgb');
+            if (previewLabel) previewLabel.style.background = `rgb(${rgb})`;
+            if (picker) {
+                const parts = rgb.split(',').map(s=>parseInt(s.trim()));
+                picker.value = '#' + parts.map(v=>v.toString(16).padStart(2,'0')).join('');
+            }
+            const op = opSlider ? Number(opSlider.value) : 70;
+            applyFocusColorSettings({ focusColorRgb: rgb, focusOpacity: op });
+        };
+    });
     
     // Modal'ı göster
     var _csm=document.getElementById('controlSettingsModal'); if(_csm) _csm.style.display='flex';
@@ -54018,8 +54191,17 @@ window.getProfileAvatarUrlAsync = async function() {
     }
 
     window.startLogoGlow = function() {
-        /* TVBox: logo animasyonu kapalı — statik CSS filter yeterli */
-        if (document.body && document.body.classList.contains('tvbox-mode')) return;
+        /* TVBox: JS interval yok — CSS @keyframes tvboxLogoPulse çalışıyor.
+           Sadece tema rengini logo'ya inline style olarak uygula ki
+           CSS var(--accent-primary) doğru rengi alsın */
+        if (document.body && document.body.classList.contains('tvbox-mode')) {
+            var root = document.documentElement;
+            var accent = (root.style.getPropertyValue('--accent-primary') || getComputedStyle(root).getPropertyValue('--accent-primary') || '#FFD700').trim();
+            var logo = document.querySelector('.neon-logo-img');
+            /* inline filter'ı temizle — CSS animasyonu devralsın */
+            if (logo) { logo.style.filter = ''; logo.style.opacity = '1'; }
+            return;
+        }
 
         var pv = document.getElementById('playerView');
         var playerActive = pv && (pv.style.display === 'flex' || pv.style.display === 'block');
@@ -54038,8 +54220,14 @@ window.getProfileAvatarUrlAsync = async function() {
         _lastFilter = '';
         var logo = document.querySelector('.neon-logo-img');
         if (logo) {
-            logo.style.filter  = 'drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15)';
-            logo.style.opacity = '1';
+            /* TVBox: inline filter yazma — CSS @keyframes tvboxLogoPulse devam etsin */
+            if (document.body && document.body.classList.contains('tvbox-mode')) {
+                logo.style.filter  = '';
+                logo.style.opacity = '1';
+            } else {
+                logo.style.filter  = 'drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.2)';
+                logo.style.opacity = '1';
+            }
         }
     };
 
@@ -59002,12 +59190,22 @@ document.readyState === 'loading'
 /* ══════════════════════════════════════
    2. GPU KİLLERLARI KAPAT — blur/filter/backdrop
    ══════════════════════════════════════ */
-.logo-glow-layer,
 .modern-logo-container::before,
 .modern-logo-container::after {
     filter: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+}
+/* logo-glow-layer: blur kapat ama renk ve opaklık kalsın → logo belirgin */
+.logo-glow-layer {
+    filter: none !important; /* blur kaldır — GPU yükü azalt */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: radial-gradient(circle at center,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.35) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 50%,
+        transparent 75%) !important;
+    opacity: 0.6 !important;
 }
 
 /* Tüm blur'lar kapat */
@@ -65514,12 +65712,18 @@ body.tvbox-mode .channel-card[data-is-vod="false"]:not([data-is-series="true"]):
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
 }
-/* TVBox'ta logo animasyonu kapalı — statik filter, JS interval yok */
+/* TVBox'ta logo — CSS @keyframes ile GPU'da belirgin tema rengi glow */
+@keyframes tvboxLogoPulse {
+    0%   { filter: drop-shadow(0 0 5px var(--accent-primary))  drop-shadow(0 0 12px var(--accent-primary))  brightness(1.15); opacity: 1;    }
+    50%  { filter: drop-shadow(0 0 12px var(--accent-primary)) drop-shadow(0 0 28px var(--accent-primary))  brightness(1.35); opacity: 0.92; }
+    100% { filter: drop-shadow(0 0 5px var(--accent-primary))  drop-shadow(0 0 12px var(--accent-primary))  brightness(1.15); opacity: 1;    }
+}
 body.tvbox-mode .neon-logo-img {
-    filter: drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15) !important;
-    animation: none !important;
+    animation: tvboxLogoPulse 2.4s ease-in-out infinite !important;
     contain: style !important;
-    opacity: 1 !important;
+    will-change: filter, opacity;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 /* ── Category / M3U pill: aktif durumda vurgu ── */
@@ -67967,14 +68171,16 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
 /* ── Kart ── */
 .vs-card {
     position: relative;
-    width: 520px;
-    max-width: 95vw;
+    width: min(520px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
     background: linear-gradient(160deg,rgba(14,16,26,0.98),rgba(10,12,20,0.99));
     border: 1px solid rgba(255,215,0,0.18);
     border-top: 1px solid rgba(255,215,0,0.38);
     border-radius: 20px;
-    padding: 28px 28px 20px;
+    padding: 28px 20px 20px;
     box-shadow: 0 0 80px rgba(255,170,0,0.1), 0 40px 100px rgba(0,0,0,0.8);
+    overflow: hidden;
 }
 .vs-card::before {
     content: '';
@@ -68086,9 +68292,14 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
     display: flex;
     gap: 8px;
     margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 .vs-input {
     flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 10px;
@@ -68113,7 +68324,9 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
 .vs-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25) !important; }
 
 .vs-search-btn {
+    flex-shrink: 0;
     padding: 0 18px;
+    min-width: 64px;
     background: linear-gradient(135deg, var(--accent-primary,#FFD700), #E09500);
     border: none;
     border-radius: 10px;
@@ -68123,6 +68336,8 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
     font-weight: 900;
     letter-spacing: 1.5px;
     cursor: pointer;
+    touch-action: manipulation;
+    white-space: nowrap;
 }
 .vs-search-btn.remote-focused, .vs-search-btn:hover {
     filter: brightness(1.12);

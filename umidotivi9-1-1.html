@@ -1670,26 +1670,9 @@ img {
     --remote-focus-opacity-lo: 0.25;
 }
 
-/* focusPulse — CSS var() keyframe trick: hem remote hem touch :active için */
-@keyframes focusPulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)); }
-    50%       { box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-lo)); }
-}
-
-/* ── DOKUNMATIK ODAK: :active pseudo-class ── */
-/* Kanal kartı, buton, pill — parmak basılıyken focusPulse box-shadow göster */
-.channel-card:active,
-.header-btn:active,
-.m3u-pill:active,
-.cat-pill:active,
-.sidebar-category-pill:active,
-.category-list-item:active,
-.vod-episode-card:active,
-.recent-card:active {
-    box-shadow: 0 0 0 3px rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)) !important;
-    transform: none !important;
-    opacity: 1 !important;
-}
+/* focusPulse — dynStyle tarafından dinamik olarak yazılır (bkz. applyFocusColorSettings) */
+/* touch-focused: touchstart'ta JS ile eklenir, 350ms sonra kaldırılır */
+/* (Mobilde :active çok kısa sürer — JS class daha güvenilir) */
 
 /* Kartlar için — TVBox'ta scale repaint = kasma, sadece glow kullan */
 @keyframes focusEnterCard {
@@ -1773,9 +1756,9 @@ img {
 .player-action-btn.focused {
     animation: none !important;
     transform: none !important;
-    outline: 3px solid rgba(var(--remote-focus-rgb), var(--remote-focus-opacity-hi)) !important;
+    outline: 3px solid rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
     outline-offset: 2px !important;
-    background: rgba(var(--remote-focus-rgb), 0.18) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.18) !important;
     will-change: auto !important;
 }
 
@@ -1796,6 +1779,53 @@ img {
 }
 
 </style>
+
+<script>
+/* ── Erken odak rengi başlatma — localStorage'dan oku, dynStyle'ı hemen oluştur ── */
+(function() {
+    var rgb = '220,0,0', opacity = 70;
+    try {
+        // storageManager 'king_tv_control_settings' kullanıyor, eski kod 'controlSettings' kullanıyor
+        var cs = JSON.parse(localStorage.getItem('king_tv_control_settings') || localStorage.getItem('controlSettings') || '{}');
+        if (cs.focusColorRgb) rgb = cs.focusColorRgb;
+        if (cs.focusOpacity !== undefined) opacity = Number(cs.focusOpacity);
+    } catch(e) {}
+    var hi = (opacity / 100).toFixed(2);
+    var lo = Math.max(0.10, (opacity / 100) * 0.35).toFixed(2);
+    // KRİTİK: Sayfa yüklenirken --accent-primary-rgb'yi kayıtlı renge set et
+    // Böylece :active / touch-focused başından beri doğru rengi kullanır
+    document.documentElement.style.setProperty('--accent-primary-rgb', rgb);
+    var rgbParts = rgb.split(',');
+    if (rgbParts.length === 3) {
+        var hexColor = '#' + rgbParts.map(function(v) {
+            return parseInt(v.trim(), 10).toString(16).padStart(2, '0');
+        }).join('');
+        document.documentElement.style.setProperty('--accent-primary', hexColor);
+    }
+    var existing = document.getElementById('_focusDynStyle');
+    if (existing) existing.parentNode.removeChild(existing);
+    var s = document.createElement('style');
+    s.id = '_focusDynStyle';
+    s.textContent =
+        '@keyframes focusPulse{' +
+            '0%,100%{box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ')}' +
+            '50%{box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + lo + ')}' +
+        '}' +
+        '.touch-focused{' +
+            'box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+            'transition:box-shadow 0ms !important;' +
+        '}' +
+        '.channel-card:active,.header-btn:active,.m3u-pill:active,.cat-pill:active,' +
+        '.sidebar-category-pill:active,.category-list-item:active,.vod-episode-card:active,.recent-card:active{' +
+            'box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+        '}' +
+        '.player-action-btn.remote-focused,.player-action-btn.focused{' +
+            'outline:3px solid rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+            'background:rgba(var(--accent-primary-rgb,255,215,0),0.18) !important;' +
+        '}';
+    document.head.appendChild(s);
+})();
+</script>
 
 <script>
 /* TVBox Performans Başlangıç Scripti — DOM hazır olur olmaz low-perf modu aç */
@@ -2015,12 +2045,12 @@ img {
             --sidebar-item-height: 50px;
             --card-radius: 12px;
             /* Kanal kartı odak efekti — tema ile güncellenir */
-            --focus-card-bg:   #1a1000;
-            --focus-card-text: #FFD700;
-            --focus-card-glow: 0 0 0 3px var(--accent-primary), 0 0 18px rgba(255,215,0,0.5);
+            --focus-card-bg:   rgba(0,0,0,0.7);
+            --focus-card-text: var(--accent-primary);
+            --focus-card-glow: 0 0 0 3px var(--accent-primary), 0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.5);
             --focus-outline:   var(--accent-primary);
-            --focus-bg:        rgba(255,215,0,0.20);
-            --focus-glow:      0 0 20px rgba(255,215,0,0.35);
+            --focus-bg:        rgba(var(--accent-primary-rgb,255,215,0),0.20);
+            --focus-glow:      0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.35);
             /* Active pill — kontrast garantili (applyTheme tarafından güncellenir) */
             --pill-active-bg:     rgba(255,215,0,0.18);
             --pill-active-border: rgba(255,215,0,0.55);
@@ -3060,14 +3090,14 @@ body {
 }
 
 .vod-episode-card:hover {
-    background: linear-gradient(145deg, rgba(255,215,0,0.12) 0%, rgba(255,215,0,0.05) 100%);
-    border-color: rgba(255,215,0,0.35);
+    background: linear-gradient(145deg, rgba(var(--accent-primary-rgb,255,215,0),0.12) 0%, rgba(var(--accent-primary-rgb,255,215,0),0.05) 100%);
+    border-color: rgba(var(--accent-primary-rgb,255,215,0),0.35);
 }
 
  
 .vod-episode-card.focused,
 .vod-episode-card.remote-focused {
-    background: rgba(255,215,0,0.15) !important;
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.15) !important;
     border: 2px solid var(--accent-primary) !important;
     border-radius: 12px !important;
     box-shadow: none !important;
@@ -3077,7 +3107,7 @@ body {
  
 .vod-episode-card.focused .vod-episode-number,
 .vod-episode-card.remote-focused .vod-episode-number {
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
     text-shadow: none !important;
 }
 .vod-episode-card.focused .vod-episode-title,
@@ -3087,7 +3117,7 @@ body {
 
 .vod-episode-number {
     font-size: 11px;
-    color: rgba(255,215,0,0.8);
+    color: rgba(var(--accent-primary-rgb,255,215,0),0.8);
     font-weight: 800;
     margin-bottom: 5px;
     letter-spacing: 0.5px;
@@ -5805,7 +5835,15 @@ body {
         }
         /* controls-hidden modunda tum player butonlari tiklanamaz — kazara kapatma onle */
         .player-container.controls-hidden .player-actions-row,
+        .player-container.controls-hidden .player-controls-box,
+        .player-container.controls-hidden .player-action-btn,
         .player-container.controls-hidden #btnClosePlayer {
+            pointer-events: none !important;
+        }
+        /* show-controls olmadan da (sadece geçici görünür olmayan durum) butonlar pasif */
+        .player-container:not(.show-controls):not(.controls-hidden) .player-controls-box,
+        .player-container:not(.show-controls):not(.controls-hidden) .player-action-btn,
+        .player-container:not(.show-controls):not(.controls-hidden) .player-actions-row {
             pointer-events: none !important;
         }
         /* controls-hidden modunda channelInfoBanner her zaman görünür */
@@ -7043,8 +7081,8 @@ select.sort-dpad-focused {
 .channel-card[data-is-vod="false"].focused .channel-title,
 .channel-card[data-is-vod="true"].remote-focused .channel-title,
 .channel-card[data-is-vod="true"].focused .channel-title {
-    color: var(--focus-card-text, #FFD700) !important;
-    background: var(--focus-card-bg, #1a1000) !important;
+    color: var(--focus-card-text, var(--accent-primary)) !important;
+    background: var(--focus-card-bg, rgba(0,0,0,0.7)) !important;
     text-shadow: none !important;
     border-radius: 0 0 12px 12px !important;
     font-weight: 700 !important;
@@ -8222,6 +8260,15 @@ select.sort-dpad-focused {
 
 .control-settings-modal { 
     max-width: 420px; 
+}
+
+/* Renk preset buton — kumanda odaklandığında beyaz çerçeve */
+.focus-color-preset.remote-focused {
+    border: 2px solid rgba(255,255,255,0.95) !important;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.5), 0 0 8px rgba(255,255,255,0.4) !important;
+    outline: none !important;
+    transform: scale(1.25) !important;
+    transition: transform 80ms ease !important;
 }
 
 .slider-container { 
@@ -13287,16 +13334,14 @@ window.handleLogin = async function() {
     try {
         const res = await apiLogin(currentTelegramId, loginValue);
         if (res.success) {
-            // Nick varsa sakla (worker destekliyorsa), yoksa telegram_id kullan
+            // Nick varsa hemen kaydet, sonra fetchAndSaveNick worker'ı da kontrol eder
             if (res.nick || res.name || res.first_name || res.username) {
                 try {
                     const _an = res.nick || res.first_name || res.name || res.username;
                     localStorage.setItem('umittv_tg_nick', _an);
                 } catch(_e) {}
-            } else {
-                // Nick gelmiyorsa ID'yi nick olarak kaydet
-                try { localStorage.setItem('umittv_tg_nick', String(currentTelegramId)); } catch(_e) {}
             }
+            // Worker kontrolü + modal (gerekirse) — doLogin sonrası event'ten tetiklenir
             if (res.key_id) window._lastLoginKeyId = res.key_id;
             if (res.lowmode) {
                 try {
@@ -13492,7 +13537,9 @@ function doLogin() {
         const device_id = getDeviceId();
         let _savedNickForAuth = '';
         try { _savedNickForAuth = localStorage.getItem('umittv_tg_nick') || ''; } catch(_e) {}
-        const authData  = { telegram_id: currentTelegramId, device_id: device_id, ts: Date.now(), nick: _savedNickForAuth || String(currentTelegramId) };
+        // Sayısal ID'yi nick olarak yazma
+        if (/^\d{5,}$/.test((_savedNickForAuth || '').trim())) _savedNickForAuth = '';
+        const authData  = { telegram_id: currentTelegramId, device_id: device_id, ts: Date.now(), nick: _savedNickForAuth || '' };
         
 
         if (window._lastLoginKeyId) {
@@ -13916,7 +13963,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (!res.success) {
                         
-
                         _clearAllAuth();
                         if (overlay) {
                             overlay.classList.remove('hidden');
@@ -15182,6 +15228,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="material-symbols-outlined" id="pipIcon">picture_in_picture</span>
                             <span class="btn-label" id="pipLabel">PiP</span>
                         </button>
+                        <button class="player-action-btn" id="btnPlayerVoiceSearch" onclick="playerVoiceSearchTap(event)" title="Sesli Arama">
+                            <span class="material-symbols-outlined" id="playerVsIcon">mic</span>
+                            <span class="btn-label">Sesli</span>
+                        </button>
                         <button class="player-action-btn accent-color" id="btnClosePlayer" onclick="closePlayer()" title="Kapat">
                             <span class="material-symbols-outlined">close</span>
                             <span class="btn-label">Kapat</span>
@@ -15545,12 +15595,12 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                         <input type="color" id="focusColorPicker" value="#dc0000" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;">
                     </label>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                        <button class="focus-color-preset" data-rgb="220,0,0" style="width:22px;height:22px;border-radius:50%;background:rgb(220,0,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Kırmızı"></button>
-                        <button class="focus-color-preset" data-rgb="255,215,0" style="width:22px;height:22px;border-radius:50%;background:rgb(255,215,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Altın"></button>
-                        <button class="focus-color-preset" data-rgb="0,180,255" style="width:22px;height:22px;border-radius:50%;background:rgb(0,180,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mavi"></button>
-                        <button class="focus-color-preset" data-rgb="0,220,100" style="width:22px;height:22px;border-radius:50%;background:rgb(0,220,100);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Yeşil"></button>
-                        <button class="focus-color-preset" data-rgb="180,0,255" style="width:22px;height:22px;border-radius:50%;background:rgb(180,0,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mor"></button>
-                        <button class="focus-color-preset" data-rgb="255,255,255" style="width:22px;height:22px;border-radius:50%;background:rgb(255,255,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Beyaz"></button>
+                        <button id="focusPresetKirmizi" class="focus-color-preset" data-rgb="220,0,0" style="width:22px;height:22px;border-radius:50%;background:rgb(220,0,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Kırmızı"></button>
+                        <button id="focusPresetAltin" class="focus-color-preset" data-rgb="255,215,0" style="width:22px;height:22px;border-radius:50%;background:rgb(255,215,0);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Altın"></button>
+                        <button id="focusPresetMavi" class="focus-color-preset" data-rgb="0,180,255" style="width:22px;height:22px;border-radius:50%;background:rgb(0,180,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mavi"></button>
+                        <button id="focusPresetYesil" class="focus-color-preset" data-rgb="0,220,100" style="width:22px;height:22px;border-radius:50%;background:rgb(0,220,100);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Yeşil"></button>
+                        <button id="focusPresetMor" class="focus-color-preset" data-rgb="180,0,255" style="width:22px;height:22px;border-radius:50%;background:rgb(180,0,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Mor"></button>
+                        <button id="focusPresetBeyaz" class="focus-color-preset" data-rgb="255,255,255" style="width:22px;height:22px;border-radius:50%;background:rgb(255,255,255);border:2px solid rgba(255,255,255,0.2);cursor:pointer;" title="Beyaz"></button>
                     </div>
                 </div>
             </div>
@@ -18943,7 +18993,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -19061,11 +19111,11 @@ Object.defineProperty(window, 'state', {
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
         const CONTINUE_MODAL_BUTTONS = ['btnWatchLater', 'btnContinueDelete', 'btnStartOver', 'btnContinue'];
         const DELETE_MODAL_BUTTONS = ['btnDeleteCancel', 'btnDeleteConfirm'];
-        const CONTROL_SETTINGS_BUTTONS = ['lowPerformanceToggle', 'fastModeToggle', 'keySoundLevel', 'keySoundToggle', 'touchSensitivity', 'vibrationToggle', 'swipeChannelToggle', 'focusOpacitySlider', 'btnControlClose', 'btnControlSave', 'btnControlBack'];
+        const CONTROL_SETTINGS_BUTTONS = ['lowPerformanceToggle', 'fastModeToggle', 'keySoundLevel', 'keySoundToggle', 'touchSensitivity', 'vibrationToggle', 'swipeChannelToggle', 'focusPresetKirmizi', 'focusPresetAltin', 'focusPresetMavi', 'focusPresetYesil', 'focusPresetMor', 'focusPresetBeyaz', 'focusOpacitySlider', 'btnControlClose', 'btnControlSave', 'btnControlBack'];
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnChTimer', 'btnChNote', 'btnEpgAlarm', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnChTimer', 'btnChNote', 'btnEpgAlarm', 'btnClosePlayer'];
         
         
 
@@ -28071,6 +28121,17 @@ function updateSettingsUI() {
         }
         if (opSlider) { opSlider.value = opacity; }
         if (opVal) { opVal.textContent = `%${opacity}`; }
+        // Aktif preset butonunu işaretle
+        document.querySelectorAll('.focus-color-preset').forEach(function(btn) {
+            const bRgb = btn.getAttribute('data-rgb');
+            if (bRgb === rgb) {
+                btn.style.border = '2px solid rgba(255,255,255,0.9)';
+                btn.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.55)';
+            } else {
+                btn.style.border = '2px solid rgba(255,255,255,0.2)';
+                btn.style.boxShadow = '';
+            }
+        });
         applyFocusColorSettings(settings);
     }
     
@@ -28084,51 +28145,70 @@ function updateSettingsUI() {
 
 // YENİ: Odak rengi & şeffaflık uygula
 function applyFocusColorSettings(settings) {
-    const rgb = (settings && settings.focusColorRgb) || '220,0,0';
-    const opacity = (settings && settings.focusOpacity !== undefined) ? settings.focusOpacity : 70;
-    const hi = (opacity / 100).toFixed(2);
-    const lo = Math.max(0.10, (opacity / 100) * 0.35).toFixed(2);
-    const r = document.documentElement;
+    var rgb = (settings && settings.focusColorRgb) || '220,0,0';
+    var opacity = (settings && settings.focusOpacity !== undefined) ? Number(settings.focusOpacity) : 70;
+    var hi = (opacity / 100).toFixed(2);
+    var lo = Math.max(0.10, (opacity / 100) * 0.35).toFixed(2);
+
+    // CSS değişkenlerini güncelle — hem --remote-focus-rgb hem de --accent-primary-rgb
+    // --accent-primary-rgb güncellenince :active / touch-focused / focusPulse
+    // hepsi seçilen renge geçer (var(...,255,215,0) fallback artık devreye girmez)
+    var r = document.documentElement;
     r.style.setProperty('--remote-focus-rgb', rgb);
     r.style.setProperty('--remote-focus-opacity-hi', hi);
     r.style.setProperty('--remote-focus-opacity-lo', lo);
+    // KRİTİK: accent-primary-rgb'yi de güncelle —
+    // dynStyle ve umitFocusMasterOverride her ikisi de bu değişkeni kullanıyor
+    r.style.setProperty('--accent-primary-rgb', rgb);
+    // accent-primary hex'i de güncelle (logo, border-color gibi hex bekleyenler için)
+    var rgbParts = rgb.split(',');
+    if (rgbParts.length === 3) {
+        var hexColor = '#' + rgbParts.map(function(v) {
+            return parseInt(v.trim(), 10).toString(16).padStart(2, '0');
+        }).join('');
+        r.style.setProperty('--accent-primary', hexColor);
+    }
 
-    // Bazı Android WebKit sürümlerinde @keyframes içinde CSS var() çalışmaz.
-    // Çözüm: keyframe'i gerçek rgba değerleriyle dinamik <style> olarak yeniden yaz.
-    let dynStyle = document.getElementById('_focusDynStyle');
+    // dynStyle — gerçek rgba değerleriyle keyframe yaz (CSS var() tarayıcı uyumu için)
+    var dynStyle = document.getElementById('_focusDynStyle');
     if (!dynStyle) {
         dynStyle = document.createElement('style');
         dynStyle.id = '_focusDynStyle';
         document.head.appendChild(dynStyle);
     }
-    dynStyle.textContent = `
-@keyframes focusPulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(${rgb}, ${hi}); }
-    50%       { box-shadow: 0 0 0 3px rgba(${rgb}, ${lo}); }
-}
-.channel-card:active,
-.header-btn:active,
-.m3u-pill:active,
-.cat-pill:active,
-.sidebar-category-pill:active,
-.category-list-item:active,
-.vod-episode-card:active,
-.recent-card:active {
-    box-shadow: 0 0 0 3px rgba(${rgb}, ${hi}) !important;
-}
-.player-action-btn.remote-focused,
-.player-action-btn.focused {
-    outline: 3px solid rgba(${rgb}, ${hi}) !important;
-    background: rgba(${rgb}, 0.18) !important;
-}
-`;
+    dynStyle.textContent =
+        '@keyframes focusPulse{' +
+            '0%,100%{box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ')}' +
+            '50%{box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + lo + ')}' +
+        '}' +
+        '.touch-focused{' +
+            'box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+            'transition:box-shadow 0ms !important;' +
+        '}' +
+        '.channel-card:active,.header-btn:active,.m3u-pill:active,.cat-pill:active,' +
+        '.sidebar-category-pill:active,.category-list-item:active,.vod-episode-card:active,.recent-card:active{' +
+            'box-shadow:0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+        '}' +
+        '.player-action-btn.remote-focused,.player-action-btn.focused{' +
+            'outline:3px solid rgba(var(--accent-primary-rgb,255,215,0),' + hi + ') !important;' +
+            'background:rgba(var(--accent-primary-rgb,255,215,0),0.18) !important;' +
+        '}';
 
-    // Önizleme kutusunu güncelle — animasyonu yeniden başlat
-    const prev = document.getElementById('focusPreviewBox');
+    // Halihazırda odakta olan elementlerin animasyonunu yeniden başlat
+    document.querySelectorAll('.remote-focused, .focused').forEach(function(el) {
+        var anim = el.style.animation || '';
+        if (anim.indexOf('focusPulse') !== -1) {
+            el.style.animation = 'none';
+            el.offsetWidth; // reflow
+            el.style.animation = anim;
+        }
+    });
+
+    // Önizleme kutusunu güncelle
+    var prev = document.getElementById('focusPreviewBox');
     if (prev) {
         prev.style.animation = 'none';
-        // eslint-disable-next-line no-unused-expressions
-        prev.offsetWidth; // reflow — animasyonu sıfırla
+        prev.offsetWidth;
         prev.style.animation = 'focusPulse 1.4s ease-in-out infinite';
     }
 }
@@ -28196,6 +28276,16 @@ function openControlSettingsModal() {
             }
             const op = opSlider ? Number(opSlider.value) : 70;
             applyFocusColorSettings({ focusColorRgb: rgb, focusOpacity: op });
+            // Aktif preset'i görsel olarak işaretle
+            document.querySelectorAll('.focus-color-preset').forEach(function(b) {
+                if (b === btn) {
+                    b.style.border = '2px solid rgba(255,255,255,0.9)';
+                    b.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.55)';
+                } else {
+                    b.style.border = '2px solid rgba(255,255,255,0.2)';
+                    b.style.boxShadow = '';
+                }
+            });
         };
     });
     
@@ -43506,9 +43596,9 @@ function updateSidebarFavIcons(channelName) {
             try {
                 if (!t.primary.startsWith('#')) {
                     r.style.setProperty('--focus-outline', t.primary);
-                    r.style.setProperty('--focus-bg',      'rgba(255,215,0,0.20)');
-                    r.style.setProperty('--focus-shadow',  'rgba(255,215,0,0.35)');
-                    r.style.setProperty('--focus-glow',    '0 0 20px rgba(255,215,0,0.35)');
+                    r.style.setProperty('--focus-bg',      'rgba(var(--accent-primary-rgb,255,215,0),0.20)');
+                    r.style.setProperty('--focus-shadow',  'rgba(var(--accent-primary-rgb,255,215,0),0.35)');
+                    r.style.setProperty('--focus-glow',    '0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.35)');
                 }
             } catch(e) {}
 
@@ -45164,7 +45254,11 @@ document.addEventListener('DOMContentLoaded', function() {
         case 'ArrowLeft':
             e.preventDefault();
 
-            if (current?.type === 'range') {
+            if (current?.classList?.contains('focus-color-preset')) {
+                // ⬅️ Renk preset — önceki preset'e git (veya önceki genel elemana)
+                state.remote.settingsIndex =
+                    Math.max(0, state.remote.settingsIndex - 1);
+            } else if (current?.type === 'range') {
                 // 🔧 SLIDER AZALT
                 const step = Number(current.step) || 5;
                 current.value =
@@ -45191,7 +45285,11 @@ document.addEventListener('DOMContentLoaded', function() {
         case 'ArrowRight':
             e.preventDefault();
 
-            if (current?.type === 'range') {
+            if (current?.classList?.contains('focus-color-preset')) {
+                // ➡️ Renk preset — sonraki preset'e git (veya sonraki genel elemana)
+                state.remote.settingsIndex =
+                    Math.min(items.length - 1, state.remote.settingsIndex + 1);
+            } else if (current?.type === 'range') {
                 // 🔧 SLIDER ARTIR
                 const step = Number(current.step) || 5;
                 current.value =
@@ -45373,11 +45471,22 @@ function handlePlayerRemote(e) {
             e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             e.preventDefault(); e.stopPropagation();
             if (_isLive) {
-                // Canli: Yukari/Asagi → kanal degistir, Sol/Sag → sarma
-                if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
-                if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
-                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
-                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                // Canli: Yukari/Asagi → kanal degistir
+                if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); }
+                if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); }
+                // Sağ ok → Sesli Arama (controls-hidden modunda da)
+                if (e.key === 'ArrowRight') {
+                    if (typeof window.openVoiceSearch === 'function') {
+                        window.openVoiceSearch();
+                        setTimeout(function() {
+                            if (typeof window.vsToggleListen === 'function' &&
+                                typeof _vsListening !== 'undefined' && !_vsListening) {
+                                window.vsToggleListen();
+                            }
+                        }, 350);
+                    }
+                }
+                if (e.key === 'ArrowLeft') { if (typeof seekBackward === 'function') seekBackward(); }
             } else if (_isSeries) {
                 // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
                 if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
@@ -45415,7 +45524,22 @@ function handlePlayerRemote(e) {
             if (_isLive) {
                 if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
                 if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
-                // Sol/Sağ → kontrolleri aç
+                // Sağ ok → Sesli Arama (kontroller kapalıyken kısa yol)
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault(); e.stopPropagation();
+                    if (typeof window.openVoiceSearch === 'function') {
+                        window.openVoiceSearch();
+                        // Modal açılır açılmaz dinlemeye başla
+                        setTimeout(function() {
+                            if (typeof window.vsToggleListen === 'function' &&
+                                typeof _vsListening !== 'undefined' && !_vsListening) {
+                                window.vsToggleListen();
+                            }
+                        }, 350);
+                    }
+                    return;
+                }
+                // Sol ok → kontrolleri aç (mevcut davranış)
                 state.remote.playerBoxIndex = 9; // btnPlayerList
                 state.remote.zone = 'player';
                 showControls(5000);
@@ -52259,6 +52383,155 @@ function togglePlayerInfoToast() {
     });
 })();
 </script>
+
+<!-- ══════════════════════════════════════════
+     NICKNAME MODAL
+     ══════════════════════════════════════════ -->
+<div id="nicknameModal" style="display:none;position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:linear-gradient(160deg,rgba(14,16,26,0.98),rgba(10,12,20,0.99));border:1px solid rgba(255,215,0,0.25);border-top:1px solid rgba(255,215,0,0.5);border-radius:18px;padding:32px 28px 24px;width:min(360px,90vw);box-shadow:0 0 60px rgba(255,170,0,0.1),0 30px 80px rgba(0,0,0,0.7);font-family:'Rajdhani',sans-serif;position:relative;">
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">👤</div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#FFD700;letter-spacing:2px;">KULLANICI ADI</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.5;">Telegram adını veya istediğin bir adı gir.<br>Sağ üstte görünecek.</div>
+        </div>
+        <input id="nicknameInput" type="text" maxlength="32" placeholder="Adını gir..." autocomplete="off"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:13px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;margin-bottom:16px;">
+        <div style="display:flex;gap:10px;">
+            <button id="nicknameSaveBtn" onclick="window._saveNickname()"
+                style="flex:1;background:linear-gradient(135deg,#FFD700,#E8A000);border:none;border-radius:10px;padding:13px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
+                KAYDET
+            </button>
+            <button id="nicknameSkipBtn" onclick="window._skipNickname()"
+                style="flex:0 0 auto;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px 18px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.5);cursor:pointer;">
+                Atla
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+/* ─────────────────────────────────────────────
+   Nickname akışı:
+   1. Login başarısı → fetchAndSaveNick() çağır
+   2. Worker /user-info → nick gelirse kaydet, bitti
+   3. Gelmezse / hata → mevcut değer sayısal ID mi? → modal göster
+   4. Kullanıcı yazar → kaydet & header güncelle
+   ───────────────────────────────────────────── */
+
+function _isNumericId(val) {
+    return val && /^\d{5,}$/.test(String(val).trim());
+}
+
+function _applyNick(nick) {
+    try { localStorage.setItem('umittv_tg_nick', nick); } catch(e) {}
+    // auth objesine de yaz
+    try {
+        var auth = JSON.parse(localStorage.getItem('umittv_auth') || '{}');
+        auth.nick = nick;
+        localStorage.setItem('umittv_auth', JSON.stringify(auth));
+    } catch(e) {}
+    if (typeof window.updateHeaderUsername === 'function') {
+        setTimeout(window.updateHeaderUsername, 100);
+    }
+}
+
+function _showNicknameModal() {
+    var modal = document.getElementById('nicknameModal');
+    if (!modal) return;
+    // Input'a mevcut değeri koy (sayısal değilse)
+    var cur = '';
+    try { cur = localStorage.getItem('umittv_tg_nick') || ''; } catch(e) {}
+    var input = document.getElementById('nicknameInput');
+    if (input) input.value = _isNumericId(cur) ? '' : cur;
+    modal.style.display = 'flex';
+    setTimeout(function() { if (input) input.focus(); }, 200);
+
+    // Enter ile kaydet
+    if (input && !input._nickBound) {
+        input._nickBound = true;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') window._saveNickname();
+        });
+    }
+}
+
+window._saveNickname = function() {
+    var input = document.getElementById('nicknameInput');
+    var val = (input ? input.value : '').trim();
+    if (!val || val.length < 2) {
+        if (input) { input.style.borderColor = '#e74c3c'; setTimeout(function(){ input.style.borderColor = 'rgba(255,215,0,0.3)'; }, 1000); }
+        return;
+    }
+    _applyNick(val);
+    var modal = document.getElementById('nicknameModal');
+    if (modal) modal.style.display = 'none';
+    if (typeof window.showToast === 'function') window.showToast('👤 Hoş geldin, ' + val + '!');
+};
+
+window._skipNickname = function() {
+    var modal = document.getElementById('nicknameModal');
+    if (modal) modal.style.display = 'none';
+};
+
+/* Worker'dan kullanıcı bilgisi çek */
+async function _fetchNickFromWorker(telegramId) {
+    try {
+        var WORKER = (typeof window !== 'undefined' && window.WORKER_URL) || 'https://kullanici.sadecenjoy.workers.dev';
+        // Önce /user-info dene
+        var r = await fetch(WORKER + '/user-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: String(telegramId) }),
+            signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
+        });
+        if (r.ok) {
+            var d = await r.json();
+            var nick = d.nick || d.first_name || d.username || d.name || '';
+            if (nick && nick.trim()) return nick.trim();
+        }
+    } catch(e) {}
+    return null;
+}
+
+/* Ana fonksiyon — login sonrası ve auto-login sonrası çağrılır */
+window.fetchAndSaveNick = async function(telegramId) {
+    if (!telegramId || String(telegramId) === 'SANS_KODU') return;
+
+    // Zaten iyi bir nick var mı?
+    var existing = '';
+    try { existing = localStorage.getItem('umittv_tg_nick') || ''; } catch(e) {}
+    var alreadyGood = existing && !_isNumericId(existing);
+
+    // 1. Worker'dan dene
+    var workerNick = await _fetchNickFromWorker(telegramId);
+    if (workerNick) {
+        _applyNick(workerNick);
+        return; // başarı — modal gösterme
+    }
+
+    // 2. Worker'dan gelmediyse ve iyi bir nick yoksa → modal
+    if (!alreadyGood) {
+        setTimeout(_showNicknameModal, 800); // login animasyonu bittikten sonra
+    }
+};
+
+/* Login başarı event'ini dinle */
+document.addEventListener('umittv_login_ok', function() {
+    setTimeout(function() {
+        var tgId = null;
+        try {
+            var auth = JSON.parse(localStorage.getItem('umittv_auth') || '{}');
+            tgId = auth.telegram_id || window.currentTelegramId;
+        } catch(e) { tgId = window.currentTelegramId; }
+        if (tgId) window.fetchAndSaveNick(String(tgId));
+    }, 1200);
+});
+
+})();
+</script>
 </body>
 </html>
 <script>
@@ -54019,7 +54292,45 @@ function isSansKoduLogin() {
     } catch(e) { return false; }
 }
 
-/* ── Profil adını al (yorumlar ve oda için) ── */
+/* ── Dokunmatik odak: touchstart → touch-focused class ── */
+(function() {
+    var TOUCH_SELECTORS = [
+        '.channel-card', '.header-btn', '.m3u-pill', '.cat-pill',
+        '.sidebar-category-pill', '.category-list-item', '.vod-episode-card',
+        '.recent-card', '.vod-play-btn', '.vod-continue-btn', '.vod-trailer-btn',
+        '.modal-back-btn', '.fav-toggle', '.continue-modal-btn',
+        '.player-action-btn', '[role="button"]'
+    ].join(',');
+
+    var _lastTouched = null;
+    var _clearTimer = null;
+
+    function _clearTouchFocus() {
+        if (_lastTouched) {
+            _lastTouched.classList.remove('touch-focused');
+            _lastTouched = null;
+        }
+        clearTimeout(_clearTimer);
+    }
+
+    document.addEventListener('touchstart', function(e) {
+        var el = e.target && e.target.closest ? e.target.closest(TOUCH_SELECTORS) : null;
+        if (!el) return;
+        _clearTouchFocus();
+        el.classList.add('touch-focused');
+        _lastTouched = el;
+        // 350ms sonra kaldır (tıklama tamamlanmış olur)
+        _clearTimer = setTimeout(_clearTouchFocus, 350);
+    }, { passive: true });
+
+    document.addEventListener('touchend', function() {
+        // Biraz bekle, click fired olsun, sonra kaldır
+        clearTimeout(_clearTimer);
+        _clearTimer = setTimeout(_clearTouchFocus, 200);
+    }, { passive: true });
+
+    document.addEventListener('touchcancel', _clearTouchFocus, { passive: true });
+})();
 window.getProfileDisplayName = function() {
     const prof = profGet();
     if (prof.name && prof.name.trim()) return prof.name.trim();
@@ -54029,7 +54340,7 @@ window.getProfileDisplayName = function() {
         if (tgNick && tgNick.trim()) return tgNick.trim();
     } catch(e) {}
     const tgId = getTelegramId();
-    if (tgId && tgId !== 'SANS_KODU') return 'Kullanici_' + tgId;
+    if (tgId && tgId !== 'SANS_KODU') return 'TG_' + tgId;
     // Şans kodu kullanıcısı isim girmediyse
     return localStorage.getItem('umittv_guest_uid') || 'Misafir';
 };
@@ -68716,10 +69027,24 @@ window.openVoiceSearch = function () {
     }
     _vsUpdateFocus();
     if (typeof playKeySound === 'function') playKeySound('open');
+
+    /* ── 10 sn sonra otomatik kapat ── */
+    if (window._vsAutoCloseTimer) clearTimeout(window._vsAutoCloseTimer);
+    window._vsAutoCloseTimer = setTimeout(function () {
+        if (typeof _vsOpen !== 'undefined' && _vsOpen) {
+            if (typeof window.closeVoiceSearch === 'function') window.closeVoiceSearch();
+        }
+        window._vsAutoCloseTimer = null;
+    }, 10000);
 };
 
 /* ── Modal kapat ── */
 window.closeVoiceSearch = function () {
+    /* Auto-close timer'ı iptal et */
+    if (window._vsAutoCloseTimer) {
+        clearTimeout(window._vsAutoCloseTimer);
+        window._vsAutoCloseTimer = null;
+    }
     _vsStopListen();
     var modal = document.getElementById('voiceSearchModal');
     if (modal) modal.classList.remove('vs-open');
@@ -69478,6 +69803,289 @@ window.umitSendPush      = window.umitSendPush;
 })(); /* ÜmitTV v3.9 — Voice + Push */
 </script>
 
+<style>
+/* ── Player Mikrofon Butonu ── */
+#btnPlayerVoiceSearch {
+    position: relative;
+    overflow: visible !important;
+}
+#btnPlayerVoiceSearch .material-symbols-outlined {
+    transition: color 200ms ease;
+}
+/* Aktif dinleme: ikon kırmızı + nabız */
+#btnPlayerVoiceSearch.pvs-listening .material-symbols-outlined {
+    color: #f44336 !important;
+    animation: pvsPulse 0.9s ease-in-out infinite !important;
+}
+@keyframes pvsPulse {
+    0%, 100% { transform: scale(1);    opacity: 1;   }
+    50%       { transform: scale(1.22); opacity: 0.75; }
+}
+/* Ses arama açıkken butona vurgu */
+#btnPlayerVoiceSearch.pvs-open {
+    outline: 2px solid rgba(var(--accent-primary-rgb,220,0,0), 0.75) !important;
+    background: rgba(var(--accent-primary-rgb,220,0,0), 0.12) !important;
+}
+/* ── Sesli Arama ipucu sarmalayıcı ── */
+#playerVsHintWrap {
+    display: none;
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 9000;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+#playerVsHintWrap.pvsh-show  { display: flex; opacity: 1; }
+#playerVsHintWrap.pvsh-hiding { opacity: 0; }
+
+/* ── Bilgilendirme balonu (üstte) ── */
+#playerVsInfoBalloon {
+    background: rgba(10,10,18,0.92);
+    border: 1px solid rgba(255,215,0,0.28);
+    border-radius: 12px;
+    padding: 9px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 190px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+    position: relative;
+}
+/* Balonun alt ok işareti */
+#playerVsInfoBalloon::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    right: 22px;
+    width: 13px;
+    height: 7px;
+    background: rgba(10,10,18,0.92);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    border-left: 1px solid rgba(255,215,0,0.28);
+    border-right: 1px solid rgba(255,215,0,0.28);
+}
+.pvsh-balloon-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #FFD700;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.pvsh-balloon-desc {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(255,255,255,0.65);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2px;
+}
+.pvsh-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    flex-shrink: 0;
+    gap: 3px;
+}
+
+/* ── Alt kısayol çubuğu ── */
+#playerVsHint {
+    background: rgba(0,0,0,0.75);
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    padding: 5px 12px 5px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.13);
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.4px;
+    gap: 6px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+#playerVsHint .pvsh-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+}
+</style>
+
+<!-- Player sesli arama ipucu — canlı yayında kontroller gizliyken görünür (1 kere) -->
+<div id="playerVsHintWrap">
+
+    <!-- Bilgilendirme balonu -->
+    <div id="playerVsInfoBalloon">
+        <div class="pvsh-balloon-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Sesli Arama
+        </div>
+        <div class="pvsh-balloon-desc">
+            <span class="pvsh-kbd">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Sağ
+            </span>
+            tuşu sesli aramayı açar
+        </div>
+    </div>
+
+    <!-- Alt kısayol rozeti -->
+    <div id="playerVsHint">
+        <span class="pvsh-key">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Sesli Arama
+    </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   PLAYER MİKROFON BUTONU — playerVoiceSearchTap()
+   • Butona tıklayınca / kumandada Enter'a basınca çağrılır
+   • Modal açılır, hemen dinlemeye başlar
+   • Modal kapanınca player'a geri döner, butondaki animasyon durur
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+
+    /* ── Buton durumu yansıt ── */
+    function _pvsSync() {
+        var btn  = document.getElementById('btnPlayerVoiceSearch');
+        var icon = document.getElementById('playerVsIcon');
+        if (!btn) return;
+
+        var isOpen      = (typeof _vsOpen      !== 'undefined') && _vsOpen;
+        var isListening = (typeof _vsListening !== 'undefined') && _vsListening;
+
+        if (isListening) {
+            btn.classList.add('pvs-listening');
+            btn.classList.add('pvs-open');
+            if (icon) icon.textContent = 'mic';
+        } else if (isOpen) {
+            btn.classList.remove('pvs-listening');
+            btn.classList.add('pvs-open');
+            if (icon) icon.textContent = 'mic';
+        } else {
+            btn.classList.remove('pvs-listening', 'pvs-open');
+            if (icon) icon.textContent = 'mic';
+        }
+    }
+
+    /* ── İpucu göster/gizle — sadece 1 kere, 10sn ── */
+    var _pvshShown = false;      // bu oturumda gösterildi mi
+    var _pvshTimer = null;       // 10sn kapanma timer
+    var _pvshHideTimer = null;   // fade-out gecikmesi
+
+    function _pvsHintSync() {
+        if (_pvshShown) return;  // zaten gösterildiyse bir daha bakma
+        var hint = document.getElementById('playerVsHintWrap');
+        if (!hint) return;
+        var isLive = !!(window.state && window.state.player && window.state.player.isLiveStream);
+        var pc     = document.getElementById('playerContainer');
+        var shown  = pc && pc.classList.contains('show-controls');
+        var hidden = pc && window._controlsHidden;
+        // Koşul: canlı yayın + kontroller kapalı + _controlsHidden değil
+        if (isLive && !shown && !hidden) {
+            _pvshShown = true;  // bir daha gösterme
+            hint.classList.add('pvsh-show');
+            // 10sn sonra fade-out ile kapat
+            _pvshTimer = setTimeout(function () {
+                hint.classList.add('pvsh-hiding');
+                _pvshHideTimer = setTimeout(function () {
+                    hint.classList.remove('pvsh-show', 'pvsh-hiding');
+                }, 400);
+            }, 10000);
+        }
+    }
+
+    /* ── Periyodik senkronizasyon (250ms) ── */
+    setInterval(function () {
+        _pvsSync();
+        _pvsHintSync();
+    }, 250);
+
+    /* ── Tap handler — butona tıklayınca/Enter'da ── */
+    window.playerVoiceSearchTap = function (e) {
+        // Event leak'i önle
+        if (e && typeof e.stopPropagation === 'function') {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        var isOpen = (typeof _vsOpen !== 'undefined') && _vsOpen;
+
+        if (!isOpen) {
+            /* Modal kapalı → aç ve hemen dinlemeye başla */
+            if (typeof window.openVoiceSearch === 'function') {
+                window.openVoiceSearch();
+            }
+            setTimeout(function () {
+                var isListening = (typeof _vsListening !== 'undefined') && _vsListening;
+                if (typeof window.vsToggleListen === 'function' && !isListening) {
+                    window.vsToggleListen();
+                }
+                _pvsSync();
+            }, 300);
+        } else {
+            /* Modal açık → kapat */
+            if (typeof window.closeVoiceSearch === 'function') {
+                window.closeVoiceSearch();
+            }
+            setTimeout(_pvsSync, 100);
+        }
+        if (typeof playKeySound === 'function') playKeySound('click');
+    };
+
+    /* ── Voice Search kapanınca player focus geri dön ── */
+    var _origClose = window.closeVoiceSearch;
+    window.closeVoiceSearch = function () {
+        if (typeof _origClose === 'function') _origClose();
+        /* Eğer player açıksa zone'u player'a döndür */
+        setTimeout(function () {
+            _pvsSync();
+            var pc = document.getElementById('playerContainer');
+            if (pc && pc.style.display !== 'none') {
+                if (window.state && window.state.remote) {
+                    window.state.remote.zone = 'player';
+                    if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                }
+            }
+        }, 80);
+    };
+
+    /* ── DOM hazır olunca butona ek erişilebilirlik ekle ── */
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('btnPlayerVoiceSearch');
+        if (btn) {
+            btn.setAttribute('tabindex', '0');
+            btn.setAttribute('aria-label', 'Sesli Arama');
+        }
+    });
+
+})();
+</script>
+
 <!-- ═══════════════════════════════════════════════════════════════
      ALT KANAL OVERLAY v1.0
      Kanal 12 saniyede açılmazsa aynı gruptaki alternatifleri göster
@@ -70034,3 +70642,305 @@ window.UmitM3USync = {
 
 })();
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ÜMİT MOD — KUMANDA ODAK RENGİ: TEK STANDART (ŞEFFAF KIRMIZI)
+     Bu blok, dosyanın her yerine dağılmış olan eski odak (remote-focused/
+     focused/dpad-focused vb.) renk kurallarının (sarı/altın/tema rengi,
+     glow, gradient, text-shadow vb.) ÜZERİNE yazılır ve hepsini TEK
+     standart kırmızı-şeffaf göstergeye indirger. Renk ve şeffaflık,
+     Ayarlar > Kumanda Ayarları panelindeki "Odak Rengi" seçicisinden
+     (#focusColorPicker, #focusOpacitySlider) canlı değiştirilebilir —
+     bu seçiciler zaten --remote-focus-rgb / --remote-focus-opacity-hi /
+     --remote-focus-opacity-lo CSS değişkenlerini güncelliyor.
+     ════════════════════════════════════════════════════════════════ -->
+<style id="umitFocusMasterOverride">
+
+/* ── 1) TÜM ODAK GÖSTERGELERİ — TEK STANDART ──
+   Eski: çeşitli sarı/altın border-color, background, box-shadow, filter,
+   text-shadow kombinasyonları. Yeni: yalnızca ince kırmızı-şeffaf
+   outline + hafif box-shadow halo. Arka plan/kenarlık rengi olarak
+   eskiden kalan tema-rengi izleri sıfırlanır. */
+#btnPlayerVoiceSearch.remote-focused,
+#btnClearAllContinue.remote-focused,
+#btnClearRecentChannels.remote-focused,
+#btnCloseEmbed.remote-focused,
+#btnEpg.remote-focused,
+#btnPasswordBack.remote-focused,
+#btnPasswordCancel.remote-focused,
+#btnPasswordConfirm.remote-focused,
+#btnProfile.remote-focused,
+#btnQsnBack.remote-focused,
+#btnQsnCancel.remote-focused,
+#btnQsnConfirm.remote-focused,
+#btnQsnFirst.remote-focused,
+#btnQsnLast.remote-focused,
+#btnQsnMinus.remote-focused,
+#btnQsnPlus.remote-focused,
+#btnRefresh.remote-focused,
+#btnResetConfirmBack.remote-focused,
+#btnSortBackupBack.remote-focused,
+#btnSortBackupCancel.remote-focused,
+#btnSortBackupConfirm.remote-focused,
+#btnVoiceSearch.remote-focused,
+#epgModalCloseBtn.epg-remote-focused,
+#epgModalCloseBtn.remote-focused,
+#epgNoData.remote-focused,
+#exitConfirmNo.remote-focused,
+#exitConfirmYes.remote-focused,
+#loginOverlay .login-focusable.dpad-focused,
+#loginOverlay input.login-focusable.dpad-focused,
+#passwordInput.remote-focused,
+#progressBarContainer.remote-focused,
+#qsnInput.remote-focused,
+#rememberPassword.remote-focused,
+#resetConfirmCancel.remote-focused,
+#resetConfirmOk.remote-focused,
+#searchInput.remote-focused,
+#searchInput.search-remote-focused,
+#sidebarChannelsList li.remote-focused,
+#sidebarClearBtn.remote-focused,
+#sortBackupCodeInput.remote-focused,
+#speedCloseBtn.dpad-focused,
+#speedResetBtn.dpad-focused,
+#umkGoTop.umk-focused,
+#vodInfoScroll.remote-focused,
+#vodTrailerCloseBig.remote-focused,
+#vodTrailerStopBtn.remote-focused,
+.alt-item.remote-focused,
+.auto-next-btn.focused,
+.cat-hide-footer-btn.remote-focused,
+.cat-hide-row.remote-focused,
+.cat-pill.focused,
+.cat-pill.remote-focused,
+.category-list-item.remote-focused,
+.category-manage-btn.remote-focused,
+.category-tab.remote-focused,
+.channel-card.focused,
+.channel-card.remote-focused,
+.channel-card[data-is-series="true"].focused,
+.channel-card[data-is-series="true"].remote-focused,
+.channel-card[data-is-vod="false"].focused,
+.channel-card[data-is-vod="false"].remote-focused,
+.channel-card[data-is-vod="true"].focused,
+.channel-card[data-is-vod="true"].remote-focused,
+.channel-fav-btn.remote-focused,
+.channel-list-item.remote-focused,
+.chtimer-fav-pill.remote-focused,
+.chtimer-stepper.remote-focused,
+.continue-action-btn.remote-focused,
+.continue-card.remote-focused,
+.continue-modal-btn.continue.remote-focused,
+.continue-modal-btn.delete.remote-focused,
+.continue-modal-btn.remote-focused,
+.continue-modal-btn.start.remote-focused,
+.continue-modal-btn.watch-later.remote-focused,
+.continue-options-btn.remote-focused,
+.cw-clear-btn.remote-focused,
+.epg-alarm-item.remote-focused,
+.epg-btn.remote-focused,
+.epg-modal-close.epg-remote-focused,
+.epg-modal-close.remote-focused,
+.epg-modal-header.epg-remote-focused,
+.epg-modal-header.remote-focused,
+.epg-program-item.epg-remote-focused,
+.epg-program-item.remote-focused,
+.fav-toggle.remote-focused,
+.filter-input.remote-focused,
+.header-btn.focused,
+.header-btn.remote-focused,
+.hp-card.dead.remote-focused,
+.hp-card.remote-focused,
+.hp-cat-tab.remote-focused,
+.hp-chip.remote-focused,
+.hp-limit-btn.remote-focused,
+.hp-pause-btn.remote-focused,
+.hp-start-btn.remote-focused,
+.hp-stop-btn.remote-focused,
+.icon-btn.remote-focused,
+.live-btn.remote-focused,
+.login-btn-secondary.dpad-focused,
+.login-btn-secondary.focused,
+.login-btn.dpad-focused,
+.login-btn.focused,
+.login-focusable.dpad-focused,
+.login-input.focused,
+.m3u-card.remote-focused,
+.m3u-pill.focused,
+.m3u-pill.remote-focused,
+.modal-back-btn.remote-focused,
+.modal-back-btn.search-remote-focused,
+.player-action-btn.btn-active.remote-focused,
+.player-action-btn.focused,
+.player-action-btn.remote-focused,
+.pp-btn-no.remote-focused,
+.pp-btn-yes.remote-focused,
+.prof-dpad-focused,
+.profile-save-btn.dpad-focused,
+.profile-save-btn.remote-focused,
+.qm-item.remote-focused,
+.recent-card.remote-focused,
+.search-result-item.remote-focused,
+.search-result-item.search-remote-focused,
+.season-control-btn.remote-focused,
+.seek-amt-btn.dpad-focused,
+.settings-btn.remote-focused,
+.sidebar-category-pill.remote-focused,
+.sidebar-channel-item.remote-focused,
+.sort-dpad-focused,
+.sp-pm-btn.dpad-focused,
+.sub-adj-btn.sub-dpad-focused,
+.theme-item.remote-focused,
+.toggle-container.remote-focused,
+.trailer-play-overlay.remote-focused,
+.umit-health-row.remote-focused,
+.umit-panel-btn.primary.remote-focused,
+.umit-panel-btn.remote-focused,
+.umit-panel-select.remote-focused,
+.upv-close.remote-focused,
+.upv-close.upv-dpad-focused,
+.upv-dpad-item.remote-focused,
+.upv-dpad-item.upv-dpad-focused,
+.vhs-slide.remote-focused,
+.vod-continue-btn.remote-focused,
+.vod-modal-close.remote-focused,
+.vod-play-btn.remote-focused,
+.vod-season-btn.focused,
+.vod-season-btn.remote-focused,
+.vod-season-btn.tv-focused,
+.vod-trailer-btn.remote-focused,
+.vod-trailer-close.remote-focused,
+.vod-trailer-volume.remote-focused,
+.vs-close-btn.remote-focused,
+.vs-input.remote-focused,
+.vs-mic-btn.remote-focused,
+.vs-result-item.remote-focused,
+.vs-search-btn.remote-focused,
+.wp-remote-focus.remote-focused,
+.wp-room-item.remote-focused,
+input.prof-dpad-focused,
+select.sort-dpad-focused,
+.recent-card.remote-focused,
+.hp-card.remote-focused {
+    outline: 3px solid rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
+    background-color: rgba(var(--accent-primary-rgb,255,215,0), 0.10) !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    color: inherit !important;
+    filter: none !important;
+    text-shadow: none !important;
+    -webkit-text-stroke: initial !important;
+}
+
+/* ── 2) Kart içi başlık/etiket renkleri — eski sarı vurguyu sıfırla ── */
+.channel-card.remote-focused .channel-title,
+.channel-card.focused .channel-title,
+.channel-list-item.remote-focused .channel-group,
+.channel-list-item.remote-focused .channel-number,
+.channel-list-item.remote-focused .sidebar-epg-time,
+.channel-list-item.remote-focused .sidebar-epg-next-title,
+.channel-list-item.remote-focused .sidebar-epg-next-dot,
+.channel-list-item.remote-focused .channel-fav-btn span,
+.channel-list-item.remote-focused .sidebar-epg-live-dot,
+.channel-card[data-is-vod="true"].remote-focused .channel-title,
+.channel-card[data-is-vod="true"].focused .channel-title,
+.channel-card[data-is-vod="true"].remote-focused .vod-title,
+.channel-card[data-is-vod="true"].focused .vod-title,
+.channel-card[data-is-vod="false"].remote-focused .channel-title,
+.channel-card[data-is-vod="false"].focused .channel-title,
+.search-result-item.remote-focused .fav-icon,
+.vhs-slide.remote-focused .vhs-rank-num {
+    color: inherit !important;
+    background: rgba(0,0,0,0.55) !important;
+    text-shadow: none !important;
+    -webkit-text-stroke: initial !important;
+    filter: none !important;
+}
+/* Episode kart numarası — accent rengi koru */
+.vod-episode-card.focused .vod-episode-number,
+.vod-episode-card.remote-focused .vod-episode-number {
+    color: var(--accent-primary, #FFD700) !important;
+    text-shadow: none !important;
+}
+
+/* ── 3) Dekoratif odak okları (◀ ▶) ve VHS poster çerçevesi — kapat ── */
+#exitConfirmNo.remote-focused::after,
+#exitConfirmYes.remote-focused::after {
+    display: none !important;
+}
+.vhs-slide.remote-focused .vhs-poster-wrap {
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+    box-shadow: 0 0 0 2.5px rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+}
+
+/* ── 4) Toggle anahtarı odak göstergesi ── */
+.toggle-container.remote-focused .toggle-slider {
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
+}
+
+/* ── 5) TVBox modu — eski sabit sarı odak kuralları da ezilir ── */
+body.tvbox-mode .channel-card.remote-focused,
+body.tvbox-mode .channel-card.focused,
+body.tvbox-mode .header-btn.remote-focused,
+body.tvbox-mode .player-action-btn.remote-focused,
+body.tvbox-mode .m3u-pill.remote-focused,
+body.tvbox-mode .cat-pill.remote-focused,
+body.tvbox-mode .sidebar-category-pill.remote-focused,
+body.tvbox-mode .category-list-item.remote-focused,
+body.tvbox-mode .vod-season-btn.remote-focused,
+body.tvbox-mode .modal-back-btn.remote-focused,
+body.tvbox-mode .fav-toggle.remote-focused,
+body.tvbox-mode [role="button"].remote-focused {
+    outline: 3px solid rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 14px rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
+    background-color: rgba(var(--accent-primary-rgb,255,215,0), 0.10) !important;
+    border-color: transparent !important;
+    filter: none !important;
+}
+/* TVBox episode kart — accent rengi */
+body.tvbox-mode .vod-episode-card.remote-focused,
+body.tvbox-mode .vod-episode-card.focused {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: rgba(var(--accent-primary-rgb,255,215,0), 0.15) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    filter: none !important;
+}
+body.tvbox-mode #exitConfirmNo.remote-focused,
+body.tvbox-mode #exitConfirmYes.remote-focused {
+    outline: 3px solid rgba(var(--accent-primary-rgb,255,215,0), 0.70) !important;
+    border-color: transparent !important;
+    background-color: rgba(var(--accent-primary-rgb,255,215,0), 0.12) !important;
+}
+body.tvbox-mode #exitConfirmYes.remote-focused::after {
+    display: none !important;
+}
+
+/* ── 6) focusPulse animasyonunu standart hale uygula (yoksa ekle) ── */
+.recent-card.remote-focused,
+.hp-card.remote-focused,
+.vod-episode-card.remote-focused,
+.vod-episode-card.focused,
+.channel-card.remote-focused,
+.channel-card.focused {
+    animation: focusPulse 1.4s ease-in-out infinite !important;
+}
+
+/* ── 7) SOL ÜST LOGO — seçilen tema renginde, her modda statik ──
+   (applyTheme() içinde set edilen --accent-primary / --accent-primary-rgb
+   kullanılır; tema değiştikçe otomatik güncellenir.) */
+.neon-logo-img {
+    filter:
+        drop-shadow(0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
+        drop-shadow(0 0 9px rgba(var(--accent-primary-rgb,255,215,0), 0.45))
+        brightness(1.08) !important;
+}
+body.tvbox-mode .neon-logo-img {
+    animation: tvboxLogoPulse 2.4s ease-in-out infinite !important;
+}
+
+</style>

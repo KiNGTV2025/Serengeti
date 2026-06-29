@@ -69209,9 +69209,6 @@ document.addEventListener('keydown', function (e) {
         kc === 220 ||   /* Hiremco / bazı STB */
         kc === 221 ||   /* Alternatif STB */
         kc === 217 ||   /* Eski Android KEYCODE_SEARCH */
-        kc === 84  ||   /* MiBox / Xiaomi kumanda mic tuşu */
-        kc === 179 ||   /* MiBox alternatif mic keyCode */
-        kc === 83  ||   /* MiBox bazı firmware S tuşu */
         k === 'MicrophoneToggle' ||
         k === 'VoiceSearch'     ||
         k === 'Search'          ||
@@ -69244,7 +69241,7 @@ document.addEventListener('keydown', function (e) {
 /* ── Tuş tespiti yardımcısı: konsoldan hangi kodu gönderdiğini görmek için ──
    Kullanım: window._vsMicDebug = true → kumandanın mic tuşuna bas → konsola bakar
 ── */
-window._vsMicDebug = true; /* MiBox keyCode tespiti için açık — tespit sonrası false yap */
+window._vsMicDebug = false;
 document.addEventListener('keydown', function (e) {
     if (!window._vsMicDebug) return;
     console.log('[ÜmitTV MicDebug] key:', e.key, '| keyCode:', e.keyCode, '| code:', e.code);

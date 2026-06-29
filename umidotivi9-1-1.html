@@ -44344,10 +44344,20 @@ function deleteContinueWatchingRecord(name) {
                     e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault(); e.stopPropagation();
                     if (_isLive) {
-                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → EPG
+                        // Canlı: Yukarı/Aşağı → kanal değiştir, Sol → Kanal Listesi, Sağ → Sesli Arama
                         if (e.key === 'ArrowUp')    { if (typeof nextCh === 'function') nextCh(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevCh === 'function') prevCh(); }
-                        if (e.key === 'ArrowRight') { if (typeof openEpgModal === 'function') openEpgModal(); }
+                        if (e.key === 'ArrowRight') {
+                            if (typeof window.openVoiceSearch === 'function') {
+                                window.openVoiceSearch();
+                                setTimeout(function() {
+                                    if (typeof window.vsToggleListen === 'function' &&
+                                        !window._vsListening) {
+                                        window.vsToggleListen();
+                                    }
+                                }, 400);
+                            }
+                        }
                         if (e.key === 'ArrowLeft')  { if (typeof openSidebar === 'function') openSidebar(); }
                     } else if (_isSeries) {
                         // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
@@ -44402,9 +44412,21 @@ function deleteContinueWatchingRecord(name) {
                         // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
                         return;
                     }
-                    // Canlı: Yukarı/Aşağı → kanal değiştir, Sol/Sağ/Enter → kontrolleri aç
+                    // Canlı: Yukarı/Aşağı → kanal değiştir, Sağ → Sesli Arama, Sol/Enter → kontrolleri aç
                     if (e.key === 'ArrowUp')   { if (typeof nextCh === 'function') nextCh(); return; }
                     if (e.key === 'ArrowDown') { if (typeof prevCh === 'function') prevCh(); return; }
+                    if (e.key === 'ArrowRight') {
+                        if (typeof window.openVoiceSearch === 'function') {
+                            window.openVoiceSearch();
+                            setTimeout(function() {
+                                if (typeof window.vsToggleListen === 'function' &&
+                                    !window._vsListening) {
+                                    window.vsToggleListen();
+                                }
+                            }, 400);
+                        }
+                        return;
+                    }
                     state.remote.playerBoxIndex = 9; // btnPlayerList
                     state.remote.zone = 'player';
                     showControls(5000);

@@ -26997,9 +26997,10 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             } else if (absDX > 60 && absDX > absDY * 1.5) {
                 // Yatay swipe
                 if (_isLive) {
-                    // Canlı: sağa → EPG, sola → Kanal Listesi
-                    if (dX > 0) { if (typeof openEpgModal === 'function') openEpgModal(); }
-                    else        { if (typeof openSidebar === 'function') openSidebar(); }
+                    // Canlı: sağa → Sesli Arama, sola → Kanal Listesi
+                    if (dX > 0) {
+                        if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
+                    } else { if (typeof openSidebar === 'function') openSidebar(); }
                 } else {
                     // Dizi/Film: sağa → ileri sar, sola → geri sar
                     if (dX > 0) { if (typeof seekForward  === 'function') seekForward(); }
@@ -27046,6 +27047,27 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             return;
         }
         
+        // ── Yatay Swipe (uzun süre, hareket var): canlıda sağa → Sesli Arama ──
+        if (!isSwiping && !isProgressBarTouch && !isControlsBoxTouch) {
+            const _endX2 = e.changedTouches[0] ? e.changedTouches[0].clientX : touchStartX;
+            const _endY2 = e.changedTouches[0] ? e.changedTouches[0].clientY : touchStartY;
+            const _dX2 = _endX2 - touchStartX;
+            const _dY2 = _endY2 - touchStartY;
+            const _absDX2 = Math.abs(_dX2);
+            const _absDY2 = Math.abs(_dY2);
+            if (_absDX2 > 60 && _absDX2 > _absDY2 * 1.5 && state.player.isLiveStream) {
+                if (_dX2 > 0) {
+                    // Sağa swipe → Sesli Arama
+                    if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
+                } else {
+                    // Sola swipe → Kanal Listesi
+                    if (typeof openSidebar === 'function') openSidebar();
+                }
+                isSwiping = false; swipeDirection = null; currentTouchZone = null;
+                return;
+            }
+        }
+
         if (touchDuration < 200 && !isSwiping && !isProgressBarTouch && !isControlsBoxTouch) {
             // ── Çift Dokunma Seek Tespiti ──
             const _zone = currentTouchZone;
@@ -31061,6 +31083,8 @@ function showNoConfigUI() {
             if (typeof renderCats === 'function') renderCats();
             window._channelsFullyLoaded = true;
             if (typeof renderChannels === 'function') renderChannels();
+            // Sesli arama index'ini önceden hazırla — açılışta kasma önlemi (MiBox)
+            setTimeout(function() { if (typeof _vsBuildIndex === 'function') _vsBuildIndex(); }, 1500);
             if (typeof updateChannelCount === 'function') updateChannelCount(state.filtered.length);
             if (typeof renderM3USelector === 'function') renderM3USelector();
             const _actTitle = document.getElementById('activeCategoryTitle');
@@ -42530,6 +42554,9 @@ function closePlayer() {
                 var _allCards = document.querySelectorAll('#channelsGrid .channel-card:not(.continue-card-in-grid)');
                 _activeCard = _allCards[state.remote.index] || null;
             }
+            // Player butonları satırının scroll pozisyonunu sıfırla (X butonu'nda kayma önlemi)
+            var _pcBox = document.getElementById('playerControlsBox');
+            if (_pcBox) _pcBox.scrollLeft = 0;
             if (_activeCard) _activeCard.scrollIntoView({ block: 'nearest', behavior: 'instant' });
         } catch(e) {}
     }, 80);
@@ -44350,12 +44377,6 @@ function deleteContinueWatchingRecord(name) {
                         if (e.key === 'ArrowRight') {
                             if (typeof window.openVoiceSearch === 'function') {
                                 window.openVoiceSearch();
-                                setTimeout(function() {
-                                    if (typeof window.vsToggleListen === 'function' &&
-                                        !window._vsListening) {
-                                        window.vsToggleListen();
-                                    }
-                                }, 400);
                             }
                         }
                         if (e.key === 'ArrowLeft')  { if (typeof openSidebar === 'function') openSidebar(); }
@@ -44418,12 +44439,6 @@ function deleteContinueWatchingRecord(name) {
                     if (e.key === 'ArrowRight') {
                         if (typeof window.openVoiceSearch === 'function') {
                             window.openVoiceSearch();
-                            setTimeout(function() {
-                                if (typeof window.vsToggleListen === 'function' &&
-                                    !window._vsListening) {
-                                    window.vsToggleListen();
-                                }
-                            }, 400);
                         }
                         return;
                     }
@@ -45514,12 +45529,6 @@ function handlePlayerRemote(e) {
                 if (e.key === 'ArrowRight') {
                     if (typeof window.openVoiceSearch === 'function') {
                         window.openVoiceSearch();
-                        setTimeout(function() {
-                            if (typeof window.vsToggleListen === 'function' &&
-                                !window._vsListening) {
-                                window.vsToggleListen();
-                            }
-                        }, 400);
                     }
                     return;
                 }
@@ -45566,13 +45575,6 @@ function handlePlayerRemote(e) {
                     e.preventDefault(); e.stopPropagation();
                     if (typeof window.openVoiceSearch === 'function') {
                         window.openVoiceSearch();
-                        // Modal açılır açılmaz dinlemeye başla
-                        setTimeout(function() {
-                            if (typeof window.vsToggleListen === 'function' &&
-                                !window._vsListening) {
-                                window.vsToggleListen();
-                            }
-                        }, 400);
                     }
                     return;
                 }
@@ -69107,19 +69109,25 @@ function _injectVoiceBtn() {
 window.openVoiceSearch = function () {
     var modal = document.getElementById('voiceSearchModal');
     if (!modal) return;
+    // Zaten açıksa tekrar işlem yapma — donma önlemi
+    if (_vsOpen) {
+        if (!_vsListening) _vsStartListen();
+        return;
+    }
     _vsOpen = true;
     _vsFocusZone = 'mic';
     _vsFocusIdx  = 0;
     modal.classList.add('vs-open');
     _vsRenderResults([]);
     document.getElementById('vsTextInput').value = '';
-    document.getElementById('vsStatus').textContent = 'Mikrofona bas ve kanal adını söyle';
-    document.getElementById('vsStatus').className = 'vs-status';
+    document.getElementById('vsStatus').textContent = 'Dinliyorum...';
+    document.getElementById('vsStatus').className = 'vs-status vs-active';
     document.getElementById('vsMicBtn').className = 'vs-mic-btn';
 
-    // Index'i şimdi hazırla — arama anında gecikme olmasın
-    _vsIndexedForFiltered = null; // zorla yenile
-    setTimeout(_vsBuildIndex, 0);
+    // Index önceden hazırsa tekrar yapma — kasma önlemi (MiBox)
+    if (!_vsChannelIndex || _vsIndexedForFiltered !== (window.state && window.state.filtered)) {
+        _vsBuildIndex();
+    }
 
     /* Remote zone kaydet */
     if (window.state && window.state.remote) {
@@ -69129,14 +69137,17 @@ window.openVoiceSearch = function () {
     _vsUpdateFocus();
     if (typeof playKeySound === 'function') playKeySound('open');
 
-    /* ── 10 sn sonra otomatik kapat ── */
+    /* ── Otomatik dinlemeye başla — DOM render sonrası (MiBox crash önlemi) ── */
+    setTimeout(function() { if (!_vsListening) _vsStartListen(); }, 150);
+
+    /* ── 12 sn sonra otomatik kapat ── */
     if (window._vsAutoCloseTimer) clearTimeout(window._vsAutoCloseTimer);
     window._vsAutoCloseTimer = setTimeout(function () {
         if (typeof _vsOpen !== 'undefined' && _vsOpen) {
             if (typeof window.closeVoiceSearch === 'function') window.closeVoiceSearch();
         }
         window._vsAutoCloseTimer = null;
-    }, 10000);
+    }, 12000);
 };
 
 /* ── Modal kapat ── */
@@ -69167,11 +69178,16 @@ window.vsToggleListen = function () {
 
 function _vsStartListen() {
     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var micBtn = document.getElementById('vsMicBtn');
+    var status = document.getElementById('vsStatus');
     if (!SpeechRecognition) {
-        document.getElementById('vsStatus').textContent = '⚠ Tarayıcınız sesli aramayı desteklemiyor';
+        if (status) status.textContent = '⚠ Tarayıcınız sesli aramayı desteklemiyor';
         if (typeof showToast === 'function') showToast('⚠ Sesli arama bu tarayıcıda desteklenmiyor', 'error');
         return;
     }
+
+    // Önceki oturumu temizle
+    if (_vsRecognition) { try { _vsRecognition.abort(); } catch(e) {} _vsRecognition = null; }
 
     _vsRecognition = new SpeechRecognition();
     _vsRecognition.lang = 'tr-TR';
@@ -69181,12 +69197,9 @@ function _vsStartListen() {
 
     _vsListening = true;
     window._vsListening = true;
-    var status = document.getElementById('vsStatus');
     var voiceBtn = document.getElementById('btnVoiceSearch');
-    micBtn.className = 'vs-mic-btn vs-listening';
-    micBtn.textContent = '🔴';
-    status.textContent = 'Dinliyorum...';
-    status.className = 'vs-status vs-active';
+    if (micBtn) { micBtn.className = 'vs-mic-btn vs-listening'; micBtn.textContent = '🔴'; }
+    if (status) { status.textContent = 'Dinliyorum...'; status.className = 'vs-status vs-active'; }
     if (voiceBtn) voiceBtn.classList.add('vs-active-indicator');
 
     _vsRecognition.onresult = function (e) {
@@ -69244,26 +69257,37 @@ function _vsBuildIndex() {
     var allChannels = (window.state && window.state.channels) || [];
     var filtered    = (window.state && window.state.filtered)  || [];
 
-    // filtered değişmediyse yeniden yapma
+    // filtered değişmediyse yeniden yapma — donma önlemi
     if (_vsIndexedForFiltered === filtered && _vsChannelIndex) return;
     _vsIndexedForFiltered = filtered;
 
-    // URL → filteredIdx Map (O(n))
+    // URL → filteredIdx Map (O(n)) — tek geçişte
     var urlToFi = new Map();
     for (var fi = 0; fi < filtered.length; fi++) {
         var fch = filtered[fi];
         if (fch && fch.url) urlToFi.set(fch.url, fi);
     }
 
-    // allChannels → normalize edilmiş isim listesi (O(n))
+    // allChannels → normalize edilmiş isim listesi
+    // MiBox: 500'lük chunk'lara böl, her chunk arası 0ms setTimeout ile nefes ver
+    var total = allChannels.length;
+    var CHUNK = 500;
     _vsChannelIndex = [];
-    for (var i = 0; i < allChannels.length; i++) {
-        var ch = allChannels[i];
-        if (!ch || !ch.name) continue;
-        var nn = _vsNormalize(ch.name);
-        var fi2 = (ch.url && urlToFi.has(ch.url)) ? urlToFi.get(ch.url) : -1;
-        _vsChannelIndex.push({ ch: ch, nn: nn, idx: fi2 });
+
+    function _buildChunk(start) {
+        var end = Math.min(start + CHUNK, total);
+        for (var i = start; i < end; i++) {
+            var ch = allChannels[i];
+            if (!ch || !ch.name) continue;
+            var nn = _vsNormalize(ch.name);
+            var fi2 = (ch.url && urlToFi.has(ch.url)) ? urlToFi.get(ch.url) : -1;
+            _vsChannelIndex.push({ ch: ch, nn: nn, idx: fi2 });
+        }
+        if (end < total) {
+            setTimeout(function() { _buildChunk(end); }, 0);
+        }
     }
+    _buildChunk(0);
 }
 
 function _vsNormalize(s) {

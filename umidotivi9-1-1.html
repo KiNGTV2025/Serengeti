@@ -2682,7 +2682,10 @@ body {
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            filter: drop-shadow(0 0 6px var(--accent-primary)) brightness(1.15);
+            filter: drop-shadow(0 0 8px var(--accent-primary))
+                    drop-shadow(0 0 20px var(--accent-primary))
+                    brightness(1.35);
+            opacity: 1;
             /* animasyon telefon/PC'de JS interval, TVBox'ta CSS @keyframes (GPU) */
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
@@ -2692,16 +2695,16 @@ body {
 
          
         @keyframes logoPulse {
-            0%   { filter: drop-shadow(0 0 4px var(--accent-primary)) drop-shadow(0 0 8px var(--accent-primary)) brightness(1.1); opacity: 1; }
-            50%  { filter: drop-shadow(0 0 12px var(--accent-primary)) drop-shadow(0 0 24px var(--accent-primary)) brightness(1.25); opacity: 0.85; }
-            100% { filter: drop-shadow(0 0 4px var(--accent-primary)) drop-shadow(0 0 8px var(--accent-primary)) brightness(1.1); opacity: 1; }
+            0%   { filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.3); opacity: 1; }
+            50%  { filter: drop-shadow(0 0 16px var(--accent-primary)) drop-shadow(0 0 36px var(--accent-primary)) brightness(1.5); opacity: 0.92; }
+            100% { filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.3); opacity: 1; }
         }
 
          
         body.low-performance-mode .neon-logo-img,
         body.fast-mode .neon-logo-img {
             /* Statik ama belirgin tema rengi glow — animasyon olmadan */
-            filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.2) !important;
+            filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 24px var(--accent-primary)) brightness(1.4) !important;
             opacity: 1 !important;
         }
         
@@ -14000,7 +14003,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.dispatchEvent(new Event('umittv_login_ok'));
                     return;
                 }
-                
+
+                // Auto-login başarılı: response'da nick varsa hemen kaydet
+                // (Manuel login'de yapılan kontrolün auto-login karşılığı — TVBox'ta eksikti)
+                try {
+                    var _autoNick = res.nick || res.first_name || res.name || res.username || '';
+                    if (_autoNick && _autoNick.trim()) {
+                        localStorage.setItem('umittv_tg_nick', _autoNick.trim());
+                        var _autoAuth = JSON.parse(localStorage.getItem('umittv_auth') || '{}');
+                        _autoAuth.nick = _autoNick.trim();
+                        localStorage.setItem('umittv_auth', JSON.stringify(_autoAuth));
+                    }
+                } catch(_nickErr) {}
 
                 if (overlay) overlay.classList.add('hidden');
                 document.dispatchEvent(new Event('umittv_login_ok'));
@@ -21196,7 +21210,7 @@ function setInitialRemoteFocus() {
 
     // Zaten bir modali veya player'ı varsa müdahale etme
     if (state.remote.zone &&
-        ['player','epgModal','vodModal','continueModal','sleepModeModal'].includes(state.remote.zone)) return;
+        ['player','epgModal','vodModal','continueModal','sleepModeModal','nicknameModal'].includes(state.remote.zone)) return;
 
     // Grid'de en az 1 kart var mı?
     const firstCard = document.querySelector('#channelsGrid .channel-card, #channelsGrid .vod-card-wrap');
@@ -43476,7 +43490,7 @@ function updateSidebarFavIcons(channelName) {
                     r.style.setProperty('--focus-glow',          `0 0 20px rgba(${rgb},0.35)`);
                     // Fallback SVG logo rengi — tema accent rengiyle glow
                     r.style.setProperty('--logo-svg-filter',
-                        `drop-shadow(0 0 3px rgba(${rgb},0.9)) drop-shadow(0 0 6px rgba(${rgb},0.5)) brightness(1.15)`);
+                        `drop-shadow(0 0 8px rgba(${rgb},1.0)) drop-shadow(0 0 20px rgba(${rgb},0.7)) drop-shadow(0 0 38px rgba(${rgb},0.4)) brightness(1.4)`);
                 }
                 // Kanal başlığı odak rengi: kontrast garantili seçim
                 // Luminans hesabı: 0=siyah, 1=beyaz
@@ -45480,11 +45494,12 @@ function handlePlayerRemote(e) {
                         window.openVoiceSearch();
                         setTimeout(function() {
                             if (typeof window.vsToggleListen === 'function' &&
-                                typeof _vsListening !== 'undefined' && !_vsListening) {
+                                !window._vsListening) {
                                 window.vsToggleListen();
                             }
-                        }, 350);
+                        }, 400);
                     }
+                    return;
                 }
                 if (e.key === 'ArrowLeft') { if (typeof seekBackward === 'function') seekBackward(); }
             } else if (_isSeries) {
@@ -45532,10 +45547,10 @@ function handlePlayerRemote(e) {
                         // Modal açılır açılmaz dinlemeye başla
                         setTimeout(function() {
                             if (typeof window.vsToggleListen === 'function' &&
-                                typeof _vsListening !== 'undefined' && !_vsListening) {
+                                !window._vsListening) {
                                 window.vsToggleListen();
                             }
-                        }, 350);
+                        }, 400);
                     }
                     return;
                 }
@@ -52387,21 +52402,21 @@ function togglePlayerInfoToast() {
 <!-- ══════════════════════════════════════════
      NICKNAME MODAL
      ══════════════════════════════════════════ -->
-<div id="nicknameModal" style="display:none;position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+<div id="nicknameModal" style="display:none;position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;backdrop-filter:blur(4px);" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()">
     <div style="background:linear-gradient(160deg,rgba(14,16,26,0.98),rgba(10,12,20,0.99));border:1px solid rgba(255,215,0,0.25);border-top:1px solid rgba(255,215,0,0.5);border-radius:18px;padding:32px 28px 24px;width:min(360px,90vw);box-shadow:0 0 60px rgba(255,170,0,0.1),0 30px 80px rgba(0,0,0,0.7);font-family:'Rajdhani',sans-serif;position:relative;">
         <div style="text-align:center;margin-bottom:20px;">
             <div style="font-size:32px;margin-bottom:8px;">👤</div>
             <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#FFD700;letter-spacing:2px;">KULLANICI ADI</div>
             <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.5;">Telegram adını veya istediğin bir adı gir.<br>Sağ üstte görünecek.</div>
         </div>
-        <input id="nicknameInput" type="text" maxlength="32" placeholder="Adını gir..." autocomplete="off"
+        <input id="nicknameInput" type="text" maxlength="32" placeholder="Adını gir..." autocomplete="off" tabindex="0"
             style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:13px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;margin-bottom:16px;">
         <div style="display:flex;gap:10px;">
-            <button id="nicknameSaveBtn" onclick="window._saveNickname()"
+            <button id="nicknameSaveBtn" onclick="window._saveNickname()" tabindex="0"
                 style="flex:1;background:linear-gradient(135deg,#FFD700,#E8A000);border:none;border-radius:10px;padding:13px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
                 KAYDET
             </button>
-            <button id="nicknameSkipBtn" onclick="window._skipNickname()"
+            <button id="nicknameSkipBtn" onclick="window._skipNickname()" tabindex="0"
                 style="flex:0 0 auto;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px 18px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.5);cursor:pointer;">
                 Atla
             </button>
@@ -52438,16 +52453,33 @@ function _applyNick(nick) {
     }
 }
 
+function _nickFocus(el) {
+    if (!el) return;
+    document.querySelectorAll('#nicknameModal .remote-focused, #nicknameModal .dpad-focused')
+        .forEach(function(x) { x.classList.remove('remote-focused','dpad-focused'); });
+    el.classList.add('remote-focused');
+    el.focus();
+}
+
 function _showNicknameModal() {
     var modal = document.getElementById('nicknameModal');
     if (!modal) return;
-    // Input'a mevcut değeri koy (sayısal değilse)
     var cur = '';
     try { cur = localStorage.getItem('umittv_tg_nick') || ''; } catch(e) {}
     var input = document.getElementById('nicknameInput');
     if (input) input.value = _isNumericId(cur) ? '' : cur;
     modal.style.display = 'flex';
-    setTimeout(function() { if (input) input.focus(); }, 200);
+
+    // Remote zone kilitle — arka plan kanallar/kartlar odak almasın
+    if (window.state && window.state.remote) {
+        window._nickModalPrevZone = window.state.remote.zone;
+        window.state.remote.zone = 'nicknameModal';
+    }
+
+    // Input focus (TVBox için 300ms, focus + click)
+    setTimeout(function() {
+        if (input) { input.focus(); try { input.click(); } catch(e) {} }
+    }, 300);
 
     // Enter ile kaydet
     if (input && !input._nickBound) {
@@ -52456,6 +52488,48 @@ function _showNicknameModal() {
             if (e.key === 'Enter') window._saveNickname();
         });
     }
+
+    // TVBox D-pad navigasyonu
+    if (!modal._nickDpadBound) {
+        modal._nickDpadBound = true;
+        modal.addEventListener('keydown', function(e) {
+            if (!window.state || window.state.remote.zone !== 'nicknameModal') return;
+            var saveBtn = document.getElementById('nicknameSaveBtn');
+            var skipBtn = document.getElementById('nicknameSkipBtn');
+            var active  = document.activeElement;
+            if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                e.preventDefault();
+                if (active === input) { _nickFocus(saveBtn); }
+                else if (active === saveBtn) { _nickFocus(skipBtn); }
+                else { _nickFocus(input); }
+            } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                e.preventDefault();
+                if (active === skipBtn) { _nickFocus(saveBtn); }
+                else if (active === saveBtn) { _nickFocus(input); }
+                else { _nickFocus(skipBtn); }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (active === skipBtn) _nickFocus(saveBtn);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (active === saveBtn) _nickFocus(skipBtn);
+            } else if (e.key === 'Escape' || e.key === 'Back' || e.key === 'GoBack') {
+                if (active !== input) { e.preventDefault(); window._skipNickname(); }
+            }
+        });
+    }
+}
+
+
+function _nickModalClose() {
+    // Remote zone'u önceki konuma döndür
+    if (window.state && window.state.remote) {
+        window.state.remote.zone = window._nickModalPrevZone || 'channels';
+        if (typeof updateRemoteFocus === 'function') {
+            setTimeout(updateRemoteFocus, 50);
+        }
+    }
+    window._nickModalPrevZone = null;
 }
 
 window._saveNickname = function() {
@@ -52468,12 +52542,14 @@ window._saveNickname = function() {
     _applyNick(val);
     var modal = document.getElementById('nicknameModal');
     if (modal) modal.style.display = 'none';
+    _nickModalClose();
     if (typeof window.showToast === 'function') window.showToast('👤 Hoş geldin, ' + val + '!');
 };
 
 window._skipNickname = function() {
     var modal = document.getElementById('nicknameModal');
     if (modal) modal.style.display = 'none';
+    _nickModalClose();
 };
 
 /* Worker'dan kullanıcı bilgisi çek */
@@ -54481,17 +54557,19 @@ window.getProfileAvatarUrlAsync = async function() {
 
         var glow1 = Math.round(3 + pulse * 8);
         var glow2 = Math.round(6 + pulse * 14);
-        var bright = (1.05 + pulse * 0.20).toFixed(2);
+        var bright = 1.05 + pulse * 0.20;
 
         var rgb1 = _h2rgb(_logoP);
         var r = rgb1[0], g = rgb1[1], b = rgb1[2];
         var glowColor  = 'rgba('+r+','+g+','+b+',0.85)';
         var glowColor2 = 'rgba('+r+','+g+','+b+',0.40)';
 
+        var glowColor3 = 'rgba('+r+','+g+','+b+',0.25)';
         var newFilter =
             'drop-shadow(0 0 ' + glow1 + 'px ' + glowColor  + ') ' +
             'drop-shadow(0 0 ' + glow2 + 'px ' + glowColor2 + ') ' +
-            'brightness(' + bright + ')';
+            'drop-shadow(0 0 ' + Math.round(glow2*1.8) + 'px ' + glowColor3 + ') ' +
+            'brightness(' + (bright + 0.2).toFixed(2) + ')';
 
         /* Aynı değeri tekrar yazma — style recalc önle */
         if (newFilter !== _lastFilter) {
@@ -54536,7 +54614,7 @@ window.getProfileAvatarUrlAsync = async function() {
                 logo.style.filter  = '';
                 logo.style.opacity = '1';
             } else {
-                logo.style.filter  = 'drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 18px var(--accent-primary)) brightness(1.2)';
+                logo.style.filter  = 'drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 24px var(--accent-primary)) drop-shadow(0 0 40px var(--accent-primary)) brightness(1.45)';
                 logo.style.opacity = '1';
             }
         }
@@ -66025,9 +66103,9 @@ body.tvbox-mode .channel-card[data-is-vod="false"]:not([data-is-series="true"]):
 }
 /* TVBox'ta logo — CSS @keyframes ile GPU'da belirgin tema rengi glow */
 @keyframes tvboxLogoPulse {
-    0%   { filter: drop-shadow(0 0 5px var(--accent-primary))  drop-shadow(0 0 12px var(--accent-primary))  brightness(1.15); opacity: 1;    }
-    50%  { filter: drop-shadow(0 0 12px var(--accent-primary)) drop-shadow(0 0 28px var(--accent-primary))  brightness(1.35); opacity: 0.92; }
-    100% { filter: drop-shadow(0 0 5px var(--accent-primary))  drop-shadow(0 0 12px var(--accent-primary))  brightness(1.15); opacity: 1;    }
+    0%   { filter: drop-shadow(0 0 8px var(--accent-primary))  drop-shadow(0 0 20px var(--accent-primary))  brightness(1.35); opacity: 1;    }
+    50%  { filter: drop-shadow(0 0 18px var(--accent-primary)) drop-shadow(0 0 40px var(--accent-primary))  brightness(1.55); opacity: 0.94; }
+    100% { filter: drop-shadow(0 0 8px var(--accent-primary))  drop-shadow(0 0 20px var(--accent-primary))  brightness(1.35); opacity: 1;    }
 }
 body.tvbox-mode .neon-logo-img {
     animation: tvboxLogoPulse 2.4s ease-in-out infinite !important;
@@ -68972,6 +69050,7 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
 var _vsOpen        = false;
 var _vsRecognition = null;
 var _vsListening   = false;
+window._vsListening = false; // dışarıdan erişim için (handlePlayerRemote kullanır)
 var _vsResults     = [];   // [{name, group, logo, isLive, isVod, filteredIdx}]
 var _vsFocusIdx    = 0;    // D-pad result odağı
 var _vsFocusZone   = 'mic'; // 'mic' | 'input' | 'search' | 'results' | 'close'
@@ -69079,7 +69158,7 @@ function _vsStartListen() {
     _vsRecognition.maxAlternatives = 3;
 
     _vsListening = true;
-    var micBtn = document.getElementById('vsMicBtn');
+    window._vsListening = true;
     var status = document.getElementById('vsStatus');
     var voiceBtn = document.getElementById('btnVoiceSearch');
     micBtn.className = 'vs-mic-btn vs-listening';
@@ -69121,6 +69200,7 @@ function _vsStartListen() {
 
 function _vsStopListen() {
     _vsListening = false;
+    window._vsListening = false;
     if (_vsRecognition) { try { _vsRecognition.stop(); } catch(e) {} _vsRecognition = null; }
     var micBtn = document.getElementById('vsMicBtn');
     var voiceBtn = document.getElementById('btnVoiceSearch');
@@ -70935,9 +71015,11 @@ body.tvbox-mode #exitConfirmYes.remote-focused::after {
    kullanılır; tema değiştikçe otomatik güncellenir.) */
 .neon-logo-img {
     filter:
-        drop-shadow(0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
-        drop-shadow(0 0 9px rgba(var(--accent-primary-rgb,255,215,0), 0.45))
-        brightness(1.08) !important;
+        drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.7))
+        drop-shadow(0 0 40px rgba(var(--accent-primary-rgb,255,215,0), 0.35))
+        brightness(1.4) !important;
+    opacity: 1 !important;
 }
 body.tvbox-mode .neon-logo-img {
     animation: tvboxLogoPulse 2.4s ease-in-out infinite !important;

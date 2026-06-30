@@ -2139,7 +2139,7 @@ body {
 }
 
  
-.low-performance-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.remote-focused):not(.focused) {
+.low-performance-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.modern-logo):not(.logo-glow-layer):not(.remote-focused):not(.focused) {
     backdrop-filter: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
@@ -2159,8 +2159,21 @@ body {
 
  
 .low-performance-mode .modern-logo {
-    animation: none !important;  
-    filter: drop-shadow(0 0 8px var(--accent-primary)) brightness(1.12) !important;  
+    animation: none !important;
+    /* Statik ama belirgin glow — GPU sadece bir kez hesaplar */
+    filter:
+        drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.75))
+        drop-shadow(0 0 36px rgba(var(--accent-primary-rgb,255,215,0), 0.4))
+        brightness(1.35) !important;
+}
+.fast-mode .modern-logo {
+    animation: none !important;
+    filter:
+        drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.75))
+        drop-shadow(0 0 36px rgba(var(--accent-primary-rgb,255,215,0), 0.4))
+        brightness(1.35) !important;
 }
 
 .low-performance-mode .loading-dot-top {
@@ -2257,7 +2270,7 @@ body {
 }
 
  
-.fast-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.remote-focused):not(.focused) {
+.fast-mode *:not(.loading-overlay *):not(.loading-overlay):not(#qualityModal):not(#qualityModal *):not(#subtitleModal):not(#subtitleModal *):not(.neon-logo-img):not(.modern-logo):not(.logo-glow-layer):not(.remote-focused):not(.focused) {
     backdrop-filter: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
@@ -2273,11 +2286,6 @@ body {
     transition: opacity 0.3s ease !important;
     filter: none !important;
     backdrop-filter: none !important;
-}
-
-.fast-mode .modern-logo {
-    animation: none !important;  
-    filter: drop-shadow(0 0 8px var(--accent-primary)) brightness(1.12) !important;
 }
 
 .fast-mode .loading-dot-top {
@@ -2369,7 +2377,12 @@ body {
  
 .low-performance-mode .modern-logo[src*=".svg"],
 .fast-mode .modern-logo[src*=".svg"] {
-    filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 22px var(--accent-primary)) brightness(1.15) !important;
+    filter:
+        drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.75))
+        drop-shadow(0 0 36px rgba(var(--accent-primary-rgb,255,215,0), 0.4))
+        brightness(1.35) !important;
+    animation: none !important;
 }
 
  
@@ -2703,9 +2716,16 @@ body {
          
         body.low-performance-mode .neon-logo-img,
         body.fast-mode .neon-logo-img {
-            /* Statik ama belirgin tema rengi glow — animasyon olmadan */
-            filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 24px var(--accent-primary)) brightness(1.4) !important;
+            /* Statik ama güçlü tema rengi glow — animasyon YOK ama ışık var */
+            /* CSS @keyframes yerine sabit filter: GPU tek geçişte hesaplar, yeniden çizmez */
+            filter:
+                drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+                drop-shadow(0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
+                drop-shadow(0 0 32px rgba(var(--accent-primary-rgb,255,215,0), 0.5))
+                brightness(1.45) !important;
             opacity: 1 !important;
+            animation: none !important;
+            will-change: auto !important;
         }
         
         .header-controls {
@@ -21305,10 +21325,20 @@ function applyTVBoxOptimizations() {
          
         .app-header, .m3u-selector-bar, .category-bar, .sidebar,
         .modal-content, .channel-card, .player-controls,
-        .login-card, .login-orb, .logo-glow-layer,
+        .login-card, .login-orb,
         .modern-logo-container::before, .orbit-ring {
             box-shadow: none !important;
             filter: none !important;
+        }
+        /* Logo'lar korunuyor — glow aktif */
+        .neon-logo-img {
+            filter:
+                drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+                drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
+                drop-shadow(0 0 36px rgba(var(--accent-primary-rgb,255,215,0), 0.5))
+                brightness(1.45) !important;
+            animation: none !important;
+            will-change: auto !important;
         }
 
          
@@ -21335,7 +21365,15 @@ function applyTVBoxOptimizations() {
         .login-logo-img { filter: none !important; }
 
          
-        .modern-logo { animation: none !important; filter: none !important; }
+        /* .modern-logo animasyon kapalı ama GLOW AÇIK — düşük cihazda da logo parlasın */
+        .modern-logo { animation: none !important; }
+        .modern-logo {
+            filter:
+                drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+                drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.75))
+                drop-shadow(0 0 36px rgba(var(--accent-primary-rgb,255,215,0), 0.4))
+                brightness(1.35) !important;
+        }
 
          
         .channel-card.is-favorite,
@@ -21652,7 +21690,7 @@ function applyTVBoxOptimizations() {
     state.imageCache.clear();
     
     // Kumanda navigasyonu — TVBox için tuş tekrarı önle
-    state.remote.navigationTimeout = 120; // 200→120ms: daha hızlı tepki
+    state.remote.navigationTimeout = 80; // 200→120→80ms: daha hızlı D-pad tepkisi
 
     // TVBox flag — diğer fonksiyonlar bunu okuyabilir
     window._tvBoxMode = true;
@@ -52373,11 +52411,11 @@ var _origKeyDown = null;
 document.addEventListener('keydown', function(e) {
     var key = e.key || e.keyCode;
     var now = Date.now();
-    // Navigation tuşları: 100ms debounce
+    // Navigation tuşları: 60ms debounce (eskisi 100ms — daha hızlı tepki)
     var navKeys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' ','37','38','39','40','13'];
     var isNav = navKeys.indexOf(String(key)) > -1;
     if (isNav) {
-        if (_keyRepeatMap[key] && (now - _keyRepeatMap[key]) < 100) {
+        if (_keyRepeatMap[key] && (now - _keyRepeatMap[key]) < 60) {
             e.stopImmediatePropagation();
             return;
         }
@@ -58298,28 +58336,35 @@ window.showControls = function(duration) {
     window._urfUnified = true;
 
     var _origURF = window.updateRemoteFocus;
+    var _urfPending = false; // RAF deduplication flag
     window.updateRemoteFocus = function() {
-        // a) Önceki odak kalıntılarını temizle (native QSA — güvenli)
-        var prev = _nativeQSA('.remote-focused');
-        for (var i = 0; i < prev.length; i++) prev[i].classList.remove('remote-focused');
-        // a2) continueCards zone dışına çıkınca kart odak kalıntısı temizle
-        var zone = window.state && window.state.remote && window.state.remote.zone;
-        if (zone !== 'continueCards') {
-            var cc = _nativeQSA('.continue-card.remote-focused, .continue-action-btn.remote-focused, .continue-options-btn.remote-focused');
-            for (var j = 0; j < cc.length; j++) cc[j].classList.remove('remote-focused');
-        }
+        // RAF ile batch — aynı frame içinde birden fazla çağrı tek sefere indirgenir
+        if (_urfPending) return;
+        _urfPending = true;
+        requestAnimationFrame(function() {
+            _urfPending = false;
+            // a) Önceki odak kalıntılarını temizle (native QSA — güvenli)
+            var prev = _nativeQSA('.remote-focused');
+            for (var i = 0; i < prev.length; i++) prev[i].classList.remove('remote-focused');
+            // a2) continueCards zone dışına çıkınca kart odak kalıntısı temizle
+            var zone = window.state && window.state.remote && window.state.remote.zone;
+            if (zone !== 'continueCards') {
+                var cc = _nativeQSA('.continue-card.remote-focused, .continue-action-btn.remote-focused, .continue-options-btn.remote-focused');
+                for (var j = 0; j < cc.length; j++) cc[j].classList.remove('remote-focused');
+            }
 
-        // b) Video oynatma durumunu kaydet
-        var video = document.getElementById('videoPlayer');
-        var wasPlaying = video && !video.paused;
+            // b) Video oynatma durumunu kaydet
+            var video = document.getElementById('videoPlayer');
+            var wasPlaying = video && !video.paused;
 
-        // c) Orijinali çağır
-        _origURF.apply(this, arguments);
+            // c) Orijinali çağır
+            _origURF.apply(window, []);
 
-        // d) Orijinal yanlışlıkla videoyu durdurduysa kurtar
-        if (wasPlaying && video && video.paused) {
-            setTimeout(function(){ video.play().catch(function(){}); }, 100);
-        }
+            // d) Orijinal yanlışlıkla videoyu durdurduysa kurtar
+            if (wasPlaying && video && video.paused) {
+                setTimeout(function(){ video.play().catch(function(){}); }, 100);
+            }
+        });
     };
 })();
 
@@ -59692,11 +59737,14 @@ document.readyState === 'loading'
     filter: none !important; /* blur kaldır — GPU yükü azalt */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    /* Blur yok ama renk var — statik radial gradient yeterli */
     background: radial-gradient(circle at center,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.35) 0%,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.12) 50%,
-        transparent 75%) !important;
-    opacity: 0.6 !important;
+        rgba(var(--accent-primary-rgb,255,215,0), 0.5) 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.22) 45%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.05) 70%,
+        transparent 85%) !important;
+    opacity: 0.75 !important;
+    animation: none !important;
 }
 
 /* Tüm blur'lar kapat */
@@ -62137,8 +62185,16 @@ function wpUpdateAvgRating() {
 
 // ── MEVCUT OYNATICIYLA ENTEGRASYON ──
 // Kanal çalındığında party odasına bildir + URL'i de yaz
-const _origPlayChannel = window.playChannel;
-if(typeof _origPlayChannel === 'function') {
+// NOT: wrap'ı geciktiriyoruz — playChannel henüz tanımlanmamış olabilir
+function _wpWrapPlayChannel() {
+  if (typeof window.playChannel !== 'function') {
+    setTimeout(_wpWrapPlayChannel, 300);
+    return;
+  }
+  // Zaten wraplandıysa tekrar yapma
+  if (window.playChannel._wpWrapped) return;
+
+  const _origPlayChannel = window.playChannel;
   window.playChannel = function(indexOrCh, startTime) {
     // Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
     if(WP.inRoom && WP.isHost) {
@@ -62195,11 +62251,18 @@ if(typeof _origPlayChannel === 'function') {
     }
     return _origPlayChannel.apply(this, arguments);
   };
+  window.playChannel._wpWrapped = true;
 }
+_wpWrapPlayChannel();
 
 // VOD/film/dizi seçildiğinde Firebase'e yaz (sadece host)
-const _origOpenVod = window.openVodModal;
-if(typeof _origOpenVod === 'function') {
+function _wpWrapOpenVodModal() {
+  if (typeof window.openVodModal !== 'function') {
+    setTimeout(_wpWrapOpenVodModal, 300);
+    return;
+  }
+  if (window.openVodModal._wpWrapped) return;
+  const _origOpenVod = window.openVodModal;
   window.openVodModal = function(vod) {
     const r = _origOpenVod.apply(this, arguments);
     if(WP.inRoom && WP.isHost && vod) {
@@ -62211,6 +62274,8 @@ if(typeof _origOpenVod === 'function') {
           if(!title) return;
           WP.contentTitle = title;
           const vodUrl = vod.url || vod.streamUrl || '';
+          WP._hostPlayerOpen = true;
+          fbSet('/rooms/' + WP.roomCode + '/playerState', { action: 'open', ts: Date.now(), by: WP.myNick }).catch(()=>{});
           fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
             type: vodUrl ? 'direct' : 'vod',
             name: title,
@@ -62230,7 +62295,9 @@ if(typeof _origOpenVod === 'function') {
     }
     return r;
   };
+  window.openVodModal._wpWrapped = true;
 }
+_wpWrapOpenVodModal();
 
 // ── nowPlaying dinleyicisi — karşı tarafta içerik aç ──
 function wpStartNowPlayingListener(code) {
@@ -62344,10 +62411,13 @@ function wpStartNowPlayingListener(code) {
         if(url) {
           ch.url = ch.url || url;
           setTimeout(() => wpDirectPlay(ch), 500);
-        } else if(np.vodData && typeof _origOpenVod === 'function') {
-          // URL yoksa son çare modal aç
+        } else if(np.vodData && typeof window.openVodModal === 'function') {
+          // URL yoksa son çare modal aç (izleyici tarafı — wrap bypass etmek için _orig değil)
           const vod = JSON.parse(np.vodData);
-          setTimeout(() => _origOpenVod(vod), 500);
+          const _rawVodOpen = window.openVodModal._wpWrapped
+            ? (window.openVodModal.__origFn || window.openVodModal)
+            : window.openVodModal;
+          setTimeout(() => _rawVodOpen(vod), 500);
         }
       } catch(err) {}
     } else if(np.url) {
@@ -71174,17 +71244,41 @@ body.tvbox-mode #exitConfirmYes.remote-focused::after {
 
 /* ── 7) SOL ÜST LOGO — seçilen tema renginde, her modda statik ──
    (applyTheme() içinde set edilen --accent-primary / --accent-primary-rgb
-   kullanılır; tema değiştikçe otomatik güncellenir.) */
+   kullanılır; tema değiştikçe otomatik güncellenir.)
+   NOT: low-performance-mode ve fast-mode da dahil — hepsinde ışık görünür. */
 .neon-logo-img {
     filter:
-        drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
-        drop-shadow(0 0 20px rgba(var(--accent-primary-rgb,255,215,0), 0.7))
-        drop-shadow(0 0 40px rgba(var(--accent-primary-rgb,255,215,0), 0.35))
-        brightness(1.4) !important;
+        drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 18px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
+        drop-shadow(0 0 38px rgba(var(--accent-primary-rgb,255,215,0), 0.45))
+        brightness(1.45) !important;
     opacity: 1 !important;
+}
+body.low-performance-mode .neon-logo-img,
+body.fast-mode .neon-logo-img {
+    /* low-perf / fast modda: animasyon yok ama glow tam güçte */
+    filter:
+        drop-shadow(0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.85))
+        drop-shadow(0 0 32px rgba(var(--accent-primary-rgb,255,215,0), 0.5))
+        brightness(1.45) !important;
+    opacity: 1 !important;
+    animation: none !important;
+    will-change: auto !important;
 }
 body.tvbox-mode .neon-logo-img {
     animation: tvboxLogoPulse 2.4s ease-in-out infinite !important;
+}
+/* TVBox + low-perf kombinasyonu: statik glow (puls yok, ama güçlü) */
+body.tvbox-mode.low-performance-mode .neon-logo-img,
+body.tvbox-mode.fast-mode .neon-logo-img {
+    animation: none !important;
+    filter:
+        drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0), 1.0))
+        drop-shadow(0 0 22px rgba(var(--accent-primary-rgb,255,215,0), 0.8))
+        drop-shadow(0 0 40px rgba(var(--accent-primary-rgb,255,215,0), 0.45))
+        brightness(1.5) !important;
+    will-change: auto !important;
 }
 
 </style>

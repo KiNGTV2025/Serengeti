@@ -42146,6 +42146,15 @@ function _doChSwitch() {
     if (typeof showChannelInfoBanner === 'function') {
         showChannelInfoBanner(ch.name, ch.logo || 'https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg', ch.tvgId || '');
     }
+    // WP: dikey swipe ile kanal değişimi playChannel'i hiç çağırmadığı için
+    // WP wrap'ı tetiklenmiyordu — odadakilere kanal değişimi yansımıyordu.
+    // Burada doğrudan tetikliyoruz (host ise).
+    try {
+        if (typeof WP !== 'undefined' && WP.inRoom && WP.isHost && typeof _wpSyncChannelPlay === 'function') {
+            _wpSyncChannelPlay(ch);
+        }
+    } catch(e) {}
+    try { document.dispatchEvent(new CustomEvent('umittv:channelChange')); } catch(e) {}
     setTimeout(() => { updatePlayerEpgBar(ch.name, ch.tvgId); }, 500);
     playKeySound('ch_change');
     // _controlsHidden modunda: zone='player' sabitle, buton odağı yok
@@ -62197,9 +62206,18 @@ function _wpWrapPlayChannel() {
   const _origPlayChannel = window.playChannel;
   window._wpOrigPlayChannel = _origPlayChannel; // wpDirectPlay gibi dış scope'tan erişim için
   window.playChannel = function(indexOrCh, startTime) {
-    // Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
-    if(WP.inRoom && WP.isHost) {
-      try {
+    _wpSyncChannelPlay(indexOrCh);
+    return _origPlayChannel.apply(this, arguments);
+  };
+  window.playChannel._wpWrapped = true;
+}
+
+// WP senkronizasyon mantığı — hem playChannel wrap'ından hem de dikey swipe
+// gibi playChannel'i hiç çağırmayan yollardan (_doChSwitch) da çağrılabilir.
+// Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
+function _wpSyncChannelPlay(indexOrCh) {
+    if(typeof WP === 'undefined' || !WP.inRoom || !WP.isHost) return;
+    try {
         const list = (window.state && window.state.filtered) ? window.state.filtered : [];
         const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
         if(ch && ch.name) {
@@ -62248,11 +62266,7 @@ function _wpWrapPlayChannel() {
             }, 600);
           }
         }
-      } catch(e) {}
-    }
-    return _origPlayChannel.apply(this, arguments);
-  };
-  window.playChannel._wpWrapped = true;
+    } catch(e) {}
 }
 _wpWrapPlayChannel();
 
@@ -69449,9 +69463,196 @@ function _vsNormalize(s) {
         .replace(/ç/g,'c').replace(/Ç/g,'c');
 }
 
+/* ── SESLİ KOMUT SİSTEMİ ────────────────────────────────────────────────
+   Desteklenen komutlar:
+   - "<dizi adı> <N>. bölümü/bölümünü aç"   → playSeriesEpisode
+   - "<dizi adı> <N>. sezon <M>. bölümü aç" → playSeriesEpisode (sezon belirtilmiş)
+   - "<N> dakika ileri/geri sar"            → seek
+   - "<N> saniye ileri/geri sar"            → seek
+   - "ileri/geri sar" (süre belirtilmeden)  → varsayılan seekForward/seekBackward
+*/
+
+var _VS_NUM_WORDS = {
+    'sifir':0,'bir':1,'iki':2,'uc':3,'dort':4,'bes':5,'alti':6,'yedi':7,'sekiz':8,'dokuz':9,
+    'on':10,'yirmi':20,'otuz':30,'kirk':40,'elli':50,'altmis':60,'yetmis':70,'seksen':80,'doksan':90,
+    'yuz':100
+};
+
+// "yirmi bes" gibi bileşik sayı kelimelerini sayıya çevirir; düz rakam varsa onu kullanır.
+function _vsWordsToNumber(text) {
+    text = _vsNormalize(text).trim();
+    if (!text) return null;
+    // Önce düz rakam ara (örn. "12", "2.")
+    var digitMatch = text.match(/\d+/);
+    if (digitMatch) return parseInt(digitMatch[0], 10);
+
+    var words = text.split(/\s+/);
+    var total = 0, current = 0, found = false;
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        if (_VS_NUM_WORDS.hasOwnProperty(w)) {
+            found = true;
+            var v = _VS_NUM_WORDS[w];
+            if (v === 100) {
+                current = (current || 1) * 100;
+            } else {
+                current += v;
+            }
+        }
+    }
+    total = current;
+    return found ? total : null;
+}
+
+// Metin içinde dizi/kanal adını en iyi şekilde bulur (basit substring eşleşmesi,
+// mevcut _vsChannelIndex / state.channels üzerinden).
+function _vsFindSeriesNameInText(text) {
+    _vsBuildIndex();
+    var nText = _vsNormalize(text);
+    var idx = _vsChannelIndex || [];
+    var best = null, bestLen = 0;
+    // En uzun eşleşen dizi/grup adını bul — kısa/yanlış pozitifleri eler
+    var seenGroups = {};
+    for (var i = 0; i < idx.length; i++) {
+        var ch = idx[i].ch;
+        var candidates = [];
+        if (ch.group && ch.group.length > 2) candidates.push(ch.group);
+        if (ch.name) candidates.push(ch.name);
+        for (var c = 0; c < candidates.length; c++) {
+            var cand = candidates[c];
+            var key = _vsNormalize(cand);
+            if (seenGroups[key]) continue;
+            seenGroups[key] = true;
+            if (key.length >= 3 && nText.indexOf(key) !== -1 && key.length > bestLen) {
+                best = cand; bestLen = key.length;
+            }
+        }
+    }
+    return best;
+}
+
+// Komutu dener; eşleşip işlendiyse true döner (çağıran normal aramayı atlar).
+function _vsTryHandleCommand(rawText) {
+    var nText = _vsNormalize(rawText);
+
+    // ── SARMA KOMUTLARI: "X dakika ileri sar", "X saniye geri sar", "ileri sar" ──
+    var seekMatch = nText.match(/(.*?)\b(ileri|ileriye|geri|geriye)\s*(sar|al|git)\b/);
+    if (seekMatch) {
+        var beforePart = seekMatch[1] || '';
+        var direction = (seekMatch[2] === 'ileri' || seekMatch[2] === 'ileriye') ? 'forward' : 'backward';
+
+        var unit = /saniye/.test(beforePart) ? 'sec' : 'min'; // belirtilmemişse dakika varsayalım (sesli komutlarda daha doğal)
+        if (/saniye/.test(beforePart)) unit = 'sec';
+        else if (/dakika|dk\b/.test(beforePart)) unit = 'min';
+        else unit = 'sec'; // ne dakika ne saniye geçiyorsa: varsayılan kısa adım (10sn, seekForward/seekBackward)
+
+        var amount = _vsWordsToNumber(beforePart);
+
+        var v = document.getElementById('videoPlayer');
+        if (!v) { return false; }
+
+        if (amount === null) {
+            // Süre belirtilmemiş → standart 10sn adımını kullan
+            if (direction === 'forward' && typeof seekForward === 'function') seekForward();
+            else if (direction === 'backward' && typeof seekBackward === 'function') seekBackward();
+            if (typeof showToast === 'function') showToast(direction === 'forward' ? '▶ İleri sarıldı' : '◀ Geri sarıldı', 'success');
+        } else {
+            var seconds = unit === 'min' ? amount * 60 : amount;
+            var _hls = state.player && state.player.hls;
+            var newTime;
+            var _dur = (typeof videoDuration !== 'undefined' && videoDuration) || v.duration;
+            if (direction === 'forward') {
+                newTime = _dur ? Math.min(_dur, v.currentTime + seconds) : v.currentTime + seconds;
+            } else {
+                newTime = Math.max(0, v.currentTime - seconds);
+            }
+            if (typeof _dvrSeekFull === 'function') {
+                _dvrSeekFull(v, _hls, newTime);
+            } else {
+                try { v.currentTime = newTime; } catch(e) {}
+            }
+            if (typeof showModernSeekingOverlay === 'function') {
+                showModernSeekingOverlay(direction, newTime, seconds);
+            }
+            if (typeof showControls === 'function') showControls(5000);
+            // WP: host seek bildir
+            if (window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
+                window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(function(){});
+            }
+            if (typeof showToast === 'function') {
+                var _label = unit === 'min' ? (amount + ' dakika') : (amount + ' saniye');
+                showToast((direction === 'forward' ? '▶ ' : '◀ ') + _label + (direction === 'forward' ? ' ileri sarıldı' : ' geri sarıldı'), 'success');
+            }
+        }
+        if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+        return true;
+    }
+
+    // ── BÖLÜM AÇMA KOMUTU: "<dizi> <N>. bölüm(ü/u)(nü) aç", isteğe bağlı "<M>. sezon" ──
+    var epMatch = nText.match(/\b(\d+|[a-z]+)\.?\s*bolum/);
+    if (epMatch) {
+        var episodeNum = _vsWordsToNumber(epMatch[1]);
+        if (episodeNum === null) return false; // bölüm numarası çözülemedi, normal aramaya düş
+
+        var seasonMatch = nText.match(/\b(\d+|[a-z]+)\.?\s*sezon/);
+        var seasonNum = seasonMatch ? _vsWordsToNumber(seasonMatch[1]) : 1;
+        if (seasonNum === null) seasonNum = 1;
+
+        // Dizi adını metnin "bölüm"den önceki kısmından çıkarmaya çalış,
+        // bulunamazsa tüm metin içinde en iyi eşleşen kanal/grup adını ara.
+        var seriesName = _vsFindSeriesNameInText(rawText);
+        if (!seriesName) {
+            if (typeof showToast === 'function') showToast('⚠ Dizi adı anlaşılamadı, tekrar deneyin', 'error');
+            return true; // komut olarak tanındı ama dizi bulunamadı — normal aramaya düşme
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('▶ ' + seriesName + ' — Sezon ' + seasonNum + ', Bölüm ' + episodeNum + ' açılıyor...', 'success');
+        }
+        if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+
+        // openVodModal, TMDB'den sezon/bölüm verisini çekip state.series.seriesCache'i
+        // doldurur (asenkron). Cache hazır olunca playSeriesEpisode'a geçiyoruz.
+        try {
+            if (typeof openVodModal === 'function') {
+                openVodModal(seriesName);
+            }
+        } catch(e) {}
+
+        var _attempts = 0;
+        function _tryPlayEpisode() {
+            _attempts++;
+            var cached = state.series && state.series.seriesCache && state.series.seriesCache[seriesName];
+            var hasSeason = cached && cached.seasons && cached.seasons[seasonNum];
+            if (hasSeason || _attempts > 20) {
+                // VOD modalı kapat — direkt oynatmaya geçiyoruz
+                try {
+                    var vodModal = document.getElementById('vodModal');
+                    if (vodModal && typeof closeVodModal === 'function') closeVodModal();
+                } catch(e) {}
+                if (typeof playSeriesEpisode === 'function') {
+                    playSeriesEpisode(seriesName, seasonNum, episodeNum, null);
+                }
+                return;
+            }
+            setTimeout(_tryPlayEpisode, 300);
+        }
+        setTimeout(_tryPlayEpisode, 300);
+        return true;
+    }
+
+    return false; // komut değil — normal kanal/dizi araması yapılsın
+}
+
 function _vsSearchText(query) {
     query = (query || '').trim();
     if (!query) { _vsRenderResults([]); return; }
+
+    // ── SESLİ KOMUT AYRIŞTIRMA ──────────────────────────────────────────
+    // Düz kanal/dizi arama yapmadan önce, transcript'in bir "komut" olup
+    // olmadığına bakılır: "X dizisinin Y. bölümünü aç", "10 dakika ileri/geri sar".
+    // Eşleşirse ilgili işlem yapılır ve normal arama akışına hiç girilmez.
+    if (_vsTryHandleCommand(query)) return;
 
     _vsBuildIndex(); // zaten güncelse anında döner
 

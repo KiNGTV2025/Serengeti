@@ -19964,7 +19964,7 @@ async function loadContinueWatching() {
                         const _isLiveB = !!(state.player && state.player.isLiveStream);
                         state.remote.playerBoxIndex = _isLiveB ? 9 : 1;
                         state.remote.zone = 'player';
-                        if (typeof showControls === 'function') showControls(5000);
+                        if (typeof showControls === 'function') showControls(3500);
                         if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                         playKeySound('back');
                         return;
@@ -26882,7 +26882,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         
         if (currentTouchZone === 'controlsBox') {
             e.preventDefault();
-            showControls(5000);
+            showControls(3500);
             return;
         }
         
@@ -26921,7 +26921,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         window._touchHiddenSwipeStartX = touchStartX;
         window._touchHiddenSwipeStartY = touchStartY;
         if (!window._controlsHidden) {
-            showControls(5000);
+            showControls(3500);
         }
         lastTouchTime = now2;
         
@@ -26951,7 +26951,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const ratio = Math.max(0, Math.min(currentX - rect.left, rect.width)) / rect.width;
             if (video.duration && isFinite(video.duration)) {
                 safeSetCurrentTime(video, video.duration * ratio);
-                showControls(5000);
+                showControls(3500);
             }
             lastProgressBarTouchTime = now;
             return;
@@ -27121,7 +27121,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     var label = document.getElementById('hideControlsLabel');
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
-                    showControls(5000);
+                    showControls(3500);
                     showToast('Kontroller Açıldı');
                 } else {
                     // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
@@ -27137,7 +27137,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                         const label = document.getElementById('hideControlsLabel');
                         if (icon)  icon.textContent  = 'visibility_off';
                         if (label) label.textContent = 'Gizle';
-                        showControls(5000);
+                        showControls(3500);
                     }, _DTAP_HID);
                 }
             }
@@ -27217,7 +27217,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             pc.classList.remove('show-controls');
                         } else if (!window._controlsHidden) {
                             pc.classList.add('show-controls');
-                            showControls(5000);
+                            showControls(3500);
                         }
                     }, DOUBLE_TAP_MS);
                 }
@@ -27233,7 +27233,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             pc.classList.remove('show-controls');
                         } else if (!window._controlsHidden) {
                             pc.classList.add('show-controls');
-                            showControls(5000);
+                            showControls(3500);
                         }
                     }
                 } else {
@@ -27244,7 +27244,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                         playerContainer2.classList.remove('show-controls');
                     } else if (!window._controlsHidden) {
                         playerContainer2.classList.add('show-controls');
-                        showControls(5000);
+                        showControls(3500);
                     }
                 }
             }
@@ -27268,7 +27268,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     const label = document.getElementById('hideControlsLabel');
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
-                    showControls(5000);
+                    showControls(3500);
                     return;
                 }
                 const playerContainer = document.getElementById('playerContainer');
@@ -27277,7 +27277,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     playerContainer.classList.remove('show-controls');
                 } else if (!window._controlsHidden) {
                     playerContainer.classList.add('show-controls');
-                    showControls(5000);
+                    showControls(3500);
                 }
             }
         }
@@ -28495,7 +28495,7 @@ window.testSettings = {
                         const step = e.key === 'ArrowLeft' ? -10 : 10;
                         safeSetCurrentTime(video, video.currentTime + step);
                         showToast(`${step > 0 ? 'İleri' : 'Geri'} Sar: ${Math.abs(step)} saniye`);
-                        showControls(5000);
+                        showControls(3500);
                     }
                 }
             });
@@ -28589,7 +28589,7 @@ window.testSettings = {
             document.getElementById('playerContainer').classList.add('show-controls');
             state.remote.playerControlsVisible = true;
             
-            showControls(5000);
+            showControls(3500);
             
             showToast("Kumanda Modu Aktif");
             playKeySound('confirm');
@@ -28600,7 +28600,7 @@ window.testSettings = {
 
         // Canlı yayın oto-gizleme süresi (ms) — yayın açılınca 2sn sonra gizle
         var LIVE_AUTOHIDE_MS  = 2000;  // Canlı yayın oto-gizleme (ms)
-        var VOD_AUTOHIDE_MS   = 5000;  // VOD/Dizi player buton oto-gizleme (ms)
+        var VOD_AUTOHIDE_MS   = 3500;  // VOD/Dizi player buton oto-gizleme (ms) — kullanıcı isteğiyle 5000'den düşürüldü
 
         function _scheduleHide(overrideMs) {
             clearTimeout(window.autoHideControlsTimer);
@@ -42938,7 +42938,7 @@ let virtualScrollSystem = null;
                 pc.classList.remove('paused');
                 pc.classList.add('playing');
                 if (_po) _po.style.display = 'none';
-                showControls(5000);
+                showControls(3500);
             } else {
                 // DURAKLAT
                 window._userPaused = true;
@@ -43008,7 +43008,7 @@ let virtualScrollSystem = null;
             if (v.duration && isFinite(v.duration) && v.duration > 0) {
                 const t = v.duration * ratio;
                 _dvrSeekFull(v, _hls, t);
-                showControls(5000);
+                showControls(3500);
                 playKeySound('click');
                 // WP: host seek bildir
                 if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
@@ -43357,7 +43357,7 @@ let virtualScrollSystem = null;
                                 const _newTime = Math.max(_skStart + 0.5, Math.min(_skEnd - 2, _skStart + ratio * _dvrWindow));
                                 const _hls = state.player.hls;
                                 _dvrSeekFull(v, _hls, _newTime);
-                                showControls(5000);
+                                showControls(3500);
                                 // WP: host seek bildir
                                 if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                                   window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43381,7 +43381,7 @@ let virtualScrollSystem = null;
                           window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _seekTarget, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
                         }
                     }
-                    showControls(5000); 
+                    showControls(3500); 
                     document.removeEventListener('mousemove', moveHandler); 
                     document.removeEventListener('mouseup', endDrag); 
                     document.removeEventListener('touchmove', moveHandler); 
@@ -43418,7 +43418,7 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('forward', newTime, step);
-            showControls(5000);
+            showControls(3500);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43445,7 +43445,7 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('backward', newTime, step);
-            showControls(5000);
+            showControls(3500);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -44495,7 +44495,7 @@ function deleteContinueWatchingRecord(name) {
                     var _isLive4 = !!(state.player && state.player.isLiveStream);
                     state.remote.playerBoxIndex = _isLive4 ? 9 : 1;
                     state.remote.zone = 'player';
-                    if (typeof showControls === 'function') showControls(5000);
+                    if (typeof showControls === 'function') showControls(3500);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     return;
                 }
@@ -44518,7 +44518,7 @@ function deleteContinueWatchingRecord(name) {
                     state.remote.playerBoxIndex = _isLive ? 9 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
-                    showControls(5000);
+                    showControls(3500);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     showToast('Kontroller Açıldı');
                     return;
@@ -44538,8 +44538,8 @@ function deleteContinueWatchingRecord(name) {
                         }
                         if (e.key === 'ArrowLeft')  { if (typeof openSidebar === 'function') openSidebar(); }
                     } else if (_isSeries) {
-                        // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
-                        if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                        // Dizi: Yukarı → Sesli Arama (bölüm değiştirmesin), Aşağı → önceki bölüm, Sol/Sağ → sarma
+                        if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
@@ -44572,7 +44572,7 @@ function deleteContinueWatchingRecord(name) {
                         // OK → kontrolleri aç
                         state.remote.playerBoxIndex = _isLive ? 9 : 1;
                         state.remote.zone = 'player';
-                        showControls(5000);
+                        showControls(3500);
                         updateRemoteFocus();
                         return;
                     }
@@ -44583,9 +44583,15 @@ function deleteContinueWatchingRecord(name) {
                         // ArrowUp/Down → hiçbir şey yapma (film değiştirme yok)
                         return;
                     }
-                    // Dizi: yukarı=sonraki bölüm, aşağı=önceki bölüm, sol/sağ sarma YOK
+                    // Dizi: yukarı=Sesli Arama, aşağı=önceki bölüm, sol/sağ sarma YOK
+                    // (Kullanıcı isteği: kontroller gizliyken/kapalıyken yukarı tuşu
+                    // artık bölüm değiştirmesin — sesli aramayı açsın. Önceki bölüme
+                    // gitmek için aşağı tuşu kullanılabilir.)
                     if (_isSeries) {
-                        if (e.key === 'ArrowUp')   { if (typeof nextEpisode === 'function') nextEpisode(); return; }
+                        if (e.key === 'ArrowUp')   {
+                            if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
+                            return;
+                        }
                         if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); return; }
                         // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
                         return;
@@ -44601,7 +44607,7 @@ function deleteContinueWatchingRecord(name) {
                     }
                     state.remote.playerBoxIndex = 9; // btnPlayerList
                     state.remote.zone = 'player';
-                    showControls(5000);
+                    showControls(3500);
                     updateRemoteFocus();
                     return;
                 }
@@ -44617,10 +44623,12 @@ function deleteContinueWatchingRecord(name) {
 
             // Gezinme dışı tuşlarda timer'ı uzat
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
-                showControls(5000);
+                showControls(3500);
             } else {
-                // Gezinmede timer'ı 5sn'ye sıfırla — her buton geçişinde süreyi yenile
-                _scheduleHide(5000);
+                // Gezinmede timer'ı 3.5sn'ye sıfırla — her buton geçişinde süreyi yenile
+                // (kullanıcı gezinmeye devam ettikçe kontroller hiç kapanmaz, sadece
+                // son tuştan 3.5sn sonra hiç basılmazsa otomatik gizlenir)
+                _scheduleHide(3500);
             }
 
             switch(e.key) {
@@ -45583,7 +45591,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!videoDuration) return;
             
-            showControls(5000);
+            showControls(3500);
             
             switch(e.key) {
                 case 'ArrowLeft': 
@@ -45660,7 +45668,7 @@ function handlePlayerRemote(e) {
             if (_label3) _label3.textContent = 'Gizle';
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(5000);
+            showControls(3500);
             return;
         }
         if (e.key === 'Enter' || e.key === 'OK') {
@@ -45673,7 +45681,7 @@ function handlePlayerRemote(e) {
             if (_label2) _label2.textContent = 'Gizle';
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(5000);
+            showControls(3500);
             return;
         }
         // Yon tuslari — icerik turune gore
@@ -45693,8 +45701,8 @@ function handlePlayerRemote(e) {
                 }
                 if (e.key === 'ArrowLeft') { if (typeof seekBackward === 'function') seekBackward(); }
             } else if (_isSeries) {
-                // Dizi: Yukari → sonraki bolum, Asagi → onceki bolum, Sol/Sag → sarma
-                if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                // Dizi: Yukari → Sesli Arama (bölüm değiştirmesin), Asagi → onceki bolum, Sol/Sag → sarma
+                if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                 if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
@@ -45721,8 +45729,8 @@ function handlePlayerRemote(e) {
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
             } else if (_isSeries) {
-                // Dizi: yukarı=sonraki bölüm, aşağı=önceki bölüm, sol/sağ hiçbir şey
-                if (e.key === 'ArrowUp')   { if (typeof nextEpisode === 'function') nextEpisode(); }
+                // Dizi: yukarı=Sesli Arama (bölüm değiştirmesin), aşağı=önceki bölüm, sol/sağ hiçbir şey
+                if (e.key === 'ArrowUp')   { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                 if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); }
             }
             // Canlı: Yukarı/Aşağı → KANAL DEĞİŞTİR (kontroller kapalı olsa bile)
@@ -45740,7 +45748,7 @@ function handlePlayerRemote(e) {
                 // Sol ok → kontrolleri aç (mevcut davranış)
                 state.remote.playerBoxIndex = 9; // btnPlayerList
                 state.remote.zone = 'player';
-                showControls(5000);
+                showControls(3500);
                 updateRemoteFocus();
             }
             return;
@@ -45750,7 +45758,7 @@ function handlePlayerRemote(e) {
             e.preventDefault();
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(5000);
+            showControls(3500);
             updateRemoteFocus();
             return;
         }
@@ -45771,7 +45779,7 @@ function handlePlayerRemote(e) {
     // Kontroller açık ama zone yanlış — zone'u player'a sabitle
     state.remote.playerBoxIndex = _isLive ? 9 : 1;
     state.remote.zone = 'player';
-    showControls(5000);
+    showControls(3500);
     updateRemoteFocus();
 }
 
@@ -47551,8 +47559,17 @@ function handleFavoriteChannelSelect(key) {
     if(el) {
         el.classList.add('remote-focused');
         (window._lastFocusedEls = window._lastFocusedEls || []).push(el);
-        if(el.scrollIntoView && state.remote.zone !== 'sidebar' && state.remote.zone !== 'continueCards' && state.remote.zone !== 'header' && state.remote.zone !== 'heroSlider') {
+        if(el.scrollIntoView && state.remote.zone !== 'sidebar' && state.remote.zone !== 'continueCards' && state.remote.zone !== 'header' && state.remote.zone !== 'heroSlider' && state.remote.zone !== 'player') {
             el.scrollIntoView({block:'nearest',inline:'nearest', behavior: 'auto'});
+        }
+        // player zone: butonlar sabit bir satırda, scrollIntoView yerine sadece
+        // gerekirse (taşma varsa) yatay kaydır — her tuş basışında reflow tetikleyen
+        // scrollIntoView çağrısından kaçınıyoruz (kumandada hızlı gezinme kasmasını azaltır)
+        else if (el.scrollIntoView && state.remote.zone === 'player') {
+            var _prow = el.closest('.player-actions-row');
+            if (_prow && (el.offsetLeft < _prow.scrollLeft || el.offsetLeft + el.offsetWidth > _prow.scrollLeft + _prow.clientWidth)) {
+                el.scrollIntoView({block:'nearest', inline:'nearest', behavior: 'auto'});
+            }
         }
     }
 
@@ -47773,7 +47790,7 @@ function handleFavoriteChannelSelect(key) {
                     state.remote.playerBoxIndex = _isLiveH ? 9 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
-                    showControls(5000);
+                    showControls(3500);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     showToast('Kontroller Açıldı');
                     return;
@@ -47788,8 +47805,8 @@ function handleFavoriteChannelSelect(key) {
                         if (e.key === 'ArrowRight') { if (typeof openEpgModal  === 'function') openEpgModal(); }
                         if (e.key === 'ArrowLeft')  { if (typeof openSidebar  === 'function') openSidebar(); }
                     } else if (_isSeriesH) {
-                        // Dizi: Yukarı → sonraki bölüm, Aşağı → önceki bölüm, Sol/Sağ → sarma
-                        if (e.key === 'ArrowUp')    { if (typeof nextEpisode  === 'function') nextEpisode(); }
+                        // Dizi: Yukarı → Sesli Arama (bölüm değiştirmesin), Aşağı → önceki bölüm, Sol/Sağ → sarma
+                        if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                         if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
@@ -48121,8 +48138,18 @@ function tryIframeRedirect(action) {
             } catch (e) { console.warn("AudioContext error", e); }
         }
 
+        var _pksLastTime = 0;
         function playKeySound(type = 'click') {
             if (!state.controlSettings.keySoundEnabled || !audioContext) return;
+            // PERF FIX: kumandada tuş basılı tutulduğunda (otomatik tekrar) her
+            // basışta 2 osilatör + 2 gain node oluşturmak düşük güçlü TV box
+            // cihazlarında CPU/GC yükü biriktirip kasmaya katkı yapıyordu.
+            // 'navigate' sesleri (en sık tetiklenen tür) 45ms'den sık çalınmasın.
+            if (type === 'navigate') {
+                var _now = Date.now();
+                if (_now - _pksLastTime < 45) return;
+                _pksLastTime = _now;
+            }
             try {
                 if (audioContext.state === 'suspended') audioContext.resume();
                 const now = audioContext.currentTime;
@@ -49317,7 +49344,7 @@ function tvNav(key){
         var _isSeries = !!(window.state && window.state.series && window.state.series.currentSeries);
         var _isLive   = window.state && window.state.player && window.state.player.isLiveStream;
         if (key === 'ArrowUp') {
-            if (_isSeries) { if (typeof nextEpisode === 'function') nextEpisode(); }
+            if (_isSeries) { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
             else { if (typeof nextCh === 'function') nextCh(); if (typeof showToast === 'function') showToast(_isLive ? '▶ Sonraki Kanal' : '▶ Sonraki Film'); }
         } else if (key === 'ArrowDown') {
             if (_isSeries) { if (typeof prevEpisode === 'function') prevEpisode(); }
@@ -52449,22 +52476,11 @@ document.addEventListener('DOMContentLoaded', function() {
 }, {once: true});
 
 // 5. Keyboard repeat throttle — TVBox kumanda basılı tutma kasması
-var _keyRepeatMap = {};
-var _origKeyDown = null;
-document.addEventListener('keydown', function(e) {
-    var key = e.key || e.keyCode;
-    var now = Date.now();
-    // Navigation tuşları: 60ms debounce (eskisi 100ms — daha hızlı tepki)
-    var navKeys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' ','37','38','39','40','13'];
-    var isNav = navKeys.indexOf(String(key)) > -1;
-    if (isNav) {
-        if (_keyRepeatMap[key] && (now - _keyRepeatMap[key]) < 60) {
-            e.stopImmediatePropagation();
-            return;
-        }
-        _keyRepeatMap[key] = now;
-    }
-}, true); // capture: true → en erken intercept
+//    KONSOLİDE EDİLDİ: bu işlev artık tek bir merkezi throttle'a taşındı
+//    (bkz. window._UMT_KEY_THROTTLE), aynı işi 3 ayrı yerde tekrarlamak
+//    (60ms / 80ms / 80ms, hepsi capture:true) tuş basışlarının bazılarının
+//    sessizce yutulmasına (stopImmediatePropagation çakışması) ve gecikmeye
+//    sebep oluyordu. Bkz. ~L58291 ve ~L70940 civarındaki not.
 
 // 6. Periodic garbage: kullanılmayan DOM temizle
 var _gcTimer = null;
@@ -58286,19 +58302,26 @@ var _nativeGEBI = document.getElementById.bind(document);
 })();
 
 // ── 3. Ok/Enter tuşu debounce — TVBox hızlı tetik engeli ──
-var _lastKeyTime = 0;
-var _enterLock   = false;
+//    MERKEZİ THROTTLE: eskiden bu iş 3 ayrı yerde (60ms/80ms/80ms) tekrar
+//    tekrar yapılıyordu — her biri kendi zaman damgasını tutuyordu ve
+//    bazen biri diğerinden önce stopImmediatePropagation çağırıp geçerli
+//    bir tuş basışını da yutuyordu (kumandada butona ulaşamadan kontrollerin
+//    kaybolması / tuşun işlememesi şikayetinin sebebi). Artık tek noktadan
+//    yönetiliyor; window._UMT_KEY_THROTTLE diğer kod bloklarının da
+//    erişebilmesi için global tutuluyor.
+window._UMT_KEY_THROTTLE = window._UMT_KEY_THROTTLE || { lastNavTime: 0, enterLocked: false };
 document.addEventListener('keydown', function(e) {
     var k = e.key, now = Date.now();
+    var T = window._UMT_KEY_THROTTLE;
     if (k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight') {
-        if (now - _lastKeyTime < 80) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-        _lastKeyTime = now;
+        if (now - T.lastNavTime < 80) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+        T.lastNavTime = now;
         return;
     }
     if (k==='Enter'||k==='OK') {
-        if (_enterLock) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-        _enterLock = true;
-        setTimeout(function(){ _enterLock = false; }, 250);
+        if (T.enterLocked) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+        T.enterLocked = true;
+        setTimeout(function(){ T.enterLocked = false; }, 250);
     }
 }, true);
 
@@ -58718,17 +58741,10 @@ function _patchScrollToCard() {
     window.scrollToCard._deepV3 = true;
 }
 
-/* 3. Klavye navigasyonu — tuş tekrarı 80ms throttle */
-(function() {
-    var _last = 0, _INT = 80;
-    document.addEventListener('keydown', function(e) {
-        var nav = (e.keyCode >= 37 && e.keyCode <= 40);
-        if (!nav) return;
-        var now = Date.now();
-        if (now - _last < _INT) { e.stopImmediatePropagation(); return; }
-        _last = now;
-    }, true);
-})();
+/* 3. Klavye navigasyonu — tuş tekrarı throttle KONSOLİDE EDİLDİ
+   (bkz. window._UMT_KEY_THROTTLE, ~L58291 civarı). Üç ayrı debounce
+   katmanının üçü de aynı tuşu kontrol edip birbirinden habersiz
+   stopImmediatePropagation çağırınca bazı geçerli tuş basışları kayboluyordu. */
 
 /* 4. showToast debounce — üst üste toast kasma önle */
 function _patchShowToast() {
@@ -69685,7 +69701,7 @@ function _vsTryHandleCommand(rawText) {
             if (typeof showModernSeekingOverlay === 'function') {
                 showModernSeekingOverlay(direction, newTime, seconds);
             }
-            if (typeof showControls === 'function') showControls(5000);
+            if (typeof showControls === 'function') showControls(3500);
             // WP: host seek bildir
             if (window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                 window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(function(){});
@@ -71566,6 +71582,32 @@ body.tvbox-mode #exitConfirmYes.remote-focused::after {
 .channel-card.remote-focused,
 .channel-card.focused {
     animation: focusPulse 1.4s ease-in-out infinite !important;
+}
+/* PERF FIX: TVBox / düşük performans modunda sürekli box-shadow animasyonu
+   kapatılır — her 1.4 saniyede tetiklenen repaint/composite, kumandayla hızlı
+   buton gezinmesiyle üst üste binince kasmaya katkı yapıyordu. Odak halen
+   net outline ile görünür kalır, sadece nabız animasyonu durur. */
+body.tvbox-mode .recent-card.remote-focused,
+body.tvbox-mode .hp-card.remote-focused,
+body.tvbox-mode .vod-episode-card.remote-focused,
+body.tvbox-mode .vod-episode-card.focused,
+body.tvbox-mode .channel-card.remote-focused,
+body.tvbox-mode .channel-card.focused,
+body.low-performance-mode .recent-card.remote-focused,
+body.low-performance-mode .hp-card.remote-focused,
+body.low-performance-mode .vod-episode-card.remote-focused,
+body.low-performance-mode .vod-episode-card.focused,
+body.low-performance-mode .channel-card.remote-focused,
+body.low-performance-mode .channel-card.focused {
+    animation: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
+}
+/* Player butonları için de aynı kural — sabit glow, sürekli animasyon yok */
+body.tvbox-mode .player-action-btn.remote-focused,
+body.tvbox-mode .player-action-btn.focused,
+body.low-performance-mode .player-action-btn.remote-focused,
+body.low-performance-mode .player-action-btn.focused {
+    animation: none !important;
 }
 
 /* ── 7) SOL ÜST LOGO — seçilen tema renginde, her modda statik ──

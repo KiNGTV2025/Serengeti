@@ -23983,6 +23983,18 @@ function playSeriesEpisode(seriesName, season, episode, url) {
             );
             if (found) url = found.url;
         }
+        // Türkçe yazım formatı: "1.Sezon 2.Bölüm", "1 Sezon 2 Bölüm" vb.
+        if (!url) {
+            const _trRe = new RegExp(season + '\\s*\\.?\\s*sezon.*?' + episode + '\\s*\\.?\\s*b[oö]l[uü]m', 'i');
+            const foundTr = state.channels.find(ch => ch.name && ch.name.includes(seriesName) && _trRe.test(ch.name));
+            if (foundTr) url = foundTr.url;
+        }
+        // Son çare: sadece bölüm numarasıyla (sezon belirtilmemiş/tek sezon dizilerde)
+        if (!url && season === 1) {
+            const _epOnlyRe = new RegExp('\\b' + episode + '\\s*\\.?\\s*b[oö]l[uü]m', 'i');
+            const foundEpOnly = state.channels.find(ch => ch.name && ch.name.includes(seriesName) && _epOnlyRe.test(ch.name));
+            if (foundEpOnly) url = foundEpOnly.url;
+        }
         if (!url) {
             showToast('Bölüm URL bulunamadı');
             return;
@@ -69531,15 +69543,78 @@ function _vsFindSeriesNameInText(text) {
     return best;
 }
 
+// Index'te tam eşleşme bulunamadığında: transcript'ten komut kelimelerini
+// (sayılar, "sezon", "bölüm/bölümü/bölümünü", "aç") temizleyip kalan kısmı
+// dizi adı olarak kullanır. "delikanlı 2 bölüm aç" → "delikanlı"
+function _vsExtractSeriesNameFallback(rawText) {
+    var t = ' ' + _vsNormalize(rawText) + ' ';
+    // Sezon/bölüm + bitişik sayı kalıplarını sil
+    t = t.replace(/\b\d+\.?\s*sezon\w*/g, ' ');
+    t = t.replace(/\b\d+\.?\s*bolum\w*/g, ' ');
+    // Sayı kelimesi + sezon/bölüm kalıpları (örn. "iki bölüm")
+    var numWordsPattern = Object.keys(_VS_NUM_WORDS).join('|');
+    var re1 = new RegExp('\\b(' + numWordsPattern + ')\\s+sezon\\w*', 'g');
+    var re2 = new RegExp('\\b(' + numWordsPattern + ')\\s+bolum\\w*', 'g');
+    t = t.replace(re1, ' ').replace(re2, ' ');
+    // Kalan komut kelimelerini sil
+    t = t.replace(/\b(ac|getir|baslat|oynat|izle)\b/g, ' ');
+    // Yalnız sayıları da temizle (artakalan)
+    t = t.replace(/\b\d+\b/g, ' ');
+    t = t.replace(/\s+/g, ' ').trim();
+    if (t.length < 2) return null;
+    // Orijinal (büyük/küçük harf, Türkçe karakter) metinden aynı uzunlukta
+    // bir alt dizeyi bulmaya çalış — kanal aramasında orijinal isim daha güvenilir.
+    // Basit yaklaşım: ilk kelime grubu kadarını orijinal metinden kabaca al.
+    var rawWords = rawText.trim().split(/\s+/);
+    var cleanWords = t.split(/\s+/);
+    // Orijinal metnin başından, temizlenmiş kelime sayısı kadarını al (genelde dizi adı baştadır)
+    var guess = rawWords.slice(0, cleanWords.length).join(' ');
+    return guess || t;
+}
+
+// Tahmini bir dizi adını (örn. fallback'ten gelen "delikanlı") kanal/grup
+// listesinde substring olarak arar ve gerçek (orijinal yazımlı) adı döndürür.
+// _vsFindSeriesNameInText'in tersi yönde çalışır: burada aranan kısa, index'teki uzun.
+function _vsMatchGuessToRealName(guess) {
+    if (!guess) return null;
+    _vsBuildIndex();
+    var nGuess = _vsNormalize(guess);
+    if (nGuess.length < 2) return null;
+    var idx = _vsChannelIndex || [];
+    var best = null, bestScore = -1;
+    var seen = {};
+    for (var i = 0; i < idx.length; i++) {
+        var ch = idx[i].ch;
+        var candidates = [];
+        if (ch.group && ch.group.length > 2) candidates.push(ch.group);
+        if (ch.name) candidates.push(ch.name);
+        for (var c = 0; c < candidates.length; c++) {
+            var cand = candidates[c];
+            var key = _vsNormalize(cand);
+            if (seen[key]) continue;
+            seen[key] = true;
+            if (key.indexOf(nGuess) === 0) {
+                // Tahmin, adın başlangıcıyla eşleşiyor — en kısa böyle eşleşme en iyisi (en spesifik dizi adı)
+                if (bestScore < 0 || key.length < bestScore) { best = cand; bestScore = key.length; }
+            }
+        }
+    }
+    return best;
+}
+
 // Komutu dener; eşleşip işlendiyse true döner (çağıran normal aramayı atlar).
 function _vsTryHandleCommand(rawText) {
     var nText = _vsNormalize(rawText);
 
-    // ── SARMA KOMUTLARI: "X dakika ileri sar", "X saniye geri sar", "ileri sar" ──
-    var seekMatch = nText.match(/(.*?)\b(ileri|ileriye|geri|geriye)\s*(sar|al|git)\b/);
+    // ── SARMA KOMUTLARI ──────────────────────────────────────────────
+    // "X dakika ileri sar", "X saniye geri sar", "ileri sar", "geri sar",
+    // ve yön belirtilmeden sadece "X dakika sar" (varsayılan: ileri).
+    // Not: sadece "sar/sarmak" fiili tetikleyici — "al/git" gibi kelimeler
+    // normal kanal adlarıyla (örn. "al jazeera") karışmasın diye dahil edilmiyor.
+    var seekMatch = nText.match(/(.*?)\b(ileri|ileriye|geri|geriye)?\s*(sar\w*)\b/);
     if (seekMatch) {
         var beforePart = seekMatch[1] || '';
-        var direction = (seekMatch[2] === 'ileri' || seekMatch[2] === 'ileriye') ? 'forward' : 'backward';
+        var direction = (seekMatch[2] === 'geri' || seekMatch[2] === 'geriye') ? 'backward' : 'forward'; // belirtilmemişse ileri
 
         var unit = /saniye/.test(beforePart) ? 'sec' : 'min'; // belirtilmemişse dakika varsayalım (sesli komutlarda daha doğal)
         if (/saniye/.test(beforePart)) unit = 'sec';
@@ -69601,6 +69676,13 @@ function _vsTryHandleCommand(rawText) {
         // Dizi adını metnin "bölüm"den önceki kısmından çıkarmaya çalış,
         // bulunamazsa tüm metin içinde en iyi eşleşen kanal/grup adını ara.
         var seriesName = _vsFindSeriesNameInText(rawText);
+        if (!seriesName) {
+            // FALLBACK: index'te tam eşleşme bulunamadıysa, transcript'ten
+            // sayı/sezon/bölüm/aç kelimelerini çıkarıp kalan kısmı dizi adı say.
+            var _guess = _vsExtractSeriesNameFallback(rawText);
+            // Tahmini ismi gerçek kanal/grup adlarıyla eşleştirip doğru yazımı bul
+            seriesName = _vsMatchGuessToRealName(_guess) || _guess;
+        }
         if (!seriesName) {
             if (typeof showToast === 'function') showToast('⚠ Dizi adı anlaşılamadı, tekrar deneyin', 'error');
             return true; // komut olarak tanındı ama dizi bulunamadı — normal aramaya düşme

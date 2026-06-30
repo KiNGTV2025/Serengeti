@@ -5313,19 +5313,32 @@ body {
             .player-actions-row {
                 padding: 4px 2px !important;
                 gap: 5px !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                overflow-x: hidden !important;
+            }
+
+            .action-sep {
+                display: none !important;
+            }
+
+            .player-action-group {
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 5px !important;
             }
 
             .player-action-btn {
-                min-width: 46px !important;
-                height: 38px !important;
-                font-size: 17px !important;
+                min-width: 44px !important;
+                height: 40px !important;
+                font-size: 16px !important;
                 padding: 0 8px !important;
                 background: rgba(255,255,255,0.10) !important;
                 border-color: rgba(255,255,255,0.28) !important;
             }
 
             .player-action-btn .material-symbols-outlined {
-                font-size: 20px !important;
+                font-size: 19px !important;
             }
 
             .player-action-btn .btn-label {
@@ -5338,10 +5351,6 @@ body {
                 min-width: 54px !important;
                 background: linear-gradient(145deg, rgba(255,215,0,0.35) 0%, rgba(255,180,0,0.18) 100%) !important;
                 border-color: rgba(255,215,0,0.6) !important;
-            }
-
-            .action-sep {
-                height: 28px !important;
             }
             
             .player-top-bar {
@@ -5876,20 +5885,19 @@ body {
          
         .player-actions-row {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             width: 100%;
-            padding: 5px 4px;
-            flex-wrap: nowrap;
-            gap: 8px;
-            overflow-x: auto;
-            overflow-y: visible; /* seek paneli yukarı taşabilsin */
+            padding: 4px 2px;
+            flex-wrap: wrap;
+            gap: 5px;
+            overflow-x: hidden;
+            overflow-y: visible;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            touch-action: none;
+            touch-action: manipulation;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-x: contain;
-            cursor: grab;
         }
         .player-actions-row::-webkit-scrollbar { display: none; }
 
@@ -5923,8 +5931,8 @@ body {
             border: 1px solid var(--btn-border, rgba(255,215,0,0.28));
             border-bottom: 1px solid var(--btn-border-bottom, rgba(255,215,0,0.08));
             color: var(--accent-primary, #FFD700);
-            min-width: 40px;
-            height: 38px;
+            min-width: 44px;
+            height: 42px;
             border-radius: 10px;
             display: flex;
             flex-direction: column;
@@ -5934,7 +5942,7 @@ body {
             transition: none;
             flex-shrink: 0;
             font-size: 16px;
-            padding: 0 7px;
+            padding: 0 8px;
             gap: 2px;
             position: relative;
             overflow: hidden;
@@ -5971,6 +5979,42 @@ body {
     .player-action-btn .btn-label { display: none !important; }
     .player-action-btn { min-width: 36px !important; height: 36px !important; padding: 0 4px !important; }
     .action-sep { display: none; }
+}
+
+/* ── Mobil player: butonlar wrap olunca ayraçlar anlamsız, grup boşlukları yeterli ── */
+@media (max-width: 768px) {
+    .action-sep { display: none !important; }
+    .player-action-group {
+        gap: 5px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    .player-actions-row {
+        gap: 5px !important;
+        justify-content: center !important;
+    }
+    .player-action-btn {
+        min-width: 42px !important;
+        height: 40px !important;
+        padding: 0 7px !important;
+        font-size: 15px !important;
+    }
+    .player-action-btn .material-symbols-outlined {
+        font-size: 17px !important;
+    }
+    .player-action-btn .btn-label {
+        font-size: 8px !important;
+    }
+    /* Canlı butonu wrap'ta tam görünsün */
+    .live-btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    /* Kontrol kutusu - wrap için yüksekliği otomatik yap */
+    .player-controls-box {
+        max-height: none !important;
+        overflow: visible !important;
+    }
 }
 
         .player-action-btn:hover {
@@ -23906,15 +23950,21 @@ function playSeriesEpisode(seriesName, season, episode, url) {
             return;
         }
     }
-    // Önceki bölümü izlendi kaydet (state güncellenmeden ÖNCE)
+    // Önceki bölümü izlendi kaydet — SADECE %80+ izlendiyse (state güncellenmeden ÖNCE)
     if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
     const _prevSeries = state.series.currentSeries;
     const _prevSeason = state.series.currentSeason;
     const _prevEp = state.series.currentEpisode;
     if (_prevSeries && _prevEp) {
-        const _prevKey = `${_prevSeries}_S${_prevSeason}E${_prevEp}`;
-        state.series.watchedEpisodes[_prevKey] = { ts: Date.now() };
-        try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
+        /* Video süresine bak — sadece %80+ izlendiyse ya da zaten işaretliyse kaydet */
+        const _vid = document.getElementById('videoPlayer');
+        const _alreadyMarked = !!state.series.watchedEpisodes[`${_prevSeries}_S${_prevSeason}E${_prevEp}`];
+        const _watchedEnough = _vid && _vid.duration && isFinite(_vid.duration) && (_vid.currentTime / _vid.duration >= 0.8);
+        if (_alreadyMarked || _watchedEnough) {
+            const _prevKey = `${_prevSeries}_S${_prevSeason}E${_prevEp}`;
+            state.series.watchedEpisodes[_prevKey] = { ts: Date.now() };
+            try { localStorage.setItem('umittv_watched', JSON.stringify(state.series.watchedEpisodes)); } catch(e) {}
+        }
     }
 
     state.series.currentSeries = seriesName;
@@ -39669,6 +39719,34 @@ function playChannelByUrl(url, channelName = '') {
     state.filtered.push(tempChannel);
     const tempIndex = state.filtered.length - 1;
     playChannel(tempIndex, 0);
+
+    // ── Watch Party: bölüm/dizi değişimini odaya bildir (host ise) ──
+    // WP'nin playChannel wrap'ı geçici kanalı yakalayabilir ama güvence için
+    // burada da direkt nowPlaying'e yaz — gecikme olmadan, 1sn timeout ile.
+    try {
+        if (window.WP && WP.inRoom && WP.isHost && typeof window.fbSet === 'function') {
+            setTimeout(function() {
+                if (!WP.inRoom || !WP.isHost) return;
+                WP._hostPlayerOpen = true;
+                window.fbSet('/rooms/' + WP.roomCode + '/playerState', {
+                    action: 'open', ts: Date.now(), by: WP.myNick
+                }).catch(function(){});
+                window.fbSet('/rooms/' + WP.roomCode + '/nowPlaying', {
+                    type: 'direct',
+                    name: channelName || 'Dizi Bölümü',
+                    url: url,
+                    channelData: JSON.stringify(tempChannel),
+                    ts: Date.now(),
+                    startedBy: WP.myNick
+                }).catch(function(){});
+                window.fbPush && window.fbPush('/rooms/' + WP.roomCode + '/chat', {
+                    nick: 'Sistem', color: '#FFD700',
+                    text: '▶ ' + WP.myNick + ' oynatıyor: ' + (channelName || 'Dizi Bölümü'),
+                    isSystem: true, ts: Date.now()
+                }).catch(function(){});
+            }, 300);
+        }
+    } catch(e) {}
 }
 // selectCat fonksiyonunu da kontrol edelim:
 function selectCat(id) {

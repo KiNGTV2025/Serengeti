@@ -5350,32 +5350,18 @@ body {
             .player-actions-row {
                 padding: 4px 2px !important;
                 gap: 5px !important;
-                /* PERF/BUG FIX: önceden flex-wrap:wrap + overflow-x:hidden idi.
-                   Bu kombinasyon, JS tarafındaki setupDragScroll() sürükleme
-                   mantığıyla çelişiyordu: JS her dokunuşta scrollLeft set
-                   etmeye ve preventDefault çağırmaya çalışıyor, ama
-                   overflow-x:hidden yüzünden görünürde hiçbir kayma
-                   olmuyordu — kullanıcı parmağını gezdirdikçe "donmuş/takılı"
-                   bir his oluşuyordu. Artık satır sarmıyor, taşan butonlar
-                   yatayda kaydırılabiliyor (scrollbar gizli kalıyor). */
-                flex-wrap: nowrap !important;
-                justify-content: flex-start !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                overflow-x: hidden !important;
             }
-            .player-actions-row::-webkit-scrollbar { display: none !important; }
 
             .action-sep {
                 display: none !important;
             }
 
             .player-action-group {
-                flex-wrap: nowrap !important;
-                justify-content: flex-start !important;
-                flex-shrink: 0 !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
                 gap: 5px !important;
             }
 
@@ -5936,23 +5922,17 @@ body {
          
         .player-actions-row {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             width: 100%;
             padding: 4px 2px;
-            /* PERF/BUG FIX: flex-wrap + overflow-x:hidden idi. Bu yüzden
-               JS'teki setupDragScroll() sürükleme/scroll mantığı hiçbir
-               görsel etki üretmiyordu (scrollLeft set ediliyor ama overflow
-               kapalı olduğundan kayma gerçekleşmiyordu) — kullanıcı
-               kaydırmaya çalıştıkça "donmuş" gibi hissediyordu. Artık satır
-               sarmıyor (nowrap) ve taşan kısım gerçekten yatayda kayıyor. */
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
             gap: 5px;
-            overflow-x: auto;
-            overflow-y: hidden;
+            overflow-x: hidden;
+            overflow-y: visible;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            touch-action: pan-x;
+            touch-action: manipulation;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-x: contain;
         }
@@ -6038,18 +6018,17 @@ body {
     .action-sep { display: none; }
 }
 
-/* ── Mobil player: butonlar artık sarmıyor, satır yatayda kayıyor (bkz. PERF/BUG FIX yukarıda) ── */
+/* ── Mobil player: butonlar wrap olunca ayraçlar anlamsız, grup boşlukları yeterli ── */
 @media (max-width: 768px) {
     .action-sep { display: none !important; }
     .player-action-group {
         gap: 5px !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        flex-shrink: 0 !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
     }
     .player-actions-row {
         gap: 5px !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
     }
     .player-action-btn {
         min-width: 42px !important;
@@ -50103,29 +50082,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
         var isDown = false, startX = 0, scrollLeft = 0, moved = false;
         var THRESHOLD = 5;
 
-        // PERF FIX: scrollLeft'i artık her mousemove/touchmove event'inde
-        // anında (senkron) yazmıyoruz — bu, her parmak/mouse hareketinde
-        // bir layout reflow tetikleyip scroll sırasında kasma/donmaya ve
-        // butonların "atlayarak" kayma hissine (jank) sebep oluyordu.
-        // Bunun yerine hedef scrollLeft değerini saklayıp tek bir
-        // requestAnimationFrame döngüsü içinde, ekranın izin verdiği kadar
-        // (saniyede en fazla ~60 kez) uyguluyoruz. Böylece tarayıcı event
-        // sıklığı ile render sıklığı birbirinden ayrışıyor.
-        var pendingScrollLeft = null;
-        var rafId = null;
-        function flushScroll() {
-            rafId = null;
-            if (pendingScrollLeft !== null) {
-                el.scrollLeft = pendingScrollLeft;
-                pendingScrollLeft = null;
-            }
-        }
-        function queueScroll(value) {
-            pendingScrollLeft = value;
-            if (rafId === null) {
-                rafId = requestAnimationFrame(flushScroll);
-            }
-        }
+        
 
         el.addEventListener('mousedown', function(e) {
             isDown = true; moved = false;
@@ -50143,7 +50100,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
             e.preventDefault();
             var walk = (e.pageX - el.offsetLeft) - startX;
             if (Math.abs(walk) > THRESHOLD) moved = true;
-            queueScroll(scrollLeft - walk);
+            el.scrollLeft = scrollLeft - walk;
         });
         el.addEventListener('click', function(e) {
             // BUG DÜZELTME: Bu handler eskiden sadece mouse'a ait `moved`
@@ -50167,17 +50124,12 @@ if (typeof window.fetchM3UChannels === 'undefined') {
             tStartX = e.touches[0].clientX;
             tScroll = el.scrollLeft;
             tMoved = false;
-            // Bir önceki sürüklemeden kalmış olabilecek bekleyen bir
-            // scroll uygulamasını iptal et, ki yeni dokunuş eski hedefin
-            // üzerine "zıplamasın".
-            if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
-            pendingScrollLeft = null;
         }, { passive: true });
         el.addEventListener('touchmove', function(e) {
             var dx = tStartX - e.touches[0].clientX;
             if (Math.abs(dx) > THRESHOLD) {
                 tMoved = true;
-                queueScroll(tScroll + dx);
+                el.scrollLeft = tScroll + dx;
                 if (Math.abs(dx) > 8) e.preventDefault();
             }
         }, { passive: false });
@@ -59776,32 +59728,19 @@ _patchBanner();
 
 /* ══════════════════════════════════════════════════════════
    FIX 3: Player butonları touch-action düzelt
-   GÜNCELLEME: overflow-x de inline olarak garanti altına alındı.
-   Önceki haliyle bu fonksiyon sadece touch-action ve flex-wrap'i
-   düzeltiyordu; ama CSS tarafında hâlâ overflow-x:hidden veren
-   eski kurallar olduğundan (dosyada çok sayıda çakışan "perf patch"
-   katmanı birikmiş durumda) satır pratikte hiç kaymıyordu — JS
-   scrollLeft set etmeye çalışıyor, kullanıcı parmağıyla kaydırmaya
-   çalışıyordu ama overflow kapalı olduğu için görünürde hiçbir şey
-   olmuyor, bu da "donmuş/takılı" hissi yaratıyordu. Inline style
-   ile overflow-x:auto zorlanarak hangi CSS kuralı kazanırsa kazansın
-   scroll'un gerçekten çalışması garanti ediliyor.
 ══════════════════════════════════════════════════════════ */
 function _fixActionsRow() {
     document.querySelectorAll('.player-actions-row').forEach(function(r) {
         r.style.touchAction = 'pan-x';
         r.style.flexWrap = 'nowrap';
-        r.style.overflowX = 'auto';
-        r.style.overflowY = 'hidden';
-        r.style.justifyContent = 'flex-start';
     });
 }
 new MutationObserver(function(muts) {
     muts.forEach(function(m) {
         m.addedNodes.forEach(function(n) {
             if (n.nodeType !== 1) return;
-            if (n.classList && n.classList.contains('player-actions-row')) { n.style.touchAction='pan-x'; n.style.flexWrap='nowrap'; n.style.overflowX='auto'; n.style.overflowY='hidden'; n.style.justifyContent='flex-start'; }
-            else if (n.querySelector) { n.querySelectorAll('.player-actions-row').forEach(function(r){ r.style.touchAction='pan-x'; r.style.flexWrap='nowrap'; r.style.overflowX='auto'; r.style.overflowY='hidden'; r.style.justifyContent='flex-start'; }); }
+            if (n.classList && n.classList.contains('player-actions-row')) { n.style.touchAction='pan-x'; n.style.flexWrap='nowrap'; }
+            else if (n.querySelector) { n.querySelectorAll('.player-actions-row').forEach(function(r){ r.style.touchAction='pan-x'; r.style.flexWrap='nowrap'; }); }
         });
     });
 }).observe(document.body, {childList:true, subtree:true});
@@ -63526,15 +63465,11 @@ html, body {
    D-pad / remote-focused mantığına dokunulmaz
    ══════════════════════════════════════════════════════ */
 
-/* ── Kontrol kutusu: cam/blur efekti ──
-   PERF FIX: backdrop-filter: blur() kaldırıldı. Bu özellik her scroll/
-   sürükleme hareketinde arkasındaki tüm sahneyi yeniden bulanıklaştırmayı
-   gerektirir ve özellikle TVBox / zayıf Android WebView'lerde GPU'yu
-   tıkayarak player butonlarını kaydırırken ciddi kasma/donmaya sebep
-   oluyordu. Arkaplan biraz daha opak yapılarak blur olmadan da
-   benzer "cam" hissi korunuyor. */
+/* ── Kontrol kutusu: cam/blur efekti ── */
 .player-controls-box {
-    background: rgba(6,5,2,0.96) !important;
+    background: rgba(6,5,2,0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     border-radius: 20px !important;
     border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.14) !important;
     border-top: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.28) !important;

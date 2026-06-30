@@ -1781,6 +1781,34 @@ img {
 </style>
 
 <script>
+/* ── PERF FIX: Merkezi kumanda tuş throttle'ı — EN ÖNCE kayıt edilir ──
+   Önceden bu throttle dosyanın ortasında (satır ~58300) tanımlıydı; ondan
+   önce kayıtlı birkaç capture:true listener (handleBackButton, _anKeyHandler,
+   modal._escHandler, handleVodModalKeys vb.) throttle devreye girmeden ÖNCE
+   çalışıp kendi DOM işlemlerini yapıyordu. Kumandada tuş basılı tutulduğunda
+   (otomatik tekrar) bu, art arda gelen olayların hiçbiri filtrelenmeden ağır
+   handler'lara ulaşmasına ve UI'ın kasmasına sebep oluyordu.
+   Bu script dosyadaki <script> bloklarının EN BAŞINDA olduğu için, capture
+   fazında document'e bağlanan tüm listener'lardan önce çalışır ve hızlı tuş
+   tekrarını burada keser. */
+window._UMT_KEY_THROTTLE = { lastNavTime: 0, enterLocked: false };
+document.addEventListener('keydown', function(e) {
+    var k = e.key, now = Date.now();
+    var T = window._UMT_KEY_THROTTLE;
+    if (k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight') {
+        if (now - T.lastNavTime < 80) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+        T.lastNavTime = now;
+        return;
+    }
+    if (k==='Enter'||k==='OK') {
+        if (T.enterLocked) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+        T.enterLocked = true;
+        setTimeout(function(){ T.enterLocked = false; }, 250);
+    }
+}, true);
+</script>
+
+<script>
 /* ── Erken odak rengi başlatma — localStorage'dan oku, dynStyle'ı hemen oluştur ── */
 (function() {
     var rgb = '220,0,0', opacity = 70;
@@ -19964,7 +19992,7 @@ async function loadContinueWatching() {
                         const _isLiveB = !!(state.player && state.player.isLiveStream);
                         state.remote.playerBoxIndex = _isLiveB ? 9 : 1;
                         state.remote.zone = 'player';
-                        if (typeof showControls === 'function') showControls(3500);
+                        if (typeof showControls === 'function') showControls(7000);
                         if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                         playKeySound('back');
                         return;
@@ -24941,6 +24969,16 @@ function prevEpisode() {
     }
 }
 
+// Kullanıcı isteği: kumandada aşağı tuşu dizide doğrudan önceki bölümü
+// OYNATMASIN — bunun yerine bölüm seçim ekranını (VOD modalı) açsın,
+// kullanıcı orada istediği bölümü kendisi seçsin.
+function openEpisodeSelectorForCurrentSeries() {
+    if (!state.series.currentSeries) return;
+    if (typeof openVodModal === 'function') {
+        openVodModal(state.series.currentSeries);
+    }
+}
+
 // 15. Sonraki sezona geç
 function nextSeason() {
     if (!state.series.currentSeries) return;
@@ -26882,7 +26920,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         
         if (currentTouchZone === 'controlsBox') {
             e.preventDefault();
-            showControls(3500);
+            showControls(7000);
             return;
         }
         
@@ -26921,7 +26959,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         window._touchHiddenSwipeStartX = touchStartX;
         window._touchHiddenSwipeStartY = touchStartY;
         if (!window._controlsHidden) {
-            showControls(3500);
+            showControls(7000);
         }
         lastTouchTime = now2;
         
@@ -26951,7 +26989,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const ratio = Math.max(0, Math.min(currentX - rect.left, rect.width)) / rect.width;
             if (video.duration && isFinite(video.duration)) {
                 safeSetCurrentTime(video, video.duration * ratio);
-                showControls(3500);
+                showControls(7000);
             }
             lastProgressBarTouchTime = now;
             return;
@@ -27121,7 +27159,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     var label = document.getElementById('hideControlsLabel');
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
-                    showControls(3500);
+                    showControls(7000);
                     showToast('Kontroller Açıldı');
                 } else {
                     // Tek dokunma → bekle, çift dokunma gelmezse yine aç (tek dokunuş da açsın)
@@ -27137,7 +27175,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                         const label = document.getElementById('hideControlsLabel');
                         if (icon)  icon.textContent  = 'visibility_off';
                         if (label) label.textContent = 'Gizle';
-                        showControls(3500);
+                        showControls(7000);
                     }, _DTAP_HID);
                 }
             }
@@ -27217,7 +27255,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             pc.classList.remove('show-controls');
                         } else if (!window._controlsHidden) {
                             pc.classList.add('show-controls');
-                            showControls(3500);
+                            showControls(7000);
                         }
                     }, DOUBLE_TAP_MS);
                 }
@@ -27233,7 +27271,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                             pc.classList.remove('show-controls');
                         } else if (!window._controlsHidden) {
                             pc.classList.add('show-controls');
-                            showControls(3500);
+                            showControls(7000);
                         }
                     }
                 } else {
@@ -27244,7 +27282,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                         playerContainer2.classList.remove('show-controls');
                     } else if (!window._controlsHidden) {
                         playerContainer2.classList.add('show-controls');
-                        showControls(3500);
+                        showControls(7000);
                     }
                 }
             }
@@ -27268,7 +27306,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     const label = document.getElementById('hideControlsLabel');
                     if (icon)  icon.textContent  = 'visibility_off';
                     if (label) label.textContent = 'Gizle';
-                    showControls(3500);
+                    showControls(7000);
                     return;
                 }
                 const playerContainer = document.getElementById('playerContainer');
@@ -27277,7 +27315,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     playerContainer.classList.remove('show-controls');
                 } else if (!window._controlsHidden) {
                     playerContainer.classList.add('show-controls');
-                    showControls(3500);
+                    showControls(7000);
                 }
             }
         }
@@ -28495,7 +28533,7 @@ window.testSettings = {
                         const step = e.key === 'ArrowLeft' ? -10 : 10;
                         safeSetCurrentTime(video, video.currentTime + step);
                         showToast(`${step > 0 ? 'İleri' : 'Geri'} Sar: ${Math.abs(step)} saniye`);
-                        showControls(3500);
+                        showControls(7000);
                     }
                 }
             });
@@ -28589,7 +28627,7 @@ window.testSettings = {
             document.getElementById('playerContainer').classList.add('show-controls');
             state.remote.playerControlsVisible = true;
             
-            showControls(3500);
+            showControls(7000);
             
             showToast("Kumanda Modu Aktif");
             playKeySound('confirm');
@@ -28600,7 +28638,7 @@ window.testSettings = {
 
         // Canlı yayın oto-gizleme süresi (ms) — yayın açılınca 2sn sonra gizle
         var LIVE_AUTOHIDE_MS  = 2000;  // Canlı yayın oto-gizleme (ms)
-        var VOD_AUTOHIDE_MS   = 3500;  // VOD/Dizi player buton oto-gizleme (ms) — kullanıcı isteğiyle 5000'den düşürüldü
+        var VOD_AUTOHIDE_MS   = 7000;  // VOD/Dizi player buton oto-gizleme (ms) — kullanıcı isteğiyle 3.5sn'den 7sn'ye çıkarıldı
 
         function _scheduleHide(overrideMs) {
             clearTimeout(window.autoHideControlsTimer);
@@ -42938,7 +42976,7 @@ let virtualScrollSystem = null;
                 pc.classList.remove('paused');
                 pc.classList.add('playing');
                 if (_po) _po.style.display = 'none';
-                showControls(3500);
+                showControls(7000);
             } else {
                 // DURAKLAT
                 window._userPaused = true;
@@ -43008,7 +43046,7 @@ let virtualScrollSystem = null;
             if (v.duration && isFinite(v.duration) && v.duration > 0) {
                 const t = v.duration * ratio;
                 _dvrSeekFull(v, _hls, t);
-                showControls(3500);
+                showControls(7000);
                 playKeySound('click');
                 // WP: host seek bildir
                 if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
@@ -43357,7 +43395,7 @@ let virtualScrollSystem = null;
                                 const _newTime = Math.max(_skStart + 0.5, Math.min(_skEnd - 2, _skStart + ratio * _dvrWindow));
                                 const _hls = state.player.hls;
                                 _dvrSeekFull(v, _hls, _newTime);
-                                showControls(3500);
+                                showControls(7000);
                                 // WP: host seek bildir
                                 if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                                   window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43381,7 +43419,7 @@ let virtualScrollSystem = null;
                           window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: _seekTarget, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
                         }
                     }
-                    showControls(3500); 
+                    showControls(7000); 
                     document.removeEventListener('mousemove', moveHandler); 
                     document.removeEventListener('mouseup', endDrag); 
                     document.removeEventListener('touchmove', moveHandler); 
@@ -43418,7 +43456,7 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('forward', newTime, step);
-            showControls(3500);
+            showControls(7000);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43445,7 +43483,7 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('backward', newTime, step);
-            showControls(3500);
+            showControls(7000);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -44495,7 +44533,7 @@ function deleteContinueWatchingRecord(name) {
                     var _isLive4 = !!(state.player && state.player.isLiveStream);
                     state.remote.playerBoxIndex = _isLive4 ? 9 : 1;
                     state.remote.zone = 'player';
-                    if (typeof showControls === 'function') showControls(3500);
+                    if (typeof showControls === 'function') showControls(7000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     return;
                 }
@@ -44518,7 +44556,7 @@ function deleteContinueWatchingRecord(name) {
                     state.remote.playerBoxIndex = _isLive ? 9 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
-                    showControls(3500);
+                    showControls(7000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     showToast('Kontroller Açıldı');
                     return;
@@ -44540,13 +44578,14 @@ function deleteContinueWatchingRecord(name) {
                     } else if (_isSeries) {
                         // Dizi: Yukarı → Sesli Arama (bölüm değiştirmesin), Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
-                        if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                        if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Film: Sol/Sağ sarma, Yukarı/Aşağı işlevsiz
+                        // Film: Sol/Sağ sarma, Yukarı → Sesli Arama
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                        if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                     }
                     return;
                 }
@@ -44572,15 +44611,19 @@ function deleteContinueWatchingRecord(name) {
                         // OK → kontrolleri aç
                         state.remote.playerBoxIndex = _isLive ? 9 : 1;
                         state.remote.zone = 'player';
-                        showControls(3500);
+                        showControls(7000);
                         updateRemoteFocus();
                         return;
                     }
-                    // Film (VOD, dizi değil): sol/sağ sarma, yukarı/aşağı hiçbir şey
+                    // Film (VOD, dizi değil): sol/sağ sarma, yukarı = Sesli Arama
                     if (_isVod) {
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  return; }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); return; }
-                        // ArrowUp/Down → hiçbir şey yapma (film değiştirme yok)
+                        if (e.key === 'ArrowUp')    {
+                            if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
+                            return;
+                        }
+                        // ArrowDown → hiçbir şey yapma
                         return;
                     }
                     // Dizi: yukarı=Sesli Arama, aşağı=önceki bölüm, sol/sağ sarma YOK
@@ -44592,7 +44635,7 @@ function deleteContinueWatchingRecord(name) {
                             if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
                             return;
                         }
-                        if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); return; }
+                        if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); return; }
                         // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
                         return;
                     }
@@ -44607,7 +44650,7 @@ function deleteContinueWatchingRecord(name) {
                     }
                     state.remote.playerBoxIndex = 9; // btnPlayerList
                     state.remote.zone = 'player';
-                    showControls(3500);
+                    showControls(7000);
                     updateRemoteFocus();
                     return;
                 }
@@ -44623,12 +44666,12 @@ function deleteContinueWatchingRecord(name) {
 
             // Gezinme dışı tuşlarda timer'ı uzat
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
-                showControls(3500);
+                showControls(7000);
             } else {
                 // Gezinmede timer'ı 3.5sn'ye sıfırla — her buton geçişinde süreyi yenile
                 // (kullanıcı gezinmeye devam ettikçe kontroller hiç kapanmaz, sadece
                 // son tuştan 3.5sn sonra hiç basılmazsa otomatik gizlenir)
-                _scheduleHide(3500);
+                _scheduleHide(7000);
             }
 
             switch(e.key) {
@@ -44644,14 +44687,10 @@ function deleteContinueWatchingRecord(name) {
 
                 case 'ArrowUp':
                     e.preventDefault();
-                    // ↑ → Sesli Arama (artık progressBar'a geçip yanlışlıkla
-                    // sol/sağ ile sarmaya sebep olmuyor — kullanıcı butonlar
-                    // arasında gezinirken kontrollerin gizlenmesini/zone
-                    // değişmesini istemiyor; progressBar'a inmek isteyen
-                    // kullanıcı zaten OK ile progress bar'a odaklanabilir).
-                    if (typeof window.openVoiceSearch === 'function') {
-                        window.openVoiceSearch();
-                    }
+                    // Kontroller AÇIKKEN yukarı tuşu hiçbir şey yapmasın —
+                    // kullanıcı isteği: kontroller açıkken sadece butonlar
+                    // arası gezinme olsun, sesli arama kontroller KAPALIYKEN
+                    // tetiklenir (bkz. aşağıdaki kapalı/gizli mod blokları).
                     return;
 
                 case 'ArrowDown':
@@ -45591,7 +45630,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!videoDuration) return;
             
-            showControls(3500);
+            showControls(7000);
             
             switch(e.key) {
                 case 'ArrowLeft': 
@@ -45668,7 +45707,7 @@ function handlePlayerRemote(e) {
             if (_label3) _label3.textContent = 'Gizle';
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(3500);
+            showControls(7000);
             return;
         }
         if (e.key === 'Enter' || e.key === 'OK') {
@@ -45681,7 +45720,7 @@ function handlePlayerRemote(e) {
             if (_label2) _label2.textContent = 'Gizle';
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(3500);
+            showControls(7000);
             return;
         }
         // Yon tuslari — icerik turune gore
@@ -45703,13 +45742,14 @@ function handlePlayerRemote(e) {
             } else if (_isSeries) {
                 // Dizi: Yukari → Sesli Arama (bölüm değiştirmesin), Asagi → onceki bolum, Sol/Sag → sarma
                 if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
-                if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
             } else {
-                // Film: Sol/Sag sarma, Yukari/Asagi islevsiz
+                // Film: Sol/Sag sarma, Yukari → Sesli Arama
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
             }
         }
         return;
@@ -45725,13 +45765,14 @@ function handlePlayerRemote(e) {
             e.key === 'ArrowUp'   || e.key === 'ArrowDown') {
             e.preventDefault(); e.stopPropagation();
             if (_isVod) {
-                // Film: sol/sağ sarma, yukarı/aşağı hiçbir şey
+                // Film: sol/sağ sarma, yukarı = Sesli Arama
                 if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  }
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
             } else if (_isSeries) {
                 // Dizi: yukarı=Sesli Arama (bölüm değiştirmesin), aşağı=önceki bölüm, sol/sağ hiçbir şey
                 if (e.key === 'ArrowUp')   { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
-                if (e.key === 'ArrowDown') { if (typeof prevEpisode === 'function') prevEpisode(); }
+                if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
             }
             // Canlı: Yukarı/Aşağı → KANAL DEĞİŞTİR (kontroller kapalı olsa bile)
             if (_isLive) {
@@ -45748,7 +45789,7 @@ function handlePlayerRemote(e) {
                 // Sol ok → kontrolleri aç (mevcut davranış)
                 state.remote.playerBoxIndex = 9; // btnPlayerList
                 state.remote.zone = 'player';
-                showControls(3500);
+                showControls(7000);
                 updateRemoteFocus();
             }
             return;
@@ -45758,7 +45799,7 @@ function handlePlayerRemote(e) {
             e.preventDefault();
             state.remote.playerBoxIndex = _isLive ? 9 : 1;
             state.remote.zone = 'player';
-            showControls(3500);
+            showControls(7000);
             updateRemoteFocus();
             return;
         }
@@ -45779,7 +45820,7 @@ function handlePlayerRemote(e) {
     // Kontroller açık ama zone yanlış — zone'u player'a sabitle
     state.remote.playerBoxIndex = _isLive ? 9 : 1;
     state.remote.zone = 'player';
-    showControls(3500);
+    showControls(7000);
     updateRemoteFocus();
 }
 
@@ -47790,7 +47831,7 @@ function handleFavoriteChannelSelect(key) {
                     state.remote.playerBoxIndex = _isLiveH ? 9 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
-                    showControls(3500);
+                    showControls(7000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
                     showToast('Kontroller Açıldı');
                     return;
@@ -47807,13 +47848,14 @@ function handleFavoriteChannelSelect(key) {
                     } else if (_isSeriesH) {
                         // Dizi: Yukarı → Sesli Arama (bölüm değiştirmesin), Aşağı → önceki bölüm, Sol/Sağ → sarma
                         if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
-                        if (e.key === 'ArrowDown')  { if (typeof prevEpisode  === 'function') prevEpisode(); }
+                        if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                     } else {
-                        // Film: Sol/Sağ sarma, Yukarı/Aşağı işlevsiz
+                        // Film: Sol/Sağ sarma, Yukarı → Sesli Arama
                         if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
                         if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
+                        if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                     }
                     return;
                 }
@@ -49344,11 +49386,11 @@ function tvNav(key){
         var _isSeries = !!(window.state && window.state.series && window.state.series.currentSeries);
         var _isLive   = window.state && window.state.player && window.state.player.isLiveStream;
         if (key === 'ArrowUp') {
-            if (_isSeries) { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
-            else { if (typeof nextCh === 'function') nextCh(); if (typeof showToast === 'function') showToast(_isLive ? '▶ Sonraki Kanal' : '▶ Sonraki Film'); }
+            if (_isLive) { if (typeof nextCh === 'function') nextCh(); if (typeof showToast === 'function') showToast('▶ Sonraki Kanal'); }
+            else { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
         } else if (key === 'ArrowDown') {
-            if (_isSeries) { if (typeof prevEpisode === 'function') prevEpisode(); }
-            else { if (typeof prevCh === 'function') prevCh(); if (typeof showToast === 'function') showToast(_isLive ? '◀ Önceki Kanal' : '◀ Önceki Film'); }
+            if (_isLive) { if (typeof prevCh === 'function') prevCh(); if (typeof showToast === 'function') showToast('◀ Önceki Kanal'); }
+            else if (_isSeries) { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
         } else if (key === 'ArrowRight') {
             if (_isLive) { if (typeof openEpgModal === 'function') openEpgModal(); }
             else { if (typeof seekForward === 'function') seekForward(); }
@@ -58302,28 +58344,10 @@ var _nativeGEBI = document.getElementById.bind(document);
 })();
 
 // ── 3. Ok/Enter tuşu debounce — TVBox hızlı tetik engeli ──
-//    MERKEZİ THROTTLE: eskiden bu iş 3 ayrı yerde (60ms/80ms/80ms) tekrar
-//    tekrar yapılıyordu — her biri kendi zaman damgasını tutuyordu ve
-//    bazen biri diğerinden önce stopImmediatePropagation çağırıp geçerli
-//    bir tuş basışını da yutuyordu (kumandada butona ulaşamadan kontrollerin
-//    kaybolması / tuşun işlememesi şikayetinin sebebi). Artık tek noktadan
-//    yönetiliyor; window._UMT_KEY_THROTTLE diğer kod bloklarının da
-//    erişebilmesi için global tutuluyor.
-window._UMT_KEY_THROTTLE = window._UMT_KEY_THROTTLE || { lastNavTime: 0, enterLocked: false };
-document.addEventListener('keydown', function(e) {
-    var k = e.key, now = Date.now();
-    var T = window._UMT_KEY_THROTTLE;
-    if (k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight') {
-        if (now - T.lastNavTime < 80) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-        T.lastNavTime = now;
-        return;
-    }
-    if (k==='Enter'||k==='OK') {
-        if (T.enterLocked) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-        T.enterLocked = true;
-        setTimeout(function(){ T.enterLocked = false; }, 250);
-    }
-}, true);
+//    MERKEZİ THROTTLE: bu artık dosyanın en başında (<head> içindeki ilk
+//    <script>) kayıt ediliyor — böylece capture fazında ondan önce çalışan
+//    hiçbir listener kalmıyor ve hızlı tuş tekrarı en erken noktada filtrelenir.
+//    Bkz. window._UMT_KEY_THROTTLE (dosya başı).
 
 // ── 4. querySelectorAll intercept — channel-card cache + continue-card cache ──
 // NOT: remote-focused intercept KALMADI — DOMTokenList hook kaldırıldığında
@@ -69701,7 +69725,7 @@ function _vsTryHandleCommand(rawText) {
             if (typeof showModernSeekingOverlay === 'function') {
                 showModernSeekingOverlay(direction, newTime, seconds);
             }
-            if (typeof showControls === 'function') showControls(3500);
+            if (typeof showControls === 'function') showControls(7000);
             // WP: host seek bildir
             if (window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
                 window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(function(){});

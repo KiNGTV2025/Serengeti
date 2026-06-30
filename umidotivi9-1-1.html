@@ -44455,6 +44455,26 @@ function deleteContinueWatchingRecord(name) {
         }
 
         // PLAYER KONTROL KUTUSU İÇİN REMOTE HANDLER
+        // PERF FIX: handlePlayerBoxRemote eskiden her ok tuşunda PLAYER_BOX_BUTTONS
+        // listesindeki 26 butonu document.getElementById ile tek tek sorguluyordu —
+        // kumandada Sol/Sağ'a hızlı basıldığında (otomatik tekrar) bu DOM okuması
+        // birikip kasma/donmaya sebep oluyordu. Liste sadece player görünümü
+        // değiştiğinde (kanal değişimi, modal açılma vb.) gerçekten değişir,
+        // bu yüzden kısa süreli cache'liyoruz.
+        var _pbbCache = null, _pbbCacheTs = 0;
+        function _getVisiblePlayerButtons() {
+            var now = Date.now();
+            if (_pbbCache && (now - _pbbCacheTs) < 400) return _pbbCache;
+            _pbbCache = PLAYER_BOX_BUTTONS.filter(function(id) {
+                var el = document.getElementById(id);
+                return el && el.style.display !== 'none';
+            });
+            _pbbCacheTs = now;
+            return _pbbCache;
+        }
+        // Kontrol panelinin yeniden çizildiği her noktada cache'i geçersiz kıl
+        window._invalidatePlayerButtonsCache = function() { _pbbCache = null; };
+
         function handlePlayerBoxRemote(e) {
             const _isLive   = !!(state.player && state.player.isLiveStream);
             const _isSeries = !!(state.series && state.series.currentSeries);
@@ -44593,10 +44613,7 @@ function deleteContinueWatchingRecord(name) {
             if (typeof window._qualityModalKeyHandler === 'function' && window._qualityModalKeyHandler(e)) return;
             if (typeof window._subtitleModalKeyHandler === 'function' && window._subtitleModalKeyHandler(e)) return;
 
-            const visibleButtons = PLAYER_BOX_BUTTONS.filter(id => {
-                const el = document.getElementById(id);
-                return el && el.style.display !== 'none';
-            });
+            const visibleButtons = _getVisiblePlayerButtons();
 
             // Gezinme dışı tuşlarda timer'ı uzat
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
@@ -44619,9 +44636,14 @@ function deleteContinueWatchingRecord(name) {
 
                 case 'ArrowUp':
                     e.preventDefault();
-                    // ↑ → ProgressBar'a geç
-                    state.remote.zone = 'progressBar';
-                    updateRemoteFocus();
+                    // ↑ → Sesli Arama (artık progressBar'a geçip yanlışlıkla
+                    // sol/sağ ile sarmaya sebep olmuyor — kullanıcı butonlar
+                    // arasında gezinirken kontrollerin gizlenmesini/zone
+                    // değişmesini istemiyor; progressBar'a inmek isteyen
+                    // kullanıcı zaten OK ile progress bar'a odaklanabilir).
+                    if (typeof window.openVoiceSearch === 'function') {
+                        window.openVoiceSearch();
+                    }
                     return;
 
                 case 'ArrowDown':
@@ -47402,7 +47424,7 @@ function handleFavoriteChannelSelect(key) {
         if (window._controlsHidden) {
             hint = 'Gizli Mod (OK: Kontrolleri Aç)';
         } else {
-        const visibleButtons = PLAYER_BOX_BUTTONS.filter(id => {
+        const visibleButtons = (typeof _getVisiblePlayerButtons === 'function') ? _getVisiblePlayerButtons() : PLAYER_BOX_BUTTONS.filter(id => {
             const el = document.getElementById(id);
             return el && el.style.display !== 'none';
         });
@@ -68884,6 +68906,11 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
     box-sizing: border-box;
     min-width: 0;
 }
+/* TVBox modu: klavye ile yazma pratik değil — sadece mikrofon butonu kalsın,
+   metin kutusu ve ARA butonu tamamen gizlensin. */
+body.tvbox-mode .vs-input-row {
+    display: none !important;
+}
 .vs-input {
     flex: 1;
     min-width: 0;
@@ -69466,13 +69493,22 @@ function _vsBuildIndex() {
 }
 
 function _vsNormalize(s) {
-    return (s || '').toLowerCase()
-        .replace(/ı/g,'i').replace(/İ/g,'i')
-        .replace(/ş/g,'s').replace(/Ş/g,'s')
-        .replace(/ğ/g,'g').replace(/Ğ/g,'g')
-        .replace(/ü/g,'u').replace(/Ü/g,'u')
-        .replace(/ö/g,'o').replace(/Ö/g,'o')
-        .replace(/ç/g,'c').replace(/Ç/g,'c');
+    // ÖNEMLİ: Türkçe büyük harfleri ASCII'ye çevirmeden ÖNCE harf-bazlı değiştir,
+    // sonra toLowerCase() çağır. Aksi halde "İ".toLowerCase() → "i̇" (nokta + i,
+    // 2 karakterli combining sequence) üretir ve eşleşmeler sessizce kırılır.
+    return (s || '')
+        .replace(/İ/g,'I').replace(/I/g,'i').replace(/ı/g,'i')
+        .replace(/Ş/g,'s').replace(/ş/g,'s')
+        .replace(/Ğ/g,'g').replace(/ğ/g,'g')
+        .replace(/Ü/g,'u').replace(/ü/g,'u')
+        .replace(/Ö/g,'o').replace(/ö/g,'o')
+        .replace(/Ç/g,'c').replace(/ç/g,'c')
+        .toLowerCase()
+        // Eşleşmeyi engelleyen noktalama/boşluk farklarını sadeleştir
+        // ("Delikanlı - 1.Sezon" ile "delikanlı 1 sezon" aynı sayılsın)
+        .replace(/[\-_,/]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 /* ── SESLİ KOMUT SİSTEMİ ────────────────────────────────────────────────
@@ -69885,8 +69921,14 @@ function _vsGetFocusables() {
     var arr = [];
     arr.push({ zone: 'close',  el: document.getElementById('vsCloseBtn') });
     arr.push({ zone: 'mic',    el: document.getElementById('vsMicBtn') });
-    arr.push({ zone: 'input',  el: document.getElementById('vsTextInput') });
-    arr.push({ zone: 'search', el: document.getElementById('vsSearchBtn') });
+    // TVBox modunda metin kutusu/ARA butonu CSS ile gizlenir ama DOM'dan
+    // kaldırılmaz — bu yüzden dpad odak sırasından da elle çıkarmamız gerekiyor,
+    // aksi halde kumanda görünmez bir öğede "takılı" kalır.
+    var _vsIsTvBox = document.body.classList.contains('tvbox-mode');
+    if (!_vsIsTvBox) {
+        arr.push({ zone: 'input',  el: document.getElementById('vsTextInput') });
+        arr.push({ zone: 'search', el: document.getElementById('vsSearchBtn') });
+    }
     var items = document.querySelectorAll('#vsResultsList .vs-result-item');
     for (var i = 0; i < items.length; i++) {
         arr.push({ zone: 'results', el: items[i], resultIdx: parseInt(items[i].dataset.idx) });

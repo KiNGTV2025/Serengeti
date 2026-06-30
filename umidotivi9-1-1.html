@@ -1887,25 +1887,14 @@ document.addEventListener('keydown', function(e) {
             b.classList.add('tvbox-mode');
         }
 
-        // requestAnimationFrame throttle — TVBox'ta 30fps yeterli
-        if (isTvBox && window.requestAnimationFrame) {
-            var _origRAF = window.requestAnimationFrame;
-            var _lastRAF = 0;
-            var _RAF_MIN = 32; // ~30fps
-            window.requestAnimationFrame = function(cb) {
-                var now = Date.now();
-                var delay = Math.max(0, _RAF_MIN - (now - _lastRAF));
-                if (delay === 0) {
-                    _lastRAF = now;
-                    return _origRAF.call(window, cb);
-                } else {
-                    return setTimeout(function() {
-                        _lastRAF = Date.now();
-                        cb(_lastRAF);
-                    }, delay);
-                }
-            };
-        }
+        // KASMA FIX: requestAnimationFrame throttle burada KALDIRILDI.
+        // Daha önce burada (TVBox ise) bir throttle katmanı kuruluyordu, ve dosyanın
+        // ilerisinde (window._UTV init bloğunda) AYNI iş için ikinci bir throttle
+        // katmanı daha kuruluyordu — ikisi üst üste sarmalanıp (wrap) her tek
+        // requestAnimationFrame çağrısının 2 katmanlı throttle fonksiyonundan geçmesine
+        // sebep oluyordu. Bu, düşük güçlü cihazlarda gereksiz fonksiyon-çağrı yükü
+        // ekliyordu. Artık RAF throttle'ı SADECE window._UTV init bloğunda (tek katman,
+        // 30fps / ~33ms) kuruluyor — bkz. "requestAnimationFrame throttle (30fps)" yorumu.
     }
 
     // DOM hazır mı?
@@ -40502,24 +40491,17 @@ function resumeChannel(startTime) {
             '{ animation-play-state: paused !important; ' +
             '  transition: none !important; }';
     } catch(e) {}
-    // 2) RAF'ı 10fps'e düşür — player açıkken grid animasyonları gereksiz
-    // NOT: Altyazı döngüsü (_startCustomSubLoop) native _UTV._origRAF kullandığından
-    //      bu throttle altyazı senkronizasyonunu ETKİLEMEZ.
-    if (window._UTV && window._UTV._origRAF) {
-        window.requestAnimationFrame = function(cb) {
-            var now = performance.now ? performance.now() : Date.now();
-            var elapsed = now - (window._lastRAF || 0);
-            if (elapsed >= 100) {
-                window._lastRAF = now;
-                return window._UTV._origRAF.call(window, cb);
-            } else {
-                return setTimeout(function() {
-                    window._lastRAF = performance.now ? performance.now() : Date.now();
-                    cb(window._lastRAF);
-                }, 100 - elapsed);
-            }
-        };
-    }
+    // 2) KASMA FIX (önceki sürüm): burada window.requestAnimationFrame GLOBAL olarak
+    //    10fps'e (100ms) düşürülüyordu. Niyet "arka plan grid'i gereksiz render
+    //    etmesin" idi, ama requestAnimationFrame sayfa genelinde TEK bir fonksiyon —
+    //    seçici olarak sadece arka plana uygulanamaz. Sonuç: player'ın KENDİ kontrol
+    //    butonları arası geçişi (showControls/_scheduleHide içindeki rAF çağrıları,
+    //    odak/highlight güncellemeleri) da bu 10fps tuzağına düşüyordu — kumandayla
+    //    hızlı buton gezinirken her geçiş 100ms'lik gecikmelerle kuyruğa giriyordu.
+    //    Bu, kullanıcı şikayetinin (kumanda ile player butonları gezince aşırı kasma)
+    //    asıl kök nedeniydi. Arka plan animasyonları zaten bir satır üstteki
+    //    "animation-play-state: paused" ile duruyor — RAF'ı global yavaşlatmaya gerek yok.
+    //    Global RAF'a artık dokunulmuyor; player kendi normal hızında tepki verir.
     // Altyazı döngüsü çalışıyorsa — native rAF ile yeniden başlat (freeze sonrası kayma önle)
     if (window._subCues && window._subCues.length > 0) {
         if (typeof window._stopCustomSubLoop === 'function') window._stopCustomSubLoop();
@@ -42752,23 +42734,10 @@ function closePlayer() {
         var _fs = document.getElementById('_playerFreezeStyle');
         if (_fs) _fs.textContent = '';
     } catch(e) {}
-    // 2) RAF hızını 30fps'e geri al
-    if (window._UTV && window._UTV._origRAF) {
-        var _rv = window._UTV._origRAF;
-        window.requestAnimationFrame = function(cb) {
-            var now = performance.now ? performance.now() : Date.now();
-            var elapsed = now - (window._lastRAF || 0);
-            if (elapsed >= 33) {
-                window._lastRAF = now;
-                return _rv.call(window, cb);
-            } else {
-                return setTimeout(function() {
-                    window._lastRAF = performance.now ? performance.now() : Date.now();
-                    cb(window._lastRAF);
-                }, 33 - elapsed);
-            }
-        };
-    }
+    // 2) KASMA FIX: player açılışında artık global RAF'a dokunulmadığı için
+    //    (yukarıdaki playPlayer/oynatma fonksiyonundaki not'a bakın), burada da
+    //    geri alacak bir şey kalmadı. window.requestAnimationFrame baştan sona
+    //    sayfa genelindeki tek throttle katmanında (30fps, ~33ms) kalır.
     // 3) Render fonksiyonlarını geri yükle
     // 3-restore) Freeze flag'ini kaldır — tüm closure zincirleri artık çalışabilir
     window._renderFrozenByPlayer = false;
@@ -45630,7 +45599,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!videoDuration) return;
             
-            showControls(7000);
+            // KASMA FIX: Burada her tek tuşta tam showControls(7000) çağrılıyordu.
+            // showControls zaten görünür olan kontrolleri tekrar "göster" moduna
+            // sokmaya çalışıyor (rAF + class + zone kontrolü zinciri) — progress bar
+            // zone'undayken kontroller zaten açık, tek ihtiyaç oto-gizleme süresini
+            // yenilemek. _scheduleHide bunu rAF'a girmeden, doğrudan yapıyor.
+            _scheduleHide(7000);
             
             switch(e.key) {
                 case 'ArrowLeft': 
@@ -52494,14 +52468,10 @@ if (_origInnerHTML && _origInnerHTML.set) {
     });
 }
 
-// 3. requestAnimationFrame batch: aynı frame'de birden fazla rAF çakışmasını önle
-var _rAFQueue = [];
-var _rAFPending = false;
-var _origRAF = window.requestAnimationFrame;
-window.requestAnimationFrame = function(fn) {
-    // Kritik: HLS ve video için doğrudan geç
-    return _origRAF.call(window, fn);
-};
+// 3. KASMA FIX: burada window.requestAnimationFrame'i sarmalayan ama hiçbir iş
+//    yapmayan (sadece olduğu gibi geçiren) bir no-op katman vardı — kaldırıldı.
+//    Her rAF çağrısının gereksiz yere bir fonksiyon katmanından daha geçmesine
+//    sebep oluyordu. window._UTV init bloğundaki tek throttle katmanı yeterli.
 
 // 4. Image decode lazy — DOM'daki tüm img'lere uygula
 document.addEventListener('DOMContentLoaded', function() {

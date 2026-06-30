@@ -62195,6 +62195,7 @@ function _wpWrapPlayChannel() {
   if (window.playChannel._wpWrapped) return;
 
   const _origPlayChannel = window.playChannel;
+  window._wpOrigPlayChannel = _origPlayChannel; // wpDirectPlay gibi dış scope'tan erişim için
   window.playChannel = function(indexOrCh, startTime) {
     // Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
     if(WP.inRoom && WP.isHost) {
@@ -62358,10 +62359,10 @@ function wpStartNowPlayingListener(code) {
     if(idx === -1) idx = list.findIndex(c => c.url === ch.url);
     if(idx === -1) idx = list.findIndex(c => c.name === ch.name);
     if(idx !== -1) {
-      _origPlayChannel(idx, 0);
+      (window._wpOrigPlayChannel || window.playChannel)(idx, 0);
     } else {
       list.push(ch);
-      _origPlayChannel(list.length - 1, 0);
+      (window._wpOrigPlayChannel || window.playChannel)(list.length - 1, 0);
     }
   }
 
@@ -71296,7 +71297,7 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             var rgbVar = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary-rgb').trim();
             var rgb = (rgbVar && /\d+\s*,\s*\d+\s*,\s*\d+/.test(rgbVar)) ? rgbVar : '255,215,0';
             logoImg.style.setProperty('filter',
-                'drop-shadow(0 0 6px rgba(' + rgb + ',1.0)) drop-shadow(0 0 18px rgba(' + rgb + ',0.85)) drop-shadow(0 0 38px rgba(' + rgb + ',0.45)) brightness(1.45)',
+                'drop-shadow(0 0 3px rgba(' + rgb + ',0.8)) drop-shadow(0 0 8px rgba(' + rgb + ',0.5)) brightness(1.1)',
                 'important');
             logoImg.style.setProperty('opacity', '1', 'important');
         } catch(e) {}

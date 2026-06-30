@@ -26845,6 +26845,16 @@ document.addEventListener('touchstart', cancelSleepShutdown);
     playerContainer.addEventListener('touchstart', function(e) {
         if (e.touches.length !== 1) return;
 
+        // EN GÜVENİLİR KONTROL: dokunuş gerçek bir kontrol butonu/kutusunun
+        // üzerindeyse (koordinat hesabına gerek kalmadan), swipe mantığını
+        // tamamen devre dışı bırak. Önceden yalnızca getBoundingClientRect
+        // koordinat kıyaslaması kullanılıyordu; bu da kontroller satırı
+        // kaydırılabilir (overflow) olduğunda veya buton sınırları tam
+        // hizalanmadığında "sola swipe" gibi yanlış algılanıp Sesli Arama'nın
+        // istemsiz açılmasına yol açıyordu (butonlar arasında parmak gezdirmek).
+        window._touchStartedOnControl = !!(e.target && e.target.closest &&
+            e.target.closest('.player-action-btn, #playerControlsBox, .player-controls-box, .live-btn, .action-sep, #seekAmountPanel, #speedPanel'));
+
         // Sarma paneli açıkken panel içine dokunan touch'u yut
         if (window._seekAmountPanelOpen) {
             const _sap = document.getElementById('seekAmountPanel');
@@ -27063,6 +27073,11 @@ document.addEventListener('touchstart', cancelSleepShutdown);
 
         // Kontroller gizliyken: mod'a göre swipe → farklı eylem, tap → kontrolleri getir
         if (window._controlsHidden) {
+            // Dokunuş bir kontrol butonunda başladıysa swipe/sesli arama tetiklenmesin
+            if (window._touchStartedOnControl) {
+                isSwiping = false; swipeDirection = null; currentTouchZone = null;
+                return;
+            }
             const endX = e.changedTouches[0] ? e.changedTouches[0].clientX : touchStartX;
             const endY = e.changedTouches[0] ? e.changedTouches[0].clientY : touchStartY;
             const dX = endX - (window._touchHiddenSwipeStartX || touchStartX);
@@ -27136,7 +27151,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         }
         
         // ── Yatay Swipe (uzun süre, hareket var): canlıda sağa → Sesli Arama ──
-        if (!isSwiping && !isProgressBarTouch && !isControlsBoxTouch) {
+        if (!isSwiping && !isProgressBarTouch && !isControlsBoxTouch && !window._touchStartedOnControl) {
             const _endX2 = e.changedTouches[0] ? e.changedTouches[0].clientX : touchStartX;
             const _endY2 = e.changedTouches[0] ? e.changedTouches[0].clientY : touchStartY;
             const _dX2 = _endX2 - touchStartX;
@@ -43574,10 +43589,40 @@ function updateSidebarFavIcons(channelName) {
             playKeySound('back'); 
         }
 
+        // Logo glow'u doğrudan inline style ile uygula — CSS spesifite/override
+        // sorunlarını (TVBox perf modu, low-performance-mode vb.) tamamen bypass eder.
+        // Hem applyTheme'den hem sayfa ilk yüklendiğinde (DOMContentLoaded) çağrılır.
+        function _wpApplyLogoGlow() {
+            try {
+                const logoImg = document.querySelector('.neon-logo-img');
+                if (!logoImg) return;
+                const rgbVar = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary-rgb').trim();
+                const rgb = rgbVar && /\d+\s*,\s*\d+\s*,\s*\d+/.test(rgbVar) ? rgbVar : '255,215,0';
+                const isTvbox = document.body.classList.contains('tvbox-mode');
+                const isLowPerf = document.body.classList.contains('low-performance-mode') || document.body.classList.contains('fast-mode');
+                logoImg.style.setProperty('filter',
+                    `drop-shadow(0 0 6px rgba(${rgb},1.0)) drop-shadow(0 0 18px rgba(${rgb},0.85)) drop-shadow(0 0 38px rgba(${rgb},0.45)) brightness(1.45)`,
+                    'important');
+                logoImg.style.setProperty('opacity', '1', 'important');
+                if (isTvbox && !isLowPerf) {
+                    logoImg.style.setProperty('animation', 'tvboxLogoPulse 2.4s ease-in-out infinite', 'important');
+                } else {
+                    logoImg.style.setProperty('animation', 'none', 'important');
+                }
+                // logo-glow-layer'ın display:none ile gizlenmesini engelle (TVBox init bazen kapatıyor)
+                document.querySelectorAll('.logo-glow-layer').forEach(el => {
+                    if (el.style.display === 'none') el.style.display = '';
+                });
+            } catch(e) {}
+        }
+        document.addEventListener('DOMContentLoaded', function(){ setTimeout(_wpApplyLogoGlow, 0); });
+        document.addEventListener('DOMContentLoaded', function(){ setTimeout(_wpApplyLogoGlow, 800); });
+
         function applyTheme(id) {
             const t = state.themes.find(x=>x.id===id)||state.themes[0]; 
             const r = document.documentElement;
             // Tüm CSS değişkenlerini tek RAF içinde uygula — titreme önlenir
+
             requestAnimationFrame(function() {
             // bg ve panel'i karanlık tut — açık renkli temalar (premium sarı vb.) sayfa bg'sini parlak yapmasın
             (function() {
@@ -43606,8 +43651,27 @@ function updateSidebarFavIcons(channelName) {
                 return `${r2},${g2},${b2}`;
             };
             try {
+                // Hex olmayan renkler (rgb()/isim vb.) için de RGB değeri hesapla —
+                // aksi halde --accent-primary-rgb hiç set edilmiyor ve logo glow
+                // CSS'i geçersiz rgba(,255,215,0) gibi bir değere düşüp soluk kalıyordu.
+                let _rgbForLogo = null;
                 if (t.primary && t.primary.startsWith('#')) {
-                    r.style.setProperty('--accent-primary-rgb', hexToRgb(t.primary));
+                    _rgbForLogo = hexToRgb(t.primary);
+                } else if (t.primary) {
+                    try {
+                        const _probe = document.createElement('div');
+                        _probe.style.color = t.primary;
+                        document.body.appendChild(_probe);
+                        const _cs = getComputedStyle(_probe).color; // "rgb(r, g, b)"
+                        document.body.removeChild(_probe);
+                        const _m = _cs.match(/(\d+),\s*(\d+),\s*(\d+)/);
+                        if (_m) _rgbForLogo = `${_m[1]},${_m[2]},${_m[3]}`;
+                    } catch(e3) {}
+                }
+                if (_rgbForLogo) {
+                    r.style.setProperty('--accent-primary-rgb', _rgbForLogo);
+                }
+                if (t.primary && t.primary.startsWith('#')) {
                     // Buton ve progress bar renk değişkenleri (rgba fallback uyumluluğu için)
                     const rgb = hexToRgb(t.primary);
                     r.style.setProperty('--accent-bar-bg',       `rgba(${rgb},0.15)`);
@@ -43731,16 +43795,8 @@ function updateSidebarFavIcons(channelName) {
             state.player.playerBgColor = playerBg;
             }); // end requestAnimationFrame
 
-            // Logo animasyonunu ve filter'i yenile — tema rengi değişince drop-shadow CSS var() üzerinden otomatik güncellenir
-            const logoImg = document.querySelector('.neon-logo-img');
-            if (logoImg) {
-                // Inline filter varsa sil ki CSS custom property devralınsın
-                logoImg.style.filter = '';
-                logoImg.style.animation = 'none';
-                requestAnimationFrame(() => {
-                    logoImg.style.animation = '';
-                });
-            }
+            // Logo glow'u tema rengine göre yenile — inline style ile, CSS savaşını bypass eder
+            _wpApplyLogoGlow();
             
             // Odak yazı rengi: accent-secondary'yi direkt kullan
             try {
@@ -62196,6 +62252,18 @@ function _wpWrapPlayChannel() {
 
   const _origPlayChannel = window.playChannel;
   window.playChannel = function(indexOrCh, startTime) {
+    _wpSyncChannelPlay(indexOrCh);
+    return _origPlayChannel.apply(this, arguments);
+  };
+  window.playChannel._wpWrapped = true;
+}
+_wpWrapPlayChannel();
+
+// WP senkronizasyon mantığı — hem playChannel wrap'ından hem de güvenilir
+// umittv:channelChange event'inden çağrılır. playChannel sonradan farklı
+// kodlarca yeniden atanıp wrap zinciri kırılsa bile (dokunmatik kanal değişiminde
+// olduğu gibi), umittv:channelChange her zaman dispatch edildiği için WP sync kaybolmaz.
+function _wpSyncChannelPlay(indexOrCh) {
     // Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
     if(WP.inRoom && WP.isHost) {
       try {
@@ -62249,11 +62317,16 @@ function _wpWrapPlayChannel() {
         }
       } catch(e) {}
     }
-    return _origPlayChannel.apply(this, arguments);
-  };
-  window.playChannel._wpWrapped = true;
 }
-_wpWrapPlayChannel();
+// Güvenilir bağlanma noktası: kanal her değiştiğinde (dokunmatik dahil) dispatch edilir.
+// state.player.index / state.player.currentChannel kullanılarak ch nesnesi elde edilir.
+document.addEventListener('umittv:channelChange', function() {
+    try {
+        if (!WP.inRoom || !WP.isHost) return;
+        const ch = (window.state && window.state.currentChannel) ? window.state.currentChannel : null;
+        if (ch) _wpSyncChannelPlay(ch);
+    } catch(e) {}
+});
 
 // VOD/film/dizi seçildiğinde Firebase'e yaz (sadece host)
 function _wpWrapOpenVodModal() {

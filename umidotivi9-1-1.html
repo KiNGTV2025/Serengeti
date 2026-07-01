@@ -21911,6 +21911,32 @@ function applyiOSOptimizations() {
     document.head.appendChild(style);
 }
 
+// ── DÜZELTME: applyTVBoxOptimizations() TANIMLIYDI AMA HİÇ ÇAĞRILMIYORDU ──
+// Bu fonksiyon içindeki setInterval ek throttle'ı (500-2000ms aralığını 2sn'ye
+// çeker), localStorage yazım debounce'u (canlı yayında ağır key'leri engeller)
+// ve WebAudio/vibration devre dışı bırakma mantığı hiç devreye girmiyordu —
+// çünkü çağıran kod yoktu. TV box / düşük donanımlı cihazlarda player açıkken
+// arka planda bu eksik throttle'lar gereksiz CPU yükü biriktirip kasmaya
+// katkı yapıyordu. Burada, state objesi hazır olunca (ve sadece TV box /
+// düşük performans modunda) bir kez güvenle çağrılıyor.
+(function _wireApplyTVBoxOptimizations() {
+    var ua = navigator.userAgent || '';
+    var _isTVBoxNow = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
+        || (document.body && document.body.classList.contains('tvbox-mode'));
+    if (!_isTVBoxNow) return; /* Telefon/PC'de bu ek katman gereksiz — dokunma */
+
+    function _tryApply() {
+        if (typeof state === 'undefined' || !state || !state.controlSettings) {
+            setTimeout(_tryApply, 300);
+            return;
+        }
+        if (window._tvBoxOptimizationsApplied) return; /* iki kez çalışmasın */
+        window._tvBoxOptimizationsApplied = true;
+        try { applyTVBoxOptimizations(); } catch (e) {}
+    }
+    _tryApply();
+})();
+
 // MİBOX OPTİMİZASYONLARI - GÜNCELLENMİŞ
 function applyMiboxOptimizations() {
     
@@ -24065,6 +24091,8 @@ function playSeriesEpisode(seriesName, season, episode, url) {
     if (state.useIndexedDB && state.db.isReady()) {
         state.db.put(state.db.stores.CONTINUE, state.continueWatching[seriesName]);
     }
+    // Hesaba bağlı bulut senkronu — diğer cihazlar da görsün
+    if (typeof _cwPushToCloud === 'function') _cwPushToCloud(seriesName, state.continueWatching[seriesName]);
     
     // VOD modalını kapat
     closeVodModal();
@@ -26392,6 +26420,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 }
                 if (typeof stopContinuousWatchingUpdate === 'function') stopContinuousWatchingUpdate();
                 if (typeof stopResolutionMonitoring === 'function') stopResolutionMonitoring();
+                if (typeof cvStopWatching === 'function') cvStopWatching();
                 if (pipIcon)  pipIcon.textContent  = 'picture_in_picture';
                 if (pipLabel) pipLabel.textContent = 'PiP';
                 if (btn) btn.classList.remove('btn-active');
@@ -27367,6 +27396,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     await loadContinueWatching(); 
+    // Cihazlar arası "Devam Et" senkronu — hesaba bağlı bulut kayıtlarını
+    // yerel ile birleştir (arka planda, açılışı bekletmeden)
+    if (typeof syncContinueWatchingFromCloud === 'function') { syncContinueWatchingFromCloud(); }
     // 1️⃣ ÖNCELİKLİ İŞLEMLER
     optimizeVideoPlayer();
     
@@ -28536,6 +28568,21 @@ window.testSettings = {
                 var startX = 0, startY = 0, startScrollLeft = 0, moved = false;
                 var THRESHOLD = 14; // px
 
+                // ODAK-FIX: dokunulan/tıklanan buton neyse state.remote.playerBoxIndex'i
+                // ONA eşitle. Yoksa handlePlayPauseClick() -> togglePlayPause() sonunda
+                // çağrılan updateRemoteFocus() eski (stale) index'e göre BAŞKA bir butonu
+                // (ör. Kalite/HD) odaklayıp satırı oraya kaydırıyor — Durdur'a basılsa bile.
+                function _syncPlayerBoxFocus(btn) {
+                    if (!btn || !btn.id || typeof state === 'undefined' || !state.remote) return;
+                    var list = (typeof _getVisiblePlayerButtons === 'function') ? _getVisiblePlayerButtons() : null;
+                    if (!list) return;
+                    var idx = list.indexOf(btn.id);
+                    if (idx !== -1) {
+                        state.remote.playerBoxIndex = idx;
+                        state.remote.zone = 'player';
+                    }
+                }
+
                 row.addEventListener('touchstart', function(e) {
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
@@ -28593,6 +28640,7 @@ window.testSettings = {
                             e.preventDefault();
                             e.stopPropagation();
                             window._lastBtnTouchEnd = Date.now();
+                            _syncPlayerBoxFocus(btn);
                             btn.click();
                         }
                         bMoved = false;
@@ -28603,7 +28651,9 @@ window.testSettings = {
                         if (e.detail === 0) return; // programmatic click (btn.click()) → geç
                         if (window._lastBtnTouchEnd && Date.now() - window._lastBtnTouchEnd < 400) {
                             e.preventDefault(); e.stopPropagation();
+                            return;
                         }
+                        _syncPlayerBoxFocus(btn); // gerçek mouse click — index'i eşitle
                     });
                 });
             })();
@@ -37163,6 +37213,7 @@ function addContinueCardStyles() {
             // Önce state ve storage'ı temizle (hafif işlem)
             localStorage.removeItem('continueWatching');
             state.continueWatching = {};
+            if (typeof _cwClearCloud === 'function') _cwClearCloud();
             
             // Toast ve ses hemen göster
             showToast("Temizlendi!");
@@ -39483,6 +39534,9 @@ function renderChannels() {
     // Arka planda TMDB poster çek — sadece yeni eklenen kartlar için
     fetchTMDBPostersForVisible(displayChannels, maxDisplay, startIdx);
     
+    // Arka planda canlı izleyici sayısı rozetlerini uygula
+    applyViewerCountsForVisible(displayChannels, maxDisplay, startIdx);
+    
     // Otomatik scroll yükleme
     setupAutoLoadOnScroll(displayChannels.length);
 }
@@ -39547,6 +39601,45 @@ async function fetchTMDBPostersForVisible(displayChannels, maxDisplay, startIdx)
         await Promise.allSettled(batch);
         await new Promise(r => setTimeout(r, DELAY));
     }
+}
+
+// Görünür kartlara canlı izleyici sayısı rozetini uygula (VOD kartları hariç — VOD'da izleyici sayısı gösterilmez)
+async function applyViewerCountsForVisible(displayChannels, maxDisplay, startIdx) {
+    startIdx = startIdx || 0;
+    if (typeof cvGetAllCounts !== 'function' || typeof cvFormatCount !== 'function' || typeof _cvSafeKey !== 'function') return;
+
+    const cards = document.querySelectorAll('.channel-card[data-is-vod="false"]');
+    if (!cards.length) return;
+    const cardMap = {};
+    cards.forEach(card => {
+        const name = card.getAttribute('data-channel-name');
+        if (name) cardMap[name] = card;
+    });
+
+    const counts = await cvGetAllCounts();
+    if (!counts) return;
+
+    const liveChannels = displayChannels.slice(startIdx, maxDisplay).filter(c => c && c.isLive !== false);
+    liveChannels.forEach(c => {
+        if (!c || !c.name) return;
+        const cardEl = cardMap[c.name];
+        if (!cardEl) return;
+        // Eski rozet varsa temizle (yeniden render/güncelleme durumunda çift basmasın)
+        const oldBadge = cardEl.querySelector('.ch-viewer-badge');
+        if (oldBadge) oldBadge.remove();
+
+        const key = _cvSafeKey(c.name);
+        const n = counts[key] || 0;
+        if (n <= 0) return; // kimse izlemiyorsa rozet gösterme
+
+        const badge = document.createElement('div');
+        badge.className = 'ch-viewer-badge';
+        badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>' +
+            cvFormatCount(n) + ' izliyor';
+        // Kartın doğrudan çocuğu olarak eklenir (fav-toggle ile aynı seviye) —
+        // logoContainer'ın overflow:hidden'ı badge'i kesmesin diye
+        cardEl.appendChild(badge);
+    });
 }
 
 // ============================================================
@@ -40106,6 +40199,13 @@ function playChannelByName(name) {
     window._proxyFallbackTriggered = false; // Proxy fallback flag sıfırla
     window._proxy2FallbackTriggered = false;
     state.currentChannel = ch; // hızlı sıralama için
+
+    // İzleyici sayısı: sadece gerçek CANLI kanallarda takip edilir (VOD/film/dizi hariç)
+    if (ch.isLive && !ch.isVod) {
+        if (typeof cvStartWatching === 'function') cvStartWatching(ch.name);
+    } else {
+        if (typeof cvStopWatching === 'function') cvStopWatching();
+    }
 
     // ── ALTYAZI STATE SIFIRLAMA ──
     // ÖNEMLİ DÜZELTME: Önceki kanal/film/bölümün altyazı cue'ları, offset'i
@@ -42656,6 +42756,8 @@ function closePlayer() {
         }
         state.player.streamStarted = false; 
         state.player.audioReady = false;
+        // İzleyici sayısı: video gerçekten durdu — heartbeat'i kes
+        if (typeof cvStopWatching === 'function') cvStopWatching();
     }
     stopContinuousWatchingUpdate(); 
     stopResolutionMonitoring();
@@ -43291,6 +43393,8 @@ let virtualScrollSystem = null;
             
             // LocalStorage'a kaydet
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+            // Hesaba bağlı bulut senkronu — diğer cihazlar da görsün
+            if (typeof _cwPushToCloud === 'function') _cwPushToCloud(state.player.name, state.continueWatching[state.player.name]);
             
             // Eğer Devam Et kategorisindeysek, listeyi güncelle
             if (state.activeCat === 'cont') {
@@ -43299,6 +43403,7 @@ let virtualScrollSystem = null;
         } else if (progress >= MAX_WATCH_PERCENT) {
             delete state.continueWatching[state.player.name];
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+            if (typeof _cwDeleteFromCloud === 'function') _cwDeleteFromCloud(state.player.name);
             
             if (state.activeCat === 'cont') {
                 filterChannels();
@@ -44416,6 +44521,7 @@ function deleteContinueWatchingRecord(name) {
     
     delete state.continueWatching[name]; 
     localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+    if (typeof _cwDeleteFromCloud === 'function') _cwDeleteFromCloud(name);
     
     // Continue cards'ı yeniden render et
     setTimeout(() => {
@@ -50077,6 +50183,20 @@ if (typeof window.fetchM3UChannels === 'undefined') {
 
     function setupDragScroll(el) {
         if (!el || el._dragScrollInit) return;
+        // ÇAKIŞMA DÜZELTMESİ: .player-actions-row zaten setupActionsRowScroll()
+        // içinde kendi (doğru çalışan) buton-bazlı dokunma/kaydırma mantığına
+        // sahip. Bu eski/genel sürükle-kaydır sistemi aynı satıra bağlanınca
+        // ikisi çakışıyordu: buton touchstart'ı stopPropagation() ile bu satırın
+        // touchstart'ını engelliyor ama touchmove'u engellemiyordu — bu da bu
+        // sistemin tStartX/tScroll değerlerinin bayatlamasına, dolayısıyla her
+        // butona basışta satırın rastgele kaymasına (ör. HD butonuna sıçraması)
+        // ve capture fazındaki click handler'ın tıklamayı bazen tamamen
+        // yutup ilk basışın algılanmamasına sebep oluyordu. Bu yüzden bu eski
+        // sistem artık .player-actions-row üzerinde hiç devreye girmiyor.
+        if (el.classList && el.classList.contains('player-actions-row')) {
+            el._dragScrollInit = true;
+            return;
+        }
         el._dragScrollInit = true;
 
         var isDown = false, startX = 0, scrollLeft = 0, moved = false;
@@ -61075,9 +61195,14 @@ async function _fbFetch(method, path, body) {
     const txt = await r.text().catch(()=>'');
     if(r.ok) return { ok: true, text: txt };
     // HTTP hata kodu geldi - XHR ile dene
-  } catch(e) {}
+    console.warn('[FB] fetch HTTP hata:', method, path, r.status, txt);
+  } catch(e) {
+    console.warn('[FB] fetch exception:', method, path, e && e.message);
+  }
   // Fetch başarısız → XHR ile tekrar dene (App24/WebView uyumluluğu)
-  return _fbXHR(method, url, body);
+  const xhrRes = await _fbXHR(method, url, body);
+  if (!xhrRes.ok) console.warn('[FB] XHR de başarısız:', method, path, xhrRes.text);
+  return xhrRes;
 }
 
 async function fbGet(path) {
@@ -61144,6 +61269,253 @@ window.fbPush   = fbPush;
 window.fbDelete = fbDelete;
 window.fbUpdate = fbUpdate;
 window.fbListen = fbListen;
+
+// ══════════════════════════════════════════════════════════════════
+//  CANLI İZLEYİCİ SAYISI (kanal kartlarında "kaç kişi izliyor" rozeti)
+//  - /channelViewers/{kanalKey}/{deviceId} = { ts: Date.now() }
+//  - Her cihaz izlediği kanala 20sn'de bir heartbeat atar (lastSeen)
+//  - 45sn'den eski kayıtlar "stale" sayılır, sayıma dahil edilmez
+//  - Kart render sırasında TÜM /channelViewers tek fbGet ile çekilir,
+//    böylece kart başına ayrı network isteği atılmaz
+// ══════════════════════════════════════════════════════════════════
+var _CV_STALE_MS = 45000;   // bu süreden eski heartbeat sayılmaz
+var _CV_HEARTBEAT_MS = 20000; // heartbeat aralığı
+var _cvHeartbeatTimer = null;
+var _cvCurrentKey = null;
+var _cvCountsCache = null;      // { kanalKey: sayı }
+var _cvCountsCacheTs = 0;
+var _CV_CACHE_TTL_MS = 25000;   // kartlar arası tekrar fetch'i sınırla
+
+function _cvSafeKey(name) {
+    // Firebase key'lerinde . # $ [ ] / yasak — güvenli hale getir
+    try {
+        return encodeURIComponent(String(name || '')).replace(/[.#$\[\]]/g, '_').slice(0, 200);
+    } catch(e) { return 'x'; }
+}
+
+// Bir kanalı izlemeye başla: heartbeat döngüsünü kur ve ilk yazımı yap
+async function cvStartWatching(channelName) {
+    if (!channelName) return;
+    try {
+        if (window._deviceIdReady) await window._deviceIdReady;
+        var did = (typeof getDeviceId === 'function') ? getDeviceId() : null;
+        if (!did) return;
+        var key = _cvSafeKey(channelName);
+        // Aynı kanalda zaten heartbeat atıyorsak tekrar kurma
+        if (_cvCurrentKey === key && _cvHeartbeatTimer) return;
+        // Önceki kanaldan çık
+        await cvStopWatching();
+        _cvCurrentKey = key;
+        var path = '/channelViewers/' + key + '/' + did;
+        fbSet(path, { ts: Date.now() }).catch(function(){});
+        _cvHeartbeatTimer = setInterval(function() {
+            if (!_cvCurrentKey) return;
+            fbSet('/channelViewers/' + _cvCurrentKey + '/' + did, { ts: Date.now() }).catch(function(){});
+        }, _CV_HEARTBEAT_MS);
+    } catch(e) {}
+}
+
+// İzlemeyi bırak: kaydı sil ve heartbeat'i durdur
+async function cvStopWatching() {
+    if (_cvHeartbeatTimer) { clearInterval(_cvHeartbeatTimer); _cvHeartbeatTimer = null; }
+    var prevKey = _cvCurrentKey;
+    _cvCurrentKey = null;
+    if (!prevKey) return;
+    try {
+        if (window._deviceIdReady) await window._deviceIdReady;
+        var did = (typeof getDeviceId === 'function') ? getDeviceId() : null;
+        if (!did) return;
+        fbDelete('/channelViewers/' + prevKey + '/' + did).catch(function(){});
+    } catch(e) {}
+}
+
+// Tüm kanallar için izleyici sayısını tek seferde çek (kart render için)
+// Dönen: { kanalKey: sayı }  — cache TTL içindeyse network atmadan cache döner
+async function cvGetAllCounts(forceRefresh) {
+    var now = Date.now();
+    if (!forceRefresh && _cvCountsCache && (now - _cvCountsCacheTs) < _CV_CACHE_TTL_MS) {
+        return _cvCountsCache;
+    }
+    try {
+        var raw = await fbGet('/channelViewers');
+        var counts = Object.create(null);
+        if (raw && typeof raw === 'object') {
+            for (var key in raw) {
+                if (!raw.hasOwnProperty(key)) continue;
+                var members = raw[key];
+                if (!members || typeof members !== 'object') continue;
+                var n = 0;
+                for (var did in members) {
+                    if (!members.hasOwnProperty(did)) continue;
+                    var rec = members[did];
+                    var ts = rec && rec.ts ? rec.ts : 0;
+                    if (ts && (now - ts) < _CV_STALE_MS) n++;
+                }
+                if (n > 0) counts[key] = n;
+            }
+        }
+        _cvCountsCache = counts;
+        _cvCountsCacheTs = now;
+        return counts;
+    } catch(e) {
+        console.warn('[CV] izleyici sayısı çekilemedi:', e && e.message);
+        return _cvCountsCache || {};
+    }
+}
+
+// Sayıyı okunaklı formata çevir: 1-999 aynen, 1000+ "1.2K" gibi
+function cvFormatCount(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+}
+
+window.cvStartWatching = cvStartWatching;
+window.cvStopWatching  = cvStopWatching;
+window.cvGetAllCounts  = cvGetAllCounts;
+window.cvFormatCount   = cvFormatCount;
+window._cvSafeKey      = _cvSafeKey;
+
+// Ekrandaki mevcut kartları (data-channel-name attribute'undan) doğrudan okuyup
+// izleyici rozetlerini tazeler — parametre gerekmez, periyodik yenileme için kullanılır.
+async function cvRefreshVisibleBadges() {
+    try {
+        if (document.visibilityState !== 'visible') return;
+        const grid = document.getElementById('channelsGrid');
+        if (!grid) return;
+        const cards = grid.querySelectorAll('.channel-card[data-is-vod="false"]');
+        if (!cards.length) return;
+        // Player açıkken (kanal tam ekran oynuyorken) kart grid'i zaten gizli — gereksiz iş yapma
+        if (document.body && document.body.classList.contains('utv-player-open')) return;
+
+        const counts = await cvGetAllCounts(true); // force refresh
+        if (!counts) return;
+
+        cards.forEach(function(cardEl) {
+            const name = cardEl.getAttribute('data-channel-name');
+            if (!name) return;
+            const oldBadge = cardEl.querySelector('.ch-viewer-badge');
+            const key = _cvSafeKey(name);
+            const n = counts[key] || 0;
+            if (n <= 0) { if (oldBadge) oldBadge.remove(); return; }
+            const text = cvFormatCount(n) + ' izliyor';
+            if (oldBadge) {
+                var _lbl = oldBadge.lastChild;
+                if (_lbl && _lbl.nodeType === 3) _lbl.textContent = text;
+                return;
+            }
+            const badge = document.createElement('div');
+            badge.className = 'ch-viewer-badge';
+            badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>' + text;
+            cardEl.appendChild(badge);
+        });
+    } catch(e) {}
+}
+window.cvRefreshVisibleBadges = cvRefreshVisibleBadges;
+// 30sn'de bir tazele — sadece ana ekran görünürken (fonksiyon içi kontrol network israfını engeller)
+setInterval(cvRefreshVisibleBadges, 30000);
+
+// ══════════════════════════════════════════════════════════════════
+//  CİHAZLAR ARASI "DEVAM ET" SENKRONU
+//  - "Devam Et" kayıtları artık cihaza değil, hesaba (Telegram ID) bağlı
+//  - Telefonda kaldığı yerden TV'de / başka cihazda devam edebilme
+//  - Şans kodu ile giriş yapan kullanıcılarda hesap ID'si stabil olmadığı
+//    için senkron devre dışı kalır (sadece cihaz-yerel çalışmaya devam eder)
+// ══════════════════════════════════════════════════════════════════
+function _cwSyncUserId() {
+    try {
+        if (window.currentTelegramId && window.currentTelegramId !== 'SANS_KODU') {
+            return String(window.currentTelegramId);
+        }
+    } catch(e) {}
+    return null;
+}
+// Firebase key'lerinde . # $ [ ] / karakterleri yasak — güvenli hale getir
+function _cwSafeKey(name) {
+    try { return encodeURIComponent(String(name)).replace(/\./g, '%2E'); }
+    catch(e) { return 'k' + Date.now(); }
+}
+var _cwCloudLastPush = {}; // isim -> son gönderim zamanı (throttle)
+function _cwPushToCloud(name, record) {
+    try {
+        if (!name || !record) return;
+        var uid = _cwSyncUserId();
+        if (!uid) return;
+        var now = Date.now();
+        if (_cwCloudLastPush[name] && (now - _cwCloudLastPush[name]) < 15000) return; // 15sn'de bir yaz
+        _cwCloudLastPush[name] = now;
+        var payload = Object.assign({}, record, {
+            deviceId: (typeof getDeviceId === 'function' ? getDeviceId() : '')
+        });
+        fbSet('/continueWatching/' + uid + '/' + _cwSafeKey(name), payload).catch(function(){});
+    } catch(e) {}
+}
+function _cwDeleteFromCloud(name) {
+    try {
+        var uid = _cwSyncUserId();
+        if (!uid || !name) return;
+        delete _cwCloudLastPush[name];
+        fbDelete('/continueWatching/' + uid + '/' + _cwSafeKey(name)).catch(function(){});
+    } catch(e) {}
+}
+function _cwClearCloud() {
+    try {
+        var uid = _cwSyncUserId();
+        if (!uid) return;
+        _cwCloudLastPush = {};
+        fbDelete('/continueWatching/' + uid).catch(function(){});
+    } catch(e) {}
+}
+// Uygulama açılışında bulut ile yerel kayıtları birleştir (son yazan kazanır)
+async function syncContinueWatchingFromCloud() {
+    try {
+        var uid = _cwSyncUserId();
+        if (!uid || typeof state === 'undefined' || !state.continueWatching) return;
+        var cloud = await fbGet('/continueWatching/' + uid);
+        if (!cloud || typeof cloud !== 'object') return;
+        var changed = false;
+        Object.keys(cloud).forEach(function(key) {
+            var item = cloud[key];
+            if (!item || !item.name) return;
+            var local = state.continueWatching[item.name];
+            if (!local || (item.timestamp || 0) > (local.timestamp || 0)) {
+                state.continueWatching[item.name] = item;
+                changed = true;
+                try {
+                    if (state.useIndexedDB && state.db && state.db.isReady && state.db.isReady()) {
+                        state.db.put(state.db.stores.CONTINUE, item);
+                    }
+                } catch(e) {}
+            }
+        });
+        // Yerelde bulutta olandan daha yeni kayıt varsa yukarı gönder
+        Object.keys(state.continueWatching).forEach(function(name) {
+            var local = state.continueWatching[name];
+            var cItem = cloud[_cwSafeKey(name)];
+            if (!cItem || (local.timestamp || 0) > (cItem.timestamp || 0)) {
+                _cwPushToCloud(name, local);
+            }
+        });
+        if (changed) {
+            try { localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching)); } catch(e) {}
+            if (typeof renderContinueWatching === 'function') { try { renderContinueWatching(); } catch(e) {} }
+            if (typeof filterChannels === 'function' && state.activeCat === 'cont') { try { filterChannels(); } catch(e) {} }
+        }
+    } catch(e) {}
+}
+window._cwPushToCloud   = _cwPushToCloud;
+window._cwDeleteFromCloud = _cwDeleteFromCloud;
+window._cwClearCloud   = _cwClearCloud;
+window.syncContinueWatchingFromCloud = syncContinueWatchingFromCloud;
+// Uygulama arka plandan öne gelince de senkronu tazele — diğer cihazdaki
+// ilerleme buraya yansısın (realtime dinleyici yerine hafif polling; WebView
+// uyumluluğu için Watch Party'de de aynı yaklaşım tercih edilmişti)
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        setTimeout(function() {
+            if (typeof syncContinueWatchingFromCloud === 'function') syncContinueWatchingFromCloud();
+        }, 500);
+    }
+});
 
 // ── DURUM ──
 const WP = {
@@ -67725,7 +68097,7 @@ document.addEventListener('keydown', function(e) {
       <span id="chNoteChannelLabel" style="margin-left:4px;font-size:12px;color:rgba(255,255,255,0.45);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
       <button id="chNoteCloseBtn" onclick="closeChNoteModal()" style="margin-left:auto;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.35);border-radius:7px;color:#ff7070;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <textarea id="chNoteInput" tabindex="0" maxlength="200" readonly inputmode="none" placeholder="Bu kanal için not bırak... (maks. 200 karakter)" style="width:100%;min-height:90px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:11px 13px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;resize:none;box-sizing:border-box;line-height:1.5;caret-color:transparent;" onfocus="this.style.borderColor='rgba(255,215,0,0.6)';this.style.outline='2px solid rgba(255,215,0,0.4)';this.removeAttribute('readonly');" onblur="this.style.borderColor='rgba(255,215,0,0.25)';this.style.outline='none';this.setAttribute('readonly','');" oninput="document.getElementById('chNoteCharCount').textContent=(200-this.value.length)+' karakter kaldı'"></textarea>
+    <textarea id="chNoteInput" tabindex="0" maxlength="200" placeholder="Bu kanal için not bırak... (maks. 200 karakter)" style="width:100%;min-height:90px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:11px 13px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;resize:none;box-sizing:border-box;line-height:1.5;" onfocus="this.style.borderColor='rgba(255,215,0,0.6)';this.style.outline='2px solid rgba(255,215,0,0.4)';" onblur="this.style.borderColor='rgba(255,215,0,0.25)';this.style.outline='none';" oninput="document.getElementById('chNoteCharCount').textContent=(200-this.value.length)+' karakter kaldı'"></textarea>
     <div id="chNoteCharCount" style="font-size:10px;color:rgba(255,255,255,0.3);text-align:right;margin-top:4px;margin-bottom:12px;">200 karakter kaldı</div>
     <div style="display:flex;gap:8px;">
       <button id="chNoteSaveBtn" onclick="saveChNote()" style="flex:2;padding:11px;background:linear-gradient(135deg,rgba(255,215,0,0.9),rgba(255,170,0,0.9));border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;">
@@ -67810,6 +68182,34 @@ document.addEventListener('keydown', function(e) {
   white-space: nowrap;
 }
 .ch-note-badge svg { display: block; flex-shrink: 0; }
+/* Canlı izleyici sayısı rozeti — kanal kartı sol üst, fav-toggle ile aynı hizada (sağda) */
+.ch-viewer-badge {
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  height: 18px;
+  padding: 0 6px;
+  background: rgba(0,0,0,0.62);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  z-index: 9;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #e8e8e8;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ch-viewer-badge svg { display: block; flex-shrink: 0; color: #ff5252; }
 /* Player not butonu - aktif state */
 #btnChNote.note-active {
   background: rgba(255,215,0,0.18) !important;
@@ -68275,11 +68675,12 @@ function openChNoteModal(channelName) {
         _cnUpdateRemoteFocus();
     }
 
-    // TV/STB kumanda modu: textarea'ya focus/click yapma — sistem klavyesi açılır
-    // Kumanda D-Pad ile zaten yönetiliyor, readonly modunda çalışır
-    var _isTvBox = window._tvBoxMode || (window.state && window.state.remote && window.state.remote.active);
-    if (!_isTvBox) {
-        // Sadece dokunmatik/fare modunda sistem klavyesini aç
+    // Dokunmatik/gerçek klavye tespiti: parmak ucu (touch) desteği olan cihazlarda
+    // (telefon/tablet) her zaman sistem klavyesini aç. TV kumandası zaten kendi
+    // keydown handler'ı (preventDefault + elle ta.value yazma) ile çalıştığından
+    // textarea'nın focus alması kumanda akışını bozmaz.
+    var _isRealTvRemoteOnly = window._tvBoxMode === true && !('ontouchstart' in window) && navigator.maxTouchPoints === 0;
+    if (!_isRealTvRemoteOnly) {
         function _forceFocusTextarea() {
             var inp = document.getElementById('chNoteInput');
             if (!inp) return;
@@ -71672,3 +72073,61 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     });
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DOKUNMATİK PLAYER BUTON DÜZELTMESİ — v1
+     Bu blok dosyanın en sonunda olduğu için, aynı seçiciyle çakışan
+     önceki !important kuralların hepsini ezer (CSS'te eşit önceliğe
+     sahip kurallarda sırada SONRA gelen kazanır). Mevcut koda hiç
+     dokunulmadı; sadece üstüne ek/override katman eklendi.
+
+     1) İLK DOKUNUŞTA ALGILAMAMA SORUNU:
+        Kontroller otomatik solup gittiğinde ( .show-controls YOK ve
+        .controls-hidden de YOK — yani "henüz yeniden gösterilmedi"
+        geçici hali ) butonlar pointer-events:none oluyordu. Parmak
+        ekrana değdiği anda tarayıcı o dokunuşun hedefini (touch target)
+        o anki tıklanamaz katmana kilitliyor; showControls() kontrolleri
+        hemen ardından görünür/tıklanabilir yapsa bile, aynı dokunuştan
+        doğan "click" olayı artık eski (pasif) hedefe gidiyor ve buton
+        HİÇ tetiklenmiyor. Kullanıcı ikinci kez bastığında buton zaten
+        pointer-events:auto olduğundan normal çalışıyormuş gibi görünüyor.
+        Çözüm: bu geçici durumda da dokunmayı açık bırakıyoruz. Kullanıcının
+        AÇIKÇA "Kontrolleri Gizle" ile kapattığı (.controls-hidden) durum
+        bu kuralın dışında tutuldu — o korumaya (kazara basmayı önleme)
+        dokunulmadı.
+
+     2) BAŞTAN SONA KAYDIRAMAMA SORUNU:
+        .player-actions-row için dosyada birbiriyle çelişen birden çok
+        kural var. Özellikle yatay modda (@media orientation:landscape,
+        ~satır 5350) satır flex-wrap:wrap !important + overflow-x:hidden
+        !important ile ZORLA sarmaya çalışıyor ve kaydırma tamamen devre
+        dışı kalıyor — "FIX 3" yamasının (fix-patch-v3) "asla sarmasın"
+        hedefini geçersiz kılıyor, çünkü o yama sadece inline stil
+        (touchAction/flexWrap) uyguluyor ve stylesheet'teki !important
+        kurallarını inline stil asla yenemez. Ayrıca justify-content:center
+        + taşma birleşince taşan kısmın yarısı negatif (scrollLeft < 0,
+        yani ULAŞILAMAZ) tarafa düşüyor — bu da "başa gidemiyorum" hissini
+        açıklıyor. Bu kural satırı ekran yönünden/genişliğinden bağımsız
+        her zaman tek satır + sola yaslı + baştan sona kaydırılabilir hale
+        getirir. -->
+<style id="umittv-touch-player-fix">
+.player-container:not(.show-controls):not(.controls-hidden) .player-controls-box,
+.player-container:not(.show-controls):not(.controls-hidden) .player-action-btn,
+.player-container:not(.show-controls):not(.controls-hidden) .player-actions-row {
+    pointer-events: auto !important;
+}
+
+.player-actions-row {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x !important;
+}
+.player-actions-row .player-action-group,
+.player-actions-row .player-action-btn,
+.player-actions-row .live-btn {
+    flex-shrink: 0 !important;
+}
+</style>

@@ -9614,6 +9614,9 @@ body.sidebar-open {
 
 /* Sonraki program */
 .live-epg-next {
+    display: flex;
+    align-items: center;
+    gap: 3px;
     font-size: 8.5px;
     color: rgba(255,255,255,0.38);
     white-space: nowrap;
@@ -9621,6 +9624,15 @@ body.sidebar-open {
     text-overflow: ellipsis;
     margin-top: 2px;
     font-style: italic;
+}
+.live-epg-next svg {
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.5);
+}
+.live-epg-next span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* EPG varken channel-title'ı gizle */
@@ -22462,7 +22474,7 @@ function createOptimizedChannelCard(index) {
                         <div class="live-epg-bar"><div class="live-epg-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>
                         ${timeStr ? `<span class="live-epg-time">${timeStr}</span>` : ''}
                     </div>
-                    ${epg.next && epg.next.title ? `<div class="live-epg-next">▶ ${epg.next.title}</div>` : ''}
+                    ${epg.next && epg.next.title ? `<div class="live-epg-next"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span>${epg.next.title}</span></div>` : ''}
                 </div>`;
             } catch(e) { return ''; }
         })();
@@ -39402,7 +39414,7 @@ function renderChannels() {
                     '<div class="live-epg-bar-row"><div class="live-epg-bar"><div class="live-epg-bar-fill" style="width:' +
                     _pct2.toFixed(1) + '%"></div></div>' +
                     (_tStr2 ? '<span class="live-epg-time">' + _tStr2 + '</span>' : '') + '</div>' +
-                    (_epgR.next && _epgR.next.title ? '<div class="live-epg-next">▶ ' + _epgR.next.title + '</div>' : '') +
+                    (_epgR.next && _epgR.next.title ? '<div class="live-epg-next"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span>' + _epgR.next.title + '</span></div>' : '') +
                     '</div>';
             } catch(_ee2) {}
         }
@@ -59058,7 +59070,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .ch-num-badge {
     position: absolute;
     top: 6px;
-    left: 6px;
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(0,0,0,0.82);
     border: 1.5px solid rgba(255,215,0,0.55);
     border-radius: 6px;
@@ -61361,8 +61374,16 @@ var _CV_CACHE_TTL_MS = 25000;   // kartlar arası tekrar fetch'i sınırla
 
 function _cvSafeKey(name) {
     // Firebase key'lerinde . # $ [ ] / yasak — güvenli hale getir
+    // DÜZELTME: Önceden burada encodeURIComponent() kullanılıyordu (örn. "Kanal D" -> "Kanal%20D").
+    // Bu key, fbSet/fbDelete çağrılarında URL'ye eklenince Firebase tarafında %20 tekrar
+    // boşluğa DECODE ediliyor ve gerçek kayıt "Kanal D" (boşluklu) olarak yazılıyordu.
+    // Ama rozet gösterirken sayı ararken YİNE _cvSafeKey() çağrılıp "Kanal%20D" (yüzdeli hali)
+    // ile counts["Kanal%20D"] aranıyordu — oysa GET ile dönen veri counts["Kanal D"] idi.
+    // Sonuç: boşluk/Türkçe karakter içeren kanal adlarında (örn. "Kanal D") rozet hiç görünmüyordu.
+    // Çözüm: burada encode ETMİYORUZ, ham ismi kullanıyoruz (yalnız yasak karakterleri temizliyoruz).
+    // URL'ye eklenirken encode işini artık çağıran taraf (cvStartWatching/cvStopWatching) yapıyor.
     try {
-        return encodeURIComponent(String(name || '')).replace(/[.#$\[\]]/g, '_').slice(0, 200);
+        return String(name || '').replace(/[.#$\[\]\/]/g, '_').slice(0, 200);
     } catch(e) { return 'x'; }
 }
 
@@ -61386,7 +61407,10 @@ async function cvStartWatching(channelName) {
         // Önceki kanaldan çık
         await cvStopWatching();
         _cvCurrentKey = key;
-        var path = '/channelViewers/' + key + '/' + did;
+        // DÜZELTME: key artık ham (encode edilmemiş) string — URL'ye eklerken burada encode ediyoruz.
+        // Böylece Firebase'de gerçek kayıt "key" ile birebir aynı olur (örn. "Kanal D", %20 değil),
+        // ve rozet ararken _cvSafeKey(name) ile karşılaştırma tutar.
+        var path = '/channelViewers/' + encodeURIComponent(key) + '/' + did;
         console.warn('[CV] cvStartWatching: yazma deneniyor →', path); // DÜZELTME: teyit logu
         fbSet(path, { ts: Date.now() }).then(function(ok) {
             if (!ok) console.warn('[CV] izleyici kaydı yazılamadı — az yukarıdaki [FB] satırına bakın (Rules hatası mı, ağ hatası mı net yazıyor):', path);
@@ -61394,7 +61418,7 @@ async function cvStartWatching(channelName) {
         }).catch(function(e){ console.warn('[CV] izleyici kaydı yazma hatası:', e && e.message); });
         _cvHeartbeatTimer = setInterval(function() {
             if (!_cvCurrentKey) return;
-            fbSet('/channelViewers/' + _cvCurrentKey + '/' + did, { ts: Date.now() }).then(function(ok) {
+            fbSet('/channelViewers/' + encodeURIComponent(_cvCurrentKey) + '/' + did, { ts: Date.now() }).then(function(ok) {
                 if (!ok) console.warn('[CV] heartbeat yazılamadı:', _cvCurrentKey);
             }).catch(function(e){ console.warn('[CV] heartbeat hatası:', e && e.message); });
         }, _CV_HEARTBEAT_MS);
@@ -61414,7 +61438,7 @@ async function cvStopWatching() {
         if (window._deviceIdReady) await window._deviceIdReady;
         var did = (typeof getDeviceId === 'function') ? getDeviceId() : null;
         if (!did) return;
-        fbDelete('/channelViewers/' + prevKey + '/' + did).catch(function(){});
+        fbDelete('/channelViewers/' + encodeURIComponent(prevKey) + '/' + did).catch(function(){});
     } catch(e) {}
 }
 
@@ -68295,11 +68319,11 @@ document.addEventListener('keydown', function(e) {
   white-space: nowrap;
 }
 .ch-note-badge svg { display: block; flex-shrink: 0; }
-/* Canlı izleyici sayısı rozeti — kanal kartı sol üst, fav-toggle ile aynı hizada (sağda) */
+/* Canlı izleyici sayısı rozeti — kanal kartı sağ alt (CANLI rozeti ile çakışmasın diye) */
 .ch-viewer-badge {
   position: absolute;
-  top: 8px;
-  left: 6px;
+  bottom: 6px;
+  right: 6px;
   height: 18px;
   padding: 0 6px;
   background: rgba(0,0,0,0.62);

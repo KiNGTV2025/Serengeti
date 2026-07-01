@@ -27106,6 +27106,14 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 }
             }
         }
+        // DÜZELTME: Bu iki bayrak birazdan (hemen aşağıda) false'a sıfırlanıyordu,
+        // ama fonksiyonun DEVAMINDA (aşağıdaki "Yatay Swipe" ve "Çift Dokunma" blokları)
+        // hâlâ bu bayraklara bakılıyordu — yani kontrol her zaman "false" görüyordu ve
+        // controlsBox/progress bar içinde başlayan dokunuşlar için koruma hiç işlemiyordu.
+        // Artık sıfırlamadan ÖNCE gerçek değerleri yakalayıp aşağıda onları kullanıyoruz.
+        const _wasControlsBoxTouch = isControlsBoxTouch;
+        const _wasProgressBarTouch = isProgressBarTouch || initialProgressBarTouch;
+
         isVolumeAdjusting = false;
         isBrightnessAdjusting = false;
         isProgressBarTouch = false;
@@ -27207,7 +27215,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         }
         
         // ── Yatay Swipe (uzun süre, hareket var): canlıda sağa → Sesli Arama ──
-        if (!isSwiping && !isProgressBarTouch && !isControlsBoxTouch) {
+        if (!isSwiping && !_wasProgressBarTouch && !_wasControlsBoxTouch) {
             const _endX2 = e.changedTouches[0] ? e.changedTouches[0].clientX : touchStartX;
             const _endY2 = e.changedTouches[0] ? e.changedTouches[0].clientY : touchStartY;
             const _dX2 = _endX2 - touchStartX;
@@ -27227,7 +27235,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             }
         }
 
-        if (touchDuration < 200 && !isSwiping && !isProgressBarTouch && !isControlsBoxTouch) {
+        if (touchDuration < 200 && !isSwiping && !_wasProgressBarTouch && !_wasControlsBoxTouch) {
             // ── Çift Dokunma Seek Tespiti ──
             const _zone = currentTouchZone;
             const _isVod = !state.player.isLiveStream;
@@ -28596,6 +28604,9 @@ window.testSettings = {
 
                 row.addEventListener('touchmove', function(e) {
                     var dx = startX - e.touches[0].clientX;
+                    // Aynı düzeltme: satırın boş alanında (buton arası) başlayan
+                    // kaydırma da üst container'a sızmasın.
+                    e.stopPropagation();
                     if (Math.abs(dx) > THRESHOLD) {
                         moved = true;
                         row.classList.add('is-scrolling');
@@ -28604,8 +28615,9 @@ window.testSettings = {
                     }
                 }, { passive: false });
 
-                row.addEventListener('touchend', function() {
+                row.addEventListener('touchend', function(e) {
                     row.classList.remove('is-scrolling');
+                    e.stopPropagation();
                 }, { passive: true });
 
                 // Her player-action-btn'e dokunmatik tıklama koruması ekle
@@ -28628,6 +28640,12 @@ window.testSettings = {
                     btn.addEventListener('touchmove', function(e) {
                         var dx = bTouchX - e.touches[0].clientX;
                         var dy = bTouchY - e.touches[0].clientY;
+                        // DÜZELTME: Bu dokunuş buton satırında başladı — üst playerContainer'ın
+                        // touchmove mantığı (parlaklık/ses/kanal değiştirme, sarma) devreye
+                        // girmesin. stopPropagation her durumda çağrılır, preventDefault ise
+                        // sadece gerçekten kaydırma eşiği aşıldığında (native scroll'u biz
+                        // yönetiyoruz demektir).
+                        e.stopPropagation();
                         if (Math.abs(dx) > THRESHOLD || Math.abs(dy) > THRESHOLD) {
                             bMoved = true;
                             moved  = true;
@@ -28638,10 +28656,17 @@ window.testSettings = {
                     }, { passive: false });
                     btn.addEventListener('touchend', function(e) {
                         row.classList.remove('is-scrolling');
+                        // DÜZELTME (ACİL): Önceden bMoved=true (yani kullanıcı butonları
+                        // KAYDIRIYOR/scroll yapıyordu) durumunda stopPropagation hiç
+                        // çağrılmıyordu. Bu yüzden touchend event'i üst playerContainer'a
+                        // sızıyor, orada "yatay swipe" sanılıp CANLI yayında Sesli Arama
+                        // açılıyordu (ya da kanal listesi/kanal değişimi tetikleniyordu).
+                        // Artık bu touch, buton satırına ait olduğu için ne olursa olsun
+                        // (tap veya scroll) üst container'a asla sızmıyor.
+                        e.stopPropagation();
                         if (!bMoved) {
                             // Gerçek tap — doğru butona onclick'i çalıştır
                             e.preventDefault();
-                            e.stopPropagation();
                             window._lastBtnTouchEnd = Date.now();
                             _syncPlayerBoxFocus(btn);
                             btn.click();

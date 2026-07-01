@@ -61204,12 +61204,13 @@ function _fbXHR(method, url, body) {
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.timeout = 8000;
       xhr.onload = () => {
-        try { resolve({ ok: xhr.status >= 200 && xhr.status < 300, text: xhr.responseText }); }
-        catch(e) { resolve({ ok: false, text: '' }); }
+        try { resolve({ ok: xhr.status >= 200 && xhr.status < 300, text: xhr.responseText, status: xhr.status }); }
+        catch(e) { resolve({ ok: false, text: '', status: xhr.status || 0 }); }
       };
-      xhr.onerror = xhr.ontimeout = () => resolve({ ok: false, text: '' });
+      // status 0 = ağ isteği hiç sunucuya gitmedi (DNS/engelleme/CORS/offline) — Rules ile ilgisi yok
+      xhr.onerror = xhr.ontimeout = () => resolve({ ok: false, text: '', status: 0, networkFail: true });
       xhr.send(body ? JSON.stringify(body) : null);
-    } catch(e) { resolve({ ok: false, text: '' }); }
+    } catch(e) { resolve({ ok: false, text: '', status: 0, networkFail: true }); }
   });
 }
 
@@ -61224,15 +61225,24 @@ async function _fbFetch(method, path, body) {
     const r = await fetch(url, opts);
     clearTimeout(tid);
     const txt = await r.text().catch(()=>'');
-    if(r.ok) return { ok: true, text: txt };
-    // HTTP hata kodu geldi - XHR ile dene
+    if(r.ok) return { ok: true, text: txt, status: r.status };
+    // HTTP hata kodu geldi (sunucuya ulaşıldı ama reddedildi) - gerçek Rules/izin hatası olabilir
     console.warn('[FB] fetch HTTP hata:', method, path, r.status, txt);
   } catch(e) {
-    console.warn('[FB] fetch exception:', method, path, e && e.message);
+    // "Failed to fetch" gibi network-level hatalar buraya düşer: DNS, CORS, ağ engelleme,
+    // VPN/AdBlock filtresi, offline vb. — Firebase Rules ile İLGİSİ YOKTUR, istek sunucuya
+    // hiç ulaşmamıştır.
+    console.warn('[FB] fetch exception (ağ/CORS/engelleme, sunucuya ulaşmadı — Rules ile ilgisi yok):', method, path, e && e.message);
   }
   // Fetch başarısız → XHR ile tekrar dene (App24/WebView uyumluluğu)
   const xhrRes = await _fbXHR(method, url, body);
-  if (!xhrRes.ok) console.warn('[FB] XHR de başarısız:', method, path, xhrRes.text);
+  if (!xhrRes.ok) {
+    if (xhrRes.status === 401 || xhrRes.status === 403 || /permission/i.test(xhrRes.text || '')) {
+      console.warn('[FB] XHR de başarısız — GERÇEK İZİN HATASI (Rules kontrol edin):', method, path, xhrRes.status, xhrRes.text);
+    } else {
+      console.warn('[FB] XHR de başarısız — ağ/bağlantı hatası (status 0/timeout), Rules ile ilgisi yok:', method, path, xhrRes.status, xhrRes.text);
+    }
+  }
   return xhrRes;
 }
 
@@ -61339,7 +61349,7 @@ async function cvStartWatching(channelName) {
         _cvCurrentKey = key;
         var path = '/channelViewers/' + key + '/' + did;
         fbSet(path, { ts: Date.now() }).then(function(ok) {
-            if (!ok) console.warn('[CV] izleyici kaydı yazılamadı (Firebase Rules /channelViewers path\'ine izin vermiyor olabilir):', path);
+            if (!ok) console.warn('[CV] izleyici kaydı yazılamadı — az yukarıdaki [FB] satırına bakın (Rules hatası mı, ağ hatası mı net yazıyor):', path);
         }).catch(function(e){ console.warn('[CV] izleyici kaydı yazma hatası:', e && e.message); });
         _cvHeartbeatTimer = setInterval(function() {
             if (!_cvCurrentKey) return;
@@ -61372,8 +61382,18 @@ async function cvGetAllCounts(forceRefresh) {
         return _cvCountsCache;
     }
     try {
-        var raw = await fbGet('/channelViewers');
-        if (raw === null) console.warn('[CV] /channelViewers okunamadı — Firebase Rules bu path için okuma izni vermiyor olabilir, Rules sekmesini kontrol edin.');
+        // fbGet yerine _fbFetch'i doğrudan kullanıyoruz: fbGet başarı+boş-veri ile
+        // gerçek hatayı aynı "null" değerinde birleştiriyordu. Oysa /channelViewers
+        // boşsa (şu an kimse canlı yayın izlemiyorsa) Firebase zaten normal şekilde
+        // "null" döner — bu bir HATA DEĞİL, sadece "izleyen yok" demektir.
+        var res = await _fbFetch('GET', '/channelViewers');
+        var raw = null;
+        if (res.ok) {
+            try { raw = res.text ? JSON.parse(res.text) : null; } catch(e) { raw = null; }
+        } else {
+            // Gerçek başarısızlık — [FB] fonksiyonu zaten üstte detaylı sebebi logladı
+            console.warn('[CV] /channelViewers okunamadı (gerçek hata) — az yukarıdaki [FB] satırına bakın.');
+        }
         var counts = Object.create(null);
         if (raw && typeof raw === 'object') {
             for (var key in raw) {

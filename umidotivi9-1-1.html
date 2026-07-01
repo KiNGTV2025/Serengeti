@@ -37216,6 +37216,11 @@ function addContinueCardStyles() {
             // Önce state ve storage'ı temizle (hafif işlem)
             localStorage.removeItem('continueWatching');
             state.continueWatching = {};
+            // IndexedDB'yi de temizle — silinmezse "Tümünü Temizle" sonrası
+            // uygulama yeniden açıldığında kayıtlar geri gelir
+            if (state.useIndexedDB && state.db && typeof state.db.clear === 'function' && state.db.isReady && state.db.isReady()) {
+                state.db.clear(state.db.stores.CONTINUE).catch(function(){});
+            }
             if (typeof _cwClearCloud === 'function') _cwClearCloud();
             
             // Toast ve ses hemen göster
@@ -43383,30 +43388,48 @@ let virtualScrollSystem = null;
     const v = document.getElementById('videoPlayer');
     if (v.duration && !isNaN(v.duration) && v.currentTime > 0) {
         const progress = v.currentTime / v.duration;
+        // ÖNEMLİ: Dizi bölümü oynatılırken state.player.name "DiziAdı - S1:E3" gibi
+        // geçici/bileşik bir başlık olur. Devam Et kaydı HER ZAMAN gerçek dizi/film
+        // adıyla (currentContinueName) tutulmalı — aksi halde aynı dizi için iki farklı
+        // key oluşur (biri season/episode bilgili ama progress'siz, diğeri progress'li
+        // ama season/episode'suz) ve kart hem cihaz içinde hem cihazlar arası senkronda
+        // doğru oluşmaz.
+        // state.player.currentContinueName dizi bölümlerinde playChannel() tarafından
+        // geçici bileşik başlıkla ("DiziAdı - S1:E3") ezildiği için güvenilir değil.
+        // state.series.currentEpisode dolu olması "şu an bir dizi bölümü oynatılıyor"
+        // için güvenilir sinyaldir (bölüm/dizi/film değişiminde her yerde null'lanıyor).
+        const _isSeriesNow = !!(state.series && state.series.currentSeries && state.series.currentEpisode != null);
+        const cwKey = _isSeriesNow ? state.series.currentSeries : (state.player.currentContinueName || state.player.name);
         if (progress > MIN_WATCH_PERCENT && progress < MAX_WATCH_PERCENT) {
-            const _cwCh = state.channels.find(ch => ch.name === state.player.name);
-            state.continueWatching[state.player.name] = { 
-                name: state.player.name, 
+            const _cwCh = state.channels.find(ch => ch.name === cwKey);
+            const _record = { 
+                name: cwKey, 
                 currentTime: v.currentTime, 
                 duration: v.duration, 
                 progress: progress, 
                 timestamp: Date.now(),
                 isLive: _cwCh ? (_cwCh.isLive !== false) : state.player.isLiveStream
             };
+            if (_isSeriesNow) {
+                _record.isSeries = true;
+                _record.season = state.series.currentSeason;
+                _record.episode = state.series.currentEpisode;
+            }
+            state.continueWatching[cwKey] = _record;
             
             // LocalStorage'a kaydet
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
             // Hesaba bağlı bulut senkronu — diğer cihazlar da görsün
-            if (typeof _cwPushToCloud === 'function') _cwPushToCloud(state.player.name, state.continueWatching[state.player.name]);
+            if (typeof _cwPushToCloud === 'function') _cwPushToCloud(cwKey, state.continueWatching[cwKey]);
             
             // Eğer Devam Et kategorisindeysek, listeyi güncelle
             if (state.activeCat === 'cont') {
                 filterChannels();
             }
         } else if (progress >= MAX_WATCH_PERCENT) {
-            delete state.continueWatching[state.player.name];
+            delete state.continueWatching[cwKey];
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
-            if (typeof _cwDeleteFromCloud === 'function') _cwDeleteFromCloud(state.player.name);
+            if (typeof _cwDeleteFromCloud === 'function') _cwDeleteFromCloud(cwKey);
             
             if (state.activeCat === 'cont') {
                 filterChannels();
@@ -44524,6 +44547,11 @@ function deleteContinueWatchingRecord(name) {
     
     delete state.continueWatching[name]; 
     localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+    // IndexedDB'den de sil — silinmezse uygulama yeniden açıldığında kart geri gelir
+    // (loadContinueWatching açılışta önce IndexedDB'yi okur, localStorage'a hiç bakmaz)
+    if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {
+        state.db.delete(state.db.stores.CONTINUE, name).catch(function(){});
+    }
     if (typeof _cwDeleteFromCloud === 'function') _cwDeleteFromCloud(name);
     
     // Continue cards'ı yeniden render et
@@ -61439,7 +61467,18 @@ function _cwSyncUserId() {
 }
 // Firebase key'lerinde . # $ [ ] / karakterleri yasak — güvenli hale getir
 function _cwSafeKey(name) {
-    try { return encodeURIComponent(String(name)).replace(/\./g, '%2E'); }
+    // ÖNEMLİ: '.' karakterini %2E olarak percent-encode etmek İŞE YARAMAZ —
+    // Firebase REST API, gelen URL'yi path'e çevirirken %2E'yi tekrar '.' olarak
+    // decode ediyor ve path'i yine "Invalid path: Invalid token in path" diye
+    // reddediyor. Bu yüzden içinde nokta geçen (çoğu film/dizi adı: "A.B.İ." gibi)
+    // kayıtlar Firebase'e HİÇ yazılamıyordu. Doğru çözüm: yasaklı karakterleri
+    // gerçek güvenli karakterlerle değiştirmek (channelViewers'daki _cvSafeKey'in
+    // yaptığı gibi), encode/decode döngüsüne güvenmemek.
+    try {
+        return encodeURIComponent(String(name))
+            .replace(/[.#$\[\]]/g, '_')
+            .slice(0, 700);
+    }
     catch(e) { return 'k' + Date.now(); }
 }
 var _cwCloudLastPush = {}; // isim -> son gönderim zamanı (throttle)

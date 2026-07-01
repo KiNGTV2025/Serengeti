@@ -12805,6 +12805,12 @@ function getDeviceId() {
     _persistDeviceId(uid);
     return uid;
 }
+// DÜZELTME (ACİL — kök sebep): getDeviceId bu IIFE'ye hapsolmuştu, window'a hiç
+// bağlanmamıştı. Başka bir <script> bloğundaki (Watch Party / izleyici sayısı
+// rozeti) kod "typeof getDeviceId === 'function'" kontrolü yaptığında bu YÜZDEN
+// hep "undefined" görüyor, cihaz kimliği alamıyor ve Firebase'e HİÇ yazmıyordu —
+// ağ/CORS ile hiç ilgisi yoktu, saf bir scope/erişim sorunuydu.
+window.getDeviceId = getDeviceId;
 
 window._deviceIdReady = new Promise(resolve => {
     _getDeviceIdFromIDB().then(idbId => {
@@ -40236,6 +40242,7 @@ function playChannelByName(name) {
     // İzleyici sayısı: sadece gerçek CANLI kanallarda takip edilir (VOD/film/dizi hariç)
     if (ch.isLive && !ch.isVod) {
         if (typeof cvStartWatching === 'function') cvStartWatching(ch.name);
+        else console.warn('[CV] playChannel: cvStartWatching fonksiyonu henüz tanımlı değil (script sırası sorunu olabilir)');
     } else {
         if (typeof cvStopWatching === 'function') cvStopWatching();
     }
@@ -61361,11 +61368,18 @@ function _cvSafeKey(name) {
 
 // Bir kanalı izlemeye başla: heartbeat döngüsünü kur ve ilk yazımı yap
 async function cvStartWatching(channelName) {
-    if (!channelName) return;
+    if (!channelName) { console.warn('[CV] cvStartWatching: channelName boş, çıkılıyor'); return; }
     try {
         if (window._deviceIdReady) await window._deviceIdReady;
         var did = (typeof getDeviceId === 'function') ? getDeviceId() : null;
-        if (!did) return;
+        if (!did) {
+            // DÜZELTME: Bu satır önceden hiçbir log basmadan sessizce çıkıyordu —
+            // "izleyici rozeti hiç çalışmıyor, konsolda da hiçbir şey yok" şikayetinin
+            // asıl sebeplerinden biri muhtemelen budur (cihaz kimliği alınamıyor).
+            console.warn('[CV] cvStartWatching: getDeviceId() boş/null döndü, izleyici kaydı YAZILMIYOR. ' +
+                'typeof getDeviceId =', typeof getDeviceId, '| window._deviceIdReady bekleniyor muydu:', !!window._deviceIdReady);
+            return;
+        }
         var key = _cvSafeKey(channelName);
         // Aynı kanalda zaten heartbeat atıyorsak tekrar kurma
         if (_cvCurrentKey === key && _cvHeartbeatTimer) return;
@@ -61373,8 +61387,10 @@ async function cvStartWatching(channelName) {
         await cvStopWatching();
         _cvCurrentKey = key;
         var path = '/channelViewers/' + key + '/' + did;
+        console.warn('[CV] cvStartWatching: yazma deneniyor →', path); // DÜZELTME: teyit logu
         fbSet(path, { ts: Date.now() }).then(function(ok) {
             if (!ok) console.warn('[CV] izleyici kaydı yazılamadı — az yukarıdaki [FB] satırına bakın (Rules hatası mı, ağ hatası mı net yazıyor):', path);
+            else console.warn('[CV] izleyici kaydı YAZILDI ✓:', path); // DÜZELTME: başarı da loglanıyor
         }).catch(function(e){ console.warn('[CV] izleyici kaydı yazma hatası:', e && e.message); });
         _cvHeartbeatTimer = setInterval(function() {
             if (!_cvCurrentKey) return;
@@ -61382,7 +61398,10 @@ async function cvStartWatching(channelName) {
                 if (!ok) console.warn('[CV] heartbeat yazılamadı:', _cvCurrentKey);
             }).catch(function(e){ console.warn('[CV] heartbeat hatası:', e && e.message); });
         }, _CV_HEARTBEAT_MS);
-    } catch(e) {}
+    } catch(e) {
+        // DÜZELTME: Önceden sessiz catch(e){} vardı — herhangi bir hata izsiz kayboluyordu.
+        console.warn('[CV] cvStartWatching genel hata (önceden sessizdi):', e && (e.stack || e.message || e));
+    }
 }
 
 // İzlemeyi bırak: kaydı sil ve heartbeat'i durdur

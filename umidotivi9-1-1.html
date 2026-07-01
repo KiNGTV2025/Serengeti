@@ -13214,6 +13214,7 @@ window.handleStep1 = async function() {
 
     if (sansKodStep1) {
         currentTelegramId = 'SANS_KODU'; // Şans kodu modu: telegram_id her zaman SANS_KODU olmalı
+        window.currentTelegramId = currentTelegramId;
         setStatus('status1','info','Şans kodu doğrulanıyor...', true);
         try {
             const res = await apiLogin(currentTelegramId, sansKodStep1);
@@ -13269,6 +13270,7 @@ window.handleStep1 = async function() {
         return;
     }
     currentTelegramId = raw;
+    window.currentTelegramId = currentTelegramId;
     setStatus('status1','info','Kontrol ediliyor...', true);
 
     try {
@@ -14008,6 +14010,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (saved && saved.telegram_id) {
                 currentTelegramId = String(saved.telegram_id);
+                window.currentTelegramId = currentTelegramId;
                 const overlay = document.getElementById('loginOverlay');
                 
 
@@ -61307,10 +61310,14 @@ async function cvStartWatching(channelName) {
         await cvStopWatching();
         _cvCurrentKey = key;
         var path = '/channelViewers/' + key + '/' + did;
-        fbSet(path, { ts: Date.now() }).catch(function(){});
+        fbSet(path, { ts: Date.now() }).then(function(ok) {
+            if (!ok) console.warn('[CV] izleyici kaydı yazılamadı (Firebase Rules /channelViewers path\'ine izin vermiyor olabilir):', path);
+        }).catch(function(e){ console.warn('[CV] izleyici kaydı yazma hatası:', e && e.message); });
         _cvHeartbeatTimer = setInterval(function() {
             if (!_cvCurrentKey) return;
-            fbSet('/channelViewers/' + _cvCurrentKey + '/' + did, { ts: Date.now() }).catch(function(){});
+            fbSet('/channelViewers/' + _cvCurrentKey + '/' + did, { ts: Date.now() }).then(function(ok) {
+                if (!ok) console.warn('[CV] heartbeat yazılamadı:', _cvCurrentKey);
+            }).catch(function(e){ console.warn('[CV] heartbeat hatası:', e && e.message); });
         }, _CV_HEARTBEAT_MS);
     } catch(e) {}
 }
@@ -61338,6 +61345,7 @@ async function cvGetAllCounts(forceRefresh) {
     }
     try {
         var raw = await fbGet('/channelViewers');
+        if (raw === null) console.warn('[CV] /channelViewers okunamadı — Firebase Rules bu path için okuma izni vermiyor olabilir, Rules sekmesini kontrol edin.');
         var counts = Object.create(null);
         if (raw && typeof raw === 'object') {
             for (var key in raw) {
@@ -61469,7 +61477,8 @@ function _cwClearCloud() {
 async function syncContinueWatchingFromCloud() {
     try {
         var uid = _cwSyncUserId();
-        if (!uid || typeof state === 'undefined' || !state.continueWatching) return;
+        if (!uid) { console.info('[CW] Telegram ID yok, cihazlar arası senkron atlanıyor.'); return; }
+        if (typeof state === 'undefined' || !state.continueWatching) return;
         var cloud = await fbGet('/continueWatching/' + uid);
         if (!cloud || typeof cloud !== 'object') return;
         var changed = false;
@@ -61496,6 +61505,7 @@ async function syncContinueWatchingFromCloud() {
             }
         });
         if (changed) {
+            console.info('[CW] Diğer cihazdan devam et kayıtları senkronize edildi:', Object.keys(cloud).length);
             try { localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching)); } catch(e) {}
             if (typeof renderContinueWatching === 'function') { try { renderContinueWatching(); } catch(e) {} }
             if (typeof filterChannels === 'function' && state.activeCat === 'cont') { try { filterChannels(); } catch(e) {} }

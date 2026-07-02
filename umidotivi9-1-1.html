@@ -19127,7 +19127,7 @@ let state = {
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
         playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerMatches', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnClosePlayer'],
-        playerBoxIndex: 9,
+        playerBoxIndex: 10,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
         sidebarConfirmIndex: -1,
@@ -19736,6 +19736,30 @@ async function loadContinueWatching() {
     
     
 
+    // KRİTİK-FIX: Daha önceki hatalı sürümlerden kalma "Devam Et" kayıtlarında
+    // progress alanı hiç yazılmamış ya da bozulmuş olabiliyordu (ör. dizi
+    // bölümü ilk kez açıldığında oluşturulan kayıt progress içermiyordu, ya da
+    // eski çakışma hatası yüzünden bir kayıt başka bir kaydın üzerine yanlış
+    // yazılmıştı). Her yerdeki filtreler (`c.progress > MIN_WATCH_PERCENT`)
+    // progress yoksa/undefined ise kaydı GÖRMEZDEN GELİYOR — bu da eski/
+    // temizlenmemiş verilerle açılışta "Devam Et kartları hiç görünmüyor"
+    // sorununa yol açıyordu. Burada progress eksikse currentTime/duration'dan
+    // yeniden hesaplanıyor; hiçbiri yoksa kayıt zaten anlamsız olduğu için atılıyor.
+    function _cwRepairRecord(item) {
+        if (!item || typeof item !== 'object') return null;
+        const hasValidProgress = typeof item.progress === 'number' && isFinite(item.progress) && item.progress >= 0;
+        if (!hasValidProgress) {
+            if (item.currentTime && item.duration && isFinite(item.currentTime) && isFinite(item.duration) && item.duration > 0) {
+                item.progress = item.currentTime / item.duration;
+            } else {
+                // Ne progress ne de hesaplanabilir currentTime/duration var — kurtarılamaz.
+                return null;
+            }
+        }
+        return item;
+    }
+    window._cwRepairRecord = _cwRepairRecord;
+
     const isIndexedDBAvailable = 'indexedDB' in window;
     
     if (isIndexedDBAvailable && state.db && typeof state.db.getAll === 'function') {
@@ -19766,8 +19790,14 @@ async function loadContinueWatching() {
                     }
                 });
             }
-            if (Object.keys(continueObj).length > 0) {
-                state.continueWatching = continueObj;
+            // Onarım: progress eksik/bozuk kayıtları düzelt, kurtarılamayanları at.
+            const _repairedObj = {};
+            Object.keys(continueObj).forEach(k => {
+                const fixed = _cwRepairRecord(continueObj[k]);
+                if (fixed) _repairedObj[k] = fixed;
+            });
+            if (Object.keys(_repairedObj).length > 0) {
+                state.continueWatching = _repairedObj;
                 localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
                 return;
             }
@@ -19790,7 +19820,8 @@ async function loadContinueWatching() {
             Object.keys(parsedData).forEach(key => {
                 const item = parsedData[key];
                 if (item.timestamp && item.timestamp > thirtyDaysAgo) {
-                    filteredData[key] = item;
+                    const fixed = _cwRepairRecord(item);
+                    if (fixed) filteredData[key] = fixed;
                 }
             });
             
@@ -20118,7 +20149,7 @@ async function loadContinueWatching() {
                         if (_hcI2) _hcI2.textContent = 'visibility_off';
                         if (_hcL2) _hcL2.textContent = 'Gizle';
                         const _isLiveB = !!(state.player && state.player.isLiveStream);
-                        state.remote.playerBoxIndex = _isLiveB ? 9 : 1;
+                        state.remote.playerBoxIndex = _isLiveB ? 10 : 1;
                         state.remote.zone = 'player';
                         if (typeof showControls === 'function') showControls(7000);
                         if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
@@ -21295,7 +21326,7 @@ function closeEpgModal() {
     if (state && state.remote && state.remote.active) {
         state.remote.zone = 'player';
         state.remote.isTvBox = false;
-        state.remote.playerBoxIndex = 9; // Kanal Listesi butonu // EPG butonuna geri dön
+        state.remote.playerBoxIndex = 10; // Kanal Listesi butonu // EPG butonuna geri dön
         state.remote.epgModalElements = null;
         state.remote.epgModalIndex = 0;
         setTimeout(() => { if (typeof updateRemoteFocus === 'function') updateRemoteFocus(); }, 50);
@@ -24163,13 +24194,21 @@ function playSeriesEpisode(seriesName, season, episode, url, startTime = 0) {
         const _psei = document.getElementById('trailerIframe'); if (_psei) { try { _psei.src='about:blank'; } catch(e) {} }
         window.trailerPlayer = null; state.player.isTrailerPlaying = false;
     }
-    // URL yoksa seriesCache'den bul
+    // FIX: "Devam Et" kartından resume edilirken (playFromContinueCard) kayıtta
+    // saklanan GERÇEK stream URL'i varsa artık doğrudan buraya geçiriliyor.
+    // Bu durumda regex/isim tabanlı aramaya HİÇ girilmez — bu sayede M3U'da
+    // aynı isimde birden fazla bölüm/kanal olsa bile her zaman GERÇEKTEN
+    // izlenen URL açılır ve "Devam Et" artık başka bir bölümü bulup baştan
+    // başlatmaz. _matchedRawName kart başlığında TAM (ham) bölüm adını
+    // göstermek için ayrıca saklanır.
+    let _matchedRawName = null;
     if (!url) {
         const cached = state.series.seriesCache[seriesName];
         if (cached && cached.seasons && cached.seasons[season]) {
             const ep = cached.seasons[season].find(e => e.episode === episode);
             if (ep && ep.url) {
                 url = ep.url;
+                _matchedRawName = ep.title || null;
             }
         }
         // Hala yoksa state.channels'dan ara
@@ -24178,24 +24217,29 @@ function playSeriesEpisode(seriesName, season, episode, url, startTime = 0) {
                 ch.name && ch.name.includes(seriesName) &&
                 ch.name.match(new RegExp('S0*' + season + '.*E0*' + episode, 'i'))
             );
-            if (found) url = found.url;
+            if (found) { url = found.url; _matchedRawName = found.name; }
         }
         // Türkçe yazım formatı: "1.Sezon 2.Bölüm", "1 Sezon 2 Bölüm" vb.
         if (!url) {
             const _trRe = new RegExp(season + '\\s*\\.?\\s*sezon.*?' + episode + '\\s*\\.?\\s*b[oö]l[uü]m', 'i');
             const foundTr = state.channels.find(ch => ch.name && ch.name.includes(seriesName) && _trRe.test(ch.name));
-            if (foundTr) url = foundTr.url;
+            if (foundTr) { url = foundTr.url; _matchedRawName = foundTr.name; }
         }
         // Son çare: sadece bölüm numarasıyla (sezon belirtilmemiş/tek sezon dizilerde)
         if (!url && season === 1) {
             const _epOnlyRe = new RegExp('\\b' + episode + '\\s*\\.?\\s*b[oö]l[uü]m', 'i');
             const foundEpOnly = state.channels.find(ch => ch.name && ch.name.includes(seriesName) && _epOnlyRe.test(ch.name));
-            if (foundEpOnly) url = foundEpOnly.url;
+            if (foundEpOnly) { url = foundEpOnly.url; _matchedRawName = foundEpOnly.name; }
         }
         if (!url) {
             showToast('Bölüm URL bulunamadı');
             return;
         }
+    } else {
+        // URL doğrudan verildi (Devam Et kartından) — yine de kart başlığı için
+        // ham/tam bölüm adını state.channels'tan bulmayı dene.
+        const _byUrl = state.channels.find(ch => ch.url === url);
+        if (_byUrl) _matchedRawName = _byUrl.name;
     }
     // Önceki bölümü izlendi kaydet — SADECE %80+ izlendiyse (state güncellenmeden ÖNCE)
     if (!state.series.watchedEpisodes) state.series.watchedEpisodes = {};
@@ -24248,6 +24292,8 @@ function playSeriesEpisode(seriesName, season, episode, url, startTime = 0) {
         // currentTime/progress'e dokunma (resumeChannel zaten video'yu seek edecek).
         state.continueWatching[seriesName] = Object.assign({}, _existingCW, {
             name: seriesName,
+            fullName: _matchedRawName || _existingCW.fullName || seriesName,
+            url: url || _existingCW.url,
             season: season,
             episode: episode,
             timestamp: Date.now(),
@@ -24257,6 +24303,8 @@ function playSeriesEpisode(seriesName, season, episode, url, startTime = 0) {
         // Gerçekten yeni bir bölüm/dizi — temiz kayıt oluştur.
         state.continueWatching[seriesName] = {
             name: seriesName,
+            fullName: _matchedRawName || seriesName,
+            url: url,
             season: season,
             episode: episode,
             currentTime: startTime > 0 ? startTime : 0,
@@ -28946,7 +28994,7 @@ window.testSettings = {
                         state.remote.zone !== 'player' && state.remote.zone !== 'progressBar' && state.remote.zone !== 'playerTopBar') {
                         // Canlı: Kanal Listesi butonu | VOD/Film: Play/Pause butonu
                         if (state.player && state.player.isLiveStream) {
-                            state.remote.playerBoxIndex = 9; // btnPlayerList
+                            state.remote.playerBoxIndex = 10; // btnPlayerList
                         } else {
                             state.remote.playerBoxIndex = 1; // btnPlayPause
                         }
@@ -28990,7 +29038,7 @@ window.testSettings = {
                 state.remote.playerControlsVisible = true;
                 // Zone'u player'a sabitle + doğru butona odaklan
                 if (state.player && state.player.isLiveStream) {
-                    state.remote.playerBoxIndex = 9; // btnPlayerList
+                    state.remote.playerBoxIndex = 10; // btnPlayerList
                 } else {
                     state.remote.playerBoxIndex = 1; // btnPlayPause
                 }
@@ -30310,6 +30358,17 @@ function playChannelFromSidebar(index) {
         state.player.logo = channel.logo || '';
 
         if (!channel.isLive) {
+            // FIX: Önceki bir dizi oturumundan kalan state.series.currentSeries/
+            // currentEpisode temizlenmiyordu — bu da updateContinuousWatching()
+            // içinde YENİ izlenen filmin/dizinin ilerlemesinin ESKİ dizinin
+            // "Devam Et" kaydı üzerine yazılmasına (kaydın kaybolmasına) yol
+            // açıyordu. Film/dizi dışı bir öğe için diziyi burada temizle.
+            if (!channel.isSeries && state.series) {
+                state.series.currentSeries = null;
+                state.series.currentSeason = null;
+                state.series.currentEpisode = null;
+                state.series.autoNextEnabled = false;
+            }
             const continueData = state.continueWatching[channel.name];
             // isSeries kaydı ise resume yapma — seri bölümleri ayrı yönetilir
             if (continueData && !continueData.isSeries && continueData.progress > MIN_WATCH_PERCENT && continueData.progress < MAX_WATCH_PERCENT) {
@@ -31674,6 +31733,13 @@ async function loadAllChannels(forceRefresh = false) {
                     }, 400);
 
                     setTimeout(() => _checkAndRefreshIfChanged(), 3000); // IDB cache gösterdik, sadece değişiklik varsa yenile
+                    // FIX: "Canlı Yayın" listeleri uygulama her açıldığında TAZE çekilsin —
+                    // config imzası değişmese bile. loadFreshChannelsInBackground artık
+                    // contentType==='live' listeleri asla cache'den servis etmiyor (yukarıdaki
+                    // fix), bu yüzden burada normal (destructive olmayan) arka plan
+                    // yenilemesini tetiklemek yeterli — VOD listeleri hâlâ kendi cache
+                    // TTL'sine göre davranır, sadece canlı yayınlar her zaman ağdan gelir.
+                    setTimeout(() => { if (typeof _refreshLiveListsOnly === 'function') _refreshLiveListsOnly(); }, 1500);
                     setTimeout(() => {
                         updateLoadingProgress('Kanallar hazır!', 100);
                         setTimeout(hideLoadingOverlay, 600);
@@ -32250,7 +32316,10 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
 
                         let m3uContent = null;
                         let cachedChannels = null;
-                        if (state.useIndexedDB && state.db.isReady() && !forceRefresh) {
+                        // FIX: Canlı yayın listeleri hızlı-açılış sırasında da cache'den
+                        // DEĞİL, her zaman ağdan taze çekilir (bkz. loadFreshChannelsInBackground
+                        // içindeki aynı fix). VOD listeleri normal cache akışına devam eder.
+                        if (state.useIndexedDB && state.db.isReady() && !forceRefresh && m3u.contentType !== 'live') {
                             try {
                                 const cachedM3U = await state.db.get(state.db.stores.M3U_CACHE, m3u.url);
                                 if (cachedM3U) {
@@ -32476,6 +32545,87 @@ async function loadFreshChannelsQuick(forceRefresh = false) {
     }
 }
 
+// FIX: "Canlı yayınları her zaman taze çek" isteği için önceden burada TÜM
+// listeleri (VOD/film dahil) tarayan loadFreshChannelsInBackground(false)
+// çağrılıyordu. Bu, uygulama her açılışta film/dizi listelerine de gereksiz
+// yere ağ isteği atıyordu; bağlantı yarıda kesilirse (mobil ağ, zaman aşımı
+// vb.) o VOD listesinden "eksik" gelen kanallar state.channels'dan
+// SİLİNİYORDU — sonuç: filmler hem ana ekrandaki karttan hem "Devam Et"
+// kategorisinden tamamen kayboluyordu. Bu fonksiyon SADECE contentType
+// 'live' olan listeleri yeniler; VOD/film listelerine hiç dokunmaz.
+async function _refreshLiveListsOnly() {
+    if (window._goNavPending || window._navAbort) return;
+    if (window._liveOnlyRefreshRunning) return;
+    window._liveOnlyRefreshRunning = true;
+    try {
+        const liveEntries = (state.m3uList || [])
+            .map((m3u, idx) => ({ m3u, idx }))
+            .filter(x => x.m3u && x.m3u.contentType === 'live');
+        if (liveEntries.length === 0) return;
+
+        const fetchedChannels = [];
+        const fetchedListIdxSet = new Set();
+
+        await Promise.allSettled(liveEntries.map(async ({ m3u, idx }) => {
+            try {
+                if (m3u.password || m3u.encryptedPassword) {
+                    const unlocked = state.passwordManager.rememberedPasswords[m3u.url] ||
+                                   state.passwordManager.sessionUnlocked.has(m3u.url);
+                    if (!unlocked) return;
+                }
+                const resp = await fetchWithTimeout(m3u.url, 90000).catch(() => null);
+                let parsed = [];
+                if (resp && resp.ok) {
+                    if (resp.body && typeof resp.body.getReader === 'function') {
+                        parsed = await parseM3UStream(resp, idx, null) || [];
+                    } else {
+                        const txt = await resp.text().catch(() => null);
+                        if (txt) parsed = parseM3U(txt, idx);
+                    }
+                }
+                if (parsed.length > 0) {
+                    parsed.forEach(ch => { ch.isLive = true; ch.isVod = false; });
+                    fetchedChannels.push(...parsed);
+                    fetchedListIdxSet.add(idx);
+                    if (state.useIndexedDB && state.db.isReady()) {
+                        state.db.put(state.db.stores.M3U_CACHE, {
+                            url: m3u.url, channels: parsed, content: null, timestamp: Date.now()
+                        }).catch(() => {});
+                    }
+                }
+            } catch (e) {}
+        }));
+
+        // Hiçbir canlı liste başarıyla güncellenemediyse (ağ hatası vb.) — hiçbir şeye dokunma
+        if (fetchedChannels.length === 0) return;
+
+        const unique = removeDuplicateChannels(fetchedChannels);
+        const fetchedUrlSet = new Set(unique.map(c => c.url));
+
+        // SADECE başarıyla güncellenen CANLI listelerin kanallarını değiştir —
+        // VOD/film içeren diğer tüm listeler ve kanallar dokunulmadan kalır.
+        state.channels = state.channels.filter(c => {
+            if (c.listIdx !== undefined && fetchedListIdxSet.has(c.listIdx)) {
+                return fetchedUrlSet.has(c.url);
+            }
+            return true;
+        });
+        const existingUrls = new Set(state.channels.map(c => c.url));
+        const brand_new = unique.filter(c => !existingUrls.has(c.url));
+        if (brand_new.length > 0) state.channels.push(...brand_new);
+
+        if (typeof fixChannelNames === 'function') fixChannelNames(state.channels);
+        if (typeof extractCategories === 'function') extractCategories(state.channels);
+        if (typeof updateCategories === 'function') updateCategories();
+        if (typeof invalidateGroupSeriesCache === 'function') invalidateGroupSeriesCache();
+        if (typeof filterChannels === 'function') filterChannels();
+    } catch (e) {
+    } finally {
+        window._liveOnlyRefreshRunning = false;
+    }
+}
+window._refreshLiveListsOnly = _refreshLiveListsOnly;
+
 async function loadFreshChannelsInBackground(forceRefresh = false) {
     if (window._goNavPending || window._navAbort) return; // navigate sırasında çalışma
 
@@ -32507,7 +32657,12 @@ async function loadFreshChannelsInBackground(forceRefresh = false) {
                         let cachedChannels = null;
 
                         // Cache kontrolü — forceRefresh=true ise cache atla
-                        if (!forceRefresh && state.useIndexedDB && state.db.isReady()) {
+                        // FIX: CANLI YAYIN listeleri her zaman ağdan taze çekilir — cache
+                        // asla kullanılmaz. Canlı stream URL'leri sık sık süresi dolan/
+                        // rotasyona giren token'lar içerebilir; eski cache'den servis etmek
+                        // "kanal açılmıyor" sorununa yol açıyordu. Bu davranış SADECE
+                        // contentType==='live' için geçerli — VOD listeleri hâlâ 30dk cache kullanır.
+                        if (!forceRefresh && m3u.contentType !== 'live' && state.useIndexedDB && state.db.isReady()) {
                             try {
                                 const cachedM3U = await state.db.get(state.db.stores.M3U_CACHE, m3u.url);
                                 // Cache süresi: 30 dakika (önceki 10 dk çok kısa, yenilik kaçıyordu)
@@ -36759,8 +36914,12 @@ setTimeout(_vhsInit, 1200);
                     isVod = false; // bilinmiyorsa canlı say
                 }
                 const progressPercent = Math.round(c.progress * 100);
-                const logoHtml = ch && ch.logo
-                    ? `<img loading="lazy" src="${ch.logo}" onerror="this.style.display='none'">`
+                // FIX: ch.logo yoksa (gruplandırılmış dizi kartı — ilk yüklemede groupChannelsBySeries
+                // henüz çalışmamış olabilir) continueWatching kaydındaki logo'ya bak (kayıt sırasında
+                // state.player.logo buraya yazılıyor).
+                const _cwLogoSrc = (ch && ch.logo) || c.logo || '';
+                const logoHtml = _cwLogoSrc
+                    ? `<img loading="lazy" src="${_cwLogoSrc}" onerror="this.style.display='none'">`
                     : `<span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,215,0,0.7);">${isVod ? 'movie' : 'tv'}</span>`;
                 
                 return `
@@ -36794,7 +36953,7 @@ setTimeout(_vhsInit, 1200);
                         
                         <!-- Alt içerik -->
                         <div class="cw-card-body">
-                            <div class="cw-card-title">${c.name}</div>
+                            <div class="cw-card-title">${c.fullName || c.name}</div>
                             <div class="cw-card-time">
                                 <span>${formatTime(c.currentTime)} / ${formatTime(c.duration)}</span>
                                 <span class="cw-card-pct">%${progressPercent}</span>
@@ -37032,7 +37191,11 @@ function showRemoteHint(text) {
         if (typeof closeContinueModal === 'function') { try { closeContinueModal(false); } catch(e) {} }
         // isContinue=true ("Devam Et") ise kaldığı saniyeden, false ("Baştan İzle") ise 0'dan başlat
         const _resumeAt = isContinue ? (_cwEntry.currentTime || startTime || 0) : 0;
-        playSeriesEpisode(channelName, _cwEntry.season, _cwEntry.episode, null, _resumeAt);
+        // FIX: kayıtta saklanan GERÇEK stream URL'i varsa doğrudan geçir — böylece
+        // playSeriesEpisode isim/regex tabanlı aramaya hiç girmez ve her zaman
+        // gerçekten izlenen bölüm açılır ("Devam Et" başka bölümü bulup baştan
+        // başlatma sorunu böylece çözülür).
+        playSeriesEpisode(channelName, _cwEntry.season, _cwEntry.episode, _cwEntry.url || null, _resumeAt);
         return;
     }
 
@@ -37085,15 +37248,42 @@ function showRemoteHint(text) {
             return;
         }
         if (!channel) {
-            showToast('\u26a0\ufe0f Bu kayıt art\u0131k listede bulunam\u0131yor, ge\u00e7mi\u015fden kald\u0131r\u0131ld\u0131.');
-            // Bulunamayan kayıt kalıcı olarak bozuksa kartı temizle — aksi hâlde
-            // kullanıcı her seferinde aynı "yükleniyor" döngüsüne takılır.
-            if (state.continueWatching && state.continueWatching[channelName]) {
-                delete state.continueWatching[channelName];
-                try { localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching)); } catch(e) {}
-                if (typeof renderContinueWatching === 'function') renderContinueWatching();
-                if (state.activeCat === 'cont' && typeof filterChannels === 'function') filterChannels();
+            // FIX: Kanal bulunamasa da KAYDI SİLME — M3U henüz tam yüklenmemiş
+            // veya geçici ağ sorunu olabilir. Kullanıcı uygulamayı yeniden açtığında
+            // liste tam yüklenince kart tekrar görünür. Silme ancak kullanıcı
+            // manuel "Sil" butonuna basınca yapılmalı.
+            // Dizi kaydıysa (isSeries=true) yine playSeriesEpisode dene — URL
+            // kayıtta saklı olduğu için listede bulunamasa da çalışabilir.
+            const _cwFallback = state.continueWatching && state.continueWatching[channelName];
+            if (_cwFallback && _cwFallback.isSeries && _cwFallback.url && _cwFallback.season && _cwFallback.episode) {
+                playKeySound('confirm');
+                const _resumeAt = isContinue ? (_cwFallback.currentTime || startTime || 0) : 0;
+                playSeriesEpisode(channelName, _cwFallback.season, _cwFallback.episode, _cwFallback.url, _resumeAt);
+                return;
             }
+            // URL ile direkt oynatma — kanal listede olmasa bile stream URL varsa dene
+            if (_cwFallback && _cwFallback.url && !_cwFallback.isSeries) {
+                const _resumeAt = isContinue ? (_cwFallback.currentTime || startTime || 0) : 0;
+                const _syntheticCh = {
+                    name: channelName,
+                    url: _cwFallback.url,
+                    logo: '',
+                    isLive: !!_cwFallback.isLive,
+                    group: ''
+                };
+                state.filtered.push(_syntheticCh);
+                state.player.index = state.filtered.length - 1;
+                state.player.name = channelName;
+                state.player.currentContinueName = channelName;
+                state.player.continueTime = _resumeAt;
+                state.player.isLiveStream = !!_cwFallback.isLive;
+                state.player.vodPlaying = !_cwFallback.isLive;
+                state.player.url = _cwFallback.url;
+                if (typeof openPlayer === 'function') openPlayer(_cwFallback.url, _resumeAt);
+                else showToast('\u26a0\ufe0f Kanal şu an listede bulunamıyor. M3U yenilendikten sonra tekrar deneyin.');
+                return;
+            }
+            showToast('\u26a0\ufe0f Kanal şu an listede bulunamıyor. M3U yenilendikten sonra tekrar deneyin.');
             return;
         }
     
@@ -39355,8 +39545,15 @@ function addContinueCardStyles() {
                     if (c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return false;
                     if (c.isSeries) {
                         if (state.series && state.series.seriesCache && state.series.seriesCache[c.name]) return true;
-                        const grp = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(state.channels) : [];
+                        // groupChannelsBySeries cache'den dene, yoksa _gcsCacheResult fallback
+                        const grp = (typeof groupChannelsBySeries === 'function') ? groupChannelsBySeries(state.channels) : [];
                         return grp.some(g => g.isSeries && g.name === c.name);
+                    }
+                    // FIX: strict isim eşleşmesi Türkçe İ/I, boşluk farklarında
+                    // başarısız oluyordu — kayıt "cont" kategorisine hiç girmiyordu.
+                    // _cwFindChannel varsa fuzzy eşleşme dene, yoksa strict fallback.
+                    if (typeof _cwFindChannel === 'function') {
+                        return !!_cwFindChannel(c.name);
                     }
                     return !!state.channels.find(ch => ch.name === c.name);
                 })
@@ -39404,7 +39601,11 @@ function addContinueCardStyles() {
         state.currentLoadedCards = 24;
         
         // 3. UI güncelle
-        updateChannelCount(state.filtered.length);
+        // FIX: state.filtered içindeki özel "Tümünü Temizle" kartı (isSpecial:true)
+        // gerçek bir içerik değil — sayaç ("X Kanal") buna rağmen onu da sayıyordu,
+        // bu yüzden "Devam Et" sekmesinde gerçekte 1 kayıt varken "2 Kanal" gibi
+        // yanıltıcı bir sayı gösteriliyordu.
+        updateChannelCount(state.filtered.filter(c => !c.isSpecial).length);
         
         // Kategori başlığı
         let categoryTitle = state.activeCat;
@@ -39646,8 +39847,8 @@ function renderChannels() {
                     </div>
                     
                     <div class="channel-logo-container">
-                        ${c.logo ? 
-                            `<img src="${c.logo}" 
+                        ${(c.logo || continueData.logo) ? 
+                            `<img src="${c.logo || continueData.logo}" 
                                  class="channel-logo-img" 
                                  loading="lazy"
                                  alt="${c.name}"
@@ -39663,7 +39864,7 @@ function renderChannels() {
                         </div>
                     </div>
                     
-                    <div class="channel-title">${c.name}</div>
+                    <div class="channel-title">${continueData.fullName || c.name}</div>
                     
                     <div style="position:absolute; top:12px; left:12px; background:var(--accent-primary); color:#000; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:800;">
                         %${Math.round(continueData.progress * 100)}
@@ -40141,7 +40342,7 @@ function playChannelFromContinueCategory(index) {
     // Dizi kaydıysa — "Çirkin" gibi seri adıyla state.channels'ta birebir kanal
     // yok, bölüm bazlı kayıtlar var. Doğru bölümü playSeriesEpisode ile aç.
     if (continueData.isSeries && continueData.season && continueData.episode) {
-        playSeriesEpisode(ch.name, continueData.season, continueData.episode, null, continueData.currentTime || 0);
+        playSeriesEpisode(ch.name, continueData.season, continueData.episode, continueData.url || null, continueData.currentTime || 0);
         return;
     }
 
@@ -40285,35 +40486,6 @@ function playVodDirect(index) {
 }
 
 // URL ile kanal oynatma fonksiyonu
-// FIX: Bazı dizi bölümü URL'lerinde/proxy'lerinde tek seferlik "video.currentTime =
-// startTime" seek işlemi tutmuyor — segment/ABR seviye değişimi ya da manifest
-// yeniden yüklenmesi konumu 0'a geri sıfırlayabiliyor, bu da "doğru bölüm açılıyor
-// ama baştan başlıyor" hissi yaratıyor. Bu yardımcı fonksiyon, ilk birkaç saniye
-// boyunca hedef saniyeye geri dönüp dönmediğini kontrol edip gerekirse tekrar seek
-// yaparak konumun kalıcı olmasını sağlar.
-function _utvPersistResumeSeek(video, targetTime) {
-    if (!video || !targetTime || targetTime <= 0) return;
-    let _tries = 0;
-    const _maxTries = 12; // ~9sn boyunca 750ms aralıklarla kontrol
-    const _iv = setInterval(() => {
-        _tries++;
-        try {
-            if (!video || video.paused === undefined) { clearInterval(_iv); return; }
-            // Kullanıcı bilinçli olarak videoyu duraklattıysa dokunma
-            if (window._userPaused) { clearInterval(_iv); return; }
-            const drift = Math.abs(video.currentTime - targetTime);
-            // Konum hedefe yakınsa (kullanıcı zaten oradaysa ya da seek tuttuysa) sorun yok
-            if (drift < 3) { clearInterval(_iv); return; }
-            // Video hedefin ÇOK ilerisindeyse (kullanıcı manuel ileri sardıysa) dokunma
-            if (video.currentTime > targetTime + 5) { clearInterval(_iv); return; }
-            if (video.readyState >= 1) {
-                video.currentTime = targetTime;
-            }
-        } catch(e) {}
-        if (_tries >= _maxTries) clearInterval(_iv);
-    }, 750);
-}
-
 function playChannelByUrl(url, channelName = '', startTime = 0, isSeriesFlag = false) {
     
     // Önce state.channels'da ara
@@ -41160,7 +41332,7 @@ function resumeChannel(startTime) {
     // İlk ok tuşu basımında hangi butona odaklanılacağını ayarla
     // Canlı: Kanal Listesi (index 9 = btnPlayerList), VOD/Film: Play/Pause (index 1 = btnPlayPause)
     if (ch.isLive && !ch.isVod) {
-        state.remote.playerBoxIndex = 9; // btnPlayerList
+        state.remote.playerBoxIndex = 10; // btnPlayerList
     } else {
         state.remote.playerBoxIndex = 1; // btnPlayPause
     }
@@ -41250,7 +41422,7 @@ function resumeChannel(startTime) {
             // Canlı: kontroller kalıcı gizli — zone='player' kilitle, kumanda çalışmaya devam etsin
             state.remote.zone = 'player';
             state.remote.playerControlsVisible = false;
-            state.remote.playerBoxIndex = 9; // btnPlayerList — odak hazır
+            state.remote.playerBoxIndex = 10; // btnPlayerList — odak hazır
         }
         startResolutionMonitoring();
         // ── SON İZLENEN KANALLAR (sadece canlı yayınlar) ──
@@ -41595,11 +41767,6 @@ function resumeChannel(startTime) {
                 }, 300);
                 // Max 8 saniye bekle
                 setTimeout(() => clearInterval(_resumeSeekCheck), 8000);
-            }
-            // FIX: Tek seferlik seek bazı akışlarda (özellikle dizi bölümü
-            // proxy'lerinde) tutmuyordu — kalıcılık kontrolcüsünü de devreye sok.
-            if (typeof _utvPersistResumeSeek === 'function') {
-                _utvPersistResumeSeek(video, startTime);
             }
         }
 
@@ -42104,13 +42271,6 @@ function resumeChannel(startTime) {
                         }
                     } catch(e) {}
                 }, 500);
-                // FIX: Bazı dizi/proxy akışlarında bu tek seferlik seek de
-                // tutmuyordu (konum kısa süre sonra 0'a geri dönüyordu) —
-                // kalıcılık kontrolcüsü birkaç saniye boyunca gözlemleyip
-                // gerekirse tekrar seek uygular.
-                if (typeof _utvPersistResumeSeek === 'function') {
-                    _utvPersistResumeSeek(video, startTime);
-                }
             }
 
             // Altyazı: Türkçe track varsa otomatik seç
@@ -42281,7 +42441,7 @@ function resumeChannel(startTime) {
     if (isRedirectUrl) {
         showToast('Yayın bağlantısı çözümleniyor...');
         state.remote.zone = 'player';
-        state.remote.playerBoxIndex = 9;
+        state.remote.playerBoxIndex = 10;
         startContinuousWatchingUpdate();
         // Önceki stream'i temizle (ses bozulması önleme)
         if (state.player.hls) { try { state.player.hls.destroy(); } catch(e) {} state.player.hls = null; }
@@ -42560,7 +42720,7 @@ function resumeChannel(startTime) {
     }
 
     state.remote.zone = 'player'; 
-    state.remote.playerBoxIndex = 9; // Kanal Listesi butonu
+    state.remote.playerBoxIndex = 10; // Kanal Listesi butonu
     startContinuousWatchingUpdate(); 
 }
 
@@ -43950,12 +44110,56 @@ let virtualScrollSystem = null;
         // geçici bileşik başlıkla ("DiziAdı - S1:E3") ezildiği için güvenilir değil.
         // state.series.currentEpisode dolu olması "şu an bir dizi bölümü oynatılıyor"
         // için güvenilir sinyaldir (bölüm/dizi/film değişiminde her yerde null'lanıyor).
-        const _isSeriesNow = !!(state.series && state.series.currentSeries && state.series.currentEpisode != null);
+        // KRİTİK-FIX (v1): state.series.currentSeries/currentEpisode bazı giriş
+        // noktalarında (ör. playChannelFromSidebar ile film/dizi dışı bir içerik
+        // açıldığında) bir önceki dizi oturumundan kalma (stale) değerler olarak
+        // kalabiliyordu. Bu durumda _isSeriesNow yanlışlıkla true kalıyor ve o an
+        // oynatılan YENİ içeriğin ilerlemesi ESKİ dizinin "Devam Et" kaydının
+        // anahtarı (cwKey) altına yazılıyor — sonuç: eski dizinin kaydı yeni
+        // içerikle EZİLİYOR ("2. bir film/dizi izleyince diğer kayıt siliniyor").
+        //
+        // DÜZELTME (v2): v1'deki koruma sadece currentContinueName === currentSeries
+        // (ham dizi adı) eşitliğini kabul ediyordu. Ama yukarıdaki yorumda da
+        // belirtildiği gibi, GERÇEK dizi oynatımında playSeriesEpisode()->
+        // playChannelByUrl()->playChannel() zinciri currentContinueName'i geçici
+        // bileşik başlıkla ("DiziAdı - S1:E3") EZİYOR. v1 bunu hesaba katmadığından
+        // gerçek dizi izlerken de _isSeriesNow false oluyor, ilerleme seriesName
+        // anahtarı altına hiç yazılmıyor ve "dizi kaldığı yerden devam etmiyor"
+        // regresyonuna yol açıyordu. Şimdi her iki geçerli biçim de (ham ad VEYA
+        // o anki sezon/bölümle eşleşen bileşik ad) kabul ediliyor; sadece TAMAMEN
+        // alakasız (başka bir film/dizinin) currentContinueName değeri reddediliyor.
+        const _expectedSeriesCompositeName = (state.series && state.series.currentSeries != null && state.series.currentSeason != null && state.series.currentEpisode != null)
+            ? (state.series.currentSeries + ' - S' + state.series.currentSeason + ':E' + state.series.currentEpisode)
+            : null;
+        const _isSeriesNow = !!(state.series && state.series.currentSeries && state.series.currentEpisode != null
+            && state.player && (
+                state.player.currentContinueName === state.series.currentSeries
+                || (_expectedSeriesCompositeName && state.player.currentContinueName === _expectedSeriesCompositeName)
+            ));
         const cwKey = _isSeriesNow ? state.series.currentSeries : (state.player.currentContinueName || state.player.name);
         if (progress > MIN_WATCH_PERCENT && progress < MAX_WATCH_PERCENT) {
             const _cwCh = state.channels.find(ch => ch.name === cwKey);
+            const _prevRecord = state.continueWatching[cwKey];
+            // FIX: kart başlığında her zaman TAM/ham bölüm adı gösterilsin — dizi
+            // ise gerçek oynatılan kanalın ham adı (URL üzerinden bulunur),
+            // değilse zaten cwKey ham addır.
+            const _cwChByUrl = _isSeriesNow && state.player.url
+                ? state.channels.find(ch => ch.url === state.player.url)
+                : null;
+            const _fullName = _isSeriesNow
+                ? ((_cwChByUrl && _cwChByUrl.name) || (_prevRecord && _prevRecord.fullName) || (_cwCh && _cwCh.name) || cwKey)
+                : cwKey;
+            // FIX: Logo'yu kayda ekle — uygulama yeniden açılınca groupChannelsBySeries
+            // tekrar çalışana kadar logo kayboluyordu. Kayıtta saklanan logo kart
+            // render edilirken c.logo yoksa fallback olarak kullanılır.
+            const _cwLogo = state.player.logo
+                || (_cwChByUrl && _cwChByUrl.logo)
+                || (_cwCh && _cwCh.logo)
+                || (_prevRecord && _prevRecord.logo)
+                || '';
             const _record = { 
                 name: cwKey, 
+                fullName: _fullName,
                 currentTime: v.currentTime, 
                 duration: v.duration, 
                 progress: progress, 
@@ -43967,7 +44171,8 @@ let virtualScrollSystem = null;
                 // kanal bulunuyor — bu, gerçekte izlenen bölüm olmayabilir. Gerçek
                 // oynatılan URL burada saklanıyor; resume sırasında (varsa) isim
                 // aramasının önüne geçilip doğrudan bu URL açılıyor.
-                url: state.player.url || (_cwCh && _cwCh.url) || ''
+                url: state.player.url || (_cwCh && _cwCh.url) || '',
+                logo: _cwLogo
             };
             if (_isSeriesNow) {
                 _record.isSeries = true;
@@ -45234,7 +45439,7 @@ function deleteContinueWatchingRecord(name) {
                     if (_icon4)  _icon4.textContent  = 'visibility_off';
                     if (_label4) _label4.textContent = 'Gizle';
                     var _isLive4 = !!(state.player && state.player.isLiveStream);
-                    state.remote.playerBoxIndex = _isLive4 ? 9 : 1;
+                    state.remote.playerBoxIndex = _isLive4 ? 10 : 1;
                     state.remote.zone = 'player';
                     if (typeof showControls === 'function') showControls(7000);
                     if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
@@ -45256,7 +45461,7 @@ function deleteContinueWatchingRecord(name) {
                     const _label2 = document.getElementById('hideControlsLabel');
                     if (_icon2)  _icon2.textContent  = 'visibility_off';
                     if (_label2) _label2.textContent = 'Gizle';
-                    state.remote.playerBoxIndex = _isLive ? 9 : 1;
+                    state.remote.playerBoxIndex = _isLive ? 10 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
                     showControls(7000);
@@ -45312,7 +45517,7 @@ function deleteContinueWatchingRecord(name) {
                     // Yön tuşu davranışı — kontroller kapalıyken (normal mod, _controlsHidden değil)
                     if (e.key === 'Enter' || e.key === 'OK') {
                         // OK → kontrolleri aç
-                        state.remote.playerBoxIndex = _isLive ? 9 : 1;
+                        state.remote.playerBoxIndex = _isLive ? 10 : 1;
                         state.remote.zone = 'player';
                         showControls(7000);
                         updateRemoteFocus();
@@ -45350,7 +45555,7 @@ function deleteContinueWatchingRecord(name) {
                             }
                             return;
                         }
-                        state.remote.playerBoxIndex = 9; // btnPlayerList
+                        state.remote.playerBoxIndex = 10; // btnPlayerList
                         state.remote.zone = 'player';
                         showControls(7000);
                         updateRemoteFocus();
@@ -46425,7 +46630,7 @@ function handlePlayerRemote(e) {
             const _label3 = document.getElementById('hideControlsLabel');
             if (_icon3)  _icon3.textContent  = 'visibility_off';
             if (_label3) _label3.textContent = 'Gizle';
-            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.playerBoxIndex = _isLive ? 10 : 1;
             state.remote.zone = 'player';
             showControls(7000);
             return;
@@ -46438,7 +46643,7 @@ function handlePlayerRemote(e) {
             const _label2 = document.getElementById('hideControlsLabel');
             if (_icon2)  _icon2.textContent  = 'visibility_off';
             if (_label2) _label2.textContent = 'Gizle';
-            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.playerBoxIndex = _isLive ? 10 : 1;
             state.remote.zone = 'player';
             showControls(7000);
             return;
@@ -46515,7 +46720,7 @@ function handlePlayerRemote(e) {
                     return;
                 }
                 // Sol ok → kontrolleri aç (mevcut davranış)
-                state.remote.playerBoxIndex = 9; // btnPlayerList
+                state.remote.playerBoxIndex = 10; // btnPlayerList
                 state.remote.zone = 'player';
                 showControls(7000);
                 updateRemoteFocus();
@@ -46525,7 +46730,7 @@ function handlePlayerRemote(e) {
         // OK/Enter → kontrolleri doğru odakla aç
         if (e.key === 'Enter' || e.key === 'OK' || e.key === 'Select') {
             e.preventDefault();
-            state.remote.playerBoxIndex = _isLive ? 9 : 1;
+            state.remote.playerBoxIndex = _isLive ? 10 : 1;
             state.remote.zone = 'player';
             showControls(7000);
             updateRemoteFocus();
@@ -46546,7 +46751,7 @@ function handlePlayerRemote(e) {
     }
 
     // Kontroller açık ama zone yanlış — zone'u player'a sabitle
-    state.remote.playerBoxIndex = _isLive ? 9 : 1;
+    state.remote.playerBoxIndex = _isLive ? 10 : 1;
     state.remote.zone = 'player';
     showControls(7000);
     updateRemoteFocus();
@@ -48173,7 +48378,15 @@ function handleFavoriteChannelSelect(key) {
         const activeCont = state.activeCat === 'cont';
         if (activeCont) {
             const cards = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
-            if (cards.length > 0 && state.remote.index < cards.length) {
+            // FIX: "Kanal listesine odak kaybı" — grid yeniden render edildiğinde
+            // (filtre değişimi, arka plan yenileme, yeni içerik eklenmesi vb.)
+            // kart sayısı azalabiliyordu ve state.remote.index eski (artık
+            // geçersiz) değerde kalınca hiçbir kart focus alamıyor, kumanda
+            // odağı görünmez oluyordu. Artık index her zaman geçerli aralığa
+            // clamp edilip state'e geri yazılıyor.
+            if (cards.length > 0) {
+                if (state.remote.index >= cards.length) state.remote.index = cards.length - 1;
+                if (state.remote.index < 0) state.remote.index = 0;
                 el = cards[state.remote.index];
                 if (state.remote.index === 0 && el.classList.contains('clear-card')) {
                     hint = 'Tüm izleme geçmişini temizle';
@@ -48184,7 +48397,10 @@ function handleFavoriteChannelSelect(key) {
             }
         } else {
             const cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
-            if (cards.length > 0 && state.remote.index < cards.length) {
+            // FIX: aynı odak-kaybı clamp'i normal kanal grid'i için de uygulanıyor.
+            if (cards.length > 0) {
+                if (state.remote.index >= cards.length) state.remote.index = cards.length - 1;
+                if (state.remote.index < 0) state.remote.index = 0;
                 el = cards[state.remote.index];
                 const channelName = el.dataset.channelName;
                 const isVod = el.dataset.isVod === 'true';
@@ -48556,7 +48772,7 @@ function handleFavoriteChannelSelect(key) {
                     const _lb = document.getElementById('hideControlsLabel');
                     if (_ic) _ic.textContent = 'visibility_off';
                     if (_lb) _lb.textContent = 'Gizle';
-                    state.remote.playerBoxIndex = _isLiveH ? 9 : 1;
+                    state.remote.playerBoxIndex = _isLiveH ? 10 : 1;
                     state.remote.zone = 'player';
                     state.remote.playerControlsVisible = true;
                     showControls(7000);
@@ -72228,6 +72444,13 @@ window.addEventListener('keydown', function (e) {
     items.forEach(function (el, i) {
         el.classList.toggle('remote-focused', i === _altFocusIdx);
     });
+    // FIX: odak değiştiğinde liste scroll edilmiyordu — #altChList
+    // (max-height:210px; overflow-y:auto) içinde focus edilen öğe görünür
+    // alanın dışına çıkınca kumandayla aşağı/yukarı gitmek imkansız
+    // görünüyordu. Artık odaklanan öğe her zaman görünür alana kaydırılıyor.
+    if (_altFocusIdx >= 0 && items[_altFocusIdx]) {
+        items[_altFocusIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
 }, true);
 
 })();

@@ -31059,23 +31059,23 @@ function openPasswordModal(m3uIndex, m3uName) {
             } catch(e) { return null; }
         }
         
+        // PERF FIX: Önceden direkt + proxy'ler SIRAYLA (her biri 15sn timeout ile)
+        // deneniyordu — en kötü durumda 4 x 15sn = 60sn boyunca config gelmiyordu,
+        // bu da "kanallar otomatik yüklenmiyor" şikayetinin asıl kaynağıydı çünkü
+        // waitForAppReady güvenlik ağı sadece 15sn bekleyip vazgeçiyordu (aşağıda
+        // ayrıca düzeltildi). Şimdi tüm adaylar AYNI ANDA denenip ilk başarılı
+        // olan kullanılıyor — en kötü durumda bile ~15sn içinde sonuç alınır.
+        const _cfgCandidates = _isFileProto
+            ? [..._CFGPROXIES.map(px => px + encodeURIComponent(CONFIG_URL)), CONFIG_URL]
+            : [CONFIG_URL, ..._CFGPROXIES.map(px => px + encodeURIComponent(CONFIG_URL))];
         let response = null;
-        if (_isFileProto) {
-            // file:// CORS: proxy zinciri dene
-            for (const _px of _CFGPROXIES) {
-                response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
-                if (response) break;
-            }
-            // Tüm proxy'ler başarısız → direkt dene (bazı browser'lar izin verir)
-            if (!response) response = await _tryFetchCfg(CONFIG_URL);
-        } else {
-            response = await _tryFetchCfg(CONFIG_URL);
-            if (!response) {
-                for (const _px of _CFGPROXIES) {
-                    response = await _tryFetchCfg(_px + encodeURIComponent(CONFIG_URL));
-                    if (response) break;
-                }
-            }
+        try {
+            response = await Promise.any(_cfgCandidates.map(_tryFetchCfg).map(p => p.then(r => {
+                if (!r) throw new Error('boş yanıt');
+                return r;
+            })));
+        } catch (e) {
+            response = null;
         }
         if (!response) throw new Error('Config fetch başarısız');
         
@@ -48611,26 +48611,37 @@ function tryIframeRedirect(action) {
         // Uygulama hazır olduğunda otomatik yükle
 function waitForAppReady() {
     // Sadece state + loadAllChannels bekle — cat-pill bağımlılığı kaldırıldı
+    //
+    // BUG FIX: Eskiden 15sn (30 x 500ms) sonra m3uList hâlâ boşsa TAMAMEN
+    // vazgeçiliyordu ve bir daha asla otomatik denenmiyordu. Ancak loadConfig()
+    // yavaş/başarısız ağlarda 15sn'den uzun sürebiliyordu (özellikle proxy
+    // zincirine düşüldüğünde) — bu durumda config sonunda gelse bile kanallar
+    // otomatik yüklenmiyor, kullanıcı elle "CANLI YAYIN"/M3U butonuna basmak
+    // zorunda kalıyordu. Artık 15sn sonra vazgeçmek yerine daha uzun süre
+    // (3 dakika) ve daha seyrek aralıklarla kontrole devam ediyor; m3uList
+    // hazır olur olmaz hemen loadAllChannels tetiklenir.
     let tries = 0;
+    const MAX_MS = 180000; // 3 dakika
+    const start = Date.now();
     let checkInterval = setInterval(function() {
         tries++;
+        const channelsMissing = !window.state || !state.channels || state.channels.length === 0;
         const isAppReady =
             typeof state !== 'undefined' &&
             typeof loadAllChannels === 'function' &&
             state.m3uList && state.m3uList.length > 0;
 
-        if (isAppReady) {
-            clearInterval(checkInterval);
-            if (!state.channels || state.channels.length === 0) {
-                loadAllChannels(false);
-            }
-        } else if (tries >= 30) {
-            // 15 saniye beklendi (30 x 500ms) — m3uList hâlâ boş, config gelmedi
-            // loadAllChannels çağırma — boş m3uList ile çağırmak işe yaramaz
+        if (isAppReady && channelsMissing && !window._waitForAppReadyLoading) {
+            window._waitForAppReadyLoading = true;
+            Promise.resolve(loadAllChannels(false)).finally(function() {
+                window._waitForAppReadyLoading = false;
+            });
+        }
+        if ((isAppReady && !channelsMissing) || (Date.now() - start) >= MAX_MS) {
             clearInterval(checkInterval);
         }
-    }, 500);
-    setTimeout(function() { clearInterval(checkInterval); }, 15000);
+    }, 1000);
+    setTimeout(function() { clearInterval(checkInterval); }, MAX_MS + 1000);
 }
 
 // Sayfa yüklendiğinde başlat
@@ -73210,7 +73221,12 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         if (t0) t0.classList.add('active');
         var body = document.getElementById('umMatchesListBody');
         if (body) body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-primary);"><span class="material-symbols-outlined" style="font-size:40px;animation:spin 1s linear infinite;">sync</span><div style="margin-top:10px;font-size:13px;">Maçlar yükleniyor...</div></div>';
-        umRefreshCurrentView();
+        // FIX: modal'ı gösterdikten hemen sonra ağır işi (kanal/EPG yükleme,
+        // sportif kanal taraması) başlatmak yerine bir sonraki frame'e erteliyoruz —
+        // aksi halde tarayıcı spinner'ı boyamadan önce ağır senkron iş main thread'i
+        // kilitleyip butonun "donmuş" görünmesine sebep olabiliyordu (özellikle
+        // TVBox'ta kanallar henüz yüklenmemişse loadAllChannels burada tetikleniyordu).
+        requestAnimationFrame(function() { requestAnimationFrame(umRefreshCurrentView); });
         if (umRefreshTimer) clearInterval(umRefreshTimer);
         umRefreshTimer = setInterval(function() {
             umMatchesCache = {};

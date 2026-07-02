@@ -6054,6 +6054,16 @@ body {
     }
 }
 
+    /* ── Oynatıcıda "Maçlar" butonu — SADECE canlı yayında görünür, VOD/dizide
+       JS tarafından display:none yapılır. Yanıp sönme (tema rengi <-> kırmızı)
+       CSS @keyframes ile DEĞİL, JS interval ile yapılıyor: bu build'de tüm
+       CSS animasyonları global "TVBox performans" kuralıyla
+       (animation-duration:0.001ms !important) etkisiz hale getiriliyor, bu
+       yüzden saf CSS animasyonu burada çalışmaz — bkz. umStartMatchesBtnBlink(). */
+    #btnPlayerMatches {
+        border-width: 1.5px !important;
+    }
+
         .player-action-btn:hover {
             background: var(--btn-hover-bg, rgba(255,215,0,0.22));
             border-color: var(--btn-hover-border, rgba(255,215,0,0.60));
@@ -14315,6 +14325,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="material-symbols-outlined" style="font-size:20px;">account_circle</span>
                 </div>
             </button>
+            <button class="header-btn" id="btnMatches" onclick="openMatchesModal()" title="Maçlar" tabindex="0">
+                <span class="material-symbols-outlined">sports_soccer</span>
+            </button>
             <button class="header-btn" id="btnExitHeader" onclick="showExitConfirmModal()" title="Uygulamayı Kapat" style="color:#ff4444;" tabindex="-1">
                 <span class="material-symbols-outlined">power_settings_new</span>
             </button>
@@ -15215,6 +15228,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                         <button class="player-action-btn epg-btn" id="btnEpg" onclick="showChannelEpg()" title="Program Bilgisi (EPG)" tabindex="0">
                             <span class="material-symbols-outlined">tv_gen</span>
                             <span class="btn-label">EPG</span>
+                        </button>
+                        <button class="player-action-btn" id="btnPlayerMatches" onclick="openMatchesModal()" title="Maçlar" tabindex="0" style="display:none;">
+                            <span class="material-symbols-outlined">sports_soccer</span>
+                            <span class="btn-label">Maçlar</span>
                         </button>
                         <button class="player-action-btn" id="btnPlayerList" onclick="openSidebarOrEpisodes()" title="Kanal Listesi / Bölümler">
                             <span class="material-symbols-outlined" id="btnPlayerListIcon">format_list_bulleted</span>
@@ -19109,7 +19126,7 @@ let state = {
         chButtons: ['btnChDown', 'btnChUp'],
         gridScaleButtons: ['btnGridCols'],
         progressBarActive: false,
-        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnClosePlayer'],
+        playerBoxButtons: ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerMatches', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnClosePlayer'],
         playerBoxIndex: 9,
         sidebarCategoryIndex: 0,
         sidebarChannelIndex: 0,
@@ -19221,7 +19238,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -19231,7 +19248,7 @@ Object.defineProperty(window, 'state', {
         const ADD_M3U_BUTTONS = ['m3uNameInput', 'm3uUrlInput', 'm3uPasswordInput', 'rememberM3UPassword', 'btnDeleteM3U', 'btnCancelM3U', 'btnSaveM3U', 'btnAddM3UBack']; 
         const PASSWORD_MODAL_BUTTONS = ['passwordInput', 'rememberPassword', 'btnPasswordCancel', 'btnPasswordConfirm', 'btnPasswordBack'];
         const SLEEP_MODE_BUTTONS = ['sleepTimeSlider', 'sleepModeToggle', 'btnSleepModeCancel', 'btnSleepModeSave', 'btnSleepModeBack'];
-        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnChTimer', 'btnChNote', 'btnEpgAlarm', 'btnClosePlayer'];
+        const PLAYER_BOX_BUTTONS = ['btnChDown', 'btnPlayPause', 'btnChUp', 'btnQuickSortUp', 'btnQuickSortNum', 'btnQuickSortDown', 'btnObjectFit', 'btnPlayerFav', 'btnEpg', 'btnPlayerMatches', 'btnPlayerList', 'btnLiveSync', 'btnQuality', 'btnSubtitle', 'btnMuteToggle', 'btnHideLiveProgress', 'btnFullscreenBottom', 'btnHideControls', 'btnSpeed', 'btnSeekAmount', 'btnWPChat', 'btnPip', 'btnPlayerVoiceSearch', 'btnChTimer', 'btnChNote', 'btnEpgAlarm', 'btnClosePlayer'];
         
         
 
@@ -40158,6 +40175,45 @@ function playVodByName(name) {
             }
         }
 
+// ── "Maçlar" oynatıcı butonu için JS tabanlı yanıp sönme ──
+// NOT: Bu build'de "TVBox Global Performans" CSS kuralı TÜM animasyonların
+// süresini 0.001ms'e indirip tek karede dondurduğu için (bkz. head'deki
+// "* { animation-duration: 0.001ms !important; }" kuralı), saf CSS
+// @keyframes burada çalışmıyor — buton hep aynı sabit renkte kalıyordu.
+// Bunun yerine setInterval ile inline stili doğrudan değiştiriyoruz ve
+// global "box-shadow: none !important" gibi kuralları ezmek için
+// setProperty(...,'important') kullanıyoruz.
+// ÖNEMLİ DÜZELTME: Tema rengini JS içinde (state.themes / getComputedStyle
+// ile) ÇÖZMEYE çalışmak güvenilmez çıktı — buton sürekli kırmızıda takılı
+// kalıyordu. Artık "tema rengi" fazında JS hiçbir renk hesaplamıyor;
+// doğrudan CSS custom property referansını ("var(--accent-primary)")
+// inline stile yazıyoruz ve TARAYICI bunu her karede kendisi çözüyor. Bu
+// değişken uygulamanın her yerinde (Bugün sekmesi, İzle butonu vb.) zaten
+// doğru çalıştığı için burada da güvenilir şekilde işliyor.
+var _umMatchesBtnBlinkTimer = null;
+var _umMatchesBtnBlinkOn = false;
+function umStartMatchesBtnBlink() {
+    if (_umMatchesBtnBlinkTimer) return; // zaten çalışıyor
+    _umMatchesBtnBlinkTimer = setInterval(function() {
+        var b = document.getElementById('btnPlayerMatches');
+        if (!b || b.style.display === 'none') { umStopMatchesBtnBlink(); return; }
+        _umMatchesBtnBlinkOn = !_umMatchesBtnBlinkOn;
+        var c = _umMatchesBtnBlinkOn ? '#ff3b30' : 'var(--accent-primary, #FFD700)';
+        b.style.setProperty('border-color', c, 'important');
+        b.style.setProperty('color', c, 'important');
+    }, 700);
+}
+function umStopMatchesBtnBlink() {
+    if (_umMatchesBtnBlinkTimer) { clearInterval(_umMatchesBtnBlinkTimer); _umMatchesBtnBlinkTimer = null; }
+    _umMatchesBtnBlinkOn = false;
+    var b = document.getElementById('btnPlayerMatches');
+    if (b) {
+        b.style.removeProperty('border-color');
+        b.style.removeProperty('color');
+        b.style.removeProperty('box-shadow');
+    }
+}
+
 // Kanal adına göre oynat — index kayması sorununu önler
 function playChannelByName(name) {
     const idx = state.filtered.findIndex(ch => ch && ch.name === name);
@@ -40218,6 +40274,9 @@ function playChannelByName(name) {
         // Canlı yayın: EPG butonunu göster, Altyazı butonunu GİZLE
         var _epgBtnPC = document.getElementById('btnEpg'); if (_epgBtnPC) _epgBtnPC.style.display = 'flex';
         var _subBtnLive = document.getElementById('btnSubtitle'); if (_subBtnLive) _subBtnLive.style.display = 'none';
+        // Canlı yayın: Maçlar butonunu göster (VOD/dizide bu buton işlevsiz olduğu için gizli tutulur)
+        var _matchesBtnLive = document.getElementById('btnPlayerMatches'); if (_matchesBtnLive) _matchesBtnLive.style.display = 'flex';
+        if (typeof umStartMatchesBtnBlink === 'function') umStartMatchesBtnBlink();
         // Canlı: Liste butonu → Kanal Listesi
         if (typeof updatePlayerListBtn === 'function') updatePlayerListBtn();
     } else {
@@ -40229,6 +40288,9 @@ function playChannelByName(name) {
         // VOD/Dizi: EPG butonunu gizle, Altyazı butonunu GÖSTER
         var _epgBtnPC2 = document.getElementById('btnEpg'); if (_epgBtnPC2) _epgBtnPC2.style.display = 'none';
         var _subBtnVod = document.getElementById('btnSubtitle'); if (_subBtnVod) _subBtnVod.style.display = 'flex';
+        // VOD/Dizi: Maçlar butonu gizli — sadece canlı yayında anlamlı
+        var _matchesBtnVod = document.getElementById('btnPlayerMatches'); if (_matchesBtnVod) _matchesBtnVod.style.display = 'none';
+        if (typeof umStopMatchesBtnBlink === 'function') umStopMatchesBtnBlink();
         // Film/Dizi: buton güncelleme — dizi ise openSeriesModal'dan sonra updatePlayerListBtn çağrılır
         if (typeof updatePlayerListBtn === 'function') updatePlayerListBtn();
     }
@@ -40838,6 +40900,17 @@ function resumeChannel(startTime) {
         const _progBtn = document.getElementById('btnHideLiveProgress');
         if (_progBtn) {
             _progBtn.style.display = state.player.isLiveStream ? 'flex' : 'none';
+        }
+
+        // MAÇLAR BUTONU: sadece canlı yayında göster (VOD/dizide gizli)
+        const _matchesBtnOS = document.getElementById('btnPlayerMatches');
+        if (_matchesBtnOS) {
+            _matchesBtnOS.style.display = state.player.isLiveStream ? 'flex' : 'none';
+        }
+        if (state.player.isLiveStream) {
+            if (typeof umStartMatchesBtnBlink === 'function') umStartMatchesBtnBlink();
+        } else {
+            if (typeof umStopMatchesBtnBlink === 'function') umStopMatchesBtnBlink();
         }
 
         // HIZ BUTONU: hem canlı hem VOD'da göster
@@ -42747,6 +42820,8 @@ function updatePlayerEpgBar(channelName, tvgId) {
 function closePlayer() {
     // Buffer badge durdur
     if (typeof stopBufferBadge === 'function') stopBufferBadge();
+    // Maçlar butonu yanıp sönme interval'ını durdur
+    if (typeof umStopMatchesBtnBlink === 'function') umStopMatchesBtnBlink();
     // PiP açıksa kapat
     if (document.pictureInPictureElement) {
         document.exitPictureInPicture().catch(function(){});
@@ -44776,17 +44851,15 @@ function deleteContinueWatchingRecord(name) {
                         // ArrowDown → hiçbir şey yapma
                         return;
                     }
-                    // Dizi: yukarı=Sesli Arama, aşağı=önceki bölüm, sol/sağ sarma YOK
-                    // (Kullanıcı isteği: kontroller gizliyken/kapalıyken yukarı tuşu
-                    // artık bölüm değiştirmesin — sesli aramayı açsın. Önceki bölüme
-                    // gitmek için aşağı tuşu kullanılabilir.)
+                    // Dizi: yukarı=Sesli Arama, aşağı=önceki bölüm, sol/sağ=sarma
                     if (_isSeries) {
                         if (e.key === 'ArrowUp')   {
                             if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch();
                             return;
                         }
                         if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); return; }
-                        // ArrowLeft/Right → hiçbir şey yapma (dizi sarma yok)
+                        if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward();  return; }
+                        if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); return; }
                         return;
                     }
                     // Canlı: Yukarı/Aşağı → kanal değiştir, Sağ → Sesli Arama, Sol/Enter → kontrolleri aç
@@ -45925,9 +45998,11 @@ function handlePlayerRemote(e) {
                 if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
                 if (e.key === 'ArrowUp')    { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
             } else if (_isSeries) {
-                // Dizi: yukarı=Sesli Arama (bölüm değiştirmesin), aşağı=önceki bölüm, sol/sağ hiçbir şey
+                // Dizi: yukarı=Sesli Arama (bölüm değiştirmesin), aşağı=önceki bölüm, sol/sağ=sarma
                 if (e.key === 'ArrowUp')   { if (typeof window.openVoiceSearch === 'function') window.openVoiceSearch(); }
                 if (e.key === 'ArrowDown') { if (typeof openEpisodeSelectorForCurrentSeries === 'function') openEpisodeSelectorForCurrentSeries(); }
+                if (e.key === 'ArrowRight') { if (typeof seekForward  === 'function') seekForward(); }
+                if (e.key === 'ArrowLeft')  { if (typeof seekBackward === 'function') seekBackward(); }
             }
             // Canlı: Yukarı/Aşağı → KANAL DEĞİŞTİR (kontroller kapalı olsa bile)
             if (_isLive) {
@@ -70190,6 +70265,27 @@ function _vsMatchGuessToRealName(guess) {
 function _vsTryHandleCommand(rawText) {
     var nText = _vsNormalize(rawText);
 
+    // ── PANEL AÇMA KOMUTLARI ─────────────────────────────────────────
+    // "epg aç", "kanal listesi aç", "maçlar aç" vb. söylenince ilgili
+    // panel/modal direkt açılır. Fiil ("aç/göster/getir") söylenmese bile
+    // komut kelimesi tek başına (kısa cümle) söylenirse yine açılır,
+    // böylece "epg" ya da "maçlar" demek de yeterli olur.
+    var _vsHasOpenVerb = /\b(ac|acsana|acilsin|goster|getir)\b/.test(nText);
+    var _vsWordCount = nText.trim() ? nText.trim().split(/\s+/).length : 0;
+    var _vsPanelCommands = [
+        { re: /\bepg\b/,                                     toast: '📺 EPG açılıyor',            action: function () { if (typeof showChannelEpg === 'function') showChannelEpg(); } },
+        { re: /\b(kanal\s*listesi|kanallar\s*listesi)\b/,     toast: '📋 Kanal listesi açılıyor',   action: function () { if (typeof openSidebarOrEpisodes === 'function') openSidebarOrEpisodes(); } },
+        { re: /\b(mac|maclar)\b/,                             toast: '⚽ Maçlar açılıyor',           action: function () { if (typeof openMatchesModal === 'function') openMatchesModal(); } }
+    ];
+    for (var _pc = 0; _pc < _vsPanelCommands.length; _pc++) {
+        if (_vsPanelCommands[_pc].re.test(nText) && (_vsHasOpenVerb || _vsWordCount <= 3)) {
+            if (typeof showToast === 'function') showToast(_vsPanelCommands[_pc].toast, 'success');
+            if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+            _vsPanelCommands[_pc].action();
+            return true;
+        }
+    }
+
     // ── SARMA KOMUTLARI ──────────────────────────────────────────────
     // "X dakika ileri sar", "X saniye geri sar", "ileri sar", "geri sar",
     // ve yön belirtilmeden sadece "X dakika sar" (varsayılan: ileri).
@@ -72268,3 +72364,868 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     flex-shrink: 0 !important;
 }
 </style>
+
+<!-- ============================================================
+     MAÇLAR ÖZELLİĞİ (umittv-matches-feature)
+     Takım logoları, maç saatleri, canlı skor/dakika (TheSportsDB
+     ücretsiz API) ve EPG üzerinden otomatik/manuel kanal eşleştirme.
+     ============================================================ -->
+<style id="umittv-matches-feature-style">
+.um-day-tab.active {
+    background: var(--accent-primary, #FFD700) !important;
+    color: #000 !important;
+    font-weight: 700;
+}
+.um-match-card {
+    transition: transform .15s ease;
+}
+.um-match-card:active {
+    transform: scale(0.98);
+}
+#umMatchesModal .modal-content {
+    border: 1px solid rgba(255,215,0,0.25);
+}
+#umMatchesListBody::-webkit-scrollbar {
+    width: 6px;
+}
+#umMatchesListBody::-webkit-scrollbar-thumb {
+    background: rgba(255,215,0,0.3);
+    border-radius: 4px;
+}
+</style>
+<script id="umittv-matches-feature-script">
+(function(){
+    'use strict';
+
+    // Süper Lig + büyük Avrupa ligleri (TheSportsDB lig ID'leri)
+    var UM_LEAGUES = [
+        { id: '4339', name: 'Süper Lig',        flag: '🇹🇷' },
+        { id: '4328', name: 'Premier League',   flag: '🏴' },
+        { id: '4335', name: 'La Liga',          flag: '🇪🇸' },
+        { id: '4331', name: 'Bundesliga',       flag: '🇩🇪' },
+        { id: '4332', name: 'Serie A',          flag: '🇮🇹' },
+        { id: '4334', name: 'Ligue 1',          flag: '🇫🇷' },
+        { id: '4480', name: 'Şampiyonlar Ligi', flag: '⭐' },
+        { id: 'wc2026', name: 'Dünya Kupası',   flag: '🏆' } // canlı veri wc2026-api Worker'ından (API-Football) gelir, bkz. umFetchWC2026Day
+    ];
+    var UM_API_KEY = '123'; // TheSportsDB genel test anahtarı (ücretsiz)
+    // World Cup 2026 canlı skor/dakika API'si — worldcup2026-main projesindeki Cloudflare
+    // Worker'ın "/scores" ucu. Worker, API-Football'ı dakikada bir cron ile tarayıp KV'ye yazıyor;
+    // bu uç KV'den okuyor, yani ziyaretçi trafiği API-Football'a hiç değmiyor ve veri en fazla
+    // ~60sn eskidir. TheSportsDB'nin aksine gerçek maç dakikasını (elapsed) doğrudan verir —
+    // tahmini "yaklaşık dakika" hesabına gerek kalmaz.
+    var WC2026_SCORES_API = 'https://wc2026-api.footy26.workers.dev/scores';
+    var WC2026_STATUS_MAP = { '1H':'1H','2H':'2H','ET':'ET','BT':'HT','P':'P','LIVE':'LIVE','INT':'INT','HT':'HT','FT':'FT','AET':'FT','PEN':'FT','NS':'NS','TBD':'NS','PST':'NS' };
+
+    // ── Modern SVG ikonlar (emoji yerine) ──
+    var UM_ICON_BALL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="vertical-align:-5px;margin-right:7px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.4 15.4 9.8 14.2 13.7H9.8L8.6 9.8Z" fill="currentColor"/><path d="M12 3.2v4.2M4.9 8.6l3.7 1.2M6.4 17.3l2.9-3.6M17.6 17.3l-2.9-3.6M19.1 8.6l-3.7 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var UM_ICON_TV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="5" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 21h7M9.5 3l2.5 2.6L14.5 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var UM_ICON_SEARCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;margin-right:5px;"><circle cx="10.3" cy="10.3" r="6.3" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4.4-4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    var UM_ICON_DOT = '<svg width="7" height="7" viewBox="0 0 10 10" style="vertical-align:1px;margin-right:4px;"><circle cx="5" cy="5" r="5" fill="#ff4757"/></svg>';
+    var UM_CACHE_MS = 3 * 60 * 1000;
+
+    var umMatchesCache = {};
+    var umBadgeCache = {};
+    var umChannelOverrides = {};
+    try { umBadgeCache = JSON.parse(localStorage.getItem('umTeamBadgeCache') || '{}'); } catch(e) {}
+    try { umChannelOverrides = JSON.parse(localStorage.getItem('umMatchChannelOverrides') || '{}'); } catch(e) {}
+
+    var umCurrentDateOffset = 0;
+    var umRefreshTimer = null;
+
+    function umNorm(s) {
+        if (!s) return '';
+        return s.toString().toLocaleLowerCase('tr-TR')
+            .replace(/ı/g, 'i').replace(/İ/g, 'i')
+            .replace(/ş/g, 's').replace(/ğ/g, 'g')
+            .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+            .replace(/[^a-z0-9]+/g, ' ').trim();
+    }
+
+    // Milli takım / ülke adlarının Türkçe karşılıkları (TheSportsDB İngilizce
+    // isim döndürür, arayüzde ve EPG eşleştirmesinde Türkçe kullanılır).
+    // Anahtarlar umNorm() ile normalize edilmiş haldedir.
+    var UM_COUNTRY_TR = {
+        'usa': 'ABD', 'united states': 'ABD', 'us': 'ABD',
+        'bosnia and herzegovina': 'Bosna-Hersek', 'bosnia herzegovina': 'Bosna-Hersek', 'bosnia-herzegovina': 'Bosna-Hersek',
+        'spain': 'İspanya', 'austria': 'Avusturya', 'portugal': 'Portekiz', 'croatia': 'Hırvatistan',
+        'england': 'İngiltere', 'germany': 'Almanya', 'france': 'Fransa', 'italy': 'İtalya',
+        'netherlands': 'Hollanda', 'holland': 'Hollanda', 'belgium': 'Belçika', 'switzerland': 'İsviçre',
+        'poland': 'Polonya', 'ukraine': 'Ukrayna', 'russia': 'Rusya', 'turkey': 'Türkiye', 'turkiye': 'Türkiye',
+        'greece': 'Yunanistan', 'serbia': 'Sırbistan', 'romania': 'Romanya', 'hungary': 'Macaristan',
+        'czech republic': 'Çekya', 'czechia': 'Çekya', 'slovakia': 'Slovakya', 'slovenia': 'Slovenya',
+        'denmark': 'Danimarka', 'sweden': 'İsveç', 'norway': 'Norveç', 'finland': 'Finlandiya',
+        'iceland': 'İzlanda', 'ireland': 'İrlanda', 'republic of ireland': 'İrlanda', 'northern ireland': 'Kuzey İrlanda',
+        'scotland': 'İskoçya', 'wales': 'Galler', 'albania': 'Arnavutluk', 'north macedonia': 'Kuzey Makedonya',
+        'macedonia': 'Kuzey Makedonya', 'montenegro': 'Karadağ', 'kosovo': 'Kosova', 'bulgaria': 'Bulgaristan',
+        'georgia': 'Gürcistan', 'azerbaijan': 'Azerbaycan', 'armenia': 'Ermenistan', 'israel': 'İsrail',
+        'cyprus': 'Kıbrıs', 'luxembourg': 'Lüksemburg', 'malta': 'Malta', 'andorra': 'Andorra',
+        'san marino': 'San Marino', 'gibraltar': 'Cebelitarık', 'moldova': 'Moldova', 'belarus': 'Belarus',
+        'faroe islands': 'Faroe Adaları', 'estonia': 'Estonya', 'latvia': 'Letonya', 'lithuania': 'Litvanya',
+        'kazakhstan': 'Kazakistan',
+        'brazil': 'Brezilya', 'argentina': 'Arjantin', 'uruguay': 'Uruguay', 'chile': 'Şili',
+        'colombia': 'Kolombiya', 'peru': 'Peru', 'ecuador': 'Ekvador', 'paraguay': 'Paraguay',
+        'bolivia': 'Bolivya', 'venezuela': 'Venezuela', 'mexico': 'Meksika', 'canada': 'Kanada',
+        'costa rica': 'Kosta Rika', 'panama': 'Panama', 'honduras': 'Honduras', 'jamaica': 'Jamaika',
+        'japan': 'Japonya', 'south korea': 'Güney Kore', 'korea republic': 'Güney Kore', 'north korea': 'Kuzey Kore',
+        'china': 'Çin', 'china pr': 'Çin', 'australia': 'Avustralya', 'iran': 'İran', 'iraq': 'Irak',
+        'saudi arabia': 'Suudi Arabistan', 'qatar': 'Katar', 'uae': 'BAE', 'united arab emirates': 'BAE',
+        'jordan': 'Ürdün', 'lebanon': 'Lübnan', 'syria': 'Suriye', 'oman': 'Umman', 'bahrain': 'Bahreyn',
+        'kuwait': 'Kuveyt', 'india': 'Hindistan', 'indonesia': 'Endonezya', 'thailand': 'Tayland',
+        'vietnam': 'Vietnam', 'uzbekistan': 'Özbekistan',
+        'egypt': 'Mısır', 'morocco': 'Fas', 'algeria': 'Cezayir', 'tunisia': 'Tunus', 'nigeria': 'Nijerya',
+        'senegal': 'Senegal', 'ghana': 'Gana', 'cameroon': 'Kamerun', 'ivory coast': 'Fildişi Sahili',
+        'cote divoire': 'Fildişi Sahili', 'south africa': 'Güney Afrika', 'mali': 'Mali',
+        'tanzania': 'Tanzanya', 'dr congo': 'Kongo Demokratik Cumhuriyeti', 'congo': 'Kongo',
+        'new zealand': 'Yeni Zelanda'
+    };
+
+    function umTeamTR(name) {
+        if (!name) return name || '';
+        var key = umNorm(name);
+        return UM_COUNTRY_TR[key] || name;
+    }
+
+    function umDateStr(offsetDays) {
+        var d = new Date();
+        d.setDate(d.getDate() + offsetDays);
+        return d.toISOString().slice(0, 10);
+    }
+
+    function umMatchKey(ev) {
+        return umNorm(ev.strHomeTeam) + '_' + umNorm(ev.strAwayTeam) + '_' + (ev.dateEvent || '');
+    }
+
+    function umFetchWithTimeout(url, ms) {
+        ms = ms || 8000;
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var abortTimer = setTimeout(function() { if (controller) { try { controller.abort(); } catch(e){} } }, ms);
+        var fetchPromise = fetch(url, controller ? { signal: controller.signal } : {})
+            .then(function(res) { clearTimeout(abortTimer); return res; })
+            .catch(function(err) { clearTimeout(abortTimer); throw err; });
+        // Ek güvenlik: bazı eski WebView'lerde abort() fetch promise'ini
+        // beklendiği gibi reddetmeyebiliyor — bu yüzden bağımsız bir
+        // zaman aşımı yarışması (race) ekliyoruz, fetch takılı kalsa bile
+        // fonksiyon her zaman ms+500ms içinde sonuçlanır.
+        var hardTimeout = new Promise(function(_, reject) {
+            setTimeout(function() { reject(new Error('um-fetch-timeout')); }, ms + 500);
+        });
+        return Promise.race([fetchPromise, hardTimeout]);
+    }
+
+    async function umFetchLeagueDay(leagueId, dateStr) {
+        var url = 'https://www.thesportsdb.com/api/v1/json/' + UM_API_KEY + '/eventsday.php?d=' + dateStr + '&l=' + leagueId;
+        try {
+            var res = await umFetchWithTimeout(url, 8000);
+            var json = await res.json();
+            return (json && json.events) ? json.events : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // World Cup 2026 maçlarını wc2026-api Worker'ından çeker ve TheSportsDB event
+    // formatına uyarlar — böylece umRenderMatches/umMatchStatus aynı kod yolunu kullanır.
+    // Gerçek canlı dakika/skor için _wcStatus + _wcMinute alanları eklenir (bkz. umMatchStatus).
+    var umWC2026Cache = null; // { ts, matches } — tüm turnuva tek response'ta geldiği için ayrıca cache'liyoruz
+    async function umFetchWC2026Raw() {
+        if (umWC2026Cache && (Date.now() - umWC2026Cache.ts) < 45000) return umWC2026Cache.matches;
+        try {
+            var res = await umFetchWithTimeout(WC2026_SCORES_API, 8000);
+            var json = await res.json();
+            var matches = (json && json.matches) || [];
+            umWC2026Cache = { ts: Date.now(), matches: matches };
+            return matches;
+        } catch (e) {
+            return (umWC2026Cache && umWC2026Cache.matches) || [];
+        }
+    }
+    async function umFetchWC2026Day(dateStr) {
+        var matches = await umFetchWC2026Raw();
+        var out = [];
+        for (var i = 0; i < matches.length; i++) {
+            var m = matches[i];
+            if (!m || !m.t) continue;
+            var d = new Date(m.t * 1000);
+            if (d.toISOString().slice(0, 10) !== dateStr) continue;
+            var st = WC2026_STATUS_MAP[m.status] || m.status || 'NS';
+            out.push({
+                idEvent: 'wc2026_' + m.id,
+                strHomeTeam: m.home, strAwayTeam: m.away,
+                intHomeScore: (m.h === null || m.h === undefined) ? '' : m.h,
+                intAwayScore: (m.a === null || m.a === undefined) ? '' : m.a,
+                strStatus: st,
+                dateEvent: dateStr,
+                strTime: d.toISOString().slice(11, 19),
+                idHomeTeam: '', idAwayTeam: '',
+                strHomeTeamBadge: '', strAwayTeamBadge: '',
+                _wcStatus: st,
+                _wcMinute: (m.minute === null || m.minute === undefined) ? null : m.minute
+            });
+        }
+        return out;
+    }
+
+    async function umGetTeamBadge(teamName, teamId) {
+        if (!teamName) return '';
+        if (umBadgeCache[teamName]) return umBadgeCache[teamName];
+        try {
+            var url = teamId
+                ? 'https://www.thesportsdb.com/api/v1/json/' + UM_API_KEY + '/lookupteam.php?id=' + teamId
+                : 'https://www.thesportsdb.com/api/v1/json/' + UM_API_KEY + '/searchteams.php?t=' + encodeURIComponent(teamName);
+            var res = await umFetchWithTimeout(url, 6000);
+            var json = await res.json();
+            var team = (json.teams && json.teams[0]) || null;
+            var badge = team ? (team.strTeamBadge || team.strBadge || '') : '';
+            if (badge) {
+                umBadgeCache[teamName] = badge;
+                try { localStorage.setItem('umTeamBadgeCache', JSON.stringify(umBadgeCache)); } catch(e) {}
+            }
+            return badge;
+        } catch (e) {
+            return '';
+        }
+    }
+
+    async function umLoadMatchesForDate(dateStr) {
+        var cached = umMatchesCache[dateStr];
+        if (cached && (Date.now() - cached.ts) < UM_CACHE_MS) return cached.data;
+        var results = await Promise.all(UM_LEAGUES.map(function(l) {
+            return (l.id === 'wc2026') ? umFetchWC2026Day(dateStr) : umFetchLeagueDay(l.id, dateStr);
+        }));
+        var events = [];
+        results.forEach(function(evts, idx) {
+            (evts || []).forEach(function(ev) {
+                ev._leagueName = UM_LEAGUES[idx].name;
+                ev._leagueFlag = UM_LEAGUES[idx].flag;
+                events.push(ev);
+            });
+        });
+        events.sort(function(a, b) { return (a.strTime || '').localeCompare(b.strTime || ''); });
+        umMatchesCache[dateStr] = { ts: Date.now(), data: events };
+        return events;
+    }
+
+    // TheSportsDB dateEvent + strTime alanlarını UTC olarak döndürür.
+    // Bunu gerçek bir Date nesnesine çevirip Türkiye saatiyle karşılaştırabiliyoruz.
+    function umMatchDateTime(ev) {
+        if (!ev || !ev.dateEvent) return null;
+        var timeStr = ev.strTime || ev.strTimeLocal || '';
+        if (!timeStr) return null;
+        if (timeStr.length === 5) timeStr += ':00';
+        var d = new Date(ev.dateEvent + 'T' + timeStr + 'Z');
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    // Maç saatini Türkiye saat dilimine (Europe/Istanbul) çevirip HH:MM olarak döndürür.
+    function umFormatLocalTime(ev) {
+        var d = umMatchDateTime(ev);
+        if (!d) return (ev.strTime || '').slice(0, 5);
+        try {
+            return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+        } catch (e) {
+            return (ev.strTime || '').slice(0, 5);
+        }
+    }
+
+    // API canlı dakika bilgisi vermediğinde (strStatus boş/NS ama kickoff saati
+    // geçmiş), maç başlangıcından bu yana geçen süreye göre YAKLAŞIK bir dakika
+    // etiketi üretir (ör. "23'"). Bu SADECE ilk yarı için yapılıyor, çünkü
+    // ilk yarının başlangıç anı (kickoff saati) biliniyor ve buradan sayım
+    // güvenilir. Devre arasından sonra GERÇEK 2. yarı başlama anı API'den
+    // gelmiyor — devre arası 10 dakika de sürebilir, 20 dakika da (VAR,
+    // ısınma, yayın gecikmesi vb.), bu yüzden "45+X'" gibi kesin bir 2. yarı
+    // dakikası UYDURMUYORUZ (bu yanlış olup kullanıcıyı yanıltabilir — ör.
+    // 2. yarı henüz başlamamışken "50'" göstermek gibi). Bunun yerine bu
+    // aralıkta genel "Devre Arası" / "2. Yarı" etiketleri kullanılıyor.
+    // Modal zaten "skor/dakika verisi topluluk kaynaklıdır, gecikmeli
+    // olabilir" uyarısını gösteriyor. API gerçek bir dakika/durum kodu
+    // döndürürse (yukarıdaki regex ile) o zaten önceliklidir.
+    function umEstimateMinuteLabel(elapsedMin) {
+        if (elapsedMin < 1) return "1'";
+        if (elapsedMin <= 45) return Math.floor(elapsedMin) + "'";
+        // 45-70 dk arası: devre arası + hakem eklemeleri + olası gecikmeler
+        // için geniş bir pay bırakılıyor — bu aralıkta kesin dakika yerine
+        // genel "Devre Arası" gösteriliyor.
+        if (elapsedMin <= 70) return 'Devre Arası';
+        // 70 dk'dan sonra 2. yarının büyük ihtimalle başlamış olması
+        // beklenir, ama gerçek başlama anı bilinmediğinden kesin bir
+        // dakika değil, genel "2. Yarı" etiketi kullanılıyor.
+        return '2. Yarı';
+    }
+
+    function umMatchStatus(ev) {
+        // wc2026-api'den gelen maçlarda gerçek (tahmini değil) canlı dakika/durum var —
+        // bunlar öncelikli kullanılır, aşağıdaki TheSportsDB tahmin mantığına düşülmez.
+        if (ev._wcStatus) {
+            var wcs = ev._wcStatus;
+            if (wcs === 'FT') return { label: 'Bitti', live: false };
+            if (wcs === 'HT') return { label: 'Devre Arası', live: true };
+            if (wcs === 'NS') return { label: 'Başlamadı', live: false };
+            if (ev._wcMinute !== null && ev._wcMinute !== undefined) return { label: ev._wcMinute + "'", live: true };
+            return { label: 'Canlı', live: true };
+        }
+        var status = (ev.strStatus || '').toString().toUpperCase().trim();
+        if (status === 'FT' || status === 'MATCH FINISHED') return { label: 'Bitti', live: false };
+        if (status === 'HT') return { label: 'Devre Arası', live: true };
+        if (/^\d+['+]?$/.test(status)) return { label: status.replace(/[^0-9]/g,'') + "'", live: true };
+        // API durumu boş/NS döndürse bile, maç saati Türkiye saatine göre
+        // geride kaldıysa gerçekte maç başlamış demektir (API güncellemesi
+        // gecikmiş olabilir) — bu yüzden gerçek saatle karşılaştırıyoruz.
+        // Ortalama bir maç (2 devre + devre arası + uzatmalar) ~130 dakika
+        // sürer; bu süre de geçtiyse ve API hâlâ "FT" işaretlememişse,
+        // maçın muhtemelen bittiğini varsayıyoruz (aksi halde bitmiş bir
+        // maç saatlerce "Başladı/Canlı" görünmeye devam ederdi).
+        var d = umMatchDateTime(ev);
+        if (d) {
+            var elapsedMin = (Date.now() - d.getTime()) / 60000;
+            if (elapsedMin >= 130) return { label: 'Bitti', live: false };
+            if (elapsedMin >= 0) return { label: umEstimateMinuteLabel(elapsedMin), live: true };
+        }
+        return { label: (ev.strTime || '').slice(0, 5) === '' ? 'Belirsiz' : 'Başlamadı', live: false };
+    }
+
+    // EPG üzerinde şu an oynayan programın başlığında iki takım adını arayarak
+    // maçın yayınlandığı kanalı otomatik bulmaya çalışır.
+    // PERF: Artık TÜM kanal listesi değil, sadece isminde spor kanalı
+    // anahtar kelimesi geçen kanallar (TRT, beIN Sports, S Sport, A Spor,
+    // Tivibu Spor, Exxen Spor, tabii Spor vb.) taranıyor. Bu hem taramayı
+    // çok hızlandırıyor (binlerce kanal yerine genelde birkaç düzine)
+    // hem de yanlış kanal eşleşmesini azaltıyor.
+    var UM_SPORTS_KEYWORDS = ['spor', 'bein', 'trt', 'tabii'];
+    var umLastEpgIndex = null;
+    var umLastFullEpgIndex = null;
+
+    // VOD/dizi bölümlerini (film, "1. Bölüm" vb.) hariç tutup sadece
+    // gerçek canlı yayın kanallarını bırakır.
+    function umIsLiveChannel(ch) {
+        if (!ch) return false;
+        if (ch.isVod === true) return false;
+        if (ch.isSeries === true) return false;
+        if (ch.isLive === false) return false;
+        return true;
+    }
+
+    function umIsSportsChannel(name) {
+        var n = umNorm(name);
+        return UM_SPORTS_KEYWORDS.some(function(k) { return n.indexOf(k) !== -1; });
+    }
+
+    // ── PERF: spor kanalı adayları CACHE'lenir ──────────────────────────
+    // umIsSportsCategoryChannel/umIsSportsChannel taraması artık TÜM
+    // listelere yayıldığı için (bkz. "Kanal seç" geliştirmesi), state.channels
+    // (yüz binlerce kanal olabilir) üzerinde her seferinde tam tarama+normalize
+    // yapmak kasmaya sebep oluyordu. Bu yüzden aday listesi bir kez hesaplanıp
+    // cache'leniyor; state.channels referansı değişmediği (yeni liste
+    // yüklenmediği) sürece tekrar hesaplanmıyor.
+    var umSportsCandidatesCache = null;
+    var umSportsCandidatesForChannels = null;
+    function umGetSportsCandidates() {
+        var allChannels = (window.state && state.channels) || [];
+        if (umSportsCandidatesForChannels === allChannels && umSportsCandidatesCache) {
+            return umSportsCandidatesCache;
+        }
+        umSportsCandidatesForChannels = allChannels;
+        umSportsCandidatesCache = allChannels.filter(function(ch) {
+            return umIsLiveChannel(ch) && (umIsSportsCategoryChannel(ch) || umIsSportsChannel(ch.name));
+        });
+        return umSportsCandidatesCache;
+    }
+
+    // Program başlığında "tekrar", "özet" gibi ifadeler geçen yayınlar canlı
+    // maç değil, kayıttan tekrar/özet gösterimidir — devam eden/başlamamış
+    // maçlar için bunları otomatik kanal eşleştirmesinden hariç tutuyoruz
+    // (yoksa bitmemiş bir maç, o maçın tekrarını gösteren kanala "canlı"
+    // gibi bağlanabiliyordu). Bittiği tespit edilen maçlarda ise bu başlıklar
+    // ayrıca aranıp "Tekrarı" / "Özeti" olarak kullanıcıya sunuluyor.
+    var UM_REPLAY_KEYWORDS = ['tekrar', 'ozet', 'genis ozet', 'highlight', 'best of', 'best-of'];
+
+    function umIsReplayTitle(title) {
+        return UM_REPLAY_KEYWORDS.some(function(k) { return title.indexOf(k) !== -1; });
+    }
+
+    // Bir tekrar/özet başlığından kullanıcıya gösterilecek etiketi üretir.
+    // EPG başlığında "özet" geçiyorsa "Özeti", "tekrar" geçiyorsa "Tekrarı";
+    // ikisi de geçmiyor ama maç bittikten sonra o kanalda bu maça ait bir
+    // yayın bulunmuşsa (başlıkta net bir ibare olmasa da) yine "Tekrarı"
+    // olarak etiketleniyor.
+    function umReplayLabel(title) {
+        if (!title) return 'Tekrarı';
+        if (title.indexOf('genis ozet') !== -1 || title.indexOf('ozet') !== -1) return 'Özeti';
+        if (title.indexOf('tekrar') !== -1) return 'Tekrarı';
+        return 'Tekrarı';
+    }
+
+    // ── PERF: EPG index sonuçları da kısa süreli CACHE'lenir ────────────
+    // getEPGInfo() eşleşmeyen kanallarda TÜM epg anahtarları üzerinde
+    // fuzzy-match döngüsü çalıştırıyor; aday kanal sayısı (artık tüm
+    // listelerden toplandığı için) büyüdükçe bu iş de büyüyor. Maçlar
+    // modalı zaten 60sn'de bir kendini yeniliyor (umRefreshTimer), bu
+    // yüzden aynı pencere içinde (gün sekmesi değiştirme vb.) tekrar
+    // tetiklenirse yeniden hesaplamak yerine kısa bir TTL boyunca
+    // önbellekten dönülüyor — kasmayı önlemenin asıl anahtarı bu.
+    var UM_EPG_INDEX_TTL = 50000; // 50sn (60sn'lik yenileme aralığından az)
+    var umEpgIndexCache = null, umEpgIndexCacheTs = 0, umEpgIndexCacheSig = null;
+    var umFullEpgIndexCache = null, umFullEpgIndexCacheTs = 0, umFullEpgIndexCacheSig = null;
+
+    function umEpgIndexSig() {
+        var chCount = (window.state && state.channels && state.channels.length) || 0;
+        var epgSize = (window.state && state.epgData && Object.keys(state.epgData).length) || 0;
+        return chCount + '_' + epgSize;
+    }
+
+    function umBuildEpgIndex() {
+        if (!window.state || !state.channels || typeof getEPGInfo !== 'function') return null;
+        var sig = umEpgIndexSig();
+        if (umEpgIndexCache && sig === umEpgIndexCacheSig && (Date.now() - umEpgIndexCacheTs) < UM_EPG_INDEX_TTL) {
+            return umEpgIndexCache;
+        }
+        var channels = umGetSportsCandidates();
+        var idx = [];
+        for (var i = 0; i < channels.length; i++) {
+            var ch = channels[i];
+            try {
+                var info = getEPGInfo(ch.name, ch.tvgId);
+                var title = (info && info.current && info.current.title) ? umNorm(info.current.title) : '';
+                if (title && !umIsReplayTitle(title)) idx.push({ ch: ch, title: title });
+            } catch (e) {}
+        }
+        umEpgIndexCache = idx; umEpgIndexCacheTs = Date.now(); umEpgIndexCacheSig = sig;
+        return idx;
+    }
+
+    // umBuildEpgIndex'in aksine tekrar/özet başlıklarını DA içerir — sadece
+    // bitmiş maçlar için tekrar/özet yayını tespit etmekte kullanılır.
+    function umBuildFullEpgIndex() {
+        if (!window.state || !state.channels || typeof getEPGInfo !== 'function') return null;
+        var sig = umEpgIndexSig();
+        if (umFullEpgIndexCache && sig === umFullEpgIndexCacheSig && (Date.now() - umFullEpgIndexCacheTs) < UM_EPG_INDEX_TTL) {
+            return umFullEpgIndexCache;
+        }
+        var channels = umGetSportsCandidates();
+        var idx = [];
+        for (var i = 0; i < channels.length; i++) {
+            var ch = channels[i];
+            try {
+                var info = getEPGInfo(ch.name, ch.tvgId);
+                var title = (info && info.current && info.current.title) ? umNorm(info.current.title) : '';
+                if (title) idx.push({ ch: ch, title: title });
+            } catch (e) {}
+        }
+        umFullEpgIndexCache = idx; umFullEpgIndexCacheTs = Date.now(); umFullEpgIndexCacheSig = sig;
+        return idx;
+    }
+
+    // Verilen index içinde iki takım adının (İngilizce veya Türkçe) birlikte
+    // geçtiği bir EPG başlığı arar, bulursa {ch, title} döndürür.
+    function umFindMatchEntry(homeTeam, awayTeam, index) {
+        if (!index) return null;
+        // Hem orijinal (İngilizce) hem Türkçe takım adlarını birleştirip
+        // eşleştirme kelime havuzuna ekliyoruz (ör. "USA" -> "ABD",
+        // "Bosnia and Herzegovina" -> "Bosna-Hersek"), çünkü EPG program
+        // başlıkları genelde Türkçe takım adlarıyla geliyor.
+        var h = umNorm(homeTeam + ' ' + umTeamTR(homeTeam));
+        var a = umNorm(awayTeam + ' ' + umTeamTR(awayTeam));
+        var hWords = h.split(' ').filter(function(w){ return w.length > 2; });
+        var aWords = a.split(' ').filter(function(w){ return w.length > 2; });
+        if (hWords.length === 0 || aWords.length === 0) return null;
+        for (var i = 0; i < index.length; i++) {
+            var title = index[i].title;
+            var hasHome = hWords.some(function(w){ return title.indexOf(w) !== -1; });
+            var hasAway = aWords.some(function(w){ return title.indexOf(w) !== -1; });
+            if (hasHome && hasAway) return index[i];
+        }
+        return null;
+    }
+
+    function umFindEpgChannel(homeTeam, awayTeam, index) {
+        var entry = umFindMatchEntry(homeTeam, awayTeam, index);
+        return entry ? entry.ch : null;
+    }
+
+    // Bitmiş bir maç için, o maça ait tekrar/özet yayını yapan bir kanal
+    // arar. Bulursa { ch, label } döndürür ('Tekrarı' veya 'Özeti').
+    function umFindReplayChannel(homeTeam, awayTeam, index) {
+        var entry = umFindMatchEntry(homeTeam, awayTeam, index);
+        if (!entry) return null;
+        return { ch: entry.ch, label: umReplayLabel(entry.title) };
+    }
+
+    function umGetOverrideChannel(ev) {
+        var key = umMatchKey(ev);
+        var name = umChannelOverrides[key];
+        if (!name || !window.state || !state.channels) return null;
+        return state.channels.find(function(c){ return c.name === name; }) || null;
+    }
+
+    function umSetOverrideChannel(ev, channelName) {
+        var key = umMatchKey(ev);
+        if (channelName) umChannelOverrides[key] = channelName;
+        else delete umChannelOverrides[key];
+        try { localStorage.setItem('umMatchChannelOverrides', JSON.stringify(umChannelOverrides)); } catch(e) {}
+    }
+
+    // ---- D-pad / kumanda (uzaktan kumanda) navigasyonu ----
+    // Not: Uygulamanın genel state.remote.zone sistemine tam entegre değildir
+    // (o sistem çok büyük ve modül bazlı); bu, modal açıkken bağımsız çalışan
+    // hafif bir ok-tuşu navigasyonudur. Yön tuşları + OK/Enter + Geri/Backspace.
+    var umFocusables = [];
+    var umFocusIndex = 0;
+
+    function umRebuildFocusables() {
+        var modal = document.getElementById('umMatchesModal');
+        if (!modal) { umFocusables = []; return; }
+        umFocusables = Array.prototype.slice.call(modal.querySelectorAll('.um-day-tab, .um-focusable, .modal-back-btn'));
+        if (umFocusIndex >= umFocusables.length) umFocusIndex = 0;
+        umApplyFocus();
+    }
+
+    function umApplyFocus() {
+        umFocusables.forEach(function(el) { el.classList.remove('remote-focused'); });
+        var el = umFocusables[umFocusIndex];
+        if (el) {
+            el.classList.add('remote-focused');
+            if (typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }
+
+    function umModalKeyHandler(e) {
+        var modal = document.getElementById('umMatchesModal');
+        if (!modal || modal.style.display === 'none') return;
+        // Alt açık kanal seçim modalı varsa bu handler'ı devre dışı bırak
+        if (document.getElementById('umChannelPickerModal')) return;
+        if (umFocusables.length === 0) umRebuildFocusables();
+        if (umFocusables.length === 0) return;
+
+        var cur = umFocusables[umFocusIndex];
+        var isDayTab = cur && cur.classList.contains('um-day-tab');
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (isDayTab && e.key === 'ArrowRight') {
+                var dayTabCount = umFocusables.filter(function(el){return el.classList.contains('um-day-tab');}).length;
+                umFocusIndex = Math.min(umFocusIndex + 1, dayTabCount - 1);
+            } else {
+                umFocusIndex = Math.min(umFocusIndex + 1, umFocusables.length - 1);
+            }
+            umApplyFocus();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            umFocusIndex = Math.max(umFocusIndex - 1, 0);
+            umApplyFocus();
+        } else if (e.key === 'Enter' || e.key === 'OK' || e.key === ' ') {
+            e.preventDefault();
+            if (cur) cur.click();
+        } else if (e.key === 'Backspace' || e.key === 'Escape') {
+            e.preventDefault();
+            window.closeMatchesModal();
+        }
+    }
+
+    // ---------------------------------------------------------
+
+    function umWatchMatch(ev) {
+        var override = umGetOverrideChannel(ev);
+        var isFinished = umMatchStatus(ev).label === 'Bitti';
+        var found = null;
+        if (override) {
+            found = override;
+        } else if (isFinished) {
+            var replayMatch = umFindReplayChannel(ev.strHomeTeam, ev.strAwayTeam, umLastFullEpgIndex || umBuildFullEpgIndex());
+            found = replayMatch ? replayMatch.ch : null;
+        } else {
+            found = umFindEpgChannel(ev.strHomeTeam, ev.strAwayTeam, umLastEpgIndex);
+        }
+        if (found && typeof playChannelByName === 'function') {
+            window.closeMatchesModal();
+            playChannelByName(found.name);
+        } else {
+            umOpenChannelPicker(ev);
+        }
+    }
+
+    // Kanalın hangi M3U listesinden geldiğini (Vavoo, KabloTV, CANLI YAYIN vb.) döndürür.
+    function umListName(ch) {
+        try {
+            var l = window.state && state.m3uList && state.m3uList[ch.listIdx];
+            return (l && (l.name || l.url)) || '';
+        } catch (e) { return ''; }
+    }
+
+    // Adında "spor" geçen bir kategoriye/gruba ait mi? (liste fark etmeksizin —
+    // KabloTV > "👑Ümit👑-Spor", Vavoo > "ÜMİTM0D-Spor", CANLI YAYIN > "Spor" vb.
+    // hepsi yakalanır, çünkü kategori adının kendisinde "spor" geçiyor.)
+    function umIsSportsCategoryChannel(ch) {
+        var groupN = umNorm(ch.group || ch.category || '');
+        return groupN.indexOf('spor') !== -1;
+    }
+
+    function umOpenChannelPicker(ev) {
+        var candidates = umGetSportsCandidates();
+
+        // Aynı isimli kanalın hem Vavoo hem CANLI YAYIN'da olup olmadığını tespit et.
+        var nameCounts = {};
+        candidates.forEach(function(c) {
+            var k = umNorm(c.name);
+            nameCounts[k] = (nameCounts[k] || 0) + 1;
+        });
+
+        function optionLabel(c) {
+            var isDup = nameCounts[umNorm(c.name)] > 1;
+            var listN = umListName(c);
+            return c.name + (isDup && listN ? '  —  ' + listN : '');
+        }
+
+        function buildOptions(arr) {
+            return arr.map(function(c) {
+                return '<option value="' + c.name.replace(/"/g, '&quot;') + '">' + optionLabel(c).replace(/</g, '&lt;') + '</option>';
+            }).join('');
+        }
+
+        // Adayları geldikleri M3U listesine göre grupla (Vavoo, CANLI YAYIN,
+        // KabloTV, ATVPanel, vb.) — hangi listeler mevcutsa hepsi kendi
+        // optgroup'unda, alfabetik sıralı gösterilir. Artık sabit iki liste
+        // ile sınırlı değil: kategori adında "spor" geçen her liste dahil olur.
+        var byList = {};
+        var listOrder = [];
+        candidates.forEach(function(c) {
+            var listN = umListName(c) || 'Diğer';
+            if (!byList[listN]) { byList[listN] = []; listOrder.push(listN); }
+            byList[listN].push(c);
+        });
+        listOrder.sort(function(a, b) { return a.localeCompare(b, 'tr'); });
+
+        var options = '<option value="">— Kanal seç —</option>';
+        listOrder.forEach(function(listN) {
+            var arr = byList[listN].slice().sort(function(a, b) { return a.name.localeCompare(b.name, 'tr'); });
+            options += '<optgroup label="' + listN.replace(/"/g, '&quot;') + ' — Spor">' + buildOptions(arr) + '</optgroup>';
+        });
+        if (!listOrder.length) options += '<option value="" disabled>Spor kanalı bulunamadı</option>';
+
+        var key = umMatchKey(ev);
+        var html =
+            '<div class="modal-bg" id="umChannelPickerModal" style="display:flex;z-index:1000010;">' +
+              '<div class="modal-content" style="max-width:380px;width:calc(100vw - 32px);text-align:center;">' +
+                '<h3 style="margin-bottom:10px;">' + umTeamTR(ev.strHomeTeam) + ' - ' + umTeamTR(ev.strAwayTeam) + '</h3>' +
+                '<div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Bu maç için otomatik kanal bulunamadı. Tüm listelerdeki (Vavoo, CANLI YAYIN, KabloTV vb.) "Spor" kategorisindeki kanallar listeleniyor. Bir kanalın adının yanında liste adı görünüyorsa, o kanal birden fazla kaynakta mevcuttur:</div>' +
+                '<select id="umChannelPickerSelect" style="width:100%;padding:10px;border-radius:8px;margin-bottom:14px;background:var(--bg-secondary,#111);color:var(--text-primary,#fff);border:1px solid rgba(255,215,0,0.3);">' +
+                  options +
+                '</select>' +
+                '<div style="display:flex;gap:10px;">' +
+                  '<button class="modal-back-btn" onclick="document.getElementById(\'umChannelPickerModal\').remove()">İptal</button>' +
+                  '<button class="modal-back-btn" style="background:var(--accent-primary);color:#000;" onclick="umConfirmChannelPick(\'' + key.replace(/'/g, "\\'") + '\')">İzle ve Kaydet</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        document.body.insertAdjacentHTML('beforeend', html);
+        window._umPendingMatch = ev;
+    }
+
+    window.umConfirmChannelPick = function(key) {
+        var sel = document.getElementById('umChannelPickerSelect');
+        var name = sel ? sel.value : '';
+        var modal = document.getElementById('umChannelPickerModal');
+        if (modal) modal.remove();
+        if (!name || !window._umPendingMatch) return;
+        umSetOverrideChannel(window._umPendingMatch, name);
+        window.closeMatchesModal();
+        if (typeof playChannelByName === 'function') playChannelByName(name);
+    };
+
+    function umRenderMatches(events) {
+        var container = document.getElementById('umMatchesListBody');
+        if (!container) return;
+        if (!events || events.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Bu tarihte listelenen maç bulunamadı.</div>';
+            return;
+        }
+        umLastEpgIndex = umBuildEpgIndex();
+        // Tam (tekrar/özet dahil) index'i sadece listede bitmiş maç varsa kur — gereksiz EPG taramasından kaçın.
+        var _hasFinished = events.some(function(ev) { return umMatchStatus(ev).label === 'Bitti'; });
+        umLastFullEpgIndex = _hasFinished ? umBuildFullEpgIndex() : null;
+        container.innerHTML = events.map(function(ev) {
+            var status = umMatchStatus(ev);
+            var isFinished = status.label === 'Bitti';
+            var override = umGetOverrideChannel(ev);
+            var auto = null, replayMatch = null;
+            if (override) {
+                // kullanıcı bu maç için elle kanal seçmiş — onu kullan
+            } else if (isFinished) {
+                // Maç bittiyse "canlı" eşleştirme yerine tekrar/özet yayını aranır,
+                // böylece bitmiş bir maç yanlışlıkla "canlı" gibi gösterilmez ama
+                // varsa tekrarı/özeti kullanıcıya nazikçe sunulur.
+                replayMatch = umFindReplayChannel(ev.strHomeTeam, ev.strAwayTeam, umLastFullEpgIndex);
+            } else {
+                auto = umFindEpgChannel(ev.strHomeTeam, ev.strAwayTeam, umLastEpgIndex);
+            }
+            var channelFound = override || auto || (replayMatch && replayMatch.ch);
+            var btnLabel = channelFound
+                ? (override || auto ? (UM_ICON_TV + 'İzle') : (UM_ICON_TV + replayMatch.label))
+                : (UM_ICON_SEARCH + 'Kanal');
+            var hasScore = ev.intHomeScore !== null && ev.intHomeScore !== undefined && ev.intHomeScore !== '';
+            var scoreHtml = hasScore
+                ? '<span style="font-weight:900;font-size:16px;">' + ev.intHomeScore + ' - ' + ev.intAwayScore + '</span>'
+                : '<span style="font-size:13px;color:var(--text-muted);">' + umFormatLocalTime(ev) + '</span>';
+            var homeNameTR = umTeamTR(ev.strHomeTeam);
+            var awayNameTR = umTeamTR(ev.strAwayTeam);
+            return (
+            '<div class="um-match-card" data-key="' + umMatchKey(ev) + '" style="display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:8px;background:var(--bg-secondary,rgba(255,255,255,0.04));border-radius:12px;border:1px solid rgba(255,215,0,0.12);">' +
+              '<div style="flex:0 0 58px;font-size:10px;color:var(--text-muted);text-align:center;line-height:1.3;">' + (ev._leagueFlag||'') + '<br>' + (ev._leagueName||'') + '</div>' +
+              '<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;">' +
+                '<div style="display:flex;flex-direction:column;align-items:center;width:72px;">' +
+                  '<img class="um-team-badge" data-team="' + (ev.strHomeTeam||'').replace(/"/g,'&quot;') + '" data-teamid="' + (ev.idHomeTeam||'') + '" src="' + (ev.strHomeTeamBadge||'') + '" onerror="this.style.visibility=\'hidden\'" style="width:30px;height:30px;object-fit:contain;margin-bottom:4px;">' +
+                  '<span style="font-size:10.5px;text-align:center;line-height:1.2;">' + homeNameTR + '</span>' +
+                '</div>' +
+                '<div style="min-width:50px;text-align:center;">' +
+                  scoreHtml +
+                  (status.live
+                    ? '<div style="color:#ff4757;font-size:9.5px;font-weight:700;margin-top:2px;">' + UM_ICON_DOT + status.label + '</div>'
+                    : '<div style="font-size:9.5px;color:var(--text-muted);margin-top:2px;">' + status.label + '</div>') +
+                '</div>' +
+                '<div style="display:flex;flex-direction:column;align-items:center;width:72px;">' +
+                  '<img class="um-team-badge" data-team="' + (ev.strAwayTeam||'').replace(/"/g,'&quot;') + '" data-teamid="' + (ev.idAwayTeam||'') + '" src="' + (ev.strAwayTeamBadge||'') + '" onerror="this.style.visibility=\'hidden\'" style="width:30px;height:30px;object-fit:contain;margin-bottom:4px;">' +
+                  '<span style="font-size:10.5px;text-align:center;line-height:1.2;">' + awayNameTR + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<button class="header-btn um-focusable" tabindex="0" style="flex:0 0 auto;width:auto;background:' + (channelFound ? 'var(--accent-primary)' : 'rgba(255,255,255,0.08)') + ';color:' + (channelFound ? '#000' : 'inherit') + ';font-size:10.5px;padding:8px 10px;border-radius:8px;" onclick="umWatchMatchByKey(\'' + umMatchKey(ev) + '\')">' +
+                btnLabel +
+              '</button>' +
+            '</div>');
+        }).join('');
+
+        container.querySelectorAll('.um-team-badge').forEach(function(img) {
+            var currentSrc = img.getAttribute('src');
+            var team = img.getAttribute('data-team');
+            var teamId = img.getAttribute('data-teamid');
+            if ((!currentSrc || currentSrc === '') && team) {
+                umGetTeamBadge(team, teamId).then(function(url) {
+                    if (url) img.src = url;
+                });
+            }
+        });
+
+        window._umEventsInView = events;
+        umRebuildFocusables();
+    }
+
+    window.umWatchMatchByKey = function(key) {
+        var ev = (window._umEventsInView || []).find(function(e) { return umMatchKey(e) === key; });
+        if (ev) umWatchMatch(ev);
+    };
+
+    // Maç listesi açıldığında otomatik kanal eşleştirmesinin (umFindEpgChannel)
+    // "Kanal" yerine "İzle" gösterebilmesi için hem kanal listesinin hem de
+    // EPG (yayın akışı) verisinin dolu olması gerekir. Bu veriler normalde
+    // uygulama açılırken zaten arka planda yükleniyor, ama kullanıcı Maçlar
+    // modalını çok erken açarsa (veya bu veriler henüz gelmediyse) burada
+    // yüklemeyi tetikleyip en fazla 8sn bekliyoruz — böylece canlı yayın
+    // listeleri hazır olduğunda maçlar doğru kanala hemen bağlanabiliyor.
+    var _umListsReadyPromise = null;
+    function umEnsureLiveListsReady() {
+        if (_umListsReadyPromise) return _umListsReadyPromise;
+        _umListsReadyPromise = (async function() {
+            try {
+                var needChannels = !window.state || !state.channels || state.channels.length === 0;
+                var needEpg = !window.state || !state.epgData || Object.keys(state.epgData).length === 0;
+                if (needChannels && typeof loadAllChannels === 'function') {
+                    loadAllChannels(); // arka planda başlat; aşağıdaki döngüde sonucu bekleniyor
+                }
+                if (needEpg && typeof loadEPGData === 'function') {
+                    loadEPGData();
+                }
+                if (!needChannels && !needEpg) return;
+                var start = Date.now();
+                while (Date.now() - start < 8000) {
+                    var chOk = window.state && state.channels && state.channels.length > 0;
+                    var epgOk = window.state && state.epgData && Object.keys(state.epgData).length > 0;
+                    if (chOk && epgOk) break;
+                    await new Promise(function(r) { setTimeout(r, 200); });
+                }
+            } catch (e) {}
+        })();
+        return _umListsReadyPromise;
+    }
+
+    async function umRefreshCurrentView() {
+        var dateStr = umDateStr(umCurrentDateOffset);
+        try {
+            // Mutlak güvenlik ağı: ne olursa olsun 15sn içinde ekran güncellenir,
+            // aksi halde "yükleniyor" ekranında sonsuza dek kalınmaz.
+            var hardStop = new Promise(function(resolve) {
+                setTimeout(function() { resolve('__TIMEOUT__'); }, 15000);
+            });
+            var matchesAndLists = Promise.all([
+                umLoadMatchesForDate(dateStr),
+                umEnsureLiveListsReady()
+            ]).then(function(r) { return r[0]; });
+            var result = await Promise.race([matchesAndLists, hardStop]);
+            if (result === '__TIMEOUT__') {
+                var container = document.getElementById('umMatchesListBody');
+                if (container) container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Maç verisi alınamadı (zaman aşımı). İnternet bağlantınızı kontrol edip "Bugün/Yarın" sekmesine tekrar dokunun.</div>';
+                return;
+            }
+            umRenderMatches(result);
+        } catch (e) {
+            var container2 = document.getElementById('umMatchesListBody');
+            if (container2) container2.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Maç verisi alınamadı. İnternet bağlantınızı kontrol edin.</div>';
+        }
+    }
+
+    window.umSwitchDay = function(offset) {
+        umCurrentDateOffset = offset;
+        document.querySelectorAll('.um-day-tab').forEach(function(t) { t.classList.remove('active'); });
+        var tab = document.getElementById('umDayTab_' + offset);
+        if (tab) tab.classList.add('active');
+        var body = document.getElementById('umMatchesListBody');
+        if (body) body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-primary);"><span class="material-symbols-outlined" style="font-size:40px;animation:spin 1s linear infinite;">sync</span></div>';
+        umRefreshCurrentView();
+    };
+
+    window.openMatchesModal = function() {
+        var modal = document.getElementById('umMatchesModal');
+        if (!modal) {
+            document.body.insertAdjacentHTML('beforeend',
+                '<div class="modal-bg" id="umMatchesModal" style="display:none;" onclick="if(event.target.id===\'umMatchesModal\') closeMatchesModal()">' +
+                  '<div class="modal-content" style="max-width:640px;width:calc(100vw - 24px);max-height:88vh;display:flex;flex-direction:column;padding:20px 16px 16px;">' +
+                    '<h3 style="margin:0 0 12px;text-align:center;color:var(--accent-primary);display:flex;align-items:center;justify-content:center;">' + UM_ICON_BALL + 'Maçlar</h3>' +
+                    '<div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">' +
+                      '<button class="um-day-tab" tabindex="0" id="umDayTab_-1" onclick="umSwitchDay(-1)" style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);background:transparent;color:inherit;cursor:pointer;font-size:12px;">Dün</button>' +
+                      '<button class="um-day-tab active" tabindex="0" id="umDayTab_0" onclick="umSwitchDay(0)" style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);background:var(--accent-primary);color:#000;cursor:pointer;font-size:12px;font-weight:700;">Bugün</button>' +
+                      '<button class="um-day-tab" tabindex="0" id="umDayTab_1" onclick="umSwitchDay(1)" style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);background:transparent;color:inherit;cursor:pointer;font-size:12px;">Yarın</button>' +
+                    '</div>' +
+                    '<div style="font-size:10.5px;color:var(--text-muted);text-align:center;margin-bottom:10px;">Skor/dakika verisi topluluk kaynaklıdır, birkaç dakika gecikmeli olabilir.</div>' +
+                    '<div id="umMatchesListBody" style="overflow-y:auto;flex:1;"></div>' +
+                    '<button class="modal-back-btn um-focusable" tabindex="0" style="margin-top:14px;" onclick="closeMatchesModal()">Kapat</button>' +
+                  '</div>' +
+                '</div>'
+            );
+            modal = document.getElementById('umMatchesModal');
+        }
+        modal.style.display = 'flex';
+        umCurrentDateOffset = 0;
+        document.querySelectorAll('.um-day-tab').forEach(function(t) { t.classList.remove('active'); });
+        var t0 = document.getElementById('umDayTab_0');
+        if (t0) t0.classList.add('active');
+        var body = document.getElementById('umMatchesListBody');
+        if (body) body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-primary);"><span class="material-symbols-outlined" style="font-size:40px;animation:spin 1s linear infinite;">sync</span><div style="margin-top:10px;font-size:13px;">Maçlar yükleniyor...</div></div>';
+        umRefreshCurrentView();
+        if (umRefreshTimer) clearInterval(umRefreshTimer);
+        umRefreshTimer = setInterval(function() {
+            umMatchesCache = {};
+            umRefreshCurrentView();
+        }, 60000);
+        umFocusIndex = 1; // "Bugün" sekmesi
+        document.addEventListener('keydown', umModalKeyHandler, true);
+    };
+
+    window.closeMatchesModal = function() {
+        var modal = document.getElementById('umMatchesModal');
+        if (modal) modal.style.display = 'none';
+        if (umRefreshTimer) { clearInterval(umRefreshTimer); umRefreshTimer = null; }
+        document.removeEventListener('keydown', umModalKeyHandler, true);
+    };
+
+})();
+</script>

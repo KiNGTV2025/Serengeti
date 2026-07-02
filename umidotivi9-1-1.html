@@ -36821,7 +36821,19 @@ function showRemoteHint(text) {
     
     // Kanallar henüz yüklenmemişse bekle
     const _tryPlay = function(attempt) {
-        const channel = state.channels ? state.channels.find(ch => ch.name === channelName) : null;
+        // Öğe state.channels'ta olmayabilir (VOD/dizi başka bir dizide tutuluyor
+        // olabilir) — openVodModal'daki gibi state.filtered ve state.allChannels'ı
+        // da tara, böylece "Devam Et" sonsuza kadar "yükleniyor" demeyip açılsın.
+        const _pool = (state.channels && state.channels.length ? state.channels : null)
+                    || (state.allChannels && state.allChannels.length ? state.allChannels : null)
+                    || state.filtered || [];
+        let channel = _pool.find(ch => ch.name === channelName);
+        if (!channel && state.filtered && state.filtered.length) {
+            channel = state.filtered.find(ch => ch.name === channelName);
+        }
+        if (!channel && state.allChannels && state.allChannels.length) {
+            channel = state.allChannels.find(ch => ch.name === channelName);
+        }
         if (!channel && attempt < 20) {
             if (attempt === 0) showToast('\u23f3 Kanallar y\u00fckleniyor, l\u00fctfen bekleyin...');
             setTimeout(function() { _tryPlay(attempt + 1); }, 500);
@@ -43758,10 +43770,18 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('forward', newTime, step);
-            // Kontroller zaten açıksa süresini uzat; kapalıysa AÇMA —
-            // yön tuşuyla sarma buton çubuğunu ortaya çıkarmasın, sadece OK tuşu açsın.
+            // Dizi/Film: odağı progress bar'a al ve göster — böylece art arda
+            // basılan sağ/sol tuşlar hep progress bar'ın sarma mantığından geçer
+            // (kusursuz/kesintisiz sarma). Canlı yayında eski davranış korunur.
             const _pcSF = document.getElementById('playerContainer');
-            if (_pcSF && _pcSF.classList.contains('show-controls')) showControls(7000);
+            const _isLiveSF = !!(state.player && state.player.isLiveStream);
+            if (_isLiveSF) {
+                if (_pcSF && _pcSF.classList.contains('show-controls')) showControls(7000);
+            } else {
+                if (state.remote) state.remote.zone = 'progressBar';
+                showControls(7000);
+                if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+            }
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43788,10 +43808,18 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('backward', newTime, step);
-            // Kontroller zaten açıksa süresini uzat; kapalıysa AÇMA —
-            // yön tuşuyla sarma buton çubuğunu ortaya çıkarmasın, sadece OK tuşu açsın.
+            // Dizi/Film: odağı progress bar'a al ve göster — böylece art arda
+            // basılan sağ/sol tuşlar hep progress bar'ın sarma mantığından geçer
+            // (kusursuz/kesintisiz sarma). Canlı yayında eski davranış korunur.
             const _pcSB = document.getElementById('playerContainer');
-            if (_pcSB && _pcSB.classList.contains('show-controls')) showControls(7000);
+            const _isLiveSB = !!(state.player && state.player.isLiveStream);
+            if (_isLiveSB) {
+                if (_pcSB && _pcSB.classList.contains('show-controls')) showControls(7000);
+            } else {
+                if (state.remote) state.remote.zone = 'progressBar';
+                showControls(7000);
+                if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+            }
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});

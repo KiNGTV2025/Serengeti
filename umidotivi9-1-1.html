@@ -70228,6 +70228,15 @@ function _vsNormalize(s) {
         .trim();
 }
 
+// "ATV .c", "ATV .s" gibi kaynak/varyant etiketlerini (nokta + 1-3 harf,
+// isteğe bağlı rakam) sondan atar; böylece aynı kanalın farklı
+// kaynaklardan gelen kopyaları "aynı isim" grubunda birleşebilir.
+// "ATV ALANYA .c" gibi GERÇEKTEN farklı bir kanal ise (etiket atıldıktan
+// sonra bile ekstra kelime kalıyorsa) yanlışlıkla gruplanmaz.
+function _vsNormalizeForGroup(s) {
+    return _vsNormalize(s).replace(/\s*\.\s*[a-z]{1,3}\d*$/, '').trim();
+}
+
 /* ── SESLİ KOMUT SİSTEMİ ────────────────────────────────────────────────
    Desteklenen komutlar:
    - "<dizi adı> <N>. bölümü/bölümünü aç"   → playSeriesEpisode
@@ -70543,15 +70552,28 @@ function _vsSearchText(query) {
         return;
     }
 
-    /* ── AYNI İSİM, BİRDEN FAZLA SONUÇ: sağlık kontrolü yap, en iyisini aç ── */
-    var _nq2 = _vsNormalize(nq);
+    /* ── AYNI İSİM (1 veya daha fazla kaynak): sağlık kontrolü yap, sağlıklı
+       olanı aç. Tek kaynak olsa bile önce sağlık kontrolünden geçirilir —
+       kanal ölüyse bunu görürüz, körlemesine "kaynak tek diye" direkt açıp
+       kırık yayına düşürmeyiz.
+       Not: "ATV .c" / "ATV .s" gibi kaynak etiketli varyantlar da aynı kanal
+       sayılır (_vsNormalizeForGroup etiketi atar); "ATV ALANYA .c" gibi
+       gerçekten farklı bir kanal ise (etiket atıldıktan sonra bile fazladan
+       kelime kaldığı için) bu gruba girmez. */
+    var _nq2 = _vsNormalizeForGroup(nq);
     var _sameNameResults = results.filter(function(r) {
-        return _vsNormalize(r.ch.name) === _nq2;
+        return _vsNormalizeForGroup(r.ch.name) === _nq2;
     });
-    if (_sameNameResults.length >= 2) {
+
+    if (_sameNameResults.length >= 1) {
         _vsRenderResults(results);
         var _status = document.getElementById('vsStatus');
-        if (_status) { _status.textContent = '🔍 Aynı kanal ' + _sameNameResults.length + ' kaynakta — en hızlısı seçiliyor...'; _status.className = 'vs-status vs-active'; }
+        if (_status) {
+            _status.textContent = _sameNameResults.length >= 2
+                ? '🔍 Aynı kanal ' + _sameNameResults.length + ' kaynakta — sağlık kontrolü yapılıyor...'
+                : '🔍 Sağlık kontrolü yapılıyor...';
+            _status.className = 'vs-status vs-active';
+        }
         var _best = null, _bestMs = Infinity, _checked = 0;
         _sameNameResults.forEach(function(r) {
             if (!r.ch.url) { _checked++; return; }
@@ -70569,7 +70591,13 @@ function _vsSearchText(query) {
                     _checked++;
                     if (_checked === _sameNameResults.length) {
                         var _winner = _best || _sameNameResults[0];
-                        if (_status) { _status.textContent = '✓ En iyi: ' + _winner.ch.name + (_bestMs < Infinity ? ' (' + _bestMs + 'ms)' : ''); _status.className = 'vs-status vs-found'; }
+                        var _healthy = !!_best;
+                        if (_status) {
+                            _status.textContent = _healthy
+                                ? '✓ Sağlıklı: ' + _winner.ch.name + ' (' + _bestMs + 'ms)'
+                                : '⚠ Sağlık kontrolü başarısız, yine de açılıyor: ' + _winner.ch.name;
+                            _status.className = _healthy ? 'vs-status vs-found' : 'vs-status';
+                        }
                         setTimeout(function() {
                             if (typeof showToast === 'function') showToast('▶ ' + _winner.ch.name, 'success');
                             closeVoiceSearch();

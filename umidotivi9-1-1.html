@@ -43758,7 +43758,10 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('forward', newTime, step);
-            showControls(7000);
+            // Kontroller zaten açıksa süresini uzat; kapalıysa AÇMA —
+            // yön tuşuyla sarma buton çubuğunu ortaya çıkarmasın, sadece OK tuşu açsın.
+            const _pcSF = document.getElementById('playerContainer');
+            if (_pcSF && _pcSF.classList.contains('show-controls')) showControls(7000);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -43785,7 +43788,10 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('backward', newTime, step);
-            showControls(7000);
+            // Kontroller zaten açıksa süresini uzat; kapalıysa AÇMA —
+            // yön tuşuyla sarma buton çubuğunu ortaya çıkarmasın, sadece OK tuşu açsın.
+            const _pcSB = document.getElementById('playerContainer');
+            if (_pcSB && _pcSB.classList.contains('show-controls')) showControls(7000);
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -70452,6 +70458,27 @@ function _vsTryHandleCommand(rawText) {
         return true;
     }
 
+    // ── SONRAKİ/ÖNCEKİ BÖLÜM KOMUTU: "sonraki bölüm", "önceki bölüm" vb. ──
+    // Dizi adı söylenmesine gerek yok — o an oynatılan dizi üzerinden çalışır.
+    var _nextEpCmd = /\b(sonraki|siradaki|diger)\s*bolum/.test(nText);
+    var _prevEpCmd = !_nextEpCmd && /\b(onceki|gecen)\s*bolum/.test(nText);
+    if (_nextEpCmd || _prevEpCmd) {
+        if (!(window.state && state.series && state.series.currentSeries)) {
+            if (typeof showToast === 'function') showToast('⚠ Şu an oynatılan bir dizi yok', 'error');
+            if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+            return true;
+        }
+        if (typeof showToast === 'function') {
+            showToast(_nextEpCmd ? '▶ Sonraki bölüm açılıyor...' : '▶ Önceki bölüm açılıyor...', 'success');
+        }
+        if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+        setTimeout(function () {
+            if (_nextEpCmd && typeof nextEpisode === 'function') nextEpisode();
+            else if (_prevEpCmd && typeof prevEpisode === 'function') prevEpisode();
+        }, 150);
+        return true;
+    }
+
     // ── BÖLÜM AÇMA KOMUTU: "<dizi> <N>. bölüm(ü/u)(nü) aç", isteğe bağlı "<M>. sezon" ──
     var epMatch = nText.match(/\b(\d+|[a-z]+)\.?\s*bolum/);
     if (epMatch) {
@@ -70471,6 +70498,12 @@ function _vsTryHandleCommand(rawText) {
             var _guess = _vsExtractSeriesNameFallback(rawText);
             // Tahmini ismi gerçek kanal/grup adlarıyla eşleştirip doğru yazımı bul
             seriesName = _vsMatchGuessToRealName(_guess) || _guess;
+        }
+        // Hâlâ bulunamadıysa (kullanıcı sadece "3. bölümü aç" dedi, dizi adı
+        // söylemedi) — o an oynatılan dizi varsa onu kullan.
+        if ((!seriesName || _vsNormalize(seriesName).length < 2) &&
+            window.state && state.series && state.series.currentSeries) {
+            seriesName = state.series.currentSeries;
         }
         if (!seriesName) {
             if (typeof showToast === 'function') showToast('⚠ Dizi adı anlaşılamadı, tekrar deneyin', 'error');

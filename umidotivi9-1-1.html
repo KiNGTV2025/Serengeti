@@ -70056,8 +70056,14 @@ window.openVoiceSearch = function () {
     _vsUpdateFocus();
     if (typeof playKeySound === 'function') playKeySound('open');
 
-    /* ── Otomatik dinlemeye başla — DOM render sonrası (MiBox crash önlemi) ── */
-    setTimeout(function() { if (!_vsListening) _vsStartListen(); }, 150);
+    /* ── Otomatik dinlemeye başla — ekran çizilir çizilmez (150ms sabit
+       bekleme yerine çift rAF: bir sonraki paint'te DOM hazır olur,
+       MiBox crash riski olmadan ~1-2 frame gibi çok daha hızlı başlar) ── */
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            if (!_vsListening) _vsStartListen();
+        });
+    });
 
     /* ── 12 sn sonra otomatik kapat ── */
     if (window._vsAutoCloseTimer) clearTimeout(window._vsAutoCloseTimer);
@@ -70546,8 +70552,8 @@ function _vsSearchText(query) {
         setTimeout(function () {
             if (typeof showToast === 'function') showToast('▶ ' + _onlyResult.ch.name, 'success');
             closeVoiceSearch();
-            setTimeout(function () { _vsPlayItem(_onlyResult); }, 80);
-        }, 420);
+            setTimeout(function () { _vsPlayItem(_onlyResult); }, 60);
+        }, 200);
         _vsRenderResults(results);
         return;
     }
@@ -70574,35 +70580,51 @@ function _vsSearchText(query) {
                 : '🔍 Sağlık kontrolü yapılıyor...';
             _status.className = 'vs-status vs-active';
         }
-        var _best = null, _bestMs = Infinity, _checked = 0;
+        var _resolved = false;
+        var _controllers = [];
+        var _checked = 0;
+
+        function _vsFinishHealthCheck(winner, healthy, ms) {
+            if (_resolved) return;
+            _resolved = true;
+            /* Kazanan belli oldu — bekleyen diğer istekleri iptal et, zaman kaybetme */
+            _controllers.forEach(function (c) { try { c.abort(); } catch (e) {} });
+            if (_status) {
+                _status.textContent = healthy
+                    ? '✓ Sağlıklı: ' + winner.ch.name + (ms ? ' (' + ms + 'ms)' : '')
+                    : '⚠ Sağlık kontrolü başarısız, yine de açılıyor: ' + winner.ch.name;
+                _status.className = healthy ? 'vs-status vs-found' : 'vs-status';
+            }
+            setTimeout(function () {
+                if (typeof showToast === 'function') showToast('▶ ' + winner.ch.name, 'success');
+                closeVoiceSearch();
+                setTimeout(function () { _vsPlayItem(winner); }, 60);
+            }, 150);
+        }
+
         _sameNameResults.forEach(function(r) {
-            if (!r.ch.url) { _checked++; return; }
+            if (!r.ch.url) {
+                _checked++;
+                if (_checked === _sameNameResults.length) _vsFinishHealthCheck(_sameNameResults[0], false);
+                return;
+            }
             var t0 = Date.now();
             var ctrl = new AbortController();
-            var tid = setTimeout(function() { ctrl.abort(); }, 6000);
+            _controllers.push(ctrl);
+            var tid = setTimeout(function() { ctrl.abort(); }, 2500);
             fetch(r.ch.url, { method: 'HEAD', signal: ctrl.signal, cache: 'no-store', mode: 'no-cors' })
                 .then(function() {
                     clearTimeout(tid);
                     var ms = Date.now() - t0;
-                    if (ms < _bestMs) { _bestMs = ms; _best = r; }
+                    /* İlk sağlıklı yanıt kazanır — diğerlerini beklemeden hemen aç */
+                    _vsFinishHealthCheck(r, true, ms);
                 })
                 .catch(function() { clearTimeout(tid); })
                 .finally(function() {
                     _checked++;
                     if (_checked === _sameNameResults.length) {
-                        var _winner = _best || _sameNameResults[0];
-                        var _healthy = !!_best;
-                        if (_status) {
-                            _status.textContent = _healthy
-                                ? '✓ Sağlıklı: ' + _winner.ch.name + ' (' + _bestMs + 'ms)'
-                                : '⚠ Sağlık kontrolü başarısız, yine de açılıyor: ' + _winner.ch.name;
-                            _status.className = _healthy ? 'vs-status vs-found' : 'vs-status';
-                        }
-                        setTimeout(function() {
-                            if (typeof showToast === 'function') showToast('▶ ' + _winner.ch.name, 'success');
-                            closeVoiceSearch();
-                            setTimeout(function() { _vsPlayItem(_winner); }, 80);
-                        }, 600);
+                        /* Hiçbiri sağlıklı çıkmadıysa ilk sonucu yine de aç */
+                        _vsFinishHealthCheck(_sameNameResults[0], false);
                     }
                 });
         });
@@ -71440,17 +71462,20 @@ window.umitSendPush      = window.umitSendPush;
         var isOpen = (typeof _vsOpen !== 'undefined') && _vsOpen;
 
         if (!isOpen) {
-            /* Modal kapalı → aç ve hemen dinlemeye başla */
+            /* Modal kapalı → aç ve hemen dinlemeye başla (openVoiceSearch
+               kendi içinde rAF ile anında _vsStartListen çağırır) */
             if (typeof window.openVoiceSearch === 'function') {
                 window.openVoiceSearch();
             }
+            /* Yedek güvenlik kontrolü — kısa tutulur, sadece openVoiceSearch
+               içindeki otomatik başlatma başarısız olursa devreye girer */
             setTimeout(function () {
                 var isListening = (typeof _vsListening !== 'undefined') && _vsListening;
                 if (typeof window.vsToggleListen === 'function' && !isListening) {
                     window.vsToggleListen();
                 }
                 _pvsSync();
-            }, 300);
+            }, 60);
         } else {
             /* Modal açık → kapat */
             if (typeof window.closeVoiceSearch === 'function') {

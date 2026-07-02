@@ -40556,9 +40556,7 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    // İPTAL: ham vavoo URL yeniden yönlendirme (yukarıdaki playChannel'daki
-                    // gibi) — worker zaten çözülmüş tam URL veriyor, buna gerek yok.
-                    const _vavooRawFbMatch = null;
+                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
                     const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
                     if (_vavooRawFbMatch) {
                         // vavoo.to ham URL → Vavoo Worker ile yeniden dene
@@ -41579,19 +41577,41 @@ function resumeChannel(startTime) {
     // desteklendiği için sorun görünmüyordu).
     const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev');
 
-    // İPTAL: ham vavoo.to/kool.to/oha.to/huhu.to URL yönlendirme mantığı.
-    // Artık tüm listeler worker üzerinden ZATEN ÇÖZÜLMÜŞ tam URL veriyor
-    // (ör. vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=...), bu yüzden
-    // client-side'da bu URL'leri başka bir worker'a yeniden yönlendirmeye
-    // gerek yok — bu mantık zaten daha önce yanlış eşleşip linkleri kırıyordu.
-    // Linkler artık her zaman olduğu gibi (rawUrl) kullanılıyor.
+    // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
     const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
-    const isVavooRaw = false;
+
+    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
+    // BUG FIX: regex çapasız olduğu için "vavoo.to/vavoo-iptv/play/ID" deseni
+    // BAŞKA bir worker'ın zaten ürettiği tam URL'nin (ör.
+    // vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=https://vavoo.to/...)
+    // İÇİNDE geçtiğinde de yanlışlıkla eşleşiyordu — gerçek (ve çalışan) URL
+    // atılıp sabit kodlu ESKİ bir worker'a (umittv.sadecenjoy.workers.dev/play/ID)
+    // yönlendiriliyordu, o worker'da bu endpoint çalışmadığı için yayın açılmıyordu.
+    // Artık URL zaten bir "workers.dev" proxy'sinden geliyorsa (yani zaten
+    // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
+    // olduğu gibi (rawUrl) kullanılıyor.
+    const _isAlreadyProxied = rawUrl.includes('workers.dev');
+    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
+    const isVavooRaw = !!_vavooRawMatch;
+    if (isVavooRaw) {
+        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
+        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
+        Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
+    }
+
+    // kool.to linki → umido.umitm0d.workers.dev proxy'ye yönlendir
     const KOOL_PROXY   = 'https://umido.umitm0d.workers.dev/?url=';
     const KOOL_PROXY_2 = 'https://umittv.sadecenjoy.workers.dev/?url=';
-    const isKoolTo = false;
-    const effectiveUrl = rawUrl;
-
+    // isKoolTo: artık SADECE kool.to ham URL'leri (vavoo.to isVavooRaw ile ayrı ele alındı)
+    const isKoolTo = !isVavooRaw && (rawUrl.includes('kool.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to'));
+    if (isKoolTo) {
+        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
+        // yani startHls direkt HLS olarak açar
+        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
+        // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
+        Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
+    }
+    const effectiveUrl = ((isKoolTo || isVavooRaw) && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
@@ -41914,13 +41934,18 @@ function resumeChannel(startTime) {
             // UserAgent beklenmez, proxy yok, OkHttp kontrolü yok — Worker halleder
             if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
             startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
-            // Stall dedektörü — stall olunca aynı Worker URL'yi yenile (Worker her zaman taze resolve yapar)
+            // Stall dedektörü — SADECE merkezi onStall/recovery sistemi (play/seek/kalite düşürme)
+            // 12 kademeyi tüketip başarısız olursa devreye girer. Worker artık segment-level
+            // otomatik yeniden-resolve yaptığı için çoğu donma burada bile hiç tetiklenmez.
+            // Eskiden 8sn'de sert startHls() yapılıyordu — bu artık merkezi sistemi bypass
+            // ediyordu ve gereksiz "hard restart" (görünür kesilme) yaratıyordu.
             let _vavooLastTime = -1, _vavooStallCount = 0;
             window._koolReconnectTimer = setInterval(() => {
                 if (!video || video.paused || video.ended) return;
                 if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _vavooLastTime) {
                     _vavooStallCount++;
-                    if (_vavooStallCount >= 3) {
+                    // 8sn * 6 = ~48sn kesintisiz ilerlemesizlik → merkezi sistem de tükendiyse son çare
+                    if (_vavooStallCount >= 6) {
                         _vavooStallCount = 0;
                         showToast('Vavoo yayını yenileniyor...');
                         startHls(effectiveUrl);
@@ -72902,8 +72927,17 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         if (!modal || modal.style.display === 'none') return;
         // Alt açık kanal seçim modalı varsa bu handler'ı devre dışı bırak
         if (document.getElementById('umChannelPickerModal')) return;
+
+        // KRİTİK: Modal açıkken arka plandaki ana D-pad sistemine (handleMainRemote,
+        // kanal listesi navigasyonu, zap/numara ile kanal değiştirme vb.) event
+        // sızmasın. Önceden sadece preventDefault() vardı — event document üzerinde
+        // hâlâ diğer keydown listener'lara ulaşıyordu, bu da arka plandaki kanal
+        // kartlarının odağının kaymasına ve rakam tuşlarında kanal değişmesine yol açıyordu.
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         if (umFocusables.length === 0) umRebuildFocusables();
-        if (umFocusables.length === 0) return;
+        if (umFocusables.length === 0) { e.preventDefault(); return; }
 
         var cur = umFocusables[umFocusIndex];
         var isDayTab = cur && cur.classList.contains('um-day-tab');
@@ -73228,6 +73262,15 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             umRefreshCurrentView();
         }, 60000);
         umFocusIndex = 1; // "Bugün" sekmesi
+        // Modal açıkken arka plandaki player/kanal listesi D-pad zone'u devreye
+        // girmesin diye önceki zone'u sakla ve nötr bir değere al. stopPropagation
+        // event sızıntısını zaten engelliyor, bu ek bir güvenlik katmanı —
+        // modal açıkken state.remote.zone kontrolü yapan başka bir kod varsa
+        // (örn. otomatik odak/uyandırma mantığı) yanlış zone'a göre davranmasın.
+        if (window.state && state.remote) {
+            window._umPrevRemoteZone = state.remote.zone;
+            state.remote.zone = 'umMatchesModal';
+        }
         document.addEventListener('keydown', umModalKeyHandler, true);
     };
 
@@ -73236,6 +73279,12 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         if (modal) modal.style.display = 'none';
         if (umRefreshTimer) { clearInterval(umRefreshTimer); umRefreshTimer = null; }
         document.removeEventListener('keydown', umModalKeyHandler, true);
+        // Önceki zone'a geri dön — player içinden açıldıysa player'a, ana ekrandan
+        // açıldıysa channels/o zamanki zone'a döner.
+        if (window.state && state.remote && window._umPrevRemoteZone !== undefined) {
+            state.remote.zone = window._umPrevRemoteZone;
+            window._umPrevRemoteZone = undefined;
+        }
     };
 
 })();

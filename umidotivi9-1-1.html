@@ -40556,7 +40556,9 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
+                    // İPTAL: ham vavoo URL yeniden yönlendirme (yukarıdaki playChannel'daki
+                    // gibi) — worker zaten çözülmüş tam URL veriyor, buna gerek yok.
+                    const _vavooRawFbMatch = null;
                     const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
                     if (_vavooRawFbMatch) {
                         // vavoo.to ham URL → Vavoo Worker ile yeniden dene
@@ -41570,43 +41572,26 @@ function resumeChannel(startTime) {
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
     // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavoo.to/vavoo-iptv/play/ ham URL)
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev');
+    // FIX: yeni vavoo worker domaini (vavoop.sadecenjoy.workers.dev) eklendi —
+    // eksik olduğu için App24'te (native video.src bekleyen ExoPlayer WebView)
+    // bu domain "Normal HLS" genel yoluna düşüp hls.js ile açılmaya çalışıyordu,
+    // bu da App24'te yayının açılmamasına sebep oluyordu (tarayıcıda MSE tam
+    // desteklendiği için sorun görünmüyordu).
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev');
 
-    // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
+    // İPTAL: ham vavoo.to/kool.to/oha.to/huhu.to URL yönlendirme mantığı.
+    // Artık tüm listeler worker üzerinden ZATEN ÇÖZÜLMÜŞ tam URL veriyor
+    // (ör. vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=...), bu yüzden
+    // client-side'da bu URL'leri başka bir worker'a yeniden yönlendirmeye
+    // gerek yok — bu mantık zaten daha önce yanlış eşleşip linkleri kırıyordu.
+    // Linkler artık her zaman olduğu gibi (rawUrl) kullanılıyor.
     const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
-
-    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
-    // BUG FIX: regex çapasız olduğu için "vavoo.to/vavoo-iptv/play/ID" deseni
-    // BAŞKA bir worker'ın zaten ürettiği tam URL'nin (ör.
-    // vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=https://vavoo.to/...)
-    // İÇİNDE geçtiğinde de yanlışlıkla eşleşiyordu — gerçek (ve çalışan) URL
-    // atılıp sabit kodlu ESKİ bir worker'a (umittv.sadecenjoy.workers.dev/play/ID)
-    // yönlendiriliyordu, o worker'da bu endpoint çalışmadığı için yayın açılmıyordu.
-    // Artık URL zaten bir "workers.dev" proxy'sinden geliyorsa (yani zaten
-    // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
-    // olduğu gibi (rawUrl) kullanılıyor.
-    const _isAlreadyProxied = rawUrl.includes('workers.dev');
-    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
-    const isVavooRaw = !!_vavooRawMatch;
-    if (isVavooRaw) {
-        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
-        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
-        Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
-    }
-
-    // kool.to linki → umido.umitm0d.workers.dev proxy'ye yönlendir
+    const isVavooRaw = false;
     const KOOL_PROXY   = 'https://umido.umitm0d.workers.dev/?url=';
     const KOOL_PROXY_2 = 'https://umittv.sadecenjoy.workers.dev/?url=';
-    // isKoolTo: artık SADECE kool.to ham URL'leri (vavoo.to isVavooRaw ile ayrı ele alındı)
-    const isKoolTo = !isVavooRaw && (rawUrl.includes('kool.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to'));
-    if (isKoolTo) {
-        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
-        // yani startHls direkt HLS olarak açar
-        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
-        // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
-        Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
-    }
-    const effectiveUrl = ((isKoolTo || isVavooRaw) && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
+    const isKoolTo = false;
+    const effectiveUrl = rawUrl;
+
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {

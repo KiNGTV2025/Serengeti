@@ -42046,7 +42046,11 @@ function resumeChannel(startTime) {
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
-            if (_isApp24WebView) {
+            // İSTİSNA: vavootobir.umitm0d.workers.dev App24'te native video.src ile
+            // AÇILMIYOR (bildirildi) — tarayıcı/quickedit'te zaten hls.js ile
+            // sorunsuz çalıştığı için bu worker'ı App24'te de hls.js'e yönlendir.
+            var _isVavootobirWorker = rawUrl.includes('vavootobir.umitm0d.workers.dev');
+            if (_isApp24WebView && !_isVavootobirWorker) {
                 video.src = rawUrl;
                 video.load();
                 video.play().catch(() => {});

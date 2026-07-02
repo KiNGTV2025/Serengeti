@@ -19871,8 +19871,35 @@ async function loadContinueWatching() {
                 if (e._backHandled) return;
                 e.preventDefault();
                 e.stopPropagation();
-                
-                
+
+                // ── Sıralama panelleri — player içinden açılır (Numara/Yukarı/Aşağı
+                // Taşı) ve içlerinde otomatik odaklanan bir <input> barındırır.
+                // Aşağıdaki genel "aktif eleman INPUT ise sadece blur et" kuralı
+                // bu paneli YAKALIYORDU: Backspace basılınca panel kapanacağına
+                // input içindeki rakam siliniyor, başka geri tuşu türlerinde ise
+                // sadece blur oluyor ve panel açık kalıyordu — bu da kullanıcının
+                // art arda geri tuşuna basmasına ve sonunda hiçbir modal eşleşmeyince
+                // akışın playerView kontrolüne düşüp OYUNCUYU KOMPLE KAPATMASINA
+                // sebep oluyordu. Bu yüzden bu paneller odak durumundan bağımsız
+                // olarak EN ÖNCE burada kontrol edilip kapatılıyor. ──
+                const _qsnEl = document.getElementById('quickSortNumModal');
+                if (_qsnEl && _qsnEl.style.display === 'flex') {
+                    if (typeof closeQuickSortNumModal === 'function') closeQuickSortNumModal();
+                    playKeySound('back');
+                    return;
+                }
+                const _sortModEl = document.getElementById('sortModal');
+                if (_sortModEl && (_sortModEl.style.display === 'flex' || _sortModEl.style.display === 'block')) {
+                    if (typeof closeSortModal === 'function') closeSortModal();
+                    playKeySound('back');
+                    return;
+                }
+                const _sortBkEl = document.getElementById('sortBackupModal');
+                if (_sortBkEl && (_sortBkEl.style.display === 'flex' || _sortBkEl.style.display === 'block')) {
+                    if (typeof closeSortBackupModal === 'function') closeSortBackupModal();
+                    playKeySound('back');
+                    return;
+                }
 
                 const active = document.activeElement;
                 if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
@@ -19946,6 +19973,42 @@ async function loadContinueWatching() {
                 const _exitMod = document.getElementById('exitConfirmModal');
                 if (_exitMod && (_exitMod.style.display === 'flex' || _exitMod.style.display === 'block')) {
                     _exitMod.style.display = 'none';
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Alternatif Kanallar paneli — kendi window-level handler'ı olayı
+                // zaten yakalayıp kapatıyor, ama zone/timing farklıysa buraya da
+                // düşebilir; ek güvenlik katmanı olarak burada da kontrol edelim ──
+                const _altChEl = document.getElementById('altChOverlay');
+                if (_altChEl && _altChEl.style.display === 'block') {
+                    if (typeof window.hideAltChannels === 'function') window.hideAltChannels();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Profil Modalı — .open class ile açılır (header'daki btnProfile) ──
+                const _profileEl = document.getElementById('profileModal');
+                if (_profileEl && _profileEl.classList.contains('open')) {
+                    if (typeof window.closeProfileModal === 'function') window.closeProfileModal();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Bildirimler paneli — açıkken DOM'a eklenir, kapanınca kaldırılır
+                // (header'daki btnNotifTest / zil butonu) ──
+                const _notifPanelEl = document.getElementById('umitNotifPanel');
+                if (_notifPanelEl && _notifPanelEl.style.opacity !== '0') {
+                    if (typeof window.umitNotifToggleDemo === 'function') window.umitNotifToggleDemo();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Maçlar Modalı — hem header'daki btnMatches hem de player
+                // içindeki btnPlayerMatches tarafından açılır ──
+                const _umMatchesEl = document.getElementById('umMatchesModal');
+                if (_umMatchesEl && _umMatchesEl.style.display === 'flex') {
+                    if (typeof window.closeMatchesModal === 'function') window.closeMatchesModal();
                     playKeySound('back');
                     return;
                 }
@@ -71611,28 +71674,52 @@ window.altChPlay = function (idx) {
     }
 };
 
-/* ── D-pad navigasyonu ── */
-document.addEventListener('keydown', function (e) {
+/* ── D-pad navigasyonu ──
+   NOT: Uygulamada document üzerinde onlarca capture-phase keydown handler
+   var (handleBackButton dahil) ve bunlar registration sırasına göre önce
+   çalışıp stopPropagation() ile olayı yutuyordu — bu overlay'in kendi
+   document-level handler'ı en son eklendiği için sırası hiç gelmiyordu,
+   yani ok tuşları ve geri tuşu bu panelde çalışmıyordu.
+   Çözüm: window üzerine (document'tan önce ateşlenir) capture:true ile
+   bağlanıyoruz, böylece overlay açıkken bu handler HER ZAMAN ilk çalışır
+   ve stopPropagation ile diğer tüm handler'ları (document dahil) devre
+   dışı bırakır. Geri tuşu tespiti de handleBackButton ile aynı standarda
+   (Escape/Backspace/GoBack/Back/BrowserBack/keyCode 4) çekildi — TV kumandası
+   keyCode'ları da artık tanınıyor. */
+window.addEventListener('keydown', function (e) {
     if (!window._altDpadActive) return;
     var ov = document.getElementById('altChOverlay');
     if (!ov || ov.style.display === 'none') return;
 
+    var isBack = e.key === 'Backspace' || e.key === 'Escape' ||
+                 e.key === 'GoBack'    || e.key === 'Back'    ||
+                 e.key === 'BrowserBack' ||
+                 e.keyCode === 4 || e.keyCode === 27 || e.keyCode === 8 || e.keyCode === 461;
+
     var items = document.querySelectorAll('#altChList .alt-item');
+
+    if (isBack) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        hideAltChannels();
+        return;
+    }
+
     if (!items.length) return;
 
     if (e.keyCode === 40 || e.keyCode === 228) { /* Aşağı */
         e.preventDefault();
+        e.stopPropagation();
         _altFocusIdx = Math.min(_altFocusIdx + 1, items.length - 1);
     } else if (e.keyCode === 38 || e.keyCode === 227) { /* Yukarı */
         e.preventDefault();
+        e.stopPropagation();
         _altFocusIdx = Math.max(_altFocusIdx - 1, 0);
     } else if (e.keyCode === 13 || e.keyCode === 23) { /* OK/Enter */
         e.preventDefault();
+        e.stopPropagation();
         if (_altFocusIdx >= 0) altChPlay(_altFocusIdx);
-        return;
-    } else if (e.keyCode === 27 || e.keyCode === 8) { /* Back/Esc */
-        e.preventDefault();
-        hideAltChannels();
         return;
     } else {
         return;
@@ -72423,6 +72510,18 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     background: rgba(255,215,0,0.3);
     border-radius: 4px;
 }
+.um-cp-item.remote-focused {
+    background: var(--accent-primary, #FFD700) !important;
+    color: #000 !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.8);
+}
+#umChannelPickerList::-webkit-scrollbar {
+    width: 6px;
+}
+#umChannelPickerList::-webkit-scrollbar-thumb {
+    background: rgba(255,215,0,0.3);
+    border-radius: 4px;
+}
 </style>
 <script id="umittv-matches-feature-script">
 (function(){
@@ -73018,15 +73117,9 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             return c.name + (isDup && listN ? '  —  ' + listN : '');
         }
 
-        function buildOptions(arr) {
-            return arr.map(function(c) {
-                return '<option value="' + c.name.replace(/"/g, '&quot;') + '">' + optionLabel(c).replace(/</g, '&lt;') + '</option>';
-            }).join('');
-        }
-
         // Adayları geldikleri M3U listesine göre grupla (Vavoo, CANLI YAYIN,
         // KabloTV, ATVPanel, vb.) — hangi listeler mevcutsa hepsi kendi
-        // optgroup'unda, alfabetik sıralı gösterilir. Artık sabit iki liste
+        // başlığı altında, alfabetik sıralı gösterilir. Artık sabit iki liste
         // ile sınırlı değil: kategori adında "spor" geçen her liste dahil olur.
         var byList = {};
         var listOrder = [];
@@ -73037,41 +73130,116 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         });
         listOrder.sort(function(a, b) { return a.localeCompare(b, 'tr'); });
 
-        var options = '<option value="">— Kanal seç —</option>';
+        // D-pad ile gezilebilir kanal kartı listesi — select yerine.
+        // TVBox WebView'larda native <select> dropdown kumanda ile açılıp
+        // yön tuşlarıyla gezilemiyor, bu yüzden her kanal kendi tıklanabilir/
+        // odaklanabilir kartı olarak render ediliyor.
+        var listHtml = '';
         listOrder.forEach(function(listN) {
             var arr = byList[listN].slice().sort(function(a, b) { return a.name.localeCompare(b.name, 'tr'); });
-            options += '<optgroup label="' + listN.replace(/"/g, '&quot;') + ' — Spor">' + buildOptions(arr) + '</optgroup>';
+            listHtml += '<div style="font-size:11px;color:var(--text-muted);text-align:left;margin:10px 0 4px;padding-left:2px;">' +
+                listN.replace(/</g, '&lt;') + ' — Spor</div>';
+            arr.forEach(function(c) {
+                listHtml += '<div class="um-cp-item um-focusable" tabindex="0" data-chname="' +
+                    c.name.replace(/"/g, '&quot;') + '" onclick="umConfirmChannelPick(\'' +
+                    umMatchKey(ev).replace(/'/g, "\\'") + '\', this.getAttribute(\'data-chname\'))" ' +
+                    'style="text-align:left;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:var(--bg-secondary,#111);border:1px solid rgba(255,215,0,0.15);cursor:pointer;font-size:13px;">' +
+                    optionLabel(c).replace(/</g, '&lt;') + '</div>';
+            });
         });
-        if (!listOrder.length) options += '<option value="" disabled>Spor kanalı bulunamadı</option>';
+        if (!listOrder.length) {
+            listHtml = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Spor kanalı bulunamadı</div>';
+        }
 
         var key = umMatchKey(ev);
         var html =
-            '<div class="modal-bg" id="umChannelPickerModal" style="display:flex;z-index:1000010;">' +
+            '<div class="modal-bg" id="umChannelPickerModal" style="display:flex;z-index:1000010;" onclick="if(event.target.id===\'umChannelPickerModal\') umCancelChannelPick()">' +
               '<div class="modal-content" style="max-width:380px;width:calc(100vw - 32px);text-align:center;">' +
                 '<h3 style="margin-bottom:10px;">' + umTeamTR(ev.strHomeTeam) + ' - ' + umTeamTR(ev.strAwayTeam) + '</h3>' +
-                '<div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Bu maç için otomatik kanal bulunamadı. Tüm listelerdeki (Vavoo, CANLI YAYIN, KabloTV vb.) "Spor" kategorisindeki kanallar listeleniyor. Bir kanalın adının yanında liste adı görünüyorsa, o kanal birden fazla kaynakta mevcuttur:</div>' +
-                '<select id="umChannelPickerSelect" style="width:100%;padding:10px;border-radius:8px;margin-bottom:14px;background:var(--bg-secondary,#111);color:var(--text-primary,#fff);border:1px solid rgba(255,215,0,0.3);">' +
-                  options +
-                '</select>' +
+                '<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">Bu maç için otomatik kanal bulunamadı. Tüm listelerdeki (Vavoo, CANLI YAYIN, KabloTV vb.) "Spor" kategorisindeki kanallar listeleniyor. Bir kanalın adının yanında liste adı görünüyorsa, o kanal birden fazla kaynakta mevcuttur:</div>' +
+                '<div id="umChannelPickerList" style="max-height:50vh;overflow-y:auto;margin-bottom:14px;">' +
+                  listHtml +
+                '</div>' +
                 '<div style="display:flex;gap:10px;">' +
-                  '<button class="modal-back-btn" onclick="document.getElementById(\'umChannelPickerModal\').remove()">İptal</button>' +
-                  '<button class="modal-back-btn" style="background:var(--accent-primary);color:#000;" onclick="umConfirmChannelPick(\'' + key.replace(/'/g, "\\'") + '\')">İzle ve Kaydet</button>' +
+                  '<button class="modal-back-btn um-focusable" tabindex="0" onclick="umCancelChannelPick()">İptal</button>' +
                 '</div>' +
               '</div>' +
             '</div>';
         document.body.insertAdjacentHTML('beforeend', html);
         window._umPendingMatch = ev;
+        umCpFocusIndex = 0;
+        umCpRebuildFocusables();
+        document.addEventListener('keydown', umCpKeyHandler, true);
     }
 
-    window.umConfirmChannelPick = function(key) {
-        var sel = document.getElementById('umChannelPickerSelect');
-        var name = sel ? sel.value : '';
+    window.umCancelChannelPick = function() {
         var modal = document.getElementById('umChannelPickerModal');
         if (modal) modal.remove();
-        if (!name || !window._umPendingMatch) return;
-        umSetOverrideChannel(window._umPendingMatch, name);
+        document.removeEventListener('keydown', umCpKeyHandler, true);
+        window._umPendingMatch = null;
+    };
+
+    // ---- Kanal seçim paneli D-pad navigasyonu ----
+    var umCpFocusables = [];
+    var umCpFocusIndex = 0;
+
+    function umCpRebuildFocusables() {
+        var modal = document.getElementById('umChannelPickerModal');
+        if (!modal) { umCpFocusables = []; return; }
+        umCpFocusables = Array.prototype.slice.call(modal.querySelectorAll('.um-focusable'));
+        if (umCpFocusIndex >= umCpFocusables.length) umCpFocusIndex = 0;
+        umCpApplyFocus();
+    }
+
+    function umCpApplyFocus() {
+        umCpFocusables.forEach(function(el) { el.classList.remove('remote-focused'); });
+        var el = umCpFocusables[umCpFocusIndex];
+        if (el) {
+            el.classList.add('remote-focused');
+            if (typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }
+
+    function umCpKeyHandler(e) {
+        var modal = document.getElementById('umChannelPickerModal');
+        if (!modal) return;
+
+        // Ana modal ve player'a event sızmasın — aynı sebep: maçlar panelindeki
+        // odak kayması ve player'da kanal değişmesi hatasıyla aynı kök neden.
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if (umCpFocusables.length === 0) umCpRebuildFocusables();
+        if (umCpFocusables.length === 0) { e.preventDefault(); return; }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            umCpFocusIndex = Math.min(umCpFocusIndex + 1, umCpFocusables.length - 1);
+            umCpApplyFocus();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            umCpFocusIndex = Math.max(umCpFocusIndex - 1, 0);
+            umCpApplyFocus();
+        } else if (e.key === 'Enter' || e.key === 'OK' || e.key === ' ') {
+            e.preventDefault();
+            var cur = umCpFocusables[umCpFocusIndex];
+            if (cur) cur.click();
+        } else if (e.key === 'Backspace' || e.key === 'Escape') {
+            e.preventDefault();
+            window.umCancelChannelPick();
+        }
+    }
+
+    window.umConfirmChannelPick = function(key, chName) {
+        var modal = document.getElementById('umChannelPickerModal');
+        if (modal) modal.remove();
+        document.removeEventListener('keydown', umCpKeyHandler, true);
+        if (!chName || !window._umPendingMatch) return;
+        umSetOverrideChannel(window._umPendingMatch, chName);
         window.closeMatchesModal();
-        if (typeof playChannelByName === 'function') playChannelByName(name);
+        if (typeof playChannelByName === 'function') playChannelByName(chName);
     };
 
     function umRenderMatches(events) {

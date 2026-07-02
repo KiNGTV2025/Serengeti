@@ -19871,8 +19871,35 @@ async function loadContinueWatching() {
                 if (e._backHandled) return;
                 e.preventDefault();
                 e.stopPropagation();
-                
-                
+
+                // ── Sıralama panelleri — player içinden açılır (Numara/Yukarı/Aşağı
+                // Taşı) ve içlerinde otomatik odaklanan bir <input> barındırır.
+                // Aşağıdaki genel "aktif eleman INPUT ise sadece blur et" kuralı
+                // bu paneli YAKALIYORDU: Backspace basılınca panel kapanacağına
+                // input içindeki rakam siliniyor, başka geri tuşu türlerinde ise
+                // sadece blur oluyor ve panel açık kalıyordu — bu da kullanıcının
+                // art arda geri tuşuna basmasına ve sonunda hiçbir modal eşleşmeyince
+                // akışın playerView kontrolüne düşüp OYUNCUYU KOMPLE KAPATMASINA
+                // sebep oluyordu. Bu yüzden bu paneller odak durumundan bağımsız
+                // olarak EN ÖNCE burada kontrol edilip kapatılıyor. ──
+                const _qsnEl = document.getElementById('quickSortNumModal');
+                if (_qsnEl && _qsnEl.style.display === 'flex') {
+                    if (typeof closeQuickSortNumModal === 'function') closeQuickSortNumModal();
+                    playKeySound('back');
+                    return;
+                }
+                const _sortModEl = document.getElementById('sortModal');
+                if (_sortModEl && (_sortModEl.style.display === 'flex' || _sortModEl.style.display === 'block')) {
+                    if (typeof closeSortModal === 'function') closeSortModal();
+                    playKeySound('back');
+                    return;
+                }
+                const _sortBkEl = document.getElementById('sortBackupModal');
+                if (_sortBkEl && (_sortBkEl.style.display === 'flex' || _sortBkEl.style.display === 'block')) {
+                    if (typeof closeSortBackupModal === 'function') closeSortBackupModal();
+                    playKeySound('back');
+                    return;
+                }
 
                 const active = document.activeElement;
                 if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
@@ -19946,6 +19973,42 @@ async function loadContinueWatching() {
                 const _exitMod = document.getElementById('exitConfirmModal');
                 if (_exitMod && (_exitMod.style.display === 'flex' || _exitMod.style.display === 'block')) {
                     _exitMod.style.display = 'none';
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Alternatif Kanallar paneli — kendi window-level handler'ı olayı
+                // zaten yakalayıp kapatıyor, ama zone/timing farklıysa buraya da
+                // düşebilir; ek güvenlik katmanı olarak burada da kontrol edelim ──
+                const _altChEl = document.getElementById('altChOverlay');
+                if (_altChEl && _altChEl.style.display === 'block') {
+                    if (typeof window.hideAltChannels === 'function') window.hideAltChannels();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Profil Modalı — .open class ile açılır (header'daki btnProfile) ──
+                const _profileEl = document.getElementById('profileModal');
+                if (_profileEl && _profileEl.classList.contains('open')) {
+                    if (typeof window.closeProfileModal === 'function') window.closeProfileModal();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Bildirimler paneli — açıkken DOM'a eklenir, kapanınca kaldırılır
+                // (header'daki btnNotifTest / zil butonu) ──
+                const _notifPanelEl = document.getElementById('umitNotifPanel');
+                if (_notifPanelEl && _notifPanelEl.style.opacity !== '0') {
+                    if (typeof window.umitNotifToggleDemo === 'function') window.umitNotifToggleDemo();
+                    playKeySound('back');
+                    return;
+                }
+
+                // ── Maçlar Modalı — hem header'daki btnMatches hem de player
+                // içindeki btnPlayerMatches tarafından açılır ──
+                const _umMatchesEl = document.getElementById('umMatchesModal');
+                if (_umMatchesEl && _umMatchesEl.style.display === 'flex') {
+                    if (typeof window.closeMatchesModal === 'function') window.closeMatchesModal();
                     playKeySound('back');
                     return;
                 }
@@ -70165,6 +70228,15 @@ function _vsNormalize(s) {
         .trim();
 }
 
+// "ATV .c", "ATV .s" gibi kaynak/varyant etiketlerini (nokta + 1-3 harf,
+// isteğe bağlı rakam) sondan atar; böylece aynı kanalın farklı
+// kaynaklardan gelen kopyaları "aynı isim" grubunda birleşebilir.
+// "ATV ALANYA .c" gibi GERÇEKTEN farklı bir kanal ise (etiket atıldıktan
+// sonra bile ekstra kelime kalıyorsa) yanlışlıkla gruplanmaz.
+function _vsNormalizeForGroup(s) {
+    return _vsNormalize(s).replace(/\s*\.\s*[a-z]{1,3}\d*$/, '').trim();
+}
+
 /* ── SESLİ KOMUT SİSTEMİ ────────────────────────────────────────────────
    Desteklenen komutlar:
    - "<dizi adı> <N>. bölümü/bölümünü aç"   → playSeriesEpisode
@@ -70480,15 +70552,28 @@ function _vsSearchText(query) {
         return;
     }
 
-    /* ── AYNI İSİM, BİRDEN FAZLA SONUÇ: sağlık kontrolü yap, en iyisini aç ── */
-    var _nq2 = _vsNormalize(nq);
+    /* ── AYNI İSİM (1 veya daha fazla kaynak): sağlık kontrolü yap, sağlıklı
+       olanı aç. Tek kaynak olsa bile önce sağlık kontrolünden geçirilir —
+       kanal ölüyse bunu görürüz, körlemesine "kaynak tek diye" direkt açıp
+       kırık yayına düşürmeyiz.
+       Not: "ATV .c" / "ATV .s" gibi kaynak etiketli varyantlar da aynı kanal
+       sayılır (_vsNormalizeForGroup etiketi atar); "ATV ALANYA .c" gibi
+       gerçekten farklı bir kanal ise (etiket atıldıktan sonra bile fazladan
+       kelime kaldığı için) bu gruba girmez. */
+    var _nq2 = _vsNormalizeForGroup(nq);
     var _sameNameResults = results.filter(function(r) {
-        return _vsNormalize(r.ch.name) === _nq2;
+        return _vsNormalizeForGroup(r.ch.name) === _nq2;
     });
-    if (_sameNameResults.length >= 2) {
+
+    if (_sameNameResults.length >= 1) {
         _vsRenderResults(results);
         var _status = document.getElementById('vsStatus');
-        if (_status) { _status.textContent = '🔍 Aynı kanal ' + _sameNameResults.length + ' kaynakta — en hızlısı seçiliyor...'; _status.className = 'vs-status vs-active'; }
+        if (_status) {
+            _status.textContent = _sameNameResults.length >= 2
+                ? '🔍 Aynı kanal ' + _sameNameResults.length + ' kaynakta — sağlık kontrolü yapılıyor...'
+                : '🔍 Sağlık kontrolü yapılıyor...';
+            _status.className = 'vs-status vs-active';
+        }
         var _best = null, _bestMs = Infinity, _checked = 0;
         _sameNameResults.forEach(function(r) {
             if (!r.ch.url) { _checked++; return; }
@@ -70506,7 +70591,13 @@ function _vsSearchText(query) {
                     _checked++;
                     if (_checked === _sameNameResults.length) {
                         var _winner = _best || _sameNameResults[0];
-                        if (_status) { _status.textContent = '✓ En iyi: ' + _winner.ch.name + (_bestMs < Infinity ? ' (' + _bestMs + 'ms)' : ''); _status.className = 'vs-status vs-found'; }
+                        var _healthy = !!_best;
+                        if (_status) {
+                            _status.textContent = _healthy
+                                ? '✓ Sağlıklı: ' + _winner.ch.name + ' (' + _bestMs + 'ms)'
+                                : '⚠ Sağlık kontrolü başarısız, yine de açılıyor: ' + _winner.ch.name;
+                            _status.className = _healthy ? 'vs-status vs-found' : 'vs-status';
+                        }
                         setTimeout(function() {
                             if (typeof showToast === 'function') showToast('▶ ' + _winner.ch.name, 'success');
                             closeVoiceSearch();
@@ -71611,28 +71702,52 @@ window.altChPlay = function (idx) {
     }
 };
 
-/* ── D-pad navigasyonu ── */
-document.addEventListener('keydown', function (e) {
+/* ── D-pad navigasyonu ──
+   NOT: Uygulamada document üzerinde onlarca capture-phase keydown handler
+   var (handleBackButton dahil) ve bunlar registration sırasına göre önce
+   çalışıp stopPropagation() ile olayı yutuyordu — bu overlay'in kendi
+   document-level handler'ı en son eklendiği için sırası hiç gelmiyordu,
+   yani ok tuşları ve geri tuşu bu panelde çalışmıyordu.
+   Çözüm: window üzerine (document'tan önce ateşlenir) capture:true ile
+   bağlanıyoruz, böylece overlay açıkken bu handler HER ZAMAN ilk çalışır
+   ve stopPropagation ile diğer tüm handler'ları (document dahil) devre
+   dışı bırakır. Geri tuşu tespiti de handleBackButton ile aynı standarda
+   (Escape/Backspace/GoBack/Back/BrowserBack/keyCode 4) çekildi — TV kumandası
+   keyCode'ları da artık tanınıyor. */
+window.addEventListener('keydown', function (e) {
     if (!window._altDpadActive) return;
     var ov = document.getElementById('altChOverlay');
     if (!ov || ov.style.display === 'none') return;
 
+    var isBack = e.key === 'Backspace' || e.key === 'Escape' ||
+                 e.key === 'GoBack'    || e.key === 'Back'    ||
+                 e.key === 'BrowserBack' ||
+                 e.keyCode === 4 || e.keyCode === 27 || e.keyCode === 8 || e.keyCode === 461;
+
     var items = document.querySelectorAll('#altChList .alt-item');
+
+    if (isBack) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        hideAltChannels();
+        return;
+    }
+
     if (!items.length) return;
 
     if (e.keyCode === 40 || e.keyCode === 228) { /* Aşağı */
         e.preventDefault();
+        e.stopPropagation();
         _altFocusIdx = Math.min(_altFocusIdx + 1, items.length - 1);
     } else if (e.keyCode === 38 || e.keyCode === 227) { /* Yukarı */
         e.preventDefault();
+        e.stopPropagation();
         _altFocusIdx = Math.max(_altFocusIdx - 1, 0);
     } else if (e.keyCode === 13 || e.keyCode === 23) { /* OK/Enter */
         e.preventDefault();
+        e.stopPropagation();
         if (_altFocusIdx >= 0) altChPlay(_altFocusIdx);
-        return;
-    } else if (e.keyCode === 27 || e.keyCode === 8) { /* Back/Esc */
-        e.preventDefault();
-        hideAltChannels();
         return;
     } else {
         return;
@@ -71735,59 +71850,97 @@ function _fetch(cb) {
         .catch(function (e) { cb && cb(e, null); });
 }
 
+/* ── Son bilinen Firebase URL kümesi ── (silme tespiti için referans) */
+function _getKnownUrls() {
+    try { return JSON.parse(localStorage.getItem('_m3uSyncLastFbUrls') || '[]'); } catch (e) { return []; }
+}
+function _setKnownUrls(urls) {
+    try { localStorage.setItem('_m3uSyncLastFbUrls', JSON.stringify(urls)); } catch (e) {}
+}
+
 /* ── Merge: Firebase listesi yerel ile birleştirilir ──
-   Kural: URL bazlı birleştirme, hiçbirini silme —
-   silme işlemi sadece deleteM3UList() üzerinden yapılır
-   ve Firebase'e özel silme komutu gönderilir. ── */
+   Kural: URL bazlı birleştirme. Firebase'de artık olmayıp daha önce
+   bilinen (son senkronizasyonda görülen) URL'ler başka bir cihazdan
+   silinmiş demektir — bunlar yerelden de kaldırılır. ── */
 function _merge(fbList) {
-    if (!Array.isArray(fbList) || fbList.length === 0) return;
+    if (!Array.isArray(fbList)) fbList = [];
 
     /* Şans kodu modunda senkronizasyon yapma */
     if (window.currentTelegramId === 'SANS_KODU') return;
 
     var local = _getLocal();
-    var localUrls = new Set(local.map(function (m) { return m.url; }));
+    var fbUrls = new Set(fbList.filter(function (m) { return m && m.url; }).map(function (m) { return m.url; }));
+    var knownUrls = _getKnownUrls();
 
-    var added = 0;
+    /* Daha önce Firebase'de olup şimdi olmayanlar = başka cihazdan silinmiş */
+    var removedUrls = knownUrls.filter(function (u) { return !fbUrls.has(u); });
+
+    var localUrls = new Set(local.map(function (m) { return m.url; }));
+    var newItems = [];
     fbList.forEach(function (fbItem) {
-        if (!fbItem || !fbItem.url) return;
-        if (!localUrls.has(fbItem.url)) {
-            /* Yeni liste — locale ekle */
-            local.push({
-                name: fbItem.name || fbItem.url,
-                url:  fbItem.url,
-                password: null,
-                encryptedPassword: null,
-                rememberPassword: false,
-                isLocal: false,
-                _ts: fbItem._ts || Date.now()
-            });
-            localUrls.add(fbItem.url);
-            added++;
-        }
+        if (fbItem && fbItem.url && !localUrls.has(fbItem.url)) newItems.push(fbItem);
     });
 
-    if (added === 0) return;
+    /* Bir sonraki karşılaştırma için bilinen URL kümesini güncelle */
+    _setKnownUrls(Array.from(fbUrls));
 
-    /* localStorage güncelle */
+    if (removedUrls.length === 0 && newItems.length === 0) return;
+
+    /* customM3ULists'i güncelle: sil + ekle */
+    if (removedUrls.length > 0) {
+        local = local.filter(function (m) { return removedUrls.indexOf(m.url) === -1; });
+    }
+    newItems.forEach(function (fbItem) {
+        local.push({
+            name: fbItem.name || fbItem.url,
+            url:  fbItem.url,
+            password: null,
+            encryptedPassword: null,
+            rememberPassword: false,
+            isLocal: false,
+            _ts: fbItem._ts || Date.now()
+        });
+    });
     try { localStorage.setItem('customM3ULists', JSON.stringify(local)); } catch (e) {}
 
-    /* state.m3uList'e ekle — çakışmayı önle */
+    if (removedUrls.length > 0) {
+        /* Silme işlemi state.m3uList içindeki indeksleri (dolayısıyla
+           kanalların listIdx eşleşmesini) bozar — bu yüzden yerel
+           deleteM3UList() ile aynı yöntemle TAM yenileme yapılır,
+           böylece kanal/liste eşleşmesi tutarlı kalır. */
+        if (typeof refreshM3ULists === 'function') {
+            refreshM3ULists();
+        } else if (window.state && Array.isArray(window.state.m3uList)) {
+            window.state.m3uList = window.state.m3uList.filter(function (m) { return removedUrls.indexOf(m.url) === -1; });
+            try { if (typeof renderM3USelector === 'function') renderM3USelector(); } catch (e) {}
+        }
+        showToast && showToast(removedUrls.length + ' liste uzaktan silindi');
+        return;
+    }
+
+    /* Sadece ekleme var — hafif güncelleme yeterli, indeksler bozulmaz */
     if (window.state && Array.isArray(window.state.m3uList)) {
         var stateUrls = new Set(window.state.m3uList.map(function (m) { return m.url; }));
-        local.forEach(function (m) {
-            if (!stateUrls.has(m.url)) {
-                window.state.m3uList.push(m);
-                stateUrls.add(m.url);
+        newItems.forEach(function (fbItem) {
+            if (!stateUrls.has(fbItem.url)) {
+                window.state.m3uList.push({
+                    name: fbItem.name || fbItem.url,
+                    url:  fbItem.url,
+                    password: null,
+                    encryptedPassword: null,
+                    rememberPassword: false,
+                    isLocal: false,
+                    _ts: fbItem._ts || Date.now()
+                });
+                stateUrls.add(fbItem.url);
             }
         });
     }
 
-    /* UI'ı güncelle */
     try { if (typeof renderM3USelector === 'function') renderM3USelector(); } catch (e) {}
     try { if (typeof loadFreshChannelsInBackground === 'function') loadFreshChannelsInBackground(true); } catch (e) {}
 
-    showToast && showToast(added + ' yeni liste senkronize edildi');
+    showToast && showToast(newItems.length + ' yeni liste senkronize edildi');
 }
 
 /* ── Tek liste Firebase'den sil ── */
@@ -71804,6 +71957,7 @@ function _fbDeleteItem(url) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updated.length ? updated : null)
         }).catch(function () {});
+        _setKnownUrls(updated.map(function (m) { return m.url; }));
     });
 }
 
@@ -71814,7 +71968,7 @@ function _startPolling() {
         /* Son 5 saniyede biz yazdıysak okuma — kendi yazımızı geri okuma */
         if (Date.now() - _lastPushTs < 5000) return;
         _fetch(function (err, data) {
-            if (!err && data) _merge(data);
+            if (!err) _merge(Array.isArray(data) ? data : []);
         });
     }, SYNC_POLL_MS);
 }
@@ -71834,7 +71988,7 @@ function _startSSE() {
             try {
                 var d = JSON.parse(e.data);
                 var data = d && d.data;
-                if (Array.isArray(data)) _merge(data);
+                _merge(Array.isArray(data) ? data : []);
             } catch (_) {}
         });
         _sseSrc.onerror = function () {
@@ -71853,8 +72007,8 @@ function _initialSync() {
     var id = _getTgId();
     if (!id || id === 'SANS_KODU') return;
     _fetch(function (err, fbList) {
-        if (!err && Array.isArray(fbList)) {
-            _merge(fbList);
+        if (!err) {
+            _merge(Array.isArray(fbList) ? fbList : []);
         }
         /* Yerel listeyi Firebase'e de yaz (yeni cihazda ilk açılış) */
         var local = _getLocal();
@@ -71937,7 +72091,7 @@ document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && _syncReady) {
         if (Date.now() - _lastPushTs < 5000) return;
         _fetch(function (err, data) {
-            if (!err && Array.isArray(data)) _merge(data);
+            if (!err) _merge(Array.isArray(data) ? data : []);
         });
     }
 });
@@ -71945,7 +72099,7 @@ document.addEventListener('visibilitychange', function () {
 /* Global API — gerekirse elle çağrılabilir */
 window.UmitM3USync = {
     push:  function () { _push(_getLocal(), null); },
-    fetch: function () { _fetch(function (e, d) { if (!e && d) _merge(d); }); },
+    fetch: function () { _fetch(function (e, d) { if (!e) _merge(Array.isArray(d) ? d : []); }); },
     reset: function () {
         var p = _path();
         if (!p) return;

@@ -18689,17 +18689,7 @@ const HLS_CONFIG = {
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
         // App24 WebView'da uzun timeout = takılı bağlantı temizlenmiyor → 12sn yeterli
-        // İSTİSNA: Vavoo Worker'ları (vavootobir vb.) sunucu tarafında ekstra
-        // resolve/proxy gecikmesi ekliyor — 12sn App24'te bazı segment/manifest
-        // isteklerine yetişemeyip "fragLoadError" üretiyordu (tarayıcıdaki 20sn'de
-        // bu sorun görünmüyordu). Bu worker'lar için App24'te de 20sn kullan.
-        var _isSlowProxyWorker = url && (
-            url.indexOf('vavootobir.umitm0d.workers.dev') !== -1 ||
-            url.indexOf('umittv.sadecenjoy.workers.dev')  !== -1 ||
-            url.indexOf('vavoop.sadecenjoy.workers.dev')  !== -1 ||
-            url.indexOf('umitm0d.sadecenjoy.workers.dev') !== -1
-        );
-        xhr.timeout = (_isApp24WebView && !_isSlowProxyWorker) ? 12000 : 20000;
+        xhr.timeout = _isApp24WebView ? 12000 : 20000;
         // okhttp UA → sunucu/CDN reddedebilir → Mozilla UA ile spoof et
         if (_isApp24WebView) {
             try { xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'); } catch(e) {}
@@ -40905,7 +40895,6 @@ function resumeChannel(startTime) {
         hideZappingScreen(); 
         state.player.streamStarted = true; 
         state.player._streamStartTime = Date.now(); // stall grace period için
-        window._vavooWorkerErrCount = 0; // başarılı açılış → teşhis sayacı sıfırla
         // Alternatif kanal overlay'ini kapat — stream açıldı
         clearTimeout(window._altChannelTimer);
         window._altChannelTimer = null;
@@ -41915,27 +41904,8 @@ function resumeChannel(startTime) {
                 startHls(effectiveUrl);
             } else if (isVavooWorker) {
                 // Vavoo Worker hata verdi → yeniden dene (UA spoof aktif)
-                // TEŞHİS: birkaç denemeden sonra hâlâ açılmıyorsa gerçek hls.js
-                // hata sebebini (network/CORS/manifest vb.) ekrana bas — genel
-                // "Yeniden bağlanıyor" mesajı asıl sebebi gizliyor, sahada teşhis
-                // koyabilmek için gerçek data.type/data.details lazım.
-                window._vavooWorkerErrCount = (window._vavooWorkerErrCount || 0) + 1;
-                try { console.error('[VavooWorker] fatal error', data.type, data.details, data.response, rawUrl); } catch(e) {}
-                if (window._vavooWorkerErrCount >= 2) {
-                    var _errDetail = (data.details || data.type || 'bilinmeyen') +
-                        (data.response && data.response.code ? (' HTTP:' + data.response.code) : '');
-                    showToast('⚠ Yayın hatası: ' + _errDetail, 'error');
-                } else {
-                    showToast('Yeniden bağlanıyor...');
-                }
-                // İSTİSNA: vavootobir App24'te → segment/CORS sorunu (fragLoadError)
-                // giderilsin diye STREAM_PROXY üzerinden yeniden dene; tarayıcıda
-                // sorun yaşanmadığı için orada raw URL ile devam edilir.
-                if (_isApp24WebView && rawUrl.includes('vavootobir.umitm0d.workers.dev')) {
-                    startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-                } else {
-                    startHls(rawUrl);
-                }
+                showToast('Yeniden bağlanıyor...');
+                startHls(rawUrl);
             } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
@@ -42076,15 +42046,7 @@ function resumeChannel(startTime) {
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
-            // İSTİSNA: vavootobir.umitm0d.workers.dev App24'te ne native video.src
-            // ne de raw hls.js ile açılıyor (bildirildi: fragLoadError — segment
-            // istekleri App24 WebView'da başarısız oluyor, muhtemelen CORS/network).
-            // Tarayıcı/quickedit'te raw URL sorunsuz çalıştığı için oralarda
-            // dokunulmuyor; sadece App24'te STREAM_PROXY üzerinden aç.
-            var _isVavootobirWorker = rawUrl.includes('vavootobir.umitm0d.workers.dev');
-            if (_isApp24WebView && _isVavootobirWorker) {
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
-            } else if (_isApp24WebView) {
+            if (_isApp24WebView) {
                 video.src = rawUrl;
                 video.load();
                 video.play().catch(() => {});

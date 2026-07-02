@@ -18689,7 +18689,17 @@ const HLS_CONFIG = {
     xhrSetup: function(xhr, url) {
         xhr.withCredentials = false;
         // App24 WebView'da uzun timeout = takılı bağlantı temizlenmiyor → 12sn yeterli
-        xhr.timeout = _isApp24WebView ? 12000 : 20000;
+        // İSTİSNA: Vavoo Worker'ları (vavootobir vb.) sunucu tarafında ekstra
+        // resolve/proxy gecikmesi ekliyor — 12sn App24'te bazı segment/manifest
+        // isteklerine yetişemeyip "fragLoadError" üretiyordu (tarayıcıdaki 20sn'de
+        // bu sorun görünmüyordu). Bu worker'lar için App24'te de 20sn kullan.
+        var _isSlowProxyWorker = url && (
+            url.indexOf('vavootobir.umitm0d.workers.dev') !== -1 ||
+            url.indexOf('umittv.sadecenjoy.workers.dev')  !== -1 ||
+            url.indexOf('vavoop.sadecenjoy.workers.dev')  !== -1 ||
+            url.indexOf('umitm0d.sadecenjoy.workers.dev') !== -1
+        );
+        xhr.timeout = (_isApp24WebView && !_isSlowProxyWorker) ? 12000 : 20000;
         // okhttp UA → sunucu/CDN reddedebilir → Mozilla UA ile spoof et
         if (_isApp24WebView) {
             try { xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'); } catch(e) {}

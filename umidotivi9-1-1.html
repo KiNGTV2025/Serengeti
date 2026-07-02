@@ -40895,6 +40895,7 @@ function resumeChannel(startTime) {
         hideZappingScreen(); 
         state.player.streamStarted = true; 
         state.player._streamStartTime = Date.now(); // stall grace period için
+        window._vavooWorkerErrCount = 0; // başarılı açılış → teşhis sayacı sıfırla
         // Alternatif kanal overlay'ini kapat — stream açıldı
         clearTimeout(window._altChannelTimer);
         window._altChannelTimer = null;
@@ -41904,7 +41905,19 @@ function resumeChannel(startTime) {
                 startHls(effectiveUrl);
             } else if (isVavooWorker) {
                 // Vavoo Worker hata verdi → yeniden dene (UA spoof aktif)
-                showToast('Yeniden bağlanıyor...');
+                // TEŞHİS: birkaç denemeden sonra hâlâ açılmıyorsa gerçek hls.js
+                // hata sebebini (network/CORS/manifest vb.) ekrana bas — genel
+                // "Yeniden bağlanıyor" mesajı asıl sebebi gizliyor, sahada teşhis
+                // koyabilmek için gerçek data.type/data.details lazım.
+                window._vavooWorkerErrCount = (window._vavooWorkerErrCount || 0) + 1;
+                try { console.error('[VavooWorker] fatal error', data.type, data.details, data.response, rawUrl); } catch(e) {}
+                if (window._vavooWorkerErrCount >= 2) {
+                    var _errDetail = (data.details || data.type || 'bilinmeyen') +
+                        (data.response && data.response.code ? (' HTTP:' + data.response.code) : '');
+                    showToast('⚠ Yayın hatası: ' + _errDetail, 'error');
+                } else {
+                    showToast('Yeniden bağlanıyor...');
+                }
                 startHls(rawUrl);
             } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');

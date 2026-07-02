@@ -41928,7 +41928,14 @@ function resumeChannel(startTime) {
                 } else {
                     showToast('Yeniden bağlanıyor...');
                 }
-                startHls(rawUrl);
+                // İSTİSNA: vavootobir App24'te → segment/CORS sorunu (fragLoadError)
+                // giderilsin diye STREAM_PROXY üzerinden yeniden dene; tarayıcıda
+                // sorun yaşanmadığı için orada raw URL ile devam edilir.
+                if (_isApp24WebView && rawUrl.includes('vavootobir.umitm0d.workers.dev')) {
+                    startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+                } else {
+                    startHls(rawUrl);
+                }
             } else if (isKoolTo && streamUrl === effectiveUrl) {
                 showToast('Yedek bağlantı deneniyor...');
                 const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
@@ -42069,11 +42076,15 @@ function resumeChannel(startTime) {
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
-            // İSTİSNA: vavootobir.umitm0d.workers.dev App24'te native video.src ile
-            // AÇILMIYOR (bildirildi) — tarayıcı/quickedit'te zaten hls.js ile
-            // sorunsuz çalıştığı için bu worker'ı App24'te de hls.js'e yönlendir.
+            // İSTİSNA: vavootobir.umitm0d.workers.dev App24'te ne native video.src
+            // ne de raw hls.js ile açılıyor (bildirildi: fragLoadError — segment
+            // istekleri App24 WebView'da başarısız oluyor, muhtemelen CORS/network).
+            // Tarayıcı/quickedit'te raw URL sorunsuz çalıştığı için oralarda
+            // dokunulmuyor; sadece App24'te STREAM_PROXY üzerinden aç.
             var _isVavootobirWorker = rawUrl.includes('vavootobir.umitm0d.workers.dev');
-            if (_isApp24WebView && !_isVavootobirWorker) {
+            if (_isApp24WebView && _isVavootobirWorker) {
+                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
+            } else if (_isApp24WebView) {
                 video.src = rawUrl;
                 video.load();
                 video.play().catch(() => {});

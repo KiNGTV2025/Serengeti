@@ -13206,8 +13206,16 @@ function _buildDeviceFingerprint() {
     // farklı cihaz olarak algılatıyordu.
     const parts = [];
 
-    // 1) UserAgent — cihaz modeli + Android sürümü, donanıma bağlı, değişmez
-    parts.push(navigator.userAgent.slice(0, 150));
+    // 1) UserAgent — SADECE cihaz modeli + Android sürümünü içeren "(...)"
+    //    bloğu kullanılıyor. Tam UA'daki motor/kütüphane sürüm numaraları
+    //    (Chrome/124.0.xxxx, AppleWebKit/537.36, okhttp/4.x gibi) WebView'ın
+    //    arka planda otomatik güncellenmesiyle DEĞİŞEBİLİYOR — bu da aynı
+    //    fiziksel cihazı "yeni cihaz" gibi gösterip yanlış banlanmasına
+    //    (limit aşımı) yol açan asıl nedenlerden biriydi.
+    try {
+        const uaMatch = navigator.userAgent.match(/\(([^)]+)\)/);
+        parts.push((uaMatch ? uaMatch[1] : navigator.userAgent).slice(0, 120));
+    } catch(e) { parts.push(navigator.userAgent.slice(0, 120)); }
 
     // 2) Ekran çözünürlüğü — fiziksel ekrana bağlı, hiç değişmez
     //    devicePixelRatio ve colorDepth ÇIKARILDI (WebView reset sonrası değişebilir)
@@ -13219,19 +13227,29 @@ function _buildDeviceFingerprint() {
     // 4) Dokunmatik nokta sayısı — donanıma bağlı (TV=0, telefon=5-10)
     parts.push(String(navigator.maxTouchPoints || 0));
 
-    // 5) GPU renderer — en stabil fingerprint kaynağı, donanıma doğrudan bağlı
+    // 5) GPU renderer — en stabil fingerprint kaynağı, donanıma doğrudan bağlı.
+    //    Sürücü/sürüm bilgisi (V@xxx, "OpenGL ES x.x ..." sonrası) atılıyor —
+    //    bu kısım GPU sürücü güncellemesiyle değişip yanlış "yeni cihaz"
+    //    algısına yol açabiliyordu. Sadece GPU çip adı/vendor'ı kalıyor.
     try {
         const gl  = document.createElement('canvas').getContext('webgl');
         if (gl) {
             const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+            let _rend = '', _vend = '';
             if (dbg) {
-                parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).slice(0, 80));
-                parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL).slice(0, 40));
+                _rend = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '';
+                _vend = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) || '';
             } else {
                 // Fallback: standart GL parametreler
-                parts.push(gl.getParameter(gl.RENDERER) || '');
-                parts.push(gl.getParameter(gl.VENDOR)   || '');
+                _rend = gl.getParameter(gl.RENDERER) || '';
+                _vend = gl.getParameter(gl.VENDOR)   || '';
             }
+            _rend = String(_rend)
+                .replace(/\s*V@[\w.@()]*$/i, '')          // Adreno driver sürüm eki (V@xxx)
+                .replace(/,?\s*OpenGL\s*ES[\s\S]*$/i, '') // "OpenGL ES x.x ..." sonrası tamamı
+                .trim();
+            parts.push(_rend.slice(0, 80));
+            parts.push(String(_vend).slice(0, 40));
         }
     } catch(e) { parts.push('gl_err'); }
 

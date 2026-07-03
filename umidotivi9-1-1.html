@@ -4117,43 +4117,43 @@ body {
          
 .continue-card { 
     background: linear-gradient(
-        145deg,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.05) 0%,
-        rgba(12,12,20,0.95) 55%,
-        rgba(8,8,16,0.98) 100%
+        150deg,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.09) 0%,
+        rgba(22,22,32,0.96) 42%,
+        rgba(9,9,15,0.99) 100%
     );
-    border-radius: 16px; 
+    border-radius: 20px; 
     padding: 0;
     margin-bottom: 0;  
-    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.14); 
+    border: 1px solid rgba(255,255,255,0.07); 
     position: relative; 
     cursor: pointer; 
-    transition: none; 
+    transition: border-color 0.25s ease, box-shadow 0.25s ease; 
     display: flex; 
     flex-direction: column; 
     justify-content: flex-end;
-    min-width: 220px;  
-    max-width: 260px;  
-    height: 145px;  
-    max-height: 155px;
+    min-width: 224px;  
+    max-width: 268px;  
+    height: 158px;  
+    max-height: 168px;
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .continue-card::after {
     content: '';
     position: absolute;
     top: 0; left: 0;
-    width: 3px;
+    width: 100%;
     height: 100%;
-    background: linear-gradient(
-        to bottom,
-        var(--accent-primary, #FFD700) 0%,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.0) 100%
+    background: radial-gradient(
+        circle at 15% 0%,
+        rgba(var(--accent-primary-rgb,255,215,0), 0.16) 0%,
+        transparent 55%
     );
-    border-radius: 16px 0 0 16px;
-    opacity: 0.65;
+    opacity: 0.9;
     z-index: 1;
+    pointer-events: none;
 }
 .continue-card::before {
     content: '';
@@ -4163,15 +4163,15 @@ body {
     background: linear-gradient(
         90deg,
         transparent,
-        rgba(var(--accent-primary-rgb,255,215,0), 0.35),
+        rgba(var(--accent-primary-rgb,255,215,0), 0.5),
         transparent
     );
     z-index: 1;
 }
 .continue-card:hover {
     transform: none;
-    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.38);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0), 0.15);
+    border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0), 0.18);
 }
         
         .continue-card-title { 
@@ -4491,13 +4491,14 @@ body {
 #continueWatchingContainer {
     position: relative;
     z-index: 20;
-    margin-bottom: 14px;
-    background: rgba(10,10,18,0.7);
-    border-radius: 16px;
-    padding: 14px 16px 10px;
-    border: 1px solid rgba(255,215,0,0.1);
-    max-height: 240px;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, rgba(24,24,34,0.75) 0%, rgba(10,10,16,0.75) 100%);
+    border-radius: 20px;
+    padding: 16px 18px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    max-height: 250px;
     overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
     /* PERF-FIX: backdrop-filter kaldirildi */
 }
 
@@ -35481,7 +35482,7 @@ function selectM3U(idx) {
         renderChannels();
         updateChannelCount(state.filtered.length);
         document.getElementById('activeCategoryTitle').innerText = 'Tüm Kanallar';
-        setTimeout(() => { renderContinueWatching(); renderRecentChannels(); }, 200);
+        setTimeout(() => { renderContinueWatching(); renderRecentChannels(); }, 30);
     }
     
     playKeySound('click');
@@ -36863,17 +36864,17 @@ setTimeout(_vhsInit, 1200);
 
     // TVBox'ta max 3 kart göster, küçük boyutlar kullan
     const _displayList = _isTVBox ? continueList.slice(0, 3) : continueList.slice(0, 5);
-    const _cardW = _isTVBox ? '200px' : '250px';
-    const _cardH = _isTVBox ? '120px' : '150px';
+    const _cardW = _isTVBox ? '208px' : '264px';
+    const _cardH = _isTVBox ? '126px' : '160px';
     const _cardPad = '0';
-    const _logoSz = _isTVBox ? '28px' : '36px';
+    const _logoSz = _isTVBox ? '30px' : '40px';
     const _titleSz = _isTVBox ? '11px' : '13px';
     const _detailSz = _isTVBox ? '10px' : '11px';
-    const _btnPad = _isTVBox ? '5px 8px' : '6px 10px';
+    const _btnPad = _isTVBox ? '5px 8px' : '7px 10px';
     const _btnFontSz = _isTVBox ? '9px' : '10px';
     const _headerMb = _isTVBox ? '6px' : '10px';
-    const _minH = _isTVBox ? '120px' : '150px';
-    const _gap = _isTVBox ? '10px' : '12px';
+    const _minH = _isTVBox ? '126px' : '160px';
+    const _gap = _isTVBox ? '10px' : '14px';
     
     container.innerHTML = `
         <div class="cw-header-row">
@@ -37407,89 +37408,88 @@ function addContinueCardStyles() {
             position: absolute;
             inset: 0;
             background: linear-gradient(
-                160deg,
-                rgba(var(--accent-primary-rgb,255,215,0), 0.06) 0%,
-                transparent 45%,
-                rgba(0,0,0,0.55) 100%
+                165deg,
+                rgba(var(--accent-primary-rgb,255,215,0), 0.05) 0%,
+                transparent 40%,
+                rgba(0,0,0,0.6) 100%
             );
             pointer-events: none;
             z-index: 0;
         }
 
-        /* Sol üst köşe dekor şerit */
-        .continue-card::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 3px;
-            height: 100%;
-            background: linear-gradient(
-                to bottom,
-                var(--accent-primary, #FFD700),
-                rgba(var(--accent-primary-rgb,255,215,0), 0.0)
-            );
-            border-radius: 16px 0 0 16px;
-            opacity: 0.7;
-            z-index: 1;
-        }
+        /* Kenar aksanı artık ::before üzerinde (üst çizgi) — ::after glow için ayrıldı */
         .continue-card.remote-focused::after {
             opacity: 1;
         }
 
-        /* Logo wrap */
+        /* Logo wrap — modern yuvarlak, hafif kabartma */
         .cw-card-logo-wrap {
             position: absolute;
-            top: 10px;
+            top: 12px;
             left: 12px;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             overflow: hidden;
-            background: rgba(var(--accent-primary-rgb,255,215,0), 0.08);
-            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
+            background: linear-gradient(145deg, rgba(var(--accent-primary-rgb,255,215,0), 0.16), rgba(var(--accent-primary-rgb,255,215,0), 0.04));
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             z-index: 2;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35);
         }
         .cw-card-logo-wrap img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 7px;
+            border-radius: 11px;
         }
 
-        /* VOD / CANLI badge */
+        /* VOD / CANLI badge — pill, blur cam efekti */
         .cw-card-badge {
             position: absolute;
-            top: 11px;
-            left: 54px;
+            top: 14px;
+            left: 60px;
             font-size: 8px;
             font-weight: 800;
-            letter-spacing: 1.2px;
+            letter-spacing: 1.1px;
             text-transform: uppercase;
-            padding: 2px 7px;
-            border-radius: 4px;
-            background: var(--accent-primary, #FFD700);
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.95);
             color: #000;
             z-index: 2;
+            box-shadow: 0 2px 8px rgba(var(--accent-primary-rgb,255,215,0), 0.35);
         }
         .cw-card-badge.live-badge {
-            background: rgba(220,50,50,0.9);
+            background: rgba(230,55,55,0.95);
             color: #fff;
             letter-spacing: 0.8px;
+            box-shadow: 0 2px 8px rgba(230,55,55,0.4);
+        }
+        .cw-card-badge.live-badge::before {
+            content: '';
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #fff;
+            margin-right: 4px;
+            vertical-align: middle;
+            box-shadow: 0 0 4px rgba(255,255,255,0.9);
         }
 
-        /* Kapat (×) butonu */
+        /* Kapat (×) butonu — modern cam düğme */
         .continue-options-btn {
             position: absolute;
-            top: 9px;
-            right: 9px;
-            color: rgba(255,255,255,0.55);
+            top: 10px;
+            right: 10px;
+            color: rgba(255,255,255,0.6);
             font-size: 13px;
             cursor: pointer;
-            background: rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.06);
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -37497,47 +37497,48 @@ function addContinueCardStyles() {
             align-items: center;
             justify-content: center;
             z-index: 5;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.12);
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         .continue-options-btn:hover,
         .continue-options-btn.remote-focused,
         .continue-options-btn:focus {
-            background: rgba(220,40,40,0.8);
-            border-color: rgba(255,80,80,0.8);
+            background: rgba(220,40,40,0.85);
+            border-color: rgba(255,80,80,0.85);
             color: #fff;
             transform: none !important;
-            box-shadow: 0 0 0 2px rgba(220,40,40,0.3);
+            box-shadow: 0 0 0 3px rgba(220,40,40,0.25);
             outline: none;
         }
 
         /* Alt içerik gövdesi */
         .cw-card-body {
             position: relative;
-            padding: 8px 11px 10px 11px;
+            padding: 9px 12px 12px 12px;
             z-index: 2;
         }
 
         /* Başlık */
         .cw-card-title {
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 700;
-            color: rgba(255,255,255,0.92);
+            color: rgba(255,255,255,0.95);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 4px;
-            letter-spacing: 0.15px;
+            margin-bottom: 5px;
+            letter-spacing: 0.1px;
         }
 
         /* Süre satırı */
         .cw-card-time {
             font-size: 10px;
-            color: rgba(255,255,255,0.42);
-            margin-bottom: 6px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 7px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-variant-numeric: tabular-nums;
         }
 
         /* Yüzde */
@@ -37547,25 +37548,26 @@ function addContinueCardStyles() {
             color: var(--accent-primary, #FFD700);
         }
 
-        /* Progress bar */
+        /* Progress bar — daha kalın, cam efektli iz, parlayan uç */
         .continue-progress-bar {
-            height: 3px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
             overflow: visible;
-            margin-bottom: 8px;
+            margin-bottom: 9px;
             position: relative;
         }
         .continue-progress {
             height: 100%;
             background: linear-gradient(
                 90deg,
-                rgba(var(--accent-primary-rgb,255,215,0), 0.7),
+                rgba(var(--accent-primary-rgb,255,215,0), 0.75),
                 var(--accent-primary, #FFD700)
             );
-            border-radius: 3px;
+            border-radius: 4px;
             position: relative;
             min-width: 6px;
+            box-shadow: 0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 0.5);
         }
         /* İlerleme noktası */
         .continue-progress::after {
@@ -37574,24 +37576,24 @@ function addContinueCardStyles() {
             right: -3px;
             top: 50%;
             transform: translateY(-50%);
-            width: 7px;
-            height: 7px;
-            background: var(--accent-primary, #FFD700);
+            width: 8px;
+            height: 8px;
+            background: #fff;
             border-radius: 50%;
-            box-shadow: 0 0 5px rgba(var(--accent-primary-rgb,255,215,0), 0.85);
+            box-shadow: 0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 0.9), 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0), 0.4);
         }
 
         /* Aksiyon buton satırı */
         .cw-card-actions {
             display: flex;
-            gap: 6px;
+            gap: 7px;
         }
 
-        /* Ortak buton stili */
+        /* Ortak buton stili — pill şekilli, modern */
         .continue-action-btn {
             flex: 1;
-            padding: 6px 8px;
-            border-radius: 8px;
+            padding: 7px 8px;
+            border-radius: 20px;
             border: none;
             font-size: 10px;
             font-weight: 700;
@@ -37599,36 +37601,37 @@ function addContinueCardStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 4px;
             white-space: nowrap;
             letter-spacing: 0.15px;
-            transition: none;
+            transition: filter 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         .continue-action-btn .material-symbols-outlined {
             font-size: 13px;
         }
 
-        /* Devam Et — tema accent rengi */
+        /* Devam Et — gradient dolgulu birincil buton */
         .continue-action-btn.play-btn {
-            background: var(--accent-primary, #FFD700);
+            background: linear-gradient(135deg, var(--accent-primary, #FFD700), rgba(var(--accent-primary-rgb,255,215,0), 0.75));
             color: #000;
             font-weight: 800;
+            box-shadow: 0 3px 10px rgba(var(--accent-primary-rgb,255,215,0), 0.3);
         }
         .continue-action-btn.play-btn:hover {
-            filter: brightness(1.12);
+            filter: brightness(1.1);
             transform: none !important;
         }
 
-        /* Baştan İzle — şeffaf, accent border */
+        /* Baştan İzle — cam (glass) ikincil buton */
         .continue-action-btn.restart-btn {
-            background: rgba(var(--accent-primary-rgb,255,215,0), 0.07);
-            color: rgba(255,255,255,0.7);
-            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.72);
+            border: 1px solid rgba(255,255,255,0.12);
         }
         .continue-action-btn.restart-btn:hover {
-            background: rgba(var(--accent-primary-rgb,255,215,0), 0.14);
+            background: rgba(var(--accent-primary-rgb,255,215,0), 0.12);
             color: var(--accent-primary, #FFD700);
-            border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.45);
+            border-color: rgba(var(--accent-primary-rgb,255,215,0), 0.4);
             transform: none !important;
         }
 
@@ -37666,32 +37669,33 @@ function addContinueCardStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: rgba(var(--accent-primary-rgb,255,215,0), 0.12);
-            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.2);
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(var(--accent-primary-rgb,255,215,0), 0.22), rgba(var(--accent-primary-rgb,255,215,0), 0.06));
+            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.25);
+            box-shadow: 0 3px 10px rgba(var(--accent-primary-rgb,255,215,0), 0.15);
         }
         .cw-header-icon .material-symbols-outlined {
-            font-size: 15px;
+            font-size: 16px;
             color: var(--accent-primary, #FFD700);
         }
         .cw-header-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.7);
-            letter-spacing: 0.8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 0.6px;
             text-transform: uppercase;
         }
-        /* Tümünü Temizle butonu — tam tema uyumlu */
+        /* Tümünü Temizle butonu — tam tema uyumlu, cam pill */
         #btnClearAllContinue.cw-clear-btn {
             display: flex;
             align-items: center;
             gap: 5px;
             padding: 6px 13px 6px 10px;
-            background: rgba(var(--accent-primary-rgb,255,215,0), 0.06);
-            border: 1px solid rgba(var(--accent-primary-rgb,255,215,0), 0.18);
-            color: rgba(var(--accent-primary-rgb,255,215,0), 0.7);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.55);
             border-radius: 20px;
             font-size: 11px;
             font-weight: 700;
@@ -39543,14 +39547,26 @@ function addContinueCardStyles() {
             // düşürüyordu (kart "Devam Et" sekmesinden kayboluyordu). Şimdi
             // dizi kayıtları için seriesCache/gruplu liste üzerinden de
             // doğrulama yapılıyor.
+            const _cwFkTop = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
+                           : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
+                           : (s => (s || '').toLowerCase().trim());
             const continueNames = Object.values(state.continueWatching)
                 .filter(c => {
                     if (c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return false;
                     if (c.isSeries) {
                         if (state.series && state.series.seriesCache && state.series.seriesCache[c.name]) return true;
-                        // groupChannelsBySeries cache'den dene, yoksa _gcsCacheResult fallback
+                        // FIX: seriesCache/gruplu liste karşılaştırması strict (===) idi —
+                        // kayıttaki isim ile gruplanmış dizi adı arasında Türkçe İ/I,
+                        // boşluk vb. normalizasyon farkı olduğunda HİÇ eşleşmiyor ve kayıt
+                        // "Devam Et" sekmesine hiç girmiyordu (sayaç "0 Kanal" kalıyordu).
+                        // Önce seriesCache anahtarlarını, sonra gruplu listeyi fuzzy anahtarla dene.
+                        const _targetKeyTop = _cwFkTop(c.name);
+                        if (state.series && state.series.seriesCache) {
+                            const _scMatch = Object.keys(state.series.seriesCache).some(k => _cwFkTop(k) === _targetKeyTop);
+                            if (_scMatch) return true;
+                        }
                         const grp = (typeof groupChannelsBySeries === 'function') ? groupChannelsBySeries(state.channels) : [];
-                        return grp.some(g => g.isSeries && g.name === c.name);
+                        return grp.some(g => g.isSeries && _cwFkTop(g.name) === _targetKeyTop);
                     }
                     // FIX: strict isim eşleşmesi Türkçe İ/I, boşluk farklarında
                     // başarısız oluyordu — kayıt "cont" kategorisine hiç girmiyordu.
@@ -39842,7 +39858,20 @@ function renderChannels() {
             // Normal kanallar
             const isVod = c.isLive === false;
             const isFav = state.favs.has(c.name);
-            const continueData = state.continueWatching[c.name];
+            // FIX: strict state.continueWatching[c.name] eşleşmesi dizi kartlarında
+            // (Türkçe İ/I, boşluk, normalizasyon farkı) başarısız olup kartın state.filtered
+            // içinde SAYILIP ama burada render edilmeden atlanmasına (hasContinue=false
+            // → return) yol açıyordu — "Devam Et" kategorisi sayaçta doğru sayıyı gösterip
+            // grid'de boş kalıyordu. Önce strict dene, olmazsa fuzzy anahtarla eşleştir.
+            let continueData = state.continueWatching[c.name];
+            if (!continueData) {
+                const _fkFn2 = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
+                              : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
+                              : (s => (s || '').toLowerCase().trim());
+                const _targetKey2 = _fkFn2(c.name);
+                const _matchKey2 = Object.keys(state.continueWatching).find(k => _fkFn2(k) === _targetKey2);
+                if (_matchKey2) continueData = state.continueWatching[_matchKey2];
+            }
             const hasContinue = continueData && 
                 continueData.progress > MIN_WATCH_PERCENT && 
                 continueData.progress < MAX_WATCH_PERCENT;
@@ -43621,8 +43650,7 @@ function closePlayer() {
     _streamingActive = false;
     setTimeout(function() {
         try { if (typeof renderCats === 'function') renderCats(); } catch(e) {}
-        setTimeout(function() {
-            try {
+        setTimeout(function() {            try {
                 // state.filtered boşsa yeniden doldur
                 if (!window.state.filtered || window.state.filtered.length === 0) {
                     if (window.state.channels && window.state.channels.length > 0) {
@@ -43658,8 +43686,8 @@ function closePlayer() {
                     }
                 } catch(e) {}
             }, 400);
-        }, 50);
-    }, 30);
+        }, 0);
+    }, 0);
     // 5) Lazy load kaldığı yerden devam et
     if (typeof window._lazyLoadResumeCallback === 'function') {
         setTimeout(window._lazyLoadResumeCallback, 200);
@@ -44375,18 +44403,24 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('forward', newTime, step);
-            // Dizi/Film: odağı progress bar'a al ve göster — böylece art arda
-            // basılan sağ/sol tuşlar hep progress bar'ın sarma mantığından geçer
-            // (kusursuz/kesintisiz sarma). Canlı yayında eski davranış korunur.
+            // FIX: Kontroller kapalıyken sağ/sol tuş sadece sarma (seek) yapmalı,
+            // odağı progress bar'a taşımamalı — aksi halde her tuşta kontroller
+            // otomatik açılıp odak progress bar'a kilitleniyor ve kullanıcı diğer
+            // player butonlarına (play/duraklat, liste, vs.) erişemiyordu.
+            // Sadece kontroller ZATEN açıksa (kullanıcı bilerek açtıysa) odağı
+            // progress bar'da tutmaya devam et — "kesintisiz sarma" davranışı orada geçerli.
             const _pcSF = document.getElementById('playerContainer');
             const _isLiveSF = !!(state.player && state.player.isLiveStream);
+            const _wasControlsOpenSF = !!(_pcSF && _pcSF.classList.contains('show-controls'));
             if (_isLiveSF) {
                 if (_pcSF && _pcSF.classList.contains('show-controls')) showControls(7000);
-            } else {
+            } else if (_wasControlsOpenSF) {
                 if (state.remote) state.remote.zone = 'progressBar';
                 showControls(7000);
                 if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
             }
+            // Kontroller kapalıyken: hiçbir şey yapma — sadece seek overlay'i gösterildi,
+            // odak ve zone dokunulmadan kalır, diğer tuşlar (OK, geri vb.) normal çalışmaya devam eder.
             // WP: host seek bildir
             if(window._WP && _WP.inRoom && _WP.isHost && _WP.roomCode && typeof window.fbSet === 'function') {
               window.fbSet('/rooms/' + _WP.roomCode + '/playerState', { action: 'seek', currentTime: newTime, ts: Date.now(), by: _WP.myNick }).catch(()=>{});
@@ -44413,14 +44447,14 @@ let virtualScrollSystem = null;
             }
             _dvrSeekFull(v, _hls, newTime);
             showModernSeekingOverlay('backward', newTime, step);
-            // Dizi/Film: odağı progress bar'a al ve göster — böylece art arda
-            // basılan sağ/sol tuşlar hep progress bar'ın sarma mantığından geçer
-            // (kusursuz/kesintisiz sarma). Canlı yayında eski davranış korunur.
+            // FIX: Kontroller kapalıyken sağ/sol tuş sadece sarma (seek) yapmalı,
+            // odağı progress bar'a taşımamalı — bkz. seekForward() içindeki açıklama.
             const _pcSB = document.getElementById('playerContainer');
             const _isLiveSB = !!(state.player && state.player.isLiveStream);
+            const _wasControlsOpenSB = !!(_pcSB && _pcSB.classList.contains('show-controls'));
             if (_isLiveSB) {
                 if (_pcSB && _pcSB.classList.contains('show-controls')) showControls(7000);
-            } else {
+            } else if (_wasControlsOpenSB) {
                 if (state.remote) state.remote.zone = 'progressBar';
                 showControls(7000);
                 if (typeof updateRemoteFocus === 'function') updateRemoteFocus();

@@ -39768,21 +39768,30 @@ function addContinueCardStyles() {
             const _cwFkTop = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
                            : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
                            : (s => (s || '').toLowerCase().trim());
-            // FIX (KOK NEDEN): Eskiden filtre asamasinda sadece isim listesi cikarilip,
-            // kart render asamasinda (asagida) state.continueWatching icinde IKINCI KEZ
-            // bagimsiz bir fuzzy-key ile arama yapiliyordu. Iki ayri fuzzy-match cagrisi
-            // bazi Turkce karakter/bosluk kombinasyonlarinda FARKLI SONUC verebiliyordu:
-            // filtre asamasi eslesmeyi bulup karti listeye sokuyor, render asamasi
-            // eslestiremeyip continueData=undefined ile karti sessizce atliyordu
-            // (hasContinue=false -> return) - kart grid'de hic gorunmuyordu.
-            // COZUM: eslesen gercek continueWatching ANAHTARINI bir Map'te tut ve
-            // kart objesine (__cwKey) yapistir; render asamasi ARTIK YENIDEN ARAMA
+            // FIX (KOK NEDEN 1 - UI DONMASI): Eskiden asagidaki dongu, state.continueWatching
+            // icindeki HER dizi kaydi icin eslesme bulunamazsa groupChannelsBySeries(state.channels)
+            // COK AGIR fonksiyonunu YENIDEN cagiriyordu. Bu fonksiyon TUM kanal listesini
+            // (binlerce kanal) regex pattern'lariyla bastan sona tarar. filterChannels()
+            // en basta cache'i BILEREK invalidate ettigi icin (kategori degisince), N adet
+            // devam-et kaydi varsa bu agir fonksiyon N+1 KEZ sifirdan calisiyor ve ana
+            // thread'i bloke edip UI'yi donduruyordu. COZUM: gruplama SADECE BIR KEZ,
+            // donguden ONCE hesaplanir; dongu icinde sadece bu hazir sonuc kullanilir.
+            const _groupedForCont = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(list) : list;
+
+            // FIX (KOK NEDEN 2 - KART KAYBOLMASI): Eskiden filtre asamasinda sadece isim
+            // listesi cikarilip, kart render asamasinda state.continueWatching icinde
+            // IKINCI KEZ bagimsiz bir fuzzy-key ile arama yapiliyordu. Iki ayri fuzzy-match
+            // cagrisi bazi Turkce karakter/bosluk kombinasyonlarinda FARKLI SONUC
+            // verebiliyordu. COZUM: eslesen gercek continueWatching ANAHTARINI bir Map'te
+            // tut ve kart objesine (__cwKey) yapistir; render asamasi ARTIK YENIDEN ARAMA
             // YAPMAZ, dogrudan bu anahtarla state.continueWatching[key] okur.
             const _cwKeyByChannelName = new Map();
+            let _cwValidCount = 0;
 
             Object.keys(state.continueWatching).forEach(cwKey => {
                 const c = state.continueWatching[cwKey];
                 if (!c || c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return;
+                _cwValidCount++;
 
                 if (c.isSeries) {
                     const _targetKeyTop = _cwFkTop(cwKey);
@@ -39795,8 +39804,9 @@ function addContinueCardStyles() {
                         if (_scMatchKey) _matchedName = _scMatchKey;
                     }
                     if (!_matchedName) {
-                        const grp = (typeof groupChannelsBySeries === 'function') ? groupChannelsBySeries(state.channels) : [];
-                        const _grpMatch = grp.find(g => g.isSeries && _cwFkTop(g.name) === _targetKeyTop);
+                        // ONEMLI: state.channels'i tekrar gruplamiyoruz — donguden once
+                        // hesaplanan _groupedForCont (ayni veri seti) kullaniliyor.
+                        const _grpMatch = _groupedForCont.find(g => g.isSeries && _cwFkTop(g.name) === _targetKeyTop);
                         if (_grpMatch) _matchedName = _grpMatch.name;
                     }
                     if (_matchedName) _cwKeyByChannelName.set(_matchedName, cwKey);
@@ -39814,8 +39824,6 @@ function addContinueCardStyles() {
                 }
             });
 
-            // Gruplanmis (dizi) kartlari da "list" icine dahil et
-            const _groupedForCont = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(list) : list;
             const _fkFn = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
                         : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
                         : (s => (s || '').toLowerCase().trim());
@@ -39832,7 +39840,11 @@ function addContinueCardStyles() {
             });
             
             // "Temizle" kartını ekle
-            if (continueNames.length > 0) {
+            // FIX: "continueNames" artik tanimli olmayan bir degiskendi (onceki
+            // refaktörde kaldirilmisti) - bu satir ReferenceError atip filterChannels'i
+            // sessizce yarida kesiyordu (try/catch disinda kalan durumlarda). Dogru
+            // sayac olan _cwValidCount kullaniliyor.
+            if (_cwValidCount > 0) {
                 state.filtered = [{ 
                     name: 'Tümünü Temizle', 
                     isSpecial: true,

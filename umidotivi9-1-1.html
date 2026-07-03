@@ -2779,6 +2779,12 @@ body {
     min-height: 44px;
     flex-shrink: 0;
 }
+#btnDeviceSync.ds-active {
+    color: #2ecc71;
+}
+#btnDeviceSync.ds-active .material-symbols-outlined {
+    color: #2ecc71;
+}
 
  
 @media (max-width: 768px) {
@@ -13748,6 +13754,7 @@ window.handleStep1 = async function() {
     }
     currentTelegramId = raw;
     window.currentTelegramId = currentTelegramId;
+    setTimeout(function() { if (typeof dsInit === 'function') dsInit(); }, 500);
     setStatus('status1','info','Kontrol ediliyor...', true);
 
     try {
@@ -14488,6 +14495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (saved && saved.telegram_id) {
                 currentTelegramId = String(saved.telegram_id);
                 window.currentTelegramId = currentTelegramId;
+                setTimeout(function() { if (typeof dsInit === 'function') dsInit(); }, 1500);
                 const overlay = document.getElementById('loginOverlay');
                 
 
@@ -14764,6 +14772,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
                 <span class="material-symbols-outlined">groups</span>
                 <span id="wpActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#ff4757;border-radius:50%;border:1px solid #000;"></span>
+            </button>
+            <button class="header-btn" id="btnDeviceSync" onclick="dsToggle()" title="Cihaz Senkronu - Diğer cihazlarında aç/kapa" style="position:relative;display:none;" tabindex="0">
+                <span class="material-symbols-outlined">devices</span>
+                <span id="dsActiveDot" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;background:#2ecc71;border-radius:50%;border:1px solid #000;"></span>
             </button>
             <button class="header-btn" id="btnNotifTest" onclick="umitNotifToggleDemo()" title="Bildirimler" style="position:relative;" tabindex="0">
                 <span class="material-symbols-outlined">notifications</span>
@@ -19690,7 +19702,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnDeviceSync', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -37392,6 +37404,7 @@ setTimeout(_vhsInit, 1200);
     const continueList = Object.values(state.continueWatching).filter(c => {
         return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT;
     }).sort((a, b) => b.timestamp - a.timestamp);
+    console.debug('[CW-DEBUG] render', { activeCat: state.activeCat, totalRecords: Object.keys(state.continueWatching).length, matchingList: continueList.length, all: Object.values(state.continueWatching).map(c => ({ name: c.name, progress: c.progress })) });
 
 
     // Devam Et kategorisindeysem farklı render et
@@ -41168,6 +41181,10 @@ function playChannelByUrl(url, channelName = '', startTime = 0, isSeriesFlag = f
     const tempIndex = state.filtered.length - 1;
     playChannel(tempIndex, startTime);
 
+    // ── Cihaz senkronu: dizi/direkt URL oynatımını diğer cihazlara bildir ──
+    if (typeof window._dsSyncChannelPlay === 'function') {
+        setTimeout(function() { try { window._dsSyncChannelPlay(tempChannel); } catch(e) {} }, 300);
+    }
     // ── Watch Party: bölüm/dizi değişimini odaya bildir (host ise) ──
     // WP'nin playChannel wrap'ı geçici kanalı yakalayabilir ama güvence için
     // burada da direkt nowPlaying'e yaz — gecikme olmadan, 1sn timeout ile.
@@ -44749,9 +44766,13 @@ let virtualScrollSystem = null;
         window.stopContinuousWatchingUpdate = stopContinuousWatchingUpdate;
         
         function updateContinuousWatching() {
-    if (state.player.isLiveStream) return;
+    if (state.player.isLiveStream) { console.debug('[CW-DEBUG] skip: isLiveStream'); return; }
     
     const v = document.getElementById('videoPlayer');
+    if (!v) { console.debug('[CW-DEBUG] skip: #videoPlayer element not found'); return; }
+    if (!(v.duration && !isNaN(v.duration) && v.currentTime > 0)) {
+        console.debug('[CW-DEBUG] skip: duration/currentTime not ready', { duration: v.duration, currentTime: v.currentTime });
+    }
     if (v.duration && !isNaN(v.duration) && v.currentTime > 0) {
         const progress = v.currentTime / v.duration;
         // ÖNEMLİ: Dizi bölümü oynatılırken state.player.name "DiziAdı - S1:E3" gibi
@@ -44843,6 +44864,7 @@ let virtualScrollSystem = null;
                 _record.episode = state.series.currentEpisode;
             }
             state.continueWatching[cwKey] = _record;
+            console.debug('[CW-DEBUG] saved record', cwKey, { progress: _record.progress, isSeries: !!_record.isSeries, currentTime: _record.currentTime, duration: _record.duration });
             
             // LocalStorage'a kaydet
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
@@ -49113,7 +49135,7 @@ function handleFavoriteChannelSelect(key) {
             'btnTheme': 'Tema', 'btnSettings': 'Ayarlar', 'btnRefresh': 'Yenile',
             'btnControlSettings': 'Kontrol Ayarları', 'btnAddM3U': 'M3U Ekle',
             'btnUrlKopi': 'URL Kopi', 'btnDestek': 'Destek', 'btnStore': 'Store',
-            'btnWatchParty': 'Watch Party', 'btnNotifTest': 'Bildirimler', 'btnProfile': 'Profil', 'btnExitHeader': 'Çıkış',
+            'btnWatchParty': 'Watch Party', 'btnDeviceSync': 'Cihaz Senkronu (Aç/Kapa)', 'btnNotifTest': 'Bildirimler', 'btnProfile': 'Profil', 'btnExitHeader': 'Çıkış',
                             'btnWatchStats': 'İzleme İstatistikleri', 'btnHealthCheck': 'Kanal Sağlık Kontrolü', 'btnVoiceSearch': 'Sesli Arama'
         };
         hint = _hbHints2[_hbId2] || (el && el.title) || 'Menü';
@@ -63210,6 +63232,7 @@ async function syncContinueWatchingFromCloud() {
                 Object.keys(state.continueWatching).forEach(function(name) {
                     var safeKey = _cwSafeKey(name);
                     if (prevSyncedKeys.indexOf(safeKey) !== -1 && cloudKeys.indexOf(safeKey) === -1) {
+                        console.debug('[CW-DEBUG] cloud-sync DELETED local record (missing from cloud)', name);
                         delete state.continueWatching[name];
                         changed = true;
                         try {
@@ -63269,6 +63292,199 @@ const WP = {
 };
 // Global erişim için expose et — player toolbar butonu buna ihtiyaç duyuyor
 window._WP = WP;
+
+// ══════════════════════════════════════════════════════════════════
+//  CİHAZ SENKRONU (Device Sync) — Telegram ID'ye bağlı, SESSİZ
+//  - Watch Party ile AYNI Firebase altyapısını (fbSet/fbGet/fbListen)
+//    kullanır ama chat/panel/üye listesi AÇMAZ — tamamen arka planda.
+//  - Aynı Telegram ID ile giriş yapılmış TÜM cihazlar (telefon/tvbox/
+//    tablet) otomatik olarak aynı özel kanala (deviceSync/<telegramId>)
+//    bağlanır. Hangi cihaz oynatmayı başlatırsa diğerleri de açar.
+//  - Kullanıcı bunu header'daki buton ile açıp kapatabilir.
+//  - NOT: Kullanıcı elle bir arkadaş Watch Party odasına girerse (WP.inRoom
+//    ile normal oda), o oturum boyunca cihaz senkronu duraklar; odadan
+//    çıkınca otomatik devam eder — aynı anda iki Firebase odasına birden
+//    bağlanmak karmaşa yaratacağından kasıtlı bir sınırlama.
+// ══════════════════════════════════════════════════════════════════
+const DS = {
+    enabled: false,     // kullanıcı ayarı (localStorage'dan yüklenir)
+    connected: false,   // şu an gerçekten dinliyor mu (telegram id var + enabled + WP odasında değil)
+    myDeviceId: '',
+    listeners: [],       // EventSource'lar — kapatılınca temizlenir
+    pollTimer: null,
+    lastNpTs: 0
+};
+window._DS = DS;
+
+function dsGetKey() {
+    try {
+        if (window.currentTelegramId && window.currentTelegramId !== 'SANS_KODU') {
+            return 'ds_' + String(window.currentTelegramId).replace(/[^a-zA-Z0-9_]/g, '');
+        }
+    } catch(e) {}
+    return null;
+}
+
+function dsLoadEnabled() {
+    try {
+        const v = localStorage.getItem('umittv_deviceSync');
+        // Varsayılan: açık (telegram id'li kullanıcı için beklenen davranış budur)
+        return v === null ? true : v === '1';
+    } catch(e) { return true; }
+}
+
+function dsSaveEnabled(v) {
+    DS.enabled = !!v;
+    try { localStorage.setItem('umittv_deviceSync', v ? '1' : '0'); } catch(e) {}
+}
+
+// Cihaz tipini kısa isimle etiketle — bildirim/toast'larda "Telefon açtı" gibi göstermek için
+function dsDeviceLabel() {
+    try {
+        const ua = navigator.userAgent || '';
+        if (/Android TV|MiBox|SHIELD|MECOOL|Zidoo|BuzzTV|Fire TV|Google TV/i.test(ua)) return 'TV Box';
+        if (/Tablet|iPad/i.test(ua) || (window.screen && Math.min(screen.width, screen.height) >= 600 && /Android/i.test(ua) && !/Mobile/i.test(ua))) return 'Tablet';
+        if (/Mobile|Android|iPhone/i.test(ua)) return 'Telefon';
+        return 'Bilgisayar';
+    } catch(e) { return 'Cihaz'; }
+}
+
+function dsStopListening() {
+    DS.listeners.forEach(function(es) { try { es.close(); } catch(e) {} });
+    DS.listeners = [];
+    if (DS.pollTimer) { clearInterval(DS.pollTimer); DS.pollTimer = null; }
+    DS.connected = false;
+}
+
+// İzleyici tarafında modal açmadan direkt oynat (WP'nin wpDirectPlay'iyle aynı mantık)
+function dsDirectPlay(ch, startTime) {
+    if (!ch) return;
+    try {
+        const vodModal = document.getElementById('vodModal');
+        if (vodModal && vodModal.style.display !== 'none') {
+            if (typeof closeVodModal === 'function') closeVodModal(); else vodModal.style.display = 'none';
+        }
+        const seriesModal = document.getElementById('seriesModal');
+        if (seriesModal && seriesModal.style.display !== 'none') {
+            if (typeof closeSeriesModal === 'function') closeSeriesModal(); else seriesModal.style.display = 'none';
+        }
+    } catch(e) {}
+    const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+    let idx = list.findIndex(c => c.url === ch.url && c.name === ch.name);
+    if (idx === -1) idx = list.findIndex(c => c.url === ch.url);
+    if (idx === -1) idx = list.findIndex(c => c.name === ch.name);
+    const _playFn = window._wpOrigPlayChannel || window.playChannel;
+    if (idx !== -1) {
+        _playFn(idx, startTime || 0);
+    } else {
+        list.push(ch);
+        _playFn(list.length - 1, startTime || 0);
+    }
+}
+
+function dsHandleNowPlaying(np) {
+    if (!DS.connected) return;
+    if (!np || !np.ts) return;
+    if (np.ts <= DS.lastNpTs) return;
+    if (np.by === DS.myDeviceId) { DS.lastNpTs = np.ts; return; } // kendi yayınımı yok say
+    DS.lastNpTs = np.ts;
+    try { if (typeof showToast === 'function') showToast('📱 ' + (np.byLabel || 'Diğer cihaz') + ' açtı: ' + np.name); } catch(e) {}
+    try {
+        let ch = null;
+        if (np.channelData) { ch = JSON.parse(np.channelData); ch.url = ch.url || np.url || ''; }
+        else if (np.url) { ch = { name: np.name, url: np.url, isLive: false, isVod: true }; }
+        if (ch) setTimeout(() => dsDirectPlay(ch, np.currentTime || 0), 400);
+    } catch(e) {}
+}
+
+function dsStartListening() {
+    const key = dsGetKey();
+    if (!key || !DS.enabled) return;
+    // Kullanıcı elle bir Watch Party odasına girdiyse (arkadaşlarla) cihaz senkronu duraklar
+    if (typeof WP !== 'undefined' && WP.inRoom) return;
+    dsStopListening();
+    DS.myDeviceId = getDeviceId();
+    DS.lastNpTs = Date.now(); // sadece bundan SONRAKİ yayınları uygula
+    DS.connected = true;
+
+    const es = new EventSource(FB_URL + '/' + key + '/nowPlaying.json');
+    es.addEventListener('put', (e) => {
+        try {
+            const d = JSON.parse(e.data);
+            if (d.path === '/') { if (d.data) dsHandleNowPlaying(d.data); return; }
+            dsHandleNowPlaying(d.data);
+        } catch(err) {}
+    });
+    es.onerror = () => {};
+    DS.listeners.push(es);
+
+    // WebView/Brave SSE engeli için yedek polling — 4sn'de bir
+    DS.pollTimer = setInterval(async function() {
+        if (!DS.connected) return;
+        try { const np = await fbGet('/' + key + '/nowPlaying'); if (np) dsHandleNowPlaying(np); } catch(e) {}
+    }, 4000);
+}
+
+// Bu cihazda oynatma başladığında diğer cihazlara bildir (fire-and-forget)
+function _dsSyncChannelPlay(indexOrCh) {
+    const key = dsGetKey();
+    if (!key || !DS.enabled) return;
+    if (typeof WP !== 'undefined' && WP.inRoom) return; // arkadaş odasındayken cihaz senkronu susar
+    try {
+        const list = (window.state && window.state.filtered) ? window.state.filtered : [];
+        const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
+        if (ch && ch.name) {
+            fbSet('/' + key + '/nowPlaying', {
+                name: ch.name,
+                url: ch.url || ch.streamUrl || '',
+                channelData: JSON.stringify(ch),
+                ts: Date.now(),
+                by: DS.myDeviceId || getDeviceId(),
+                byLabel: dsDeviceLabel()
+            }).catch(function(){});
+        }
+    } catch(e) {}
+}
+window._dsSyncChannelPlay = _dsSyncChannelPlay;
+
+function dsToggle() {
+    const key = dsGetKey();
+    const btn = document.getElementById('btnDeviceSync');
+    const dot = document.getElementById('dsActiveDot');
+    if (!key) {
+        try { if (typeof showToast === 'function') showToast('Cihaz senkronu için Telegram ID ile giriş gerekli'); } catch(e) {}
+        return;
+    }
+    dsSaveEnabled(!DS.enabled);
+    if (DS.enabled) {
+        dsStartListening();
+        try { if (typeof showToast === 'function') showToast('✅ Cihaz senkronu açık — diğer cihazlarınla eşleşecek'); } catch(e) {}
+    } else {
+        dsStopListening();
+        try { if (typeof showToast === 'function') showToast('⏸️ Cihaz senkronu kapalı'); } catch(e) {}
+    }
+    if (btn) btn.classList.toggle('ds-active', DS.enabled);
+    if (dot) dot.style.display = DS.enabled ? 'block' : 'none';
+}
+window.dsToggle = dsToggle;
+
+function dsInit() {
+    DS.enabled = dsLoadEnabled();
+    const key = dsGetKey();
+    const btn = document.getElementById('btnDeviceSync');
+    const dot = document.getElementById('dsActiveDot');
+    if (btn) {
+        btn.style.display = key ? '' : 'none';
+        btn.classList.toggle('ds-active', DS.enabled);
+    }
+    if (dot) dot.style.display = (key && DS.enabled) ? 'block' : 'none';
+    if (key && DS.enabled) dsStartListening();
+    else dsStopListening();
+}
+window.dsInit = dsInit;
+// Watch Party odasından çıkınca cihaz senkronunu otomatik devam ettir
+window._dsResumeAfterWP = function() { if (DS.enabled) dsStartListening(); };
+setTimeout(function() { try { dsInit(); } catch(e) {} }, 1500);
 
 const WP_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4'];
 
@@ -63729,6 +63945,8 @@ function wpGetCurrentContent() {
 
 // ── ODA GİRİŞİ (Firebase) ──
 async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
+  // Arkadaş odasına giriliyor — kişisel cihaz senkronu bu oturum boyunca duraklar
+  if (typeof dsStopListening === 'function') { try { dsStopListening(); } catch(e) {} }
   WP.inRoom = true;
   WP.isHost = isHost;
   WP.myNick = nick;
@@ -64067,6 +64285,9 @@ window.closeWpPanel = function() {
   try { localStorage.removeItem('wp_last_room'); } catch(e) {}
   wpShowToast('👋 Odadan çıkıldı');
   setTimeout(() => { if(typeof window.wpUpdatePlayerBtn === 'function') window.wpUpdatePlayerBtn(); }, 100);
+  // Cihaz senkronu (Telegram ID ile kendi cihazların) — Watch Party odasından
+  // çıkınca otomatik devam etsin
+  if (typeof window._dsResumeAfterWP === 'function') { try { window._dsResumeAfterWP(); } catch(e) {} }
 };
 
 // ── KOD KOPYALA ──
@@ -64361,6 +64582,7 @@ function _wpWrapPlayChannel() {
 // gibi playChannel'i hiç çağırmayan yollardan (_doChSwitch) da çağrılabilir.
 // Sadece HOST Firebase'e yazar — fire-and-forget (await YOK — player hemen başlasın)
 function _wpSyncChannelPlay(indexOrCh) {
+    if (typeof window._dsSyncChannelPlay === 'function') window._dsSyncChannelPlay(indexOrCh);
     if(typeof WP === 'undefined' || !WP.inRoom || !WP.isHost) return;
     try {
         const list = (window.state && window.state.filtered) ? window.state.filtered : [];
@@ -64425,6 +64647,10 @@ function _wpWrapOpenVodModal() {
   const _origOpenVod = window.openVodModal;
   window.openVodModal = function(vod) {
     const r = _origOpenVod.apply(this, arguments);
+    // Cihaz senkronu — Watch Party odasında olmasak da çalışır
+    if (typeof window._dsSyncChannelPlay === 'function' && vod) {
+        setTimeout(() => { try { window._dsSyncChannelPlay(vod); } catch(e) {} }, 400);
+    }
     if(WP.inRoom && WP.isHost && vod) {
       // Fire-and-forget: 400ms sonra title DOM'da hazır olur
       setTimeout(() => {

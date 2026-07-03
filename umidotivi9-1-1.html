@@ -36827,6 +36827,8 @@ setTimeout(_vhsInit, 1200);
            .replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i') // TR İ/I/ı → i
            .toLowerCase();
    }
+   // Global scope'a bağla — filterChannels ve diğer closure'lar da erişebilsin
+   window._cwFuzzyKey = _cwFuzzyKey;
    function _cwFindChannel(name) {
        if (!state.channels || !state.channels.length || !name) return null;
        let ch = state.channels.find(c => c.name === name);
@@ -36834,6 +36836,7 @@ setTimeout(_vhsInit, 1200);
        const target = _cwFuzzyKey(name);
        return state.channels.find(c => _cwFuzzyKey(c.name) === target) || null;
    }
+   window._cwFindChannel = _cwFindChannel;
    function renderContinueWatching() {
     if (window._renderFrozenByPlayer) return;
     const container = document.getElementById('continueWatchingContainer');
@@ -39551,10 +39554,11 @@ function addContinueCardStyles() {
                     }
                     // FIX: strict isim eşleşmesi Türkçe İ/I, boşluk farklarında
                     // başarısız oluyordu — kayıt "cont" kategorisine hiç girmiyordu.
-                    // _cwFindChannel varsa fuzzy eşleşme dene, yoksa strict fallback.
-                    if (typeof _cwFindChannel === 'function') {
-                        return !!_cwFindChannel(c.name);
-                    }
+                    // window._cwFindChannel global scope'ta tanımlı — her closure'dan erişilir.
+                    const _findFn = (typeof _cwFindChannel === 'function') ? _cwFindChannel
+                                  : (typeof window._cwFindChannel === 'function') ? window._cwFindChannel
+                                  : null;
+                    if (_findFn) return !!_findFn(c.name);
                     return !!state.channels.find(ch => ch.name === c.name);
                 })
                 .map(c => c.name);
@@ -39563,7 +39567,17 @@ function addContinueCardStyles() {
             // ham kanal listesinde dizi adıyla eşleşen bir öğe olmadığı için
             // series kartı yine filtrelenip kaybolur.
             const _groupedForCont = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(list) : list;
-            state.filtered = _groupedForCont.filter(c => continueNames.includes(c.name));
+            // FIX: continueNames.includes(c.name) strict eşleşme — dizi adı normalizasyonunda
+            // cleanSeriesName ile kayıttaki ad farklı olabilir. Fuzzy key ile karşılaştır.
+            const _contNamesSet = new Set(continueNames);
+            const _fkFn = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
+                        : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
+                        : (s => (s || '').toLowerCase().trim());
+            const _contNamesKeys = continueNames.map(n => _fkFn(n));
+            state.filtered = _groupedForCont.filter(c => {
+                if (_contNamesSet.has(c.name)) return true;
+                return _contNamesKeys.includes(_fkFn(c.name));
+            });
             
             // "Temizle" kartını ekle
             if (continueNames.length > 0) {
@@ -40348,29 +40362,46 @@ function playChannelFromContinueCategory(index) {
 
     // Normal kanal (film/canlı)
     {
-        // Index'i bul
-        const mainIndex = state.channels.findIndex(c => c.name === ch.name);
-        if (mainIndex !== -1) {
-            // Filtered list'teki index'i bul
-            const filteredIndex = state.channels.filter(c => {
-                if (state.selectedM3U !== 'all') {
-                    return c.listIdx == state.selectedM3U;
-                }
-                return true;
-            }).findIndex(c => c.name === ch.name);
-            
-            if (filteredIndex !== -1) {
-                // Ana state'i güncelle
+        // FIX: strict isim eşleşmesi VOD kanallarında Türkçe/boşluk farkında fail ediyordu.
+        // Fuzzy eşleşme kullan — window._cwFindChannel global scope'ta tanımlı.
+        const _findFnCC = (typeof window._cwFindChannel === 'function')
+            ? window._cwFindChannel
+            : (name => state.channels.find(c => c.name === name));
+        const mainCh = _findFnCC(ch.name);
+
+        if (mainCh) {
+            // Filtered list'teki index'i bul — fuzzy ile bulunan kanalın adını kullan
+            let filteredIndex = state.filtered.findIndex(c => c.name === mainCh.name);
+            if (filteredIndex === -1) {
+                // filtered'da yoksa ekle
+                state.filtered.push(mainCh);
+                filteredIndex = state.filtered.length - 1;
+            }
+
+            // Ana state'i güncelle
+            state.player.currentContinueName = ch.name;
+            state.player.index = filteredIndex;
+            state.player.name = mainCh.name;
+            state.player.tvgId = mainCh.tvgId || '';
+            state.player.logo = mainCh.logo || continueData.logo || '';
+            state.player.isLiveStream = mainCh.isLive && !mainCh.isVod;
+            state.player.vodPlaying = !mainCh.isLive || !!mainCh.isVod;
+            state.player.url = mainCh.url;
+
+            // Devam et modalını aç
+            openContinueModal(ch.name, continueData.currentTime, continueData.duration);
+        } else {
+            // Kanal listede bulunamadı — kayıt URL'i varsa direkt dene
+            if (continueData.url) {
                 state.player.currentContinueName = ch.name;
-                state.player.index = filteredIndex;
-                state.player.name = ch.name;
-                state.player.tvgId = ch.tvgId || '';
-                state.player.logo = ch.logo || '';
-                state.player.isLiveStream = ch.isLive;
-                state.player.vodPlaying = !ch.isLive;
-                
-                // Devam et modalını aç
+                state.player.continueTime = continueData.currentTime || 0;
+                state.player.url = continueData.url;
+                state.player.isLiveStream = !!continueData.isLive;
+                state.player.vodPlaying = !continueData.isLive;
+                state.player.logo = continueData.logo || '';
                 openContinueModal(ch.name, continueData.currentTime, continueData.duration);
+            } else {
+                showToast('⚠️ Kanal şu an listede bulunamıyor. M3U yenilendikten sonra tekrar deneyin.');
             }
         }
     }
@@ -40657,12 +40688,16 @@ function calculateCategoryCounts() {
     ).length;
     
     // Devam Et
+    // FIX: dizi kayıtları (isSeries=true) state.channels'ta birebir isimle bulunmaz.
+    // Strict eşleşme her zaman 0 dönüp "cont" pill'i 0 gösteriyor, tab gizleniyordu.
     counts['cont'] = Object.values(state.continueWatching).filter(c => {
-        const channel = state.channels.find(ch => ch.name === c.name);
-        return c.progress > MIN_WATCH_PERCENT && 
-               c.progress < MAX_WATCH_PERCENT && 
-               channel && 
-               (state.selectedM3U === 'all' || channel.listIdx == state.selectedM3U);
+        if (c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return false;
+        if (c.isSeries) return true; // dizi kaydı — her zaman sayılsın
+        const _findFn2 = (typeof _cwFindChannel === 'function') ? _cwFindChannel
+                        : (typeof window._cwFindChannel === 'function') ? window._cwFindChannel
+                        : null;
+        const channel = _findFn2 ? _findFn2(c.name) : state.channels.find(ch => ch.name === c.name);
+        return !!channel && (state.selectedM3U === 'all' || channel.listIdx == state.selectedM3U);
     }).length;
     
     // Diğer kategoriler
@@ -44138,7 +44173,11 @@ let virtualScrollSystem = null;
             ));
         const cwKey = _isSeriesNow ? state.series.currentSeries : (state.player.currentContinueName || state.player.name);
         if (progress > MIN_WATCH_PERCENT && progress < MAX_WATCH_PERCENT) {
-            const _cwCh = state.channels.find(ch => ch.name === cwKey);
+            // FIX: strict isim eşleşmesi VOD kanalı bulamayabiliyor (TMDB adı vs M3U adı farkı).
+            // Fuzzy eşleşme kullan — window._cwFindChannel global scope'ta tanımlı.
+            const _cwCh = (typeof window._cwFindChannel === 'function')
+                ? window._cwFindChannel(cwKey)
+                : state.channels.find(ch => ch.name === cwKey);
             const _prevRecord = state.continueWatching[cwKey];
             // FIX: kart başlığında her zaman TAM/ham bölüm adı gösterilsin — dizi
             // ise gerçek oynatılan kanalın ham adı (URL üzerinden bulunur),
@@ -44164,7 +44203,12 @@ let virtualScrollSystem = null;
                 duration: v.duration, 
                 progress: progress, 
                 timestamp: Date.now(),
-                isLive: _cwCh ? (_cwCh.isLive !== false) : state.player.isLiveStream,
+                // FIX: _cwCh null iken state.player.isLiveStream yanlış olabilir (önceki
+                // kanaldan kalma stale değer). state.player.vodPlaying kesin — oynatma
+                // başında her zaman doğru set ediliyor.
+                isLive: _cwCh ? (_cwCh.isLive !== false)
+                       : state.player.vodPlaying ? false
+                       : state.player.isLiveStream,
                 // FIX: Aynı isimde birden fazla kanal olduğunda (ör. bir dizinin
                 // TÜM bölümleri M3U'da aynı isimle, "Çirkin" gibi, farklı URL'lerle
                 // geliyorsa) sadece isimle arama yapıldığında her zaman İLK eşleşen

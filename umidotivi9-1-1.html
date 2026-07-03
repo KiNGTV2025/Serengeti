@@ -4219,6 +4219,224 @@ body {
     max-width: 70%;
 }
 
+/* ==================================================================
+   "DEVAM ET" KATEGORISI - DIKEY POSTER GRID (Netflix/Prime tarzi).
+   Ana channels-grid'den bagimsiz kendi grid-template-columns'una sahip.
+   PERFORMANS ILKELERI (TVBox oncelikli):
+   - transition: none her yerde (sadece progress bar genisligi haric)
+   - box-shadow YOK, blur YOK - sadece 1px border + duz renk
+   - contain: layout style paint -> reflow/repaint tamamen izole
+   - content-visibility: auto -> ekran disi kartlar layout/paint'e hic girmez
+   - aspect-ratio ile poster orani CSS'te sabit -> resim gelmeden yer ayrilir,
+     bu da layout shift'i (ve TVBox'ta donma hissini) engeller
+   ================================================================== */
+.cw-poster-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    gap: 14px !important;
+    padding: 4px 4px 20px 4px;
+}
+.cw-poster-grid-tvbox {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 12px !important;
+}
+
+.cw-poster-card {
+    position: relative !important;
+    cursor: pointer;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    aspect-ratio: unset !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    transition: none;
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 220px 260px;
+}
+.cw-poster-card.remote-focused,
+.cw-poster-card.focused {
+    contain: layout style !important;
+}
+.cw-poster-card.remote-focused .cw-poster-img-wrap,
+.cw-poster-card.focused .cw-poster-img-wrap {
+    border-color: var(--accent-primary);
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+.cw-poster-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.cw-poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cw-poster-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20,20,28,0.97);
+}
+.cw-poster-fallback .material-symbols-outlined {
+    font-size: 40px;
+    color: var(--accent-primary);
+    opacity: 0.6;
+}
+
+.cw-poster-pct-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.92);
+    color: #000;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    z-index: 3;
+    letter-spacing: 0.2px;
+}
+
+.cw-poster-live-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(220,40,40,0.9);
+    color: #fff;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    z-index: 3;
+    letter-spacing: 0.3px;
+}
+
+.cw-poster-se-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 8px;
+    background: rgba(0,0,0,0.75);
+    color: rgba(255,255,255,0.95);
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 3;
+    letter-spacing: 0.2px;
+}
+
+.cw-poster-del-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.65);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    padding: 0;
+    cursor: pointer;
+}
+.cw-poster-del-btn .material-symbols-outlined {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+}
+/* CANLI rozeti varsa sil butonunu sola kaydirma yerine ust siraya iki rozet
+   sigmasi icin z-index yeterli; ikisi ayni satirda cakismaz cunku live-badge
+   sagda, del-btn de sagda ust ustedir - CANLI icerikte sil butonunu gizleyip
+   yerine tikla-tut ile silme birakiyoruz (rozet onceligi). */
+.cw-poster-card[data-is-vod="false"] .cw-poster-del-btn {
+    top: 34px;
+}
+
+.cw-poster-progress-track {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: rgba(255,255,255,0.18);
+    z-index: 2;
+}
+.cw-poster-progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    transition: width 200ms ease-out;
+}
+
+.cw-poster-title {
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+}
+.cw-poster-card.remote-focused .cw-poster-title,
+.cw-poster-card.focused .cw-poster-title {
+    color: var(--accent-primary);
+}
+
+/* "Tumunu Temizle" karti - poster oraniyla tutarli, sade */
+.cw-clear-tile {
+    aspect-ratio: 2 / 3;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255,90,90,0.14), rgba(255,40,40,0.05));
+    border: 1px solid rgba(255,85,85,0.35);
+    transition: none;
+    contain: layout style;
+}
+.cw-clear-tile-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+}
+.cw-clear-tile-icon {
+    font-size: 34px;
+    color: #ff5f5f;
+    margin-bottom: 8px;
+}
+.cw-clear-tile-title {
+    color: #ff5f5f !important;
+    font-weight: 800 !important;
+    font-size: 12px;
+    text-align: center;
+}
+.cw-clear-tile-sub {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 6px;
+    text-align: center;
+}
+
         
 
  
@@ -39550,49 +39768,67 @@ function addContinueCardStyles() {
             const _cwFkTop = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
                            : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
                            : (s => (s || '').toLowerCase().trim());
-            const continueNames = Object.values(state.continueWatching)
-                .filter(c => {
-                    if (c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return false;
-                    if (c.isSeries) {
-                        if (state.series && state.series.seriesCache && state.series.seriesCache[c.name]) return true;
-                        // FIX: seriesCache/gruplu liste karşılaştırması strict (===) idi —
-                        // kayıttaki isim ile gruplanmış dizi adı arasında Türkçe İ/I,
-                        // boşluk vb. normalizasyon farkı olduğunda HİÇ eşleşmiyor ve kayıt
-                        // "Devam Et" sekmesine hiç girmiyordu (sayaç "0 Kanal" kalıyordu).
-                        // Önce seriesCache anahtarlarını, sonra gruplu listeyi fuzzy anahtarla dene.
-                        const _targetKeyTop = _cwFkTop(c.name);
-                        if (state.series && state.series.seriesCache) {
-                            const _scMatch = Object.keys(state.series.seriesCache).some(k => _cwFkTop(k) === _targetKeyTop);
-                            if (_scMatch) return true;
-                        }
-                        const grp = (typeof groupChannelsBySeries === 'function') ? groupChannelsBySeries(state.channels) : [];
-                        return grp.some(g => g.isSeries && _cwFkTop(g.name) === _targetKeyTop);
+            // FIX (KOK NEDEN): Eskiden filtre asamasinda sadece isim listesi cikarilip,
+            // kart render asamasinda (asagida) state.continueWatching icinde IKINCI KEZ
+            // bagimsiz bir fuzzy-key ile arama yapiliyordu. Iki ayri fuzzy-match cagrisi
+            // bazi Turkce karakter/bosluk kombinasyonlarinda FARKLI SONUC verebiliyordu:
+            // filtre asamasi eslesmeyi bulup karti listeye sokuyor, render asamasi
+            // eslestiremeyip continueData=undefined ile karti sessizce atliyordu
+            // (hasContinue=false -> return) - kart grid'de hic gorunmuyordu.
+            // COZUM: eslesen gercek continueWatching ANAHTARINI bir Map'te tut ve
+            // kart objesine (__cwKey) yapistir; render asamasi ARTIK YENIDEN ARAMA
+            // YAPMAZ, dogrudan bu anahtarla state.continueWatching[key] okur.
+            const _cwKeyByChannelName = new Map();
+
+            Object.keys(state.continueWatching).forEach(cwKey => {
+                const c = state.continueWatching[cwKey];
+                if (!c || c.progress <= MIN_WATCH_PERCENT || c.progress >= MAX_WATCH_PERCENT) return;
+
+                if (c.isSeries) {
+                    const _targetKeyTop = _cwFkTop(cwKey);
+                    let _matchedName = null;
+
+                    if (state.series && state.series.seriesCache && state.series.seriesCache[cwKey]) {
+                        _matchedName = cwKey;
+                    } else if (state.series && state.series.seriesCache) {
+                        const _scMatchKey = Object.keys(state.series.seriesCache).find(k => _cwFkTop(k) === _targetKeyTop);
+                        if (_scMatchKey) _matchedName = _scMatchKey;
                     }
-                    // FIX: strict isim eşleşmesi Türkçe İ/I, boşluk farklarında
-                    // başarısız oluyordu — kayıt "cont" kategorisine hiç girmiyordu.
-                    // window._cwFindChannel global scope'ta tanımlı — her closure'dan erişilir.
-                    const _findFn = (typeof _cwFindChannel === 'function') ? _cwFindChannel
-                                  : (typeof window._cwFindChannel === 'function') ? window._cwFindChannel
-                                  : null;
-                    if (_findFn) return !!_findFn(c.name);
-                    return !!state.channels.find(ch => ch.name === c.name);
-                })
-                .map(c => c.name);
-            
-            // Gruplanmış (dizi) kartları da "list" içine dahil et — aksi halde
-            // ham kanal listesinde dizi adıyla eşleşen bir öğe olmadığı için
-            // series kartı yine filtrelenip kaybolur.
+                    if (!_matchedName) {
+                        const grp = (typeof groupChannelsBySeries === 'function') ? groupChannelsBySeries(state.channels) : [];
+                        const _grpMatch = grp.find(g => g.isSeries && _cwFkTop(g.name) === _targetKeyTop);
+                        if (_grpMatch) _matchedName = _grpMatch.name;
+                    }
+                    if (_matchedName) _cwKeyByChannelName.set(_matchedName, cwKey);
+                    _cwKeyByChannelName.set(cwKey, cwKey);
+                    return;
+                }
+
+                const _findFn = (typeof _cwFindChannel === 'function') ? _cwFindChannel
+                              : (typeof window._cwFindChannel === 'function') ? window._cwFindChannel
+                              : null;
+                const _matchedCh = _findFn ? _findFn(cwKey) : state.channels.find(ch => ch.name === cwKey);
+                if (_matchedCh) {
+                    _cwKeyByChannelName.set(_matchedCh.name, cwKey);
+                    _cwKeyByChannelName.set(cwKey, cwKey);
+                }
+            });
+
+            // Gruplanmis (dizi) kartlari da "list" icine dahil et
             const _groupedForCont = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(list) : list;
-            // FIX: continueNames.includes(c.name) strict eşleşme — dizi adı normalizasyonunda
-            // cleanSeriesName ile kayıttaki ad farklı olabilir. Fuzzy key ile karşılaştır.
-            const _contNamesSet = new Set(continueNames);
             const _fkFn = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
                         : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
                         : (s => (s || '').toLowerCase().trim());
-            const _contNamesKeys = continueNames.map(n => _fkFn(n));
+            const _cwFuzzyIndex = new Map();
+            _cwKeyByChannelName.forEach((cwKey, chName) => {
+                _cwFuzzyIndex.set(_fkFn(chName), cwKey);
+            });
+
             state.filtered = _groupedForCont.filter(c => {
-                if (_contNamesSet.has(c.name)) return true;
-                return _contNamesKeys.includes(_fkFn(c.name));
+                let cwKey = _cwKeyByChannelName.get(c.name);
+                if (!cwKey) cwKey = _cwFuzzyIndex.get(_fkFn(c.name));
+                if (cwKey) { c.__cwKey = cwKey; return true; }
+                return false;
             });
             
             // "Temizle" kartını ekle
@@ -39829,101 +40065,101 @@ function renderChannels() {
         return;
     }
     
-    // DEVAM ET KATEGORİSİ - ÖZEL RENDER
+    // DEVAM ET KATEGORISI - DIKEY POSTER GRID (performans-oncelikli)
     if (state.activeCat === 'cont') {
-        let html = '';
-        
+        // TVBox tespiti - dusuk cihazda DOM/efekt maliyetini azaltmak icin
+        const _cwUa = navigator.userAgent;
+        const _cwIsTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(_cwUa)
+            || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
+
+        // Grid'i dikey poster moduna al - kendi sinif adiyla, ana channels-grid
+        // stillerinden (--grid-cols vb.) BAGIMSIZ. TVBox'ta daha az sutun =
+        // daha az es zamanli <img> decode/layout maliyeti.
+        grid.classList.add('cw-poster-grid');
+        if (_cwIsTVBox) grid.classList.add('cw-poster-grid-tvbox');
+        else grid.classList.remove('cw-poster-grid-tvbox');
+
+        // PERF: String concat yerine array + join; buyuk listelerde daha az
+        // ara string allocation -> dusuk RAM'li TVBox cihazlarda GC baskisi azalir.
+        const _htmlParts = [];
+
         state.filtered.forEach((c, i) => {
-            // Temizle kartı
+            // Temizle karti - kendi sade tasarimiyla, poster oraninda degil
             if (c.isSpecial) {
-                html += `
-                    <div class="channel-card clear-card" 
-                         onclick="clearContinueWatching()" 
+                _htmlParts.push(`
+                    <div class="channel-card clear-card cw-poster-card cw-clear-tile"
+                         onclick="clearContinueWatching()"
                          data-index="${i}"
-                         style="background: linear-gradient(135deg, rgba(255,100,100,0.2), rgba(255,50,50,0.1)); border: 2px solid #ff5555;">
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
-                            <span class="material-symbols-outlined" style="font-size: 48px; color: #ff5555; margin-bottom: 12px;">
-                                delete_forever
-                            </span>
-                            <div class="channel-title" style="color: #ff5555; font-weight: 800;">TÜMÜNÜ TEMİZLE</div>
-                            <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 8px;">
-                                Tüm izleme geçmişini sil
-                            </div>
+                         tabindex="0">
+                        <div class="cw-clear-tile-inner">
+                            <span class="material-symbols-outlined cw-clear-tile-icon">delete_forever</span>
+                            <div class="cw-clear-tile-title">TÜMÜNÜ TEMİZLE</div>
+                            <div class="cw-clear-tile-sub">Tüm geçmişi sil</div>
                         </div>
                     </div>
-                `;
+                `);
                 return;
             }
-            
-            // Normal kanallar
-            const isVod = c.isLive === false;
-            const isFav = state.favs.has(c.name);
-            // FIX: strict state.continueWatching[c.name] eşleşmesi dizi kartlarında
-            // (Türkçe İ/I, boşluk, normalizasyon farkı) başarısız olup kartın state.filtered
-            // içinde SAYILIP ama burada render edilmeden atlanmasına (hasContinue=false
-            // → return) yol açıyordu — "Devam Et" kategorisi sayaçta doğru sayıyı gösterip
-            // grid'de boş kalıyordu. Önce strict dene, olmazsa fuzzy anahtarla eşleştir.
-            let continueData = state.continueWatching[c.name];
-            if (!continueData) {
-                const _fkFn2 = (typeof _cwFuzzyKey === 'function') ? _cwFuzzyKey
-                              : (typeof window._cwFuzzyKey === 'function') ? window._cwFuzzyKey
-                              : (s => (s || '').toLowerCase().trim());
-                const _targetKey2 = _fkFn2(c.name);
-                const _matchKey2 = Object.keys(state.continueWatching).find(k => _fkFn2(k) === _targetKey2);
-                if (_matchKey2) continueData = state.continueWatching[_matchKey2];
-            }
-            const hasContinue = continueData && 
-                continueData.progress > MIN_WATCH_PERCENT && 
-                continueData.progress < MAX_WATCH_PERCENT;
-            
-            if (!hasContinue) return;
-            
-            html += `
-                <div class="channel-card continue-card-in-grid" 
-                     onclick="playChannelFromContinueCategory(${i})" 
+
+            // FIX (KOK NEDEN COZUMU): c.__cwKey filterChannels() sirasinda ZATEN
+            // dogrulanmis eslesmeyi tasiyor - burada TEKRAR fuzzy arama YAPILMAZ.
+            const continueData = c.__cwKey ? state.continueWatching[c.__cwKey] : null;
+            if (!continueData) return;
+
+            const isVod = c.isLive === false || continueData.isSeries;
+            const progressPercent = Math.round(continueData.progress * 100);
+            const _posterSrc = c.logo || continueData.logo || '';
+            const _title = continueData.fullName || c.name;
+
+            // PERF: img yoksa CSS ile ikon goster - <canvas>/SVG olusturma yok.
+            // loading="lazy" + decoding="async": ekran disindaki posterler
+            // main thread'i bloklamadan, gorunur olunca decode edilir.
+            const posterHtml = _posterSrc
+                ? `<img src="${_posterSrc}" class="cw-poster-img" loading="lazy" decoding="async" alt="${_title}"
+                        onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umit.svg';this.style.opacity='0.5';this.style.objectFit='contain';">`
+                : `<div class="cw-poster-fallback"><span class="material-symbols-outlined">${c.group === RADIO_CATEGORY_NAME ? 'radio' : (isVod ? 'movie' : 'tv')}</span></div>`;
+
+            const _seriesBadge = (continueData.isSeries && continueData.season && continueData.episode)
+                ? `<div class="cw-poster-se-badge">S${continueData.season} B${continueData.episode}</div>`
+                : '';
+
+            _htmlParts.push(`
+                <div class="channel-card continue-card-in-grid cw-poster-card"
+                     onclick="playChannelFromContinueCategory(${i})"
                      data-index="${i}"
-                     data-channel-name="${c.name}">
-                    
-                    <div class="fav-toggle ${isFav ? 'active' : ''}" 
-                         onclick="event.stopPropagation(); toggleFav('${c.name}')">
-                        <span class="material-symbols-outlined">star</span>
-                    </div>
-                    
-                    <div class="channel-logo-container">
-                        ${(c.logo || continueData.logo) ? 
-                            `<img src="${c.logo || continueData.logo}" 
-                                 class="channel-logo-img" 
-                                 loading="lazy"
-                                 alt="${c.name}"
-                                 style="object-fit: contain;display:block;"
-                                 onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umit.svg';this.style.opacity='0.65';">` : 
-                            `<span class="material-symbols-outlined" style="font-size:calc(48px * var(--grid-scale)); color:var(--accent-primary);">
-                                ${c.group === RADIO_CATEGORY_NAME ? 'radio' : (isVod ? 'movie' : 'tv')}
-                            </span>`
-                        }
-                        
-                        <div style="position:absolute; bottom:0; left:0; right:0; height:6px; background:rgba(255,255,255,0.2); border-radius:0 0 var(--card-radius) var(--card-radius);">
-                            <div style="height:100%; width:${continueData.progress * 100}%; background:var(--accent-primary); border-radius:0 0 var(--card-radius) var(--card-radius);"></div>
+                     data-channel-name="${c.name}"
+                     data-is-vod="${isVod}"
+                     tabindex="0">
+
+                    <div class="cw-poster-img-wrap">
+                        ${posterHtml}
+                        ${_seriesBadge}
+                        <div class="cw-poster-pct-badge">%${progressPercent}</div>
+                        <button class="cw-poster-del-btn"
+                                onclick="event.stopPropagation(); deleteContinueWatchingRecord('${c.__cwKey}'); filterChannels();"
+                                tabindex="-1" aria-label="Sil">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                        <div class="cw-poster-progress-track">
+                            <div class="cw-poster-progress-fill" style="width:${progressPercent}%;"></div>
                         </div>
+                        ${isVod ? '' : '<div class="cw-poster-live-badge">CANLI</div>'}
                     </div>
-                    
-                    <div class="channel-title">${continueData.fullName || c.name}</div>
-                    
-                    <div style="position:absolute; top:12px; left:12px; background:var(--accent-primary); color:#000; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:800;">
-                        %${Math.round(continueData.progress * 100)}
-                    </div>
-                    
-                    ${isVod ? '<div class="vod-badge">VOD</div>' : ''}
+
+                    <div class="cw-poster-title">${_title}</div>
                 </div>
-            `;
+            `);
         });
-        
-        grid.innerHTML = html;
-        
+
+        grid.innerHTML = _htmlParts.join('');
+
         if (typeof setupContinueCategoryCards === 'function') {
             setupContinueCategoryCards();
         }
         return;
+    } else {
+        // Baska kategoriye gecince poster-grid siniflarini temizle
+        grid.classList.remove('cw-poster-grid', 'cw-poster-grid-tvbox');
     }
     
     // NORMAL KATEGORİLER - PERFORMANSLI RENDER
@@ -45438,6 +45674,10 @@ function deleteContinueWatchingRecord(name) {
     setTimeout(() => {
         if (state.activeCat === 'all') {
             renderContinueWatching();
+        } else if (state.activeCat === 'cont' && typeof filterChannels === 'function') {
+            // Devam Et kategorisi grid'ini de anında güncelle — silinen kart
+            // kullanıcı tekrar sekmeye girene kadar hayalet olarak kalmasın.
+            filterChannels();
         }
     }, 100);
     
@@ -45667,33 +45907,95 @@ function deleteContinueWatchingRecord(name) {
                 _scheduleHide(7000);
             }
 
+            // FIX (ODAK PROGRESS BAR'DA TAKILI KALIYORDU): Eskiden bu switch,
+            // state.remote.zone ne olursa olsun (hem 'player' hem 'progressBar')
+            // AYNI sekilde calisiyordu: Sol/Sag SADECE sarma yapip zone'u daima
+            // 'progressBar'a sabitliyordu, Yukari da kosulsuz 'progressBar'a
+            // atiyordu. Sonuc: kullanici bir kez yukari/sol/sag'a bastiginda
+            // zone='progressBar' oluyor ve bir daha ASLA butonlara donemiyordu
+            // (Asagi da butonlara degil, kontrolleri komple kapatiyordu).
+            // COZUM: Once hangi zone'da oldugumuza gore ayri dallara ayir.
+            if (state.remote.zone === 'progressBar') {
+                switch (e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault(); e.stopPropagation();
+                        if (typeof seekBackward === 'function') seekBackward();
+                        updateRemoteFocus();
+                        return;
+
+                    case 'ArrowRight':
+                        e.preventDefault(); e.stopPropagation();
+                        if (typeof seekForward === 'function') seekForward();
+                        updateRemoteFocus();
+                        return;
+
+                    case 'ArrowUp':
+                    case 'ArrowDown':
+                        // Yukari/Asagi -> progress bar'dan CIK, buton satirina don.
+                        e.preventDefault(); e.stopPropagation();
+                        state.remote.zone = 'player';
+                        if (state.remote.playerBoxIndex == null || state.remote.playerBoxIndex < 0) {
+                            state.remote.playerBoxIndex = _isLive ? 10 : 1;
+                        }
+                        updateRemoteFocus();
+                        return;
+
+                    case 'Enter': case 'OK':
+                        // Progress bar üzerinde OK — Sol/Sağ ile zaten sarma yapılıyor,
+                        // ekstra bir eylem gerekmiyor; kontrolleri açık tutmak yeterli.
+                        e.preventDefault();
+                        updateRemoteFocus();
+                        return;
+
+                    case 'Backspace': case 'Escape':
+                        e.preventDefault();
+                        if (typeof window.closeQualityModal === 'function') window.closeQualityModal();
+                        if (typeof window.closeSubtitleModal === 'function') window.closeSubtitleModal();
+                        closePlayer();
+                        return;
+
+                    case 'ChannelUp':   e.preventDefault(); nextCh(); return;
+                    case 'ChannelDown': e.preventDefault(); prevCh(); return;
+                }
+                updateRemoteFocus();
+                return;
+            }
+
+            // ── zone === 'player' (buton satiri) ──
             switch(e.key) {
                 case 'ArrowLeft':
                     e.preventDefault(); e.stopPropagation();
-                    // Sol/Sağ artık buton gezinmesi yapmasın — direkt progress bar'a
-                    // geçip aynı tuş basışında kusursuz sarma yapsın (kullanıcı isteği).
-                    state.remote.zone = 'progressBar';
-                    if (typeof seekBackward === 'function') seekBackward();
+                    // Buton satirinda sol -> onceki butona gec; ilk butondaysak
+                    // progress bar'a gecmek yerine sarma yap (kullanici isteği).
+                    if (state.remote.playerBoxIndex > 0) {
+                        state.remote.playerBoxIndex--;
+                    } else if (typeof seekBackward === 'function') {
+                        seekBackward();
+                    }
                     updateRemoteFocus();
                     return;
 
                 case 'ArrowRight':
                     e.preventDefault(); e.stopPropagation();
-                    state.remote.zone = 'progressBar';
-                    if (typeof seekForward === 'function') seekForward();
+                    // Buton satirinda sag -> sonraki butona gec; son butondaysak sarma yap.
+                    if (state.remote.playerBoxIndex < visibleButtons.length - 1) {
+                        state.remote.playerBoxIndex++;
+                    } else if (typeof seekForward === 'function') {
+                        seekForward();
+                    }
                     updateRemoteFocus();
                     return;
 
                 case 'ArrowUp':
                     e.preventDefault(); e.stopPropagation();
-                    // Yukarı → progress bar'a geç (kullanıcı isteği: oradan da sarma yapılabilsin)
+                    // Yukari -> progress bar'a gec (oradan Asagi ile geri donulebilir).
                     state.remote.zone = 'progressBar';
                     updateRemoteFocus();
                     return;
 
                 case 'ArrowDown':
                     e.preventDefault();
-                    // ↓ → Kontrolleri kapat (gizle, oto-gizle gibi)
+                    // Asagi -> Kontrolleri kapat (gizle, oto-gizle gibi)
                     clearTimeout(window.autoHideControlsTimer);
                     clearTimeout(window.controlsTimer);
                     document.getElementById('playerContainer').classList.remove('show-controls');

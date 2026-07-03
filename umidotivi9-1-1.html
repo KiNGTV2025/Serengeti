@@ -30224,9 +30224,21 @@ function closeSidebar() {
     // TVBox: Sidebar kapanınca — sadece canlı yayında kontrolleri kısa göster
     setTimeout(() => {
         overlay.style.display = 'none';
-        state.remote.zone = 'channels';
-        state.remote.index = 0;
-        setTimeout(() => { updateRemoteFocus(); }, 50);
+        // FIX: "Kanal listesi açıkken geri tuşuna basınca player kapanıyor" —
+        // sidebar player oynatılırken açılmışsa (window._sidebarOpenedWithPlayer)
+        // kapanınca kumanda odağı burada her zaman 'channels' (ana ekran ızgarası)
+        // zone'una atanıyordu. Player hâlâ görünür olduğu hâlde kumanda arkadaki
+        // ana ekranı yönetmeye başlıyor, bir sonraki Geri basışında da player
+        // kapanıyormuş gibi davranışa yol açıyordu. Artık player açıkken odağı
+        // doğru şekilde 'player' zone'una geri veriyoruz.
+        if (window._sidebarOpenedWithPlayer) {
+            state.remote.zone = 'player';
+            setTimeout(() => { if (typeof updateRemoteFocus === 'function') updateRemoteFocus(); }, 50);
+        } else {
+            state.remote.zone = 'channels';
+            state.remote.index = 0;
+            setTimeout(() => { updateRemoteFocus(); }, 50);
+        }
 
         const _pvClose = document.getElementById('playerView');
         const _pcClose = document.getElementById('playerContainer');
@@ -40887,6 +40899,17 @@ function renderChannels() {
     
     // Otomatik scroll yükleme
     setupAutoLoadOnScroll(displayChannels.length);
+
+    // FIX: "Kanal listesinde odak kayboluyor" — grid her yeniden çizildiğinde
+    // (filtre değişimi, arka plan yenileme, EPG/sağlık kontrolü güncellemesi vb.)
+    // eski kart DOM'dan silinip yenisiyle değiştiriliyor, dolayısıyla üzerindeki
+    // 'remote-focused' sınıfı da kayboluyordu ve kumanda ile görünür odak bir
+    // daha geri gelmiyordu. Zone hâlâ 'channels' ve kumanda aktifse, render
+    // bittikten hemen sonra odağı geçerli karta yeniden uyguluyoruz.
+    if (window.state && state.remote && state.remote.zone === 'channels' && state.remote.active &&
+        typeof updateRemoteFocus === 'function') {
+        setTimeout(function() { updateRemoteFocus(); }, 0);
+    }
 }
 
 // VOD kartları için TMDB'den poster çek ve güncelle
@@ -72039,7 +72062,25 @@ function _vsStartListen() {
 function _vsStopListen() {
     _vsListening = false;
     window._vsListening = false;
-    if (_vsRecognition) { try { _vsRecognition.stop(); } catch(e) {} _vsRecognition = null; }
+    // FIX: "Uyku modunu sesli ayarlayınca kumanda işlevsiz oluyor" — interimResults
+    // açık olduğu için "uyku" kelimesi cümle bitmeden (ara/interim sonuçta) yakalanıp
+    // komut hemen işleniyor ve sesli arama kapatılıyordu. Ancak tarayıcının konuşma
+    // tanıma motoru stop() çağrısından SONRA da gecikmeli olay(lar) gönderebiliyordu;
+    // onresult/onend handler'ları söküLMEDEN sadece değişken null'landığı için bu geç
+    // gelen sonuçlar hâlâ eski recognition nesnesi üzerinden ateşleniyor, komut tekrar
+    // tekrar işlenip kumanda odağı (state.remote.zone) art arda sıfırlanıyordu — bu da
+    // gerçek kumanda tuşlarıyla çakışıp kumandanın tepkisiz kalmasına yol açıyordu.
+    // Artık nesneyi durdurmadan önce tüm event handler'larını söküyoruz ki geç gelen
+    // sonuçlar artık hiçbir şeyi tetiklemesin.
+    if (_vsRecognition) {
+        try {
+            _vsRecognition.onresult = null;
+            _vsRecognition.onerror = null;
+            _vsRecognition.onend = null;
+            _vsRecognition.stop();
+        } catch(e) {}
+        _vsRecognition = null;
+    }
     var micBtn = document.getElementById('vsMicBtn');
     var voiceBtn = document.getElementById('btnVoiceSearch');
     if (micBtn) { micBtn.className = 'vs-mic-btn'; micBtn.textContent = '🎙'; }
@@ -72287,6 +72328,11 @@ function _vsDisableSleepMode() {
 
 // Komutu dener; eşleşip işlendiyse true döner (çağıran normal aramayı atlar).
 function _vsTryHandleCommand(rawText) {
+    // FIX: Sesli arama modalı zaten kapanmışsa (bir önceki interim sonuçta komut
+    // işlenip closeVoiceSearch() çağrılmışsa) geç gelen artık sonuçların komutu
+    // tekrar tekrar işleyip kumanda odağını sıfırlamasını engelle.
+    if (typeof _vsOpen !== 'undefined' && !_vsOpen) return false;
+
     var nText = _vsNormalize(rawText);
 
     // ── UYGULAMAYI KAPATMA KOMUTU ────────────────────────────────────

@@ -4253,30 +4253,79 @@ body {
     border: none !important;
     padding: 0 !important;
     overflow: visible !important;
-    transition: none;
+    transition: transform 0.15s ease;
     contain: layout style paint;
     content-visibility: auto;
     contain-intrinsic-size: 220px 260px;
 }
+.cw-poster-card:hover {
+    transform: translateY(-2px);
+}
 .cw-poster-card.remote-focused,
 .cw-poster-card.focused {
     contain: layout style !important;
+    transform: translateY(-2px) scale(1.02);
 }
 .cw-poster-card.remote-focused .cw-poster-img-wrap,
 .cw-poster-card.focused .cw-poster-img-wrap {
     border-color: var(--accent-primary);
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),0.25);
 }
 
 .cw-poster-img-wrap {
     position: relative;
     width: 100%;
     aspect-ratio: 2 / 3;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+/* Poster altında koyu gradient — meta yazıları (dakika/tarih) posterin
+   üzerinde okunaklı olsun diye; resmin kendisine dokunmaz. */
+.cw-poster-img-wrap::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 46%;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 55%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.cw-poster-meta {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    pointer-events: none;
+}
+.cw-poster-meta-mins {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.cw-poster-meta-mins .material-symbols-outlined {
+    font-size: 12px;
+    color: var(--accent-primary);
+}
+.cw-poster-meta-when {
+    font-size: 9.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
 .cw-poster-img {
@@ -4304,14 +4353,15 @@ body {
     position: absolute;
     top: 8px;
     left: 8px;
-    background: rgba(var(--accent-primary-rgb,255,215,0), 0.92);
+    background: rgba(var(--accent-primary-rgb,255,215,0), 0.94);
     color: #000;
-    padding: 3px 7px;
-    border-radius: 6px;
+    padding: 3px 8px;
+    border-radius: 20px;
     font-size: 10px;
     font-weight: 800;
     z-index: 3;
     letter-spacing: 0.2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
 }
 
 .cw-poster-live-badge {
@@ -4330,16 +4380,17 @@ body {
 
 .cw-poster-se-badge {
     position: absolute;
-    bottom: 10px;
-    left: 8px;
-    background: rgba(0,0,0,0.75);
+    top: 8px;
+    right: 38px;
+    background: rgba(0,0,0,0.7);
     color: rgba(255,255,255,0.95);
     padding: 3px 7px;
-    border-radius: 5px;
+    border-radius: 6px;
     font-size: 10px;
     font-weight: 700;
     z-index: 3;
     letter-spacing: 0.2px;
+    border: 1px solid rgba(255,255,255,0.12);
 }
 
 .cw-poster-del-btn {
@@ -4373,13 +4424,15 @@ body {
 .cw-poster-progress-track {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 4px;
+    height: 5px;
     background: rgba(255,255,255,0.18);
     z-index: 2;
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
 }
 .cw-poster-progress-fill {
     height: 100%;
-    background: var(--accent-primary);
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary, var(--accent-primary)));
     transition: width 200ms ease-out;
 }
 
@@ -6314,6 +6367,25 @@ body {
             color: #ff4444;
             border-color: rgba(255,80,80,0.7);
         }
+        /* "X" (Kapat) butonu her zaman kırmızı kalsın — odaklanınca tema
+           renginin (altın vb.) ezmesini engelle. */
+        #btnClosePlayer,
+        #btnClosePlayer.remote-focused,
+        #btnClosePlayer.focused {
+            background: linear-gradient(145deg, rgba(255,60,60,0.32) 0%, rgba(200,0,0,0.16) 100%) !important;
+            border: 1px solid rgba(255,70,70,0.6) !important;
+            color: #ff5555 !important;
+        }
+        #btnClosePlayer.remote-focused,
+        #btnClosePlayer.focused {
+            outline: 2px solid #ff5555 !important;
+            outline-offset: 2px;
+            box-shadow: 0 0 12px rgba(255,60,60,0.45) !important;
+        }
+        #btnClosePlayer .material-symbols-outlined,
+        #btnClosePlayer .btn-label {
+            color: #ff5555 !important;
+        }
          
         .player-action-btn.btn-active {
             background: var(--btn-on-bg, rgba(255,215,0,0.32));
@@ -6496,6 +6568,12 @@ body {
     display: none;
     animation: fadeIn 0.3s ease;
 }
+/* Sidebar açılırken bir yayın oynuyorsa, arka planı tam karartma yerine
+   hafif karart — "kanalları gezerken yayını net görebilme" isteği için
+   arkadaki video (sidebar'ın sağında kalan alanda) görünür kalsın. */
+.sidebar-overlay.player-behind {
+    background: rgba(0, 0, 0, 0.45);
+}
 
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -6508,15 +6586,27 @@ body {
     top: 0;
     bottom: 0;
     width: 320px;
-    background: var(--bg-panel);
+    background:
+        linear-gradient(180deg, rgba(var(--accent-primary-rgb,255,215,0),0.05) 0%, transparent 140px),
+        var(--bg-panel);
     z-index: 3001;
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     height: 100vh;
-    border-right: 2px solid var(--accent-primary);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    border-right: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);
+    box-shadow: 14px 0 40px rgba(0, 0, 0, 0.55), inset -1px 0 0 rgba(255,255,255,0.04);
+}
+/* İnce, parlak üst kenar çizgisi — panele "premium" bir kapanış hissi verir */
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+    opacity: 0.7;
+    z-index: 1;
 }
 
 .sidebar.open {
@@ -6524,36 +6614,155 @@ body {
 }
 
 .sidebar-header {
-    padding: 12px 16px;
-    background: linear-gradient(135deg, rgba(var(--accent-primary-rgb,255,215,0),0.08), rgba(var(--accent-primary-rgb,255,215,0),0.03));
-    border-bottom: 1px solid var(--border-color);
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(var(--accent-primary-rgb,255,215,0),0.10), rgba(var(--accent-primary-rgb,255,215,0),0.02) 60%);
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
     gap: 8px;
 }
+/* Düz çizgi yerine ortadan güçlü, kenarlarda solan degrade ayraç */
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-primary-rgb,255,215,0),0.4) 50%, transparent);
+}
 
 .sidebar-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent-primary);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: var(--text-bright);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+}
+
+.sidebar-title #sidebarTitleIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(145deg, rgba(var(--accent-primary-rgb,255,215,0),0.25), rgba(var(--accent-primary-rgb,255,215,0),0.08));
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.35);
+    color: var(--accent-primary);
+    flex-shrink: 0;
 }
 
 .sidebar-title .material-symbols-outlined {
-    font-size: 20px;
+    font-size: 18px;
+}
+
+/* ── Şu An Oynatılıyor — sidebar üstünde net, büyük önizleme ── */
+.sidebar-now-playing {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin: 12px 12px 4px 12px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(var(--accent-primary-rgb,255,215,0),0.12), rgba(20,20,28,0.4));
+    border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.22);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    flex-shrink: 0;
+}
+.sidebar-now-playing-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: 11px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.sidebar-now-playing-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+}
+.sidebar-now-playing-thumb::after {
+    content: '';
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ff3b3b;
+    box-shadow: 0 0 6px rgba(255,59,59,0.9);
+    animation: epgLivePulse 1.4s ease-in-out infinite;
+}
+.sidebar-now-playing-info {
+    flex: 1;
+    min-width: 0;
+}
+.sidebar-now-playing-label {
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.sidebar-now-playing-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-bright);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sidebar-now-playing-program {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+.sidebar-now-playing-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+}
+.sidebar-now-playing-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.sidebar-now-playing-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary, var(--accent-primary)));
+}
+.sidebar-now-playing-time {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
 }
 
 .sidebar-close-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--border-color);
-    color: #fff;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6563,9 +6772,10 @@ body {
 }
 
 .sidebar-close-btn:hover {
-    background: var(--accent-primary);
-    color: #000;
-    transform: none;
+    background: rgba(255,70,70,0.16);
+    border-color: rgba(255,70,70,0.45);
+    color: #ff6b6b;
+    transform: rotate(90deg);
 }
 
  
@@ -6654,15 +6864,15 @@ body {
  
 .category-list {
     flex: 0 0 auto;
-    background: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid var(--border-color);
-    padding: 8px;
+    background: transparent;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 10px 12px 10px;
     overflow-x: auto;
     white-space: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
     min-height: 48px;
-    max-height: 52px;
+    max-height: 56px;
     overflow-y: hidden;
 }
 
@@ -6672,30 +6882,32 @@ body {
 
 .category-tab {
     display: inline-block;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     margin: 0 4px;
     white-space: nowrap;
 }
 
 .category-tab:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.09);
     color: var(--text-bright);
+    border-color: rgba(255,255,255,0.16);
 }
 
 .category-tab.active {
-    background: var(--accent-secondary);
-    color: var(--accent-primary);
-    border-color: var(--accent-secondary);
+    background: linear-gradient(135deg, var(--accent-primary), rgba(var(--accent-primary-rgb,255,215,0),0.75));
+    color: #000;
+    border-color: transparent;
     transform: none;
-    box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb,255,215,0),0.3);
+    box-shadow: 0 4px 14px rgba(var(--accent-primary-rgb,255,215,0),0.35);
     font-weight: 800;
 }
 
@@ -6723,7 +6935,7 @@ body {
     display: flex;
     align-items: center;
     padding: 10px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.045);
     cursor: pointer;
     transition: background 0.15s;
     min-height: 58px;
@@ -6734,13 +6946,13 @@ body {
 }
 
 .channel-list-item:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .channel-list-item.active {
-    background: linear-gradient(90deg, rgba(255,215,0,0.28) 0%, rgba(220,40,40,0.22) 60%, transparent 100%);
-    border-left: 3px solid #FFD700;
-    box-shadow: inset 0 0 20px rgba(220,40,40,0.08);
+    background: linear-gradient(90deg, rgba(var(--accent-primary-rgb,255,215,0),0.16) 0%, rgba(var(--accent-primary-rgb,255,215,0),0.04) 70%, transparent 100%);
+    border-left: 3px solid var(--accent-primary);
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.12);
 }
 
 .channel-list-item.remote-focused {
@@ -6783,10 +6995,16 @@ body {
 }
 
 .channel-number {
-    min-width: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
+    min-width: 26px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
     margin-right: 10px;
     flex-shrink: 0;
 }
@@ -6794,15 +7012,16 @@ body {
 .channel-logo-small {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
     margin-right: 12px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(20, 20, 20, 0.8);
+    background: rgba(20, 20, 20, 0.85);
     border: 1px solid rgba(255,215,0,0.18);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .channel-logo-small img {
@@ -6864,9 +7083,12 @@ body {
 
  
 .channel-list-item.has-epg {
-    min-height: 72px;
+    min-height: 76px;
     align-items: flex-start;
-    padding: 10px 16px;
+    padding: 11px 16px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    margin: 3px 6px;
 }
 .channel-list-item.has-epg .channel-logo-small {
     margin-top: 4px;
@@ -6909,8 +7131,8 @@ body {
 
  
 .sidebar-epg-now {
-    font-size: 11px;
-    color: var(--accent-primary);
+    font-size: 12.5px;
+    color: #fff;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
@@ -6948,8 +7170,8 @@ body {
 }
 .sidebar-epg-bar {
     flex: 1;
-    height: 3px;
-    background: rgba(255,255,255,0.08);
+    height: 4px;
+    background: rgba(255,255,255,0.1);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -7248,16 +7470,19 @@ body {
 
  
 .channels-list-container::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
 }
 
 .channels-list-container::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent;
 }
 
 .channels-list-container::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent-primary-rgb,255,215,0),0.45);
+    border-radius: 3px;
+}
+.channels-list-container::-webkit-scrollbar-thumb:hover {
     background: var(--accent-primary);
-    border-radius: 2px;
 }
 
  
@@ -15609,7 +15834,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        
+
+        <!-- Şu An Oynatılıyor — kanal gezinirken hangi yayının açık olduğu net görünsün -->
+        <div class="sidebar-now-playing" id="sidebarNowPlaying" style="display:none;"></div>
+
         
         <!-- Kanal arama kaldırıldı: TVBox performans için -->
         
@@ -29712,7 +29940,15 @@ function openSidebar() {
     }
 
     overlay.style.display = 'block';
+    overlay.classList.toggle('player-behind', !!_playerOpen);
     showSidebarLoading(true);
+    if (typeof updateSidebarNowPlaying === 'function') updateSidebarNowPlaying();
+    clearInterval(window._sidebarNowPlayingInterval);
+    if (_playerOpen) {
+        window._sidebarNowPlayingInterval = setInterval(function() {
+            if (typeof updateSidebarNowPlaying === 'function') updateSidebarNowPlaying();
+        }, 15000);
+    }
     _updateSidebarTitle();
 
     state.remote.zone = 'sidebar';
@@ -29851,6 +30087,7 @@ function updatePlayerListBtn() {
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
+    clearInterval(window._sidebarNowPlayingInterval);
     
     // Sidebar kapatılırken odak index'ini kaydet — sonraki açılışta restore edilir
     window._UTV = window._UTV || {};
@@ -29913,6 +30150,59 @@ function closeSidebar() {
     playKeySound('back');
 }
 
+// "Şu An Oynatılıyor" — sidebar'ın üstünde, kanal gezinirken açık olan
+// yayının adını/logosunu ve (canlıysa) net bir EPG özetini gösterir.
+function updateSidebarNowPlaying() {
+    try {
+        const box = document.getElementById('sidebarNowPlaying');
+        if (!box) return;
+        const pv = document.getElementById('playerView');
+        const playerOpen = pv && pv.style.display === 'flex';
+        if (!playerOpen || !state.player || !state.player.name) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        const FALLBACK_LOGO = 'https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg';
+        const logo = state.player.logo && state.player.logo.trim() ? state.player.logo.trim() : FALLBACK_LOGO;
+        const name = state.player.name;
+        const isLive = !!state.player.isLiveStream;
+
+        let programHtml = '';
+        if (isLive) {
+            const _getEPG = window.getEPGInfo || (typeof getEPGInfo === 'function' ? getEPGInfo : null);
+            const _parseT = window.parseEPGTime || (typeof parseEPGTime === 'function' ? parseEPGTime : null);
+            const epg = _getEPG ? _getEPG(name, state.player.tvgId || '') : null;
+            if (epg && epg.current) {
+                const sTime = _parseT ? _parseT(epg.current.start) : null;
+                const eTime = _parseT ? _parseT(epg.current.stop) : null;
+                const fmtT = d => d ? new Date(d).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '';
+                const now = Date.now();
+                const pct = (sTime && eTime) ? Math.round(Math.max(0, Math.min(100, ((now - sTime) / (eTime - sTime)) * 100))) : 0;
+                programHtml = `<div class="sidebar-now-playing-program">${epg.current.title}</div>
+                    <div class="sidebar-now-playing-bar-wrap">
+                        <div class="sidebar-now-playing-bar"><div class="sidebar-now-playing-bar-fill" style="width:${pct}%;"></div></div>
+                        <span class="sidebar-now-playing-time">${fmtT(sTime)}–${fmtT(eTime)}</span>
+                    </div>`;
+            } else {
+                programHtml = `<div class="sidebar-now-playing-program">Canlı yayın</div>`;
+            }
+        } else {
+            const _isSeries = !!(state.series && state.series.currentSeries);
+            programHtml = `<div class="sidebar-now-playing-program">${_isSeries ? 'Dizi oynatılıyor' : 'Film oynatılıyor'}</div>`;
+        }
+
+        box.style.display = 'flex';
+        box.innerHTML = `
+            <div class="sidebar-now-playing-thumb"><img src="${logo}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_LOGO}';"></div>
+            <div class="sidebar-now-playing-info">
+                <div class="sidebar-now-playing-label">${isLive ? 'Şimdi Oynatılıyor' : 'Şu An İzleniyor'}</div>
+                <div class="sidebar-now-playing-name">${name}</div>
+                ${programHtml}
+            </div>`;
+    } catch(e) {}
+}
+window.updateSidebarNowPlaying = updateSidebarNowPlaying;
 function populateSidebar() {
     requestAnimationFrame(() => {
         // DİZİ MODU: Dizi oynanıyorsa kanal listesi yerine bölümleri sidebar'da göster
@@ -37056,6 +37346,24 @@ setTimeout(_vhsInit, 1200);
        return state.channels.find(c => _cwFuzzyKey(c.name) === target) || null;
    }
    window._cwFindChannel = _cwFindChannel;
+   // "Ne zaman izlendi" — Devam Et kartlarında gösterilen göreceli zaman metni.
+   function formatCwRelativeTime(ts) {
+       if (!ts) return '';
+       const diffMs = Date.now() - ts;
+       if (diffMs < 0) return '';
+       const mins = Math.floor(diffMs / 60000);
+       if (mins < 1) return 'Az önce izlendi';
+       if (mins < 60) return `${mins} dk önce izlendi`;
+       const hours = Math.floor(mins / 60);
+       if (hours < 24) return `${hours} saat önce izlendi`;
+       const days = Math.floor(hours / 24);
+       if (days === 1) return 'Dün izlendi';
+       if (days < 7) return `${days} gün önce izlendi`;
+       try {
+           return new Date(ts).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' izlendi';
+       } catch(e) { return ''; }
+   }
+   window.formatCwRelativeTime = formatCwRelativeTime;
    function renderContinueWatching() {
     if (window._renderFrozenByPlayer) return;
     const container = document.getElementById('continueWatchingContainer');
@@ -40135,6 +40443,18 @@ function renderChannels() {
                 ? `<div class="cw-poster-se-badge">S${continueData.season} B${continueData.episode}</div>`
                 : '';
 
+            // Kaçıncı dakikada kaldığı ve ne zaman izlendiği bilgisi.
+            const _watchedMin = Math.max(0, Math.floor((continueData.currentTime || continueData.time || 0) / 60));
+            const _totalMin = continueData.totalDuration ? Math.floor(continueData.totalDuration / 60) : 0;
+            const _minsLabel = _totalMin > 0 ? `${_watchedMin}. dk / ${_totalMin} dk` : `${_watchedMin}. dakika`;
+            const _whenLabel = (typeof formatCwRelativeTime === 'function') ? formatCwRelativeTime(continueData.timestamp) : '';
+            const _metaHtml = isVod
+                ? `<div class="cw-poster-meta">
+                        <div class="cw-poster-meta-mins"><span class="material-symbols-outlined">schedule</span>${_minsLabel}</div>
+                        ${_whenLabel ? `<div class="cw-poster-meta-when">${_whenLabel}</div>` : ''}
+                   </div>`
+                : '';
+
             _htmlParts.push(`
                 <div class="channel-card continue-card-in-grid cw-poster-card"
                      onclick="playChannelFromContinueCategory(${i})"
@@ -40152,6 +40472,7 @@ function renderChannels() {
                                 tabindex="-1" aria-label="Sil">
                             <span class="material-symbols-outlined">close</span>
                         </button>
+                        ${_metaHtml}
                         <div class="cw-poster-progress-track">
                             <div class="cw-poster-progress-fill" style="width:${progressPercent}%;"></div>
                         </div>
@@ -45978,22 +46299,23 @@ function deleteContinueWatchingRecord(name) {
                 case 'ArrowLeft':
                     e.preventDefault(); e.stopPropagation();
                     // Buton satirinda sol -> onceki butona gec; ilk butondaysak
-                    // progress bar'a gecmek yerine sarma yap (kullanici isteği).
+                    // (progress bar'a GECME) son butona (X/Kapat) sarma yap.
                     if (state.remote.playerBoxIndex > 0) {
                         state.remote.playerBoxIndex--;
-                    } else if (typeof seekBackward === 'function') {
-                        seekBackward();
+                    } else {
+                        state.remote.playerBoxIndex = visibleButtons.length - 1;
                     }
                     updateRemoteFocus();
                     return;
 
                 case 'ArrowRight':
                     e.preventDefault(); e.stopPropagation();
-                    // Buton satirinda sag -> sonraki butona gec; son butondaysak sarma yap.
+                    // Buton satirinda sag -> sonraki butona gec; son butondaysak
+                    // (X/Kapat) (progress bar'a GECME) en bastaki butona sarma yap.
                     if (state.remote.playerBoxIndex < visibleButtons.length - 1) {
                         state.remote.playerBoxIndex++;
-                    } else if (typeof seekForward === 'function') {
-                        seekForward();
+                    } else {
+                        state.remote.playerBoxIndex = 0;
                     }
                     updateRemoteFocus();
                     return;
@@ -62803,10 +63125,14 @@ async function syncContinueWatchingFromCloud() {
         if (!uid) { console.info('[CW] Telegram ID yok, cihazlar arası senkron atlanıyor.'); return; }
         if (typeof state === 'undefined' || !state.continueWatching) return;
         var cloud = await fbGet('/continueWatching/' + uid);
-        if (!cloud || typeof cloud !== 'object') return;
+        // NOT: cloud null/undefined dönebilir (ör. tüm kayıtlar başka cihazdan
+        // silinmiş olabilir) — bu durumda da aşağıdaki silme senkronunun
+        // çalışabilmesi için boş nesne olarak ele alıyoruz.
+        var cloudObj = (cloud && typeof cloud === 'object') ? cloud : {};
+        var cloudKeys = Object.keys(cloudObj);
         var changed = false;
-        Object.keys(cloud).forEach(function(key) {
-            var item = cloud[key];
+        cloudKeys.forEach(function(key) {
+            var item = cloudObj[key];
             if (!item || !item.name) return;
             var local = state.continueWatching[item.name];
             if (!local || (item.timestamp || 0) > (local.timestamp || 0)) {
@@ -62822,13 +63148,41 @@ async function syncContinueWatchingFromCloud() {
         // Yerelde bulutta olandan daha yeni kayıt varsa yukarı gönder
         Object.keys(state.continueWatching).forEach(function(name) {
             var local = state.continueWatching[name];
-            var cItem = cloud[_cwSafeKey(name)];
+            var cItem = cloudObj[_cwSafeKey(name)];
             if (!cItem || (local.timestamp || 0) > (cItem.timestamp || 0)) {
                 _cwPushToCloud(name, local);
             }
         });
+
+        // ── Cihazlar arası SİLME senkronu ──
+        // "Kartlar telefondan silindi mi tvbox'tan silinsin": bir kayıt daha
+        // önceki senkronda buluttan görülmüş (_cwLastCloudKeys içinde) ama
+        // şimdi bulutta artık yoksa, başka bir cihazda (ör. telefonda)
+        // silinmiş demektir — bu cihazda da (ör. tvbox'ta) yerelden kaldır.
+        // Hiç senkron olmamış (prevSyncedKeys boş) kayıtlara dokunulmaz;
+        // aksi halde ilk senkronda henüz buluta yazılmamış yeni kayıtlar
+        // yanlışlıkla silinir.
+        try {
+            var prevSyncedKeys = JSON.parse(localStorage.getItem('_cwLastCloudKeys') || '[]');
+            if (prevSyncedKeys.length) {
+                Object.keys(state.continueWatching).forEach(function(name) {
+                    var safeKey = _cwSafeKey(name);
+                    if (prevSyncedKeys.indexOf(safeKey) !== -1 && cloudKeys.indexOf(safeKey) === -1) {
+                        delete state.continueWatching[name];
+                        changed = true;
+                        try {
+                            if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {
+                                state.db.delete(state.db.stores.CONTINUE, name).catch(function(){});
+                            }
+                        } catch(e) {}
+                    }
+                });
+            }
+            localStorage.setItem('_cwLastCloudKeys', JSON.stringify(cloudKeys));
+        } catch(e) {}
+
         if (changed) {
-            console.info('[CW] Diğer cihazdan devam et kayıtları senkronize edildi:', Object.keys(cloud).length);
+            console.info('[CW] Diğer cihazdan devam et kayıtları senkronize edildi:', cloudKeys.length);
             try { localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching)); } catch(e) {}
             if (typeof renderContinueWatching === 'function') { try { renderContinueWatching(); } catch(e) {} }
             if (typeof filterChannels === 'function' && state.activeCat === 'cont') { try { filterChannels(); } catch(e) {} }

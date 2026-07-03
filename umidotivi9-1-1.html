@@ -48491,7 +48491,13 @@ function cleanupDeleteContinueModalRemote() {
                 }
             }
             else if(state.remote.zone==='header') { 
-                state.remote.headerIndex = Math.max(0, state.remote.headerIndex-1); 
+                // Silinmiş/gizli header butonlarını atlayıp bir önceki GERÇEK butona geç
+                var _hiL = state.remote.headerIndex;
+                for (var _niL = _hiL - 1; _niL >= 0; _niL--) {
+                    var _elL = document.getElementById(HEADER_BUTTONS[_niL]);
+                    if (_elL && _elL.style.display !== 'none' && !_elL.disabled) { _hiL = _niL; break; }
+                }
+                state.remote.headerIndex = _hiL;
             }
             else if(state.remote.zone==='m3u') {
                 if (state.remote.m3uSubZone === 'refresh') {
@@ -48553,7 +48559,13 @@ function cleanupDeleteContinueModalRemote() {
                 }
             }
             else if(state.remote.zone==='header') { 
-                state.remote.headerIndex = Math.min(HEADER_BUTTONS.length-1, state.remote.headerIndex+1); 
+                // Silinmiş/gizli header butonlarını atlayıp bir sonraki GERÇEK butona geç
+                var _hiR = state.remote.headerIndex;
+                for (var _niR = _hiR + 1; _niR < HEADER_BUTTONS.length; _niR++) {
+                    var _elR = document.getElementById(HEADER_BUTTONS[_niR]);
+                    if (_elR && _elR.style.display !== 'none' && !_elR.disabled) { _hiR = _niR; break; }
+                }
+                state.remote.headerIndex = _hiR;
             }
             else if(state.remote.zone==='m3u') {
                 if (state.remote.m3uSubZone === 'refresh') {
@@ -49179,14 +49191,27 @@ function handleFavoriteChannelSelect(key) {
         (function() {
             var _hbEl0 = document.getElementById(HEADER_BUTTONS[state.remote.headerIndex]);
             if (!_hbEl0 || _hbEl0.style.display === 'none' || _hbEl0.disabled) {
-                // Görünür ilk butonu bul
-                for (var _hbScan = 0; _hbScan < HEADER_BUTTONS.length; _hbScan++) {
+                // Önce mevcut index'ten İLERİ doğru en yakın geçerli butonu ara,
+                // bulunamazsa GERİYE doğru ara. Bu sayede sadece o buton silinmiş/
+                // gizlenmiş olsa bile odak listenin başına sıçramaz.
+                var _hbFound = -1;
+                for (var _hbScan = state.remote.headerIndex + 1; _hbScan < HEADER_BUTTONS.length; _hbScan++) {
                     var _hbScanEl = document.getElementById(HEADER_BUTTONS[_hbScan]);
                     if (_hbScanEl && _hbScanEl.style.display !== 'none' && !_hbScanEl.disabled) {
-                        state.remote.headerIndex = _hbScan;
+                        _hbFound = _hbScan;
                         break;
                     }
                 }
+                if (_hbFound === -1) {
+                    for (var _hbScan2 = state.remote.headerIndex - 1; _hbScan2 >= 0; _hbScan2--) {
+                        var _hbScanEl2 = document.getElementById(HEADER_BUTTONS[_hbScan2]);
+                        if (_hbScanEl2 && _hbScanEl2.style.display !== 'none' && !_hbScanEl2.disabled) {
+                            _hbFound = _hbScan2;
+                            break;
+                        }
+                    }
+                }
+                if (_hbFound >= 0) state.remote.headerIndex = _hbFound;
             }
         })();
         el=document.getElementById(HEADER_BUTTONS[state.remote.headerIndex]);
@@ -72185,6 +72210,23 @@ function _vsMatchGuessToRealName(guess) {
 // Komutu dener; eşleşip işlendiyse true döner (çağıran normal aramayı atlar).
 function _vsTryHandleCommand(rawText) {
     var nText = _vsNormalize(rawText);
+
+    // ── UYGULAMAYI KAPATMA KOMUTU ────────────────────────────────────
+    // Tek başına söylenen "kapan", "kapat", "Ümit" kelimeleri ya da
+    // "uygulamayı kapat" cümlesi uygulamayı kapatır. Tek kelimelik
+    // komutlar başka bir şeyle karışmasın diye TÜM metin bu kelimelerden
+    // biriyle birebir eşleşmeli (örn. "sesi kapat" bunu TETİKLEMEZ).
+    var _vsAppCloseWords = ['kapan', 'kapansin', 'kapat', 'kapatsin', 'kapatsana', 'umit'];
+    var _vsIsAppClose = _vsAppCloseWords.indexOf(nText) >= 0 ||
+        /\buygulamay?i\s*kapat\w*\b/.test(nText);
+    if (_vsIsAppClose) {
+        if (typeof showToast === 'function') showToast('👋 Uygulama kapatılıyor...', 'success');
+        if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+        setTimeout(function () {
+            try { if (typeof closeAppSafely === 'function') closeAppSafely(); } catch (e) {}
+        }, 400);
+        return true;
+    }
 
     // ── PANEL AÇMA KOMUTLARI ─────────────────────────────────────────
     // "epg aç", "kanal listesi aç", "maçlar aç" vb. söylenince ilgili

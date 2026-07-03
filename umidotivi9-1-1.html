@@ -6916,6 +6916,7 @@ body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: visible;
     position: relative;
     -webkit-overflow-scrolling: touch;
     padding: 0;
@@ -6926,9 +6927,11 @@ body {
 
 .channels-list {
     list-style: none;
-    padding: 0;
+    /* Sol tarafa boşluk: kumanda odak çerçevesi (outline/border) kesilmesin */
+    padding: 0 3px 0 4px;
     margin: 0;
     min-height: 100%;
+    box-sizing: border-box;
 }
 
 .channel-list-item {
@@ -6943,6 +6946,8 @@ body {
     background: transparent;
     gap: 4px;
     contain: layout style;
+    box-sizing: border-box;
+    border-left: 4px solid transparent; /* odak border'ı için sabit yer ayır — kayma/kesilme olmasın */
 }
 
 .channel-list-item:hover {
@@ -27976,19 +27981,34 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                     }, DOUBLE_TAP_MS);
                 }
             } else {
-                // Orta bölge — tek dokunma: kontrol göster/gizle
+                // Orta bölge — tek dokunma: kontrol göster/gizle, çift dokunma: tam ekran aç/kapat
                 var _cZone = currentTouchZone;
                 if (_cZone === TOUCH_ZONES.CENTER) {
-                    // Tek dokunma eylemi: kontrol göster/gizle
-                    var pc = document.getElementById('playerContainer');
-                    if (pc) {
-                        var isVis = pc.classList.contains('show-controls');
-                        if (isVis) {
-                            pc.classList.remove('show-controls');
-                        } else if (!window._controlsHidden) {
-                            pc.classList.add('show-controls');
-                            showControls(7000);
-                        }
+                    const _nowCenter = Date.now();
+                    const DOUBLE_TAP_FS_MS = 350;
+                    if (_nowCenter - (window._centerLastTapTime || 0) < DOUBLE_TAP_FS_MS) {
+                        // Çift dokunma → tam ekran aç/kapat
+                        window._centerLastTapTime = 0;
+                        clearTimeout(window._centerTapTimer);
+                        if (typeof toggleFullscreen === 'function') toggleFullscreen();
+                    } else {
+                        // İlk dokunma — bekle, çift gelmezse tek dokunma eylemini uygula
+                        window._centerLastTapTime = _nowCenter;
+                        clearTimeout(window._centerTapTimer);
+                        window._centerTapTimer = setTimeout(function() {
+                            window._centerLastTapTime = 0;
+                            // Tek dokunma eylemi: kontrol göster/gizle
+                            var pc = document.getElementById('playerContainer');
+                            if (pc) {
+                                var isVis = pc.classList.contains('show-controls');
+                                if (isVis) {
+                                    pc.classList.remove('show-controls');
+                                } else if (!window._controlsHidden) {
+                                    pc.classList.add('show-controls');
+                                    showControls(7000);
+                                }
+                            }
+                        }, DOUBLE_TAP_FS_MS);
                     }
                 } else {
                     // Canlı, sol/sağ — normal tap
@@ -29953,6 +29973,7 @@ function openSidebar() {
 
     state.remote.zone = 'sidebar';
     state.remote.sidebarZone = 1;
+    _resetSidebarInactivityTimer(); // 30sn kumanda inaktivitesinde otomatik kapanma başlat
     /* Odak hafızası: daha önce sidebar kapatılınca index kaydedilmişse restore et */
     state.sidebar.selectedIndex = (window._UTV && typeof window._UTV._savedSidebarIndex === 'number')
         ? window._UTV._savedSidebarIndex
@@ -30088,6 +30109,7 @@ function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
     clearInterval(window._sidebarNowPlayingInterval);
+    clearTimeout(window._sidebarInactivityTimer); // 30sn otomatik kapanma timer'ını temizle
     
     // Sidebar kapatılırken odak index'ini kaydet — sonraki açılışta restore edilir
     window._UTV = window._UTV || {};
@@ -47717,7 +47739,17 @@ function cleanupDeleteContinueModalRemote() {
         state.remote.zone = null;
     }
 }
+        function _resetSidebarInactivityTimer() {
+    clearTimeout(window._sidebarInactivityTimer);
+    window._sidebarInactivityTimer = setTimeout(function() {
+        const sb = document.getElementById('sidebar');
+        if (sb && sb.classList.contains('open')) {
+            closeSidebar();
+        }
+    }, 30000); // 30 saniye kumanda ile gezinme yoksa kanal listesi otomatik kapanır
+}
         function handleSidebarRemote(e) {
+    _resetSidebarInactivityTimer();
     const categories = state.sidebar.categories;
     const _hiddenCatsNav = getHiddenCategories();
     const visibleCategories = categories.filter(c => !_hiddenCatsNav.has(c));
@@ -65907,6 +65939,56 @@ html, body {
     });
     window.addEventListener('resize', window._updateMobileFsBtn);
 
+    /* ═══ ANA SAYFA: boşluğa çift dokunma → tam ekran aç/kapat ═══
+       Kart, buton, kategori pill'i, link gibi tıklanabilir elemanlara
+       denk gelirse müdahale etme — sadece gerçekten "işlevsiz" boş
+       alana (grid-header, boş grid aralıkları, viewport arka planı vb.)
+       çift dokununca tetiklenir. */
+    var _homeDblLastTap = 0;
+    var _HOME_DTAP_MS = 350;
+    var _INTERACTIVE_SEL = 'button, a, input, select, textarea, ' +
+        '[onclick], [role="button"], .channel-card, .continue-card, ' +
+        '.recent-card, .category-tab, .cat-pill, .m3u-pill, ' +
+        '.header-btn, .sidebar-category-pill, .list-view-btn, ' +
+        '.vod-card, .alt-item, .channel-list-item, .search-result-item, ' +
+        '#mobileFullscreenBtn, .player-action-btn, .toggle-container, ' +
+        '.fav-toggle, .icon-btn, .settings-btn, .category-manage-btn';
+
+    function _isInteractiveTarget(el) {
+        return !!(el && el.closest && el.closest(_INTERACTIVE_SEL));
+    }
+
+    function _homeDblTapHandler(e) {
+        // Player açıkken veya modal/sidebar açıkken bu davranış devreye girmesin
+        var playerView = document.getElementById('playerView');
+        var playerOpen = playerView && playerView.style.display === 'flex';
+        if (playerOpen) return;
+
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) return;
+
+        var openModal = document.querySelector('.modal-bg[style*="flex"], .modal-overlay[style*="flex"]');
+        if (openModal) return;
+
+        var target = e.target;
+        if (_isInteractiveTarget(target)) return;
+
+        var now = Date.now();
+        if (now - _homeDblLastTap < _HOME_DTAP_MS) {
+            _homeDblLastTap = 0;
+            if (e.cancelable) e.preventDefault();
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                window.exitAppFullscreen();
+            } else {
+                window.enterAppFullscreen();
+            }
+        } else {
+            _homeDblLastTap = now;
+        }
+    }
+
+    document.addEventListener('click', _homeDblTapHandler, true);
+
 })();
 </script>
 
@@ -72968,8 +73050,15 @@ window.umitSendPush      = window.umitSendPush;
     cursor: pointer;
     padding: 0 2px;
     line-height: 1;
+    border-radius: 4px;
 }
 #altChOverlay .alt-close:hover { color: #fff; }
+#altChOverlay .alt-close.remote-focused {
+    color: #fff !important;
+    outline: 2px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
+    background: rgba(255,215,0,0.15) !important;
+}
 #altChList {
     display: flex;
     flex-direction: column;
@@ -73038,7 +73127,7 @@ window.umitSendPush      = window.umitSendPush;
 <div id="altChOverlay">
     <div class="alt-header">
         <span class="alt-title">📺 Alternatif Kanallar</span>
-        <button class="alt-close" onclick="hideAltChannels()">✕</button>
+        <button class="alt-close" id="altChCloseBtn" onclick="hideAltChannels()">✕</button>
     </div>
     <div id="altChList"></div>
     <div class="alt-footer" id="altChFooter">Kanal yüklenemedi — aynı gruptaki alternatifler</div>
@@ -73112,6 +73201,8 @@ window.showAltChannels = function (ch, gen) {
 window.hideAltChannels = function () {
     var ov = document.getElementById('altChOverlay');
     if (ov) ov.style.display = 'none';
+    var closeBtn = document.getElementById('altChCloseBtn');
+    if (closeBtn) closeBtn.classList.remove('remote-focused');
     _altFocusIdx = -1;
     _altItems = [];
     window._altDpadActive = false;
@@ -73158,6 +73249,7 @@ window.addEventListener('keydown', function (e) {
                  e.keyCode === 4 || e.keyCode === 27 || e.keyCode === 8 || e.keyCode === 461;
 
     var items = document.querySelectorAll('#altChList .alt-item');
+    var closeBtn = document.getElementById('altChCloseBtn');
 
     if (isBack) {
         e.preventDefault();
@@ -73169,17 +73261,35 @@ window.addEventListener('keydown', function (e) {
 
     if (!items.length) return;
 
+    /* _altFocusIdx: -2 = X (kapat) butonu, 0..N-1 = kanal öğesi */
     if (e.keyCode === 40 || e.keyCode === 228) { /* Aşağı */
         e.preventDefault();
         e.stopPropagation();
-        _altFocusIdx = Math.min(_altFocusIdx + 1, items.length - 1);
+        if (_altFocusIdx === -2) {
+            _altFocusIdx = 0; /* X'ten listeye in */
+        } else {
+            _altFocusIdx = Math.min(_altFocusIdx + 1, items.length - 1);
+        }
     } else if (e.keyCode === 38 || e.keyCode === 227) { /* Yukarı */
         e.preventDefault();
         e.stopPropagation();
-        _altFocusIdx = Math.max(_altFocusIdx - 1, 0);
+        if (_altFocusIdx <= 0) {
+            _altFocusIdx = -2; /* listenin en üstünden X'e geç */
+        } else {
+            _altFocusIdx = _altFocusIdx - 1;
+        }
+    } else if (e.keyCode === 39 || e.keyCode === 229) { /* Sağ — X butonuna geç */
+        e.preventDefault();
+        e.stopPropagation();
+        if (_altFocusIdx !== -2) _altFocusIdx = -2;
+    } else if (e.keyCode === 37 || e.keyCode === 226) { /* Sol — X'ten listeye dön */
+        e.preventDefault();
+        e.stopPropagation();
+        if (_altFocusIdx === -2) _altFocusIdx = 0;
     } else if (e.keyCode === 13 || e.keyCode === 23) { /* OK/Enter */
         e.preventDefault();
         e.stopPropagation();
+        if (_altFocusIdx === -2) { hideAltChannels(); return; }
         if (_altFocusIdx >= 0) altChPlay(_altFocusIdx);
         return;
     } else {
@@ -73190,6 +73300,7 @@ window.addEventListener('keydown', function (e) {
     items.forEach(function (el, i) {
         el.classList.toggle('remote-focused', i === _altFocusIdx);
     });
+    if (closeBtn) closeBtn.classList.toggle('remote-focused', _altFocusIdx === -2);
     // FIX: odak değiştiğinde liste scroll edilmiyordu — #altChList
     // (max-height:210px; overflow-y:auto) içinde focus edilen öğe görünür
     // alanın dışına çıkınca kumandayla aşağı/yukarı gitmek imkansız
@@ -73739,6 +73850,14 @@ select.sort-dpad-focused,
     filter: none !important;
     text-shadow: none !important;
     -webkit-text-stroke: initial !important;
+}
+
+/* ── FIX: Sidebar kanal listesi odak çerçevesi sol tarafta kesiliyordu ──
+   Neden: outline-offset dışa taşıyordu, liste konteyneri sınıra bitişikti.
+   Çözüm: içe (inset) outline + sabit border-left; artık taşma/kesilme yok. */
+.channel-list-item.remote-focused {
+    outline: 2px solid rgba(var(--accent-primary-rgb,255,215,0), 0.85) !important;
+    outline-offset: -2px !important;
 }
 
 /* ── 2) Kart içi başlık/etiket renkleri — eski sarı vurguyu sıfırla ── */

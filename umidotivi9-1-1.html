@@ -20434,6 +20434,7 @@ async function loadContinueWatching() {
                 
 
                 if (e._backHandled) return;
+                e._backHandled = true;
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -30878,7 +30879,15 @@ function scrollToSelectedChannel() {
     if (vs && vs.scroller && vs.channels && vs.channels.length > 0) {
         if (idx < vs.renderedStart + 2 || idx >= vs.renderedEnd - 2) {
             vs.scroller.scrollTop = Math.max(0, (idx - 4) * (vs.itemH || 72));
-            /* _renderWindow zaten scroll event ile tetiklenir */
+            // ODAK KAYBI DÜZELTMESİ: render penceresi normalde 'scroll' event'i
+            // ile ASENKRON (requestAnimationFrame) güncelleniyordu. Kumanda ile
+            // hızlı gezinirken hemen ardından çağrılan updateSidebarFocus() DOM
+            // henüz güncellenmeden çalışıyor, hedef öğeyi bulamıyor ve odak
+            // görünmez oluyordu. Burada render penceresini HEMEN senkron olarak
+            // güncelliyoruz — böylece updateSidebarFocus() doğru öğeyi bulur.
+            if (typeof window._sidebarRenderWindow === 'function') {
+                window._sidebarRenderWindow();
+            }
         }
         return;
     }
@@ -49629,6 +49638,16 @@ function handleFavoriteChannelSelect(key) {
             return;
         }
 
+        // GERİ TUŞU ÇİFT İŞLEME DÜZELTMESİ: handleBackButton (capture aşaması,
+        // document seviyesinde bu listener'dan ÖNCE eklendi) back tuşunu zaten
+        // işlediyse (örn. sidebar'ı kapattıysa) burada TEKRAR işleme — aksi
+        // halde sidebar kapanır kapanmaz "sidebar artık kapalı" görülüp bu
+        // sefer player de yanlışlıkla kapatılıyordu.
+        const _isBackKeyNow = e.key === 'Backspace' || e.key === 'Escape' || e.key === 'GoBack' || e.key === 'Back' || e.keyCode === 4;
+        if (_isBackKeyNow && e._backHandled) {
+            return;
+        }
+
         // Sidebar açık mı? (hem player hem ana ekranda)
         if (document.getElementById('sidebar').classList.contains('open')) {
             handleSidebarRemote(e);
@@ -59331,6 +59350,7 @@ function _setupVirtualSidebar() {
 
         _renderWindow();
     };
+    window._sidebarRenderWindow = _renderWindow;
 
     /* playChannelFromSidebar sanal indeks uyumu */
     var _origPlay = window.playChannelFromSidebar;
@@ -59358,9 +59378,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 var idx = (window.state && window.state.sidebar && window.state.sidebar.selectedIndex) || 0;
                 if (idx < vs.renderedStart + 2 || idx >= vs.renderedEnd - 2) {
                     vs.scroller.scrollTop = Math.max(0, (idx - 4) * vs.itemH);
-                    /* scroll event tetikler → _renderWindow → DOM güncellenir → sonra odak */
-                    setTimeout(function() { _origUSF(); }, 32);
-                    return;
+                    // ODAK KAYBI DÜZELTMESİ: 32ms'lik setTimeout gecikmesi yavaş
+                    // TVBox cihazlarında yetmiyor ve odak anlık kayboluyordu.
+                    // Render penceresini burada HEMEN senkron güncelliyoruz.
+                    if (typeof window._sidebarRenderWindow === 'function') {
+                        window._sidebarRenderWindow();
+                    }
                 }
             }
             _origUSF();
@@ -72225,6 +72248,43 @@ function _vsMatchGuessToRealName(guess) {
     return best;
 }
 
+// Sesli komutla uyku modunu aç/kapat/süre ayarla — mevcut saveSleepModeSettings()
+// ile aynı işi yapar ama modal DOM'una (slider/toggle) bağımlı değildir,
+// doğrudan state üzerinden çalışır.
+function _vsApplySleepMode(minutes) {
+    if (typeof minutes === 'number' && minutes > 0) {
+        state.controlSettings.sleepTimeMinutes = minutes;
+    }
+    if (!state.controlSettings.sleepTimeMinutes || state.controlSettings.sleepTimeMinutes <= 0) {
+        state.controlSettings.sleepTimeMinutes = 30; // makul varsayılan
+    }
+    state.controlSettings.sleepModeEnabled = true;
+    if (typeof updateSleepModeTimer === 'function') updateSleepModeTimer();
+
+    var sleepBtn = document.getElementById('btnSleepMode');
+    if (sleepBtn) {
+        sleepBtn.classList.add('active');
+        sleepBtn.title = 'Uyku Modu: ' + state.controlSettings.sleepTimeMinutes + ' dakika';
+    }
+    try { localStorage.setItem('controlSettings', JSON.stringify(state.controlSettings)); } catch (e) {}
+    if (typeof showToast === 'function') {
+        showToast('😴 Uyku modu aktif: ' + state.controlSettings.sleepTimeMinutes + ' dakika sonra kapanacak', 'success');
+    }
+}
+
+function _vsDisableSleepMode() {
+    state.controlSettings.sleepModeEnabled = false;
+    if (typeof updateSleepModeTimer === 'function') updateSleepModeTimer();
+
+    var sleepBtn = document.getElementById('btnSleepMode');
+    if (sleepBtn) {
+        sleepBtn.classList.remove('active');
+        sleepBtn.title = 'Uyku Modu';
+    }
+    try { localStorage.setItem('controlSettings', JSON.stringify(state.controlSettings)); } catch (e) {}
+    if (typeof showToast === 'function') showToast('Uyku modu kapatıldı', 'success');
+}
+
 // Komutu dener; eşleşip işlendiyse true döner (çağıran normal aramayı atlar).
 function _vsTryHandleCommand(rawText) {
     var nText = _vsNormalize(rawText);
@@ -72243,6 +72303,36 @@ function _vsTryHandleCommand(rawText) {
         setTimeout(function () {
             try { if (typeof closeAppSafely === 'function') closeAppSafely(); } catch (e) {}
         }, 400);
+        return true;
+    }
+
+    // ── UYKU MODU KOMUTU ─────────────────────────────────────────────
+    // "uyku modu aç", "uyku modunu 30 dakika ayarla", "1 saat sonra uyku
+    // modu", "uyku modu kapat/iptal" gibi komutlar. Tetikleyici kelime
+    // "uyku" — başka hiçbir komutta geçmediği için çakışma riski yok.
+    if (/\buyku\b/.test(nText)) {
+        var _sleepDisable = /\b(kapat\w*|kapali|durdur\w*|iptal\w*)\b/.test(nText);
+        if (_sleepDisable) {
+            _vsDisableSleepMode();
+            if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
+            return true;
+        }
+        // Süre var mı? "30 dakika", "1 saat" vb. — yoksa mevcut/varsayılan süre kullanılır
+        var _sleepMin = null;
+        var _hourMatch = nText.match(/(\d+|[a-z]+)\s*saat/);
+        var _minMatch  = nText.match(/(\d+|[a-z]+)\s*dak\w*/);
+        if (_hourMatch) {
+            var _h = _vsWordsToNumber(_hourMatch[1]);
+            if (_h) _sleepMin = _h * 60;
+        } else if (_minMatch) {
+            var _m = _vsWordsToNumber(_minMatch[1]);
+            if (_m) _sleepMin = _m;
+        } else {
+            var _genNum = _vsWordsToNumber(nText);
+            if (_genNum) _sleepMin = _genNum;
+        }
+        _vsApplySleepMode(_sleepMin);
+        if (typeof closeVoiceSearch === 'function') closeVoiceSearch();
         return true;
     }
 

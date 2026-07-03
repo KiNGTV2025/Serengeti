@@ -1078,7 +1078,12 @@ img {
     #headerUsernameCurve { max-width: 72px; height: 24px; }
 }
 @media (max-width: 360px) {
-    #headerUsernameTag { display: none !important; }
+    /* ÖNEMLİ: Eskiden burada display:none vardı — çoğu telefon dikey modda
+       tam 360px genişlik raporladığı için "Ümit" ismi hiç görünmüyordu.
+       Artık tamamen gizlemek yerine daha da küçültüyoruz; isim her zaman
+       görünür kalsın (kullanıcı için önemli özellik). */
+    #headerUsernameTag { max-width: 46px; margin-left: 2px; }
+    #headerUsernameCurve { max-width: 46px; height: 20px; }
 }
 
 /* ═══ SON İZLENENLER — MODERN TV TASARIMI ═══ */
@@ -14757,16 +14762,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()">
                 <span class="material-symbols-outlined">refresh</span>
             </button>
-            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()">
+            <button class="header-btn" id="btnControlSettings" onclick="openControlSettingsModal()" style="display:none;">
                 <span class="material-symbols-outlined">touch_app</span>
             </button>
             <button class="header-btn" id="btnAddM3U" onclick="openAddM3UModal(false)">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/m3u.svg" alt="Add M3U" class="svg-icon">
             </button>
-            <button class="header-btn" id="btnWatchStats" onclick="openStatsPanel()" title="İzleme İstatistikleri" tabindex="0">
+            <button class="header-btn" id="btnWatchStats" onclick="openStatsPanel()" title="İzleme İstatistikleri" tabindex="0" style="display:none;">
                 <span class="material-symbols-outlined">bar_chart</span>
             </button>
-            <button class="header-btn" id="btnHealthCheck" onclick="openHealthPanel()" title="Kanal Sağlık Kontrolü" tabindex="0">
+            <button class="header-btn" id="btnHealthCheck" onclick="openHealthPanel()" title="Kanal Sağlık Kontrolü" tabindex="0" style="display:none;">
                 <span class="material-symbols-outlined">monitor_heart</span>
             </button>
             <button class="header-btn" id="btnWatchParty" onclick="openWatchPartyLobby()" title="Watch Party - Birlikte İzle" style="position:relative;">
@@ -15919,6 +15924,15 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="modal-bg" id="settingsModal" onclick="if(event.target.id==='settingsModal') closeSettingsModal()">
         <div class="modal-content">
             <h3 style="color:var(--accent-primary); text-align:center; margin-bottom: 20px; font-size:20px;">Uygulama Ayarları</h3>
+            <button class="settings-btn secondary" id="btnOpenControlSettings" onclick="closeSettingsModal(); openControlSettingsModal();">
+                <span class="material-symbols-outlined">touch_app</span> Kontrol Ayarları
+            </button>
+            <button class="settings-btn secondary" id="btnOpenWatchStats" onclick="closeSettingsModal(); openStatsPanel();">
+                <span class="material-symbols-outlined">bar_chart</span> İzleme İstatistikleri
+            </button>
+            <button class="settings-btn secondary" id="btnOpenHealthCheck" onclick="closeSettingsModal(); openHealthPanel();">
+                <span class="material-symbols-outlined">monitor_heart</span> Kanal Sağlık Kontrolü
+            </button>
             <button class="settings-btn danger" id="btnClearContinue" onclick="clearContinueWatching(); closeSettingsModal();">
                 <span class="material-symbols-outlined">history_toggle_off</span> İzleme Ön Belleği Temizle
             </button>
@@ -19704,7 +19718,7 @@ Object.defineProperty(window, 'state', {
 
         const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnDeviceSync', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
-        const SETTINGS_BUTTONS = ['btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
+        const SETTINGS_BUTTONS = ['btnOpenControlSettings', 'btnOpenWatchStats', 'btnOpenHealthCheck', 'btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
         const CONTINUE_MODAL_BUTTONS = ['btnWatchLater', 'btnContinueDelete', 'btnStartOver', 'btnContinue'];
         const DELETE_MODAL_BUTTONS = ['btnDeleteCancel', 'btnDeleteConfirm'];
@@ -27526,6 +27540,30 @@ document.addEventListener('touchstart', cancelSleepShutdown);
     const video = document.getElementById('videoPlayer');
     const progressBar = document.getElementById('progressBarContainer');
     const controlsBox = document.getElementById('playerControlsBox');
+
+    // ── EK GÜVENLİK: bazı Android WebView sürümlerinde CSS pointer-events:none
+    // dokunuşla tetiklenen click event'lerini her zaman güvenilir şekilde
+    // engellemiyor. Kontroller görünür değilken (show-controls yok VEYA
+    // controls-hidden varken) player butonlarına giden HERHANGİ bir click'i
+    // capture aşamasında (event ağaca inmeden) tamamen iptal ediyoruz —
+    // buton görünmüyorsa asla tetiklenmemeli.
+    if (!playerContainer._dsClickGuardInstalled) {
+        playerContainer._dsClickGuardInstalled = true;
+        playerContainer.addEventListener('click', function(e) {
+            const _controlsActuallyVisible = playerContainer.classList.contains('show-controls')
+                && !playerContainer.classList.contains('controls-hidden');
+            if (_controlsActuallyVisible) return; // kontroller gerçekten görünürken normal çalış
+            const _guardedTarget = e.target.closest(
+                '.player-controls, .player-controls-box, .player-actions-row, ' +
+                '.player-action-btn, .player-top-bar, #btnClosePlayer, #progressBarContainer'
+            );
+            if (_guardedTarget) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+        }, true); // capture: true — bubble'dan önce yakala
+    }
     
     let touchStartTime = 0;
     let touchStartX = 0;
@@ -27545,11 +27583,25 @@ document.addEventListener('touchstart', cancelSleepShutdown);
         const width = window.innerWidth;
         const height = window.innerHeight;
         
-        const controlsBoxRect = controlsBox.getBoundingClientRect();
-        if (y >= controlsBoxRect.top && y <= controlsBoxRect.bottom &&
-            x >= controlsBoxRect.left && x <= controlsBoxRect.right) {
-            isControlsBoxTouch = true;
-            return 'controlsBox';
+        // ÖNEMLİ: playerControlsBox 'controls-hidden' modunda (veya oto-gizlenip
+        // opacity:0 olduğunda) DOM'dan kaldırılmıyor — sadece opacity:0/pointer-events:none
+        // yapılıyor. opacity:0 elementin layout'unu koruduğu için getBoundingClientRect()
+        // hâlâ eski (görünürmüş gibi) bir dikdörtgen döndürüyor. Bu yüzden butonlar
+        // görünmüyorken bile o bölgeye dokunuş "controlsBox" zone'u sanılıp: (1) tıklama
+        // altta yatan (görünmez) butona sızabiliyor, (2) kanal değişiminden sonra kontrolleri
+        // tekrar açmak için gereken dokunuş-durumu (_touchHiddenSwipeStartX/Y) hiç
+        // kaydedilmeden erken return oluyordu. Kontroller gerçekten görünür değilse
+        // (show-controls yok VEYA controls-hidden var) bu bölgeyi hiç "controlsBox"
+        // saymıyoruz — dokunuş normal zone mantığına (merkez/kaydırma) düşer.
+        const _controlsActuallyVisible = playerContainer.classList.contains('show-controls')
+            && !playerContainer.classList.contains('controls-hidden');
+        if (_controlsActuallyVisible) {
+            const controlsBoxRect = controlsBox.getBoundingClientRect();
+            if (y >= controlsBoxRect.top && y <= controlsBoxRect.bottom &&
+                x >= controlsBoxRect.left && x <= controlsBoxRect.right) {
+                isControlsBoxTouch = true;
+                return 'controlsBox';
+            }
         }
         
         const progressBarRect = progressBar.getBoundingClientRect();
@@ -28954,11 +29006,16 @@ function closeControlSettingsModal() {
     modal.classList.remove('active');
 
     // 2️⃣ Remote zone'u DEĞİŞTİR (ÇOK ÖNEMLİ)
+    // NOT: Kontrol Ayarları artık Ayarlar menüsü içinden açılıyor (header
+    // butonu gizlendi) — bu yüzden kapanınca header'a değil, Ayarlar
+    // modalına (ilgili satıra odaklanarak) dönüyoruz.
     if (state.remote.active) {
-        state.remote.zone = 'header';
-        state.remote.settingsIndex = 0;
-        state.remote.headerIndex =
-            HEADER_BUTTONS.indexOf('btnControlSettings');
+        const _stm = document.getElementById('settingsModal');
+        if (_stm) _stm.style.display = 'flex';
+        state.remote.zone = 'settingsModal';
+        state.remote.settingsIndex = (typeof SETTINGS_BUTTONS !== 'undefined')
+            ? Math.max(0, SETTINGS_BUTTONS.indexOf('btnOpenControlSettings'))
+            : 0;
         updateRemoteFocus();
     }
 
@@ -43664,6 +43721,11 @@ function _doChSwitch() {
         if (typeof WP !== 'undefined' && WP.inRoom && WP.isHost && typeof _wpSyncChannelPlay === 'function') {
             _wpSyncChannelPlay(ch);
         }
+    } catch(e) {}
+    // DS: aynı sebepten Cihaz Senkronu da playChannel'i beklediği için dokunmatik
+    // swipe ile kanal değişiminde diğer cihazlara yansımıyordu — burada da tetikle.
+    try {
+        if (typeof window._dsSyncChannelPlay === 'function') window._dsSyncChannelPlay(ch);
     } catch(e) {}
     try { document.dispatchEvent(new CustomEvent('umittv:channelChange')); } catch(e) {}
     setTimeout(() => { updatePlayerEpgBar(ch.name, ch.tvgId); }, 500);

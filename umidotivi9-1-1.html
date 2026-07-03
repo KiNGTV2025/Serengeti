@@ -63193,7 +63193,7 @@ async function syncContinueWatchingFromCloud() {
         // silinmiş olabilir) — bu durumda da aşağıdaki silme senkronunun
         // çalışabilmesi için boş nesne olarak ele alıyoruz.
         var cloudObj = (cloud && typeof cloud === 'object') ? cloud : {};
-        var cloudKeys = Object.keys(cloudObj);
+        var cloudKeys = Object.keys(cloudObj).filter(function(k) { return k !== '__deviceSync'; });
         var changed = false;
         cloudKeys.forEach(function(key) {
             var item = cloudObj[key];
@@ -63319,10 +63319,13 @@ window._DS = DS;
 function dsGetKey() {
     try {
         if (window.currentTelegramId && window.currentTelegramId !== 'SANS_KODU') {
-            // Firebase kuralları sadece 'rooms', 'continueWatching', 'channelViewers'
-            // köklerine izin veriyor — yeni bir kök (ör. 'ds_...') 401 Permission denied
-            // verir. Bu yüzden 'rooms/' altında özel/sabit bir "kişisel oda" kodu kullanıyoruz.
-            return 'DS' + String(window.currentTelegramId).replace(/[^a-zA-Z0-9]/g, '');
+            // ÖNEMLİ: Eskiden 'rooms/DS<telegramId>' kökü kullanılıyordu — bu da bu
+            // "kişisel kanalın" Watch Party'nin herkese açık Aktif Odalar listesinde
+            // gerçek bir oda gibi görünmesine (ve Telegram ID'nin oda kodu olarak
+            // ifşa olmasına) sebep oluyordu. Artık zaten kullanıcıya özel ve Firebase
+            // kurallarında izinli olan 'continueWatching/<uid>' kökü altında, ayrı bir
+            // '__deviceSync' alt-anahtarı kullanıyoruz — /rooms listesine hiç girmez.
+            return _cwSafeKey(String(window.currentTelegramId));
         }
     } catch(e) {}
     return null;
@@ -63386,67 +63389,83 @@ function dsDirectPlay(ch, startTime) {
 }
 
 function dsHandleNowPlaying(np) {
-    if (!DS.connected) return;
-    if (!np || !np.ts) return;
-    if (np.ts <= DS.lastNpTs) return;
-    if (np.by === DS.myDeviceId) { DS.lastNpTs = np.ts; return; } // kendi yayınımı yok say
+    console.debug('[DS] dsHandleNowPlaying', { np: np, connected: DS.connected, lastNpTs: DS.lastNpTs, myDeviceId: DS.myDeviceId });
+    if (!DS.connected) { console.debug('[DS] işlenmedi: connected değil'); return; }
+    if (!np || !np.ts) { console.debug('[DS] işlenmedi: np veya ts yok'); return; }
+    if (np.ts <= DS.lastNpTs) { console.debug('[DS] işlenmedi: eski/duplicate ts'); return; }
+    if (np.by === DS.myDeviceId) { DS.lastNpTs = np.ts; console.debug('[DS] işlenmedi: kendi yayınım'); return; } // kendi yayınımı yok say
     DS.lastNpTs = np.ts;
+    console.debug('[DS] YENİ İÇERİK AÇILIYOR ✓', np.name);
     try { if (typeof showToast === 'function') showToast('📱 ' + (np.byLabel || 'Diğer cihaz') + ' açtı: ' + np.name); } catch(e) {}
     try {
         let ch = null;
         if (np.channelData) { ch = JSON.parse(np.channelData); ch.url = ch.url || np.url || ''; }
         else if (np.url) { ch = { name: np.name, url: np.url, isLive: false, isVod: true }; }
         if (ch) setTimeout(() => dsDirectPlay(ch, np.currentTime || 0), 400);
-    } catch(e) {}
+    } catch(e) { console.debug('[DS] dsHandleNowPlaying exception', e); }
 }
 
 function dsStartListening() {
     const key = dsGetKey();
-    if (!key || !DS.enabled) return;
+    console.debug('[DS] dsStartListening çağrıldı', { key: key, enabled: DS.enabled, wpInRoom: !!(typeof WP !== 'undefined' && WP.inRoom) });
+    if (!key || !DS.enabled) { console.debug('[DS] durduruldu: key veya enabled yok'); return; }
     // Kullanıcı elle bir Watch Party odasına girdiyse (arkadaşlarla) cihaz senkronu duraklar
-    if (typeof WP !== 'undefined' && WP.inRoom) return;
+    if (typeof WP !== 'undefined' && WP.inRoom) { console.debug('[DS] durduruldu: WP.inRoom true'); return; }
     dsStopListening();
     DS.myDeviceId = getDeviceId();
     DS.lastNpTs = Date.now(); // sadece bundan SONRAKİ yayınları uygula
     DS.connected = true;
+    var dsPath = '/continueWatching/' + key + '/__deviceSync';
+    console.debug('[DS] dinlemeye başlandı', { path: dsPath, myDeviceId: DS.myDeviceId });
 
-    const es = new EventSource(FB_URL + '/rooms/' + key + '/nowPlaying.json');
+    const es = new EventSource(FB_URL + dsPath + '.json');
     es.addEventListener('put', (e) => {
         try {
             const d = JSON.parse(e.data);
+            console.debug('[DS] SSE put alındı', d);
             if (d.path === '/') { if (d.data) dsHandleNowPlaying(d.data); return; }
             dsHandleNowPlaying(d.data);
-        } catch(err) {}
+        } catch(err) { console.debug('[DS] SSE parse hatası', err); }
     });
-    es.onerror = () => {};
+    es.onopen = () => { console.debug('[DS] SSE bağlantısı açıldı'); };
+    es.onerror = (e) => { console.debug('[DS] SSE hata (sessizce polling devam eder)', e); };
     DS.listeners.push(es);
 
     // WebView/Brave SSE engeli için yedek polling — 4sn'de bir
     DS.pollTimer = setInterval(async function() {
         if (!DS.connected) return;
-        try { const np = await fbGet('/rooms/' + key + '/nowPlaying'); if (np) dsHandleNowPlaying(np); } catch(e) {}
+        try {
+            const np = await fbGet(dsPath);
+            console.debug('[DS] poll sonucu', np);
+            if (np) dsHandleNowPlaying(np);
+        } catch(e) { console.debug('[DS] poll hatası', e); }
     }, 4000);
 }
 
 // Bu cihazda oynatma başladığında diğer cihazlara bildir (fire-and-forget)
 function _dsSyncChannelPlay(indexOrCh) {
     const key = dsGetKey();
-    if (!key || !DS.enabled) return;
-    if (typeof WP !== 'undefined' && WP.inRoom) return; // arkadaş odasındayken cihaz senkronu susar
+    console.debug('[DS] _dsSyncChannelPlay tetiklendi', { key: key, enabled: DS.enabled, indexOrCh: indexOrCh });
+    if (!key || !DS.enabled) { console.debug('[DS] yayın yapılmadı: key veya enabled yok'); return; }
+    if (typeof WP !== 'undefined' && WP.inRoom) { console.debug('[DS] yayın yapılmadı: WP.inRoom true'); return; } // arkadaş odasındayken cihaz senkronu susar
     try {
         const list = (window.state && window.state.filtered) ? window.state.filtered : [];
         const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
         if (ch && ch.name) {
-            fbSet('/rooms/' + key + '/nowPlaying', {
+            var dsPath = '/continueWatching/' + key + '/__deviceSync';
+            console.debug('[DS] Firebase\'e yazılıyor', { path: dsPath, name: ch.name, url: ch.url });
+            fbSet(dsPath, {
                 name: ch.name,
                 url: ch.url || ch.streamUrl || '',
                 channelData: JSON.stringify(ch),
                 ts: Date.now(),
                 by: DS.myDeviceId || getDeviceId(),
                 byLabel: dsDeviceLabel()
-            }).catch(function(){});
+            }).then(function(ok) { console.debug('[DS] fbSet sonucu', ok); }).catch(function(e){ console.debug('[DS] fbSet hata', e); });
+        } else {
+            console.debug('[DS] yayın yapılmadı: kanal/isim bulunamadı', ch);
         }
-    } catch(e) {}
+    } catch(e) { console.debug('[DS] _dsSyncChannelPlay exception', e); }
 }
 window._dsSyncChannelPlay = _dsSyncChannelPlay;
 
@@ -63476,6 +63495,7 @@ function dsInit() {
     const key = dsGetKey();
     const btn = document.getElementById('btnDeviceSync');
     const dot = document.getElementById('dsActiveDot');
+    console.debug('[DS] dsInit çalıştı', { currentTelegramId: window.currentTelegramId, key: key, enabled: DS.enabled, btnFound: !!btn });
     if (btn) {
         btn.style.display = key ? '' : 'none';
         btn.classList.toggle('ds-active', DS.enabled);
@@ -63485,6 +63505,21 @@ function dsInit() {
     else dsStopListening();
 }
 window.dsInit = dsInit;
+// Konsoldan elle çağırıp anlık durumu görmek için: dsDebugStatus()
+window.dsDebugStatus = function() {
+    const info = {
+        currentTelegramId: window.currentTelegramId,
+        key: dsGetKey(),
+        enabled: DS.enabled,
+        connected: DS.connected,
+        myDeviceId: DS.myDeviceId,
+        listenerCount: DS.listeners.length,
+        wpInRoom: !!(typeof WP !== 'undefined' && WP.inRoom),
+        btnVisible: (function(){ var b = document.getElementById('btnDeviceSync'); return b ? b.style.display !== 'none' : 'buton bulunamadı'; })()
+    };
+    console.log('[DS] Durum:', info);
+    return info;
+};
 // Watch Party odasından çıkınca cihaz senkronunu otomatik devam ettir
 window._dsResumeAfterWP = function() { if (DS.enabled) dsStartListening(); };
 setTimeout(function() { try { dsInit(); } catch(e) {} }, 1500);
@@ -63580,6 +63615,19 @@ window.wpLoadRooms = async function wpLoadRooms() {
   const now = Date.now();
   const STALE_MS = 2 * 60 * 60 * 1000; // 2 saat
   const savedNick = (() => { try { return localStorage.getItem('wp_nick') || ''; } catch(e) { return ''; } })();
+
+  // ── ESKİ CİHAZ SENKRONU KALINTILARINI GİZLE/SİL ──
+  // Eski sürümde Cihaz Senkronu 'rooms/DS<telegramId>' kökünü kullanıyordu; bu da
+  // kullanıcıların kişisel senkron kanalının burada gerçek bir oda gibi görünmesine
+  // sebep oluyordu. Artık bu özellik 'continueWatching/<id>/__deviceSync' altında
+  // çalışıyor — burada kalan eski 'DS...' kayıtlarını listeden çıkar ve arka planda sil.
+  const legacyDsEntries = Object.entries(rooms).filter(([code]) => /^DS\d+$/.test(code));
+  if (legacyDsEntries.length > 0) {
+    legacyDsEntries.forEach(([code]) => {
+      fbDelete('/rooms/' + code).catch(() => {});
+      delete rooms[code];
+    });
+  }
 
   // ── ESKİ ODALARI OTOMATİK SİL ──
   const staleEntries = Object.entries(rooms).filter(([code, r]) =>

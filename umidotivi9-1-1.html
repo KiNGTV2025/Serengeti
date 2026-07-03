@@ -47748,6 +47748,18 @@ function cleanupDeleteContinueModalRemote() {
         }
     }, 30000); // 30 saniye kumanda ile gezinme yoksa kanal listesi otomatik kapanır
 }
+        // FIX: Sidebar sanal scroll (virtual scroll) aktifken DOM'da sadece
+        // görünür pencere (renderedStart..renderedEnd) kadar .channel-list-item
+        // bulunuyor, ama her öğenin data-index'i mutlak (gerçek) kanal index'i.
+        // Eskiden channelItems[selectedIndex] kullanılıyordu — bu DOM'daki N'inci
+        // elemana bakar, mutlak index'e değil. Kaydırma sonrası (örn. 2-3 kanaldan
+        // sonra) bu ikisi ayrışıyor ve odak kayboluyor/yanlış öğeye gidiyordu.
+        // Çözüm: data-index="selectedIndex" olan gerçek elemanı bul.
+        function _getSidebarChannelEl(idx) {
+            var list = document.getElementById('sidebarChannelsList');
+            if (!list) return null;
+            return list.querySelector('.channel-list-item[data-index="' + idx + '"]');
+        }
         function handleSidebarRemote(e) {
     _resetSidebarInactivityTimer();
     const categories = state.sidebar.categories;
@@ -47756,7 +47768,6 @@ function cleanupDeleteContinueModalRemote() {
     const currentCategory = state.sidebar.currentCategory;
     const channels = state.sidebar.filteredChannels;
     const categoryTabs = document.querySelectorAll('.category-tab');
-    const channelItems = document.querySelectorAll('.channel-list-item');
     
     // Sidebar elementlerini al
     const filterInput = null; // Kanal arama kaldırıldı
@@ -47902,7 +47913,7 @@ function cleanupDeleteContinueModalRemote() {
                 }
             } else if (state.remote.sidebarZone === 2) {
                 // Kanal listesinde sola (favori butonuna)
-                const channelItem = channelItems[state.sidebar.selectedIndex];
+                const channelItem = _getSidebarChannelEl(state.sidebar.selectedIndex);
                 if (channelItem) {
                     const favBtn = channelItem.querySelector('.channel-fav-btn');
                     if (favBtn) {
@@ -47929,7 +47940,7 @@ function cleanupDeleteContinueModalRemote() {
                 // Kanal listesinde sağa (kapat butonuna)
                 if (state.remote.sidebarFocusedFavBtn) {
                     // Favori butonundan çık
-                    const channelItem = channelItems[state.sidebar.selectedIndex];
+                    const channelItem = _getSidebarChannelEl(state.sidebar.selectedIndex);
                     if (channelItem) {
                         const favBtn = channelItem.querySelector('.channel-fav-btn');
                         if (favBtn) {
@@ -48034,7 +48045,6 @@ function cleanupDeleteContinueModalRemote() {
     
     const categories = state.sidebar.categories;
     const categoryTabs = document.querySelectorAll('.category-tab');
-    const channelItems = document.querySelectorAll('.channel-list-item');
     const filterInput = null; // Kanal arama kaldırıldı
     const closeBtn = document.getElementById('sidebarCloseBtn');
     const clearBtn = null; // Kanal arama kaldırıldı
@@ -48044,7 +48054,7 @@ function cleanupDeleteContinueModalRemote() {
     
     // Favori butonu odaklanmışsa özel işlem
     if (state.remote.sidebarFocusedFavBtn && state.remote.sidebarZone === 2) {
-        const channelItem = channelItems[state.sidebar.selectedIndex];
+        const channelItem = _getSidebarChannelEl(state.sidebar.selectedIndex);
         if (channelItem) {
             const favBtn = channelItem.querySelector('.channel-fav-btn');
             if (favBtn) {
@@ -48071,8 +48081,8 @@ function cleanupDeleteContinueModalRemote() {
             break;
             
         case 2: // Kanal listesi
-            if (channelItems[state.sidebar.selectedIndex]) {
-                focusedElement = channelItems[state.sidebar.selectedIndex];
+            if (_getSidebarChannelEl(state.sidebar.selectedIndex)) {
+                focusedElement = _getSidebarChannelEl(state.sidebar.selectedIndex);
                 const channel = state.sidebar.filteredChannels[state.sidebar.selectedIndex];
                 const isConfirm = state.remote.sidebarConfirmIndex === state.sidebar.selectedIndex;
                 hint = isConfirm ? `▶ OK: ${channel?.name || ''} oynat` : `Kanal: ${channel?.name || ''}`;

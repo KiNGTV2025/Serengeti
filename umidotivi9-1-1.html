@@ -63319,7 +63319,10 @@ window._DS = DS;
 function dsGetKey() {
     try {
         if (window.currentTelegramId && window.currentTelegramId !== 'SANS_KODU') {
-            return 'ds_' + String(window.currentTelegramId).replace(/[^a-zA-Z0-9_]/g, '');
+            // Firebase kuralları sadece 'rooms', 'continueWatching', 'channelViewers'
+            // köklerine izin veriyor — yeni bir kök (ör. 'ds_...') 401 Permission denied
+            // verir. Bu yüzden 'rooms/' altında özel/sabit bir "kişisel oda" kodu kullanıyoruz.
+            return 'DS' + String(window.currentTelegramId).replace(/[^a-zA-Z0-9]/g, '');
         }
     } catch(e) {}
     return null;
@@ -63407,7 +63410,7 @@ function dsStartListening() {
     DS.lastNpTs = Date.now(); // sadece bundan SONRAKİ yayınları uygula
     DS.connected = true;
 
-    const es = new EventSource(FB_URL + '/' + key + '/nowPlaying.json');
+    const es = new EventSource(FB_URL + '/rooms/' + key + '/nowPlaying.json');
     es.addEventListener('put', (e) => {
         try {
             const d = JSON.parse(e.data);
@@ -63421,7 +63424,7 @@ function dsStartListening() {
     // WebView/Brave SSE engeli için yedek polling — 4sn'de bir
     DS.pollTimer = setInterval(async function() {
         if (!DS.connected) return;
-        try { const np = await fbGet('/' + key + '/nowPlaying'); if (np) dsHandleNowPlaying(np); } catch(e) {}
+        try { const np = await fbGet('/rooms/' + key + '/nowPlaying'); if (np) dsHandleNowPlaying(np); } catch(e) {}
     }, 4000);
 }
 
@@ -63434,7 +63437,7 @@ function _dsSyncChannelPlay(indexOrCh) {
         const list = (window.state && window.state.filtered) ? window.state.filtered : [];
         const ch = (typeof indexOrCh === 'number') ? list[indexOrCh] : indexOrCh;
         if (ch && ch.name) {
-            fbSet('/' + key + '/nowPlaying', {
+            fbSet('/rooms/' + key + '/nowPlaying', {
                 name: ch.name,
                 url: ch.url || ch.streamUrl || '',
                 channelData: JSON.stringify(ch),

@@ -15841,6 +15841,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                             <span class="btn-label">WP</span>
                             <span id="wpPlayerUnreadDot" style="display:none;position:absolute;top:4px;right:4px;width:7px;height:7px;background:#e74c3c;border-radius:50%;border:1px solid rgba(0,0,0,0.5);"></span>
                         </button>
+                        <button class="player-action-btn" id="btnCast" onclick="UM.Cast.openPicker()" title="Cast / AirPlay" style="display:none;">
+                            <span class="material-symbols-outlined" id="castIcon">cast</span>
+                            <span class="btn-label" id="castLabel">Yayınla</span>
+                        </button>
                         <button class="player-action-btn" id="btnPip" onclick="togglePiP()" title="Resim İçinde Resim (PiP)">
                             <span class="material-symbols-outlined" id="pipIcon">picture_in_picture</span>
                             <span class="btn-label" id="pipLabel">PiP</span>
@@ -17260,6 +17264,279 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ÜM MODÜL SİSTEMİ — window.UM namespace'i
+         Yeni özellikler buraya, kendi alt-namespace'i altında eklenir.
+         Desen: window.UM.<Modül> = (function(){ ... return {public API}; })();
+         Global window.* atamalarından kaçının; sadece HTML onclick= için
+         gerekiyorsa köprü fonksiyon bırakın (bkz. UM.Cast altında örnek yok,
+         onclick doğrudan UM.Cast.openPicker() çağırıyor).
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+    window.UM = window.UM || {};
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ÜM.CAST — Chromecast (Google Cast) + AirPlay entegrasyonu
+         Bağımlılık: state.currentChannel / state.player (mevcut player state'i)
+         Video kaynağı: #videoPlayer, window.playerHls (hls.js instance'ı)
+         ═══════════════════════════════════════════════════════════════ -->
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" async></script>
+    <script>
+    (function() {
+        'use strict';
+
+        var CAST_APP_ID = 'CC1AD845'; // Varsayılan Media Receiver — özel receiver yoksa bu kullanılır
+        var CAST_NS = 'urn:x-cast:com.umittv.cast';
+
+        var _castAvailable = false;   // Google Cast SDK hazır mı
+        var _airplayAvailable = false; // Safari/webkit airplay hazır mı
+        var _session = null;          // Aktif cast session
+        var _castState = 'IDLE';      // IDLE | CONNECTING | CONNECTED
+
+        // ── Yardımcılar ──────────────────────────────────────────────
+        function _video() { return document.getElementById('videoPlayer'); }
+
+        function _currentMedia() {
+            // Mevcut player state'inden oynatılan içeriğin URL/başlık/görsel bilgisini çıkarır.
+            // Kanal (canlı) veya VOD ikisini de kapsar — state şemaları biraz farklı
+            // olduğu için burada savunmacı (defensive) okuma yapılır.
+            var ch = (window.state && (state.currentChannel || (state.filtered && state.player && state.filtered[state.player.index]))) || null;
+            var vid = _video();
+            var url = (ch && ch.url) || (vid && vid.currentSrc) || (vid && vid.src) || '';
+            var title = (ch && ch.name) || (window.state && state.player && state.player.name) || 'Ümit TV';
+            var image = (ch && ch.logo) || 'https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg';
+            var isLive = !!(window.state && state.player && state.player.isLiveStream);
+            return { url: url, title: title, image: image, isLive: isLive };
+        }
+
+        function _contentType(url) {
+            if (!url) return 'application/vnd.apple.mpegurl';
+            if (url.indexOf('.m3u8') !== -1) return 'application/vnd.apple.mpegurl';
+            if (url.indexOf('.mpd') !== -1) return 'application/dash+xml';
+            if (url.indexOf('.mp4') !== -1) return 'video/mp4';
+            return 'application/vnd.apple.mpegurl'; // IPTV akışları çoğunlukla HLS
+        }
+
+        function _updateButton() {
+            var btn = document.getElementById('btnCast');
+            var icon = document.getElementById('castIcon');
+            var label = document.getElementById('castLabel');
+            if (!btn) return;
+            // Buton sadece Cast veya AirPlay kullanılabilirse görünür.
+            btn.style.display = (_castAvailable || _airplayAvailable) ? '' : 'none';
+            if (!icon || !label) return;
+            if (_castState === 'CONNECTED') {
+                icon.textContent = 'cast_connected';
+                label.textContent = 'Bağlı';
+                btn.classList.add('accent-color');
+            } else {
+                icon.textContent = 'cast';
+                label.textContent = 'Yayınla';
+                btn.classList.remove('accent-color');
+            }
+        }
+
+        // ── Google Cast (Chromecast) ─────────────────────────────────
+        window['__onGCastApiAvailable'] = function(isAvailable) {
+            if (!isAvailable) return;
+            try {
+                var context = cast.framework.CastContext.getInstance();
+                context.setOptions({
+                    receiverApplicationId: CAST_APP_ID,
+                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+                });
+                _castAvailable = true;
+
+                context.addEventListener(
+                    cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+                    function(evt) {
+                        var CastState = cast.framework.SessionState;
+                        if (evt.sessionState === CastState.SESSION_STARTED || evt.sessionState === CastState.SESSION_RESUMED) {
+                            _session = context.getCurrentSession();
+                            _castState = 'CONNECTED';
+                            if (typeof showToast === 'function') showToast('📡 Cast\'e bağlandı');
+                        } else if (evt.sessionState === CastState.SESSION_ENDED) {
+                            _session = null;
+                            _castState = 'IDLE';
+                            if (typeof showToast === 'function') showToast('📡 Cast bağlantısı sonlandı');
+                        }
+                        _updateButton();
+                    }
+                );
+                _updateButton();
+            } catch (e) {
+                console.warn('[UM.Cast] Google Cast init hatası:', e);
+            }
+        };
+
+        function _startCastSession() {
+            if (!_castAvailable) {
+                if (typeof showToast === 'function') showToast('Cast şu an kullanılamıyor');
+                return;
+            }
+            var context = cast.framework.CastContext.getInstance();
+            context.requestSession().then(function() {
+                _session = context.getCurrentSession();
+                _loadMediaToSession();
+            }).catch(function(err) {
+                // Kullanıcı iptal ettiyse sessiz geç
+                if (err !== 'cancel' && typeof showToast === 'function') {
+                    showToast('Cast bağlantısı kurulamadı');
+                }
+            });
+        }
+
+        function _loadMediaToSession() {
+            if (!_session) return;
+            var media = _currentMedia();
+            if (!media.url) {
+                if (typeof showToast === 'function') showToast('Yayınlanacak içerik bulunamadı');
+                return;
+            }
+            var mediaInfo = new chrome.cast.media.MediaInfo(media.url, _contentType(media.url));
+            mediaInfo.streamType = media.isLive ? chrome.cast.media.StreamType.LIVE : chrome.cast.media.StreamType.BUFFERED;
+            mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+            mediaInfo.metadata.title = media.title;
+            mediaInfo.metadata.images = [{ url: media.image }];
+
+            var request = new chrome.cast.media.LoadRequest(mediaInfo);
+            // Devam eden VOD ise kaldığı yerden başlat
+            try {
+                var vid = _video();
+                if (!media.isLive && vid && vid.currentTime > 5) {
+                    request.currentTime = vid.currentTime;
+                }
+            } catch (e) {}
+
+            _session.loadMedia(request).then(function() {
+                _castState = 'CONNECTED';
+                _updateButton();
+                // Yerel oynatmayı sessize al / durdur — Cast cihazı devraldı
+                var vid = _video();
+                if (vid) { try { vid.pause(); } catch (e) {} }
+                if (typeof showToast === 'function') showToast('📡 TV\'ye yayınlanıyor: ' + media.title);
+            }).catch(function() {
+                if (typeof showToast === 'function') showToast('Yayın başlatılamadı');
+            });
+        }
+
+        function _stopCastSession() {
+            if (_session) {
+                try { _session.endSession(true); } catch (e) {}
+            }
+            _session = null;
+            _castState = 'IDLE';
+            _updateButton();
+        }
+
+        // ── AirPlay (Safari/webkit) ─────────────────────────────────
+        function _initAirplay() {
+            var vid = _video();
+            if (!vid) return;
+            // webkitplaybacktargetavailabilitychanged sadece Safari/iOS/tvOS'da mevcuttur.
+            if (typeof vid.webkitShowPlaybackTargetPicker === 'function') {
+                _airplayAvailable = true;
+                vid.addEventListener('webkitplaybacktargetavailabilitychanged', function(ev) {
+                    _airplayAvailable = (ev.availability === 'available');
+                    _updateButton();
+                });
+                vid.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', function() {
+                    _castState = vid.webkitCurrentPlaybackTargetIsWireless ? 'CONNECTED' : 'IDLE';
+                    _updateButton();
+                });
+                _updateButton();
+            }
+        }
+
+        function _startAirplay() {
+            var vid = _video();
+            if (vid && typeof vid.webkitShowPlaybackTargetPicker === 'function') {
+                vid.webkitShowPlaybackTargetPicker();
+            }
+        }
+
+        // ── Ortak seçici: hangisi kullanılabilirse onu tetikle ────────
+        function openPicker() {
+            if (_castState === 'CONNECTED') {
+                // Zaten bağlıysa, tekrar tıklama bağlantıyı sonlandırma seçeneği sunar.
+                if (_session) { _stopCastSession(); return; }
+                _startAirplay();
+                return;
+            }
+            if (_airplayAvailable && !_castAvailable) {
+                _startAirplay();
+            } else if (_castAvailable && !_airplayAvailable) {
+                _startCastSession();
+            } else if (_castAvailable && _airplayAvailable) {
+                // İkisi de varsa basit bir seçim toastı/menüsü göster.
+                _showChoiceMenu();
+            } else {
+                if (typeof showToast === 'function') showToast('Cast veya AirPlay bu cihazda desteklenmiyor');
+            }
+        }
+
+        function _showChoiceMenu() {
+            var existing = document.getElementById('umCastChoiceMenu');
+            if (existing) { existing.remove(); return; }
+            var btn = document.getElementById('btnCast');
+            var rect = btn ? btn.getBoundingClientRect() : { bottom: 60, left: 20 };
+            var menu = document.createElement('div');
+            menu.id = 'umCastChoiceMenu';
+            menu.style.cssText = 'position:fixed;z-index:999999;top:' + (rect.bottom + 8) + 'px;left:' + Math.max(8, rect.left - 60) + 'px;' +
+                'background:rgba(14,16,26,0.98);border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:8px;' +
+                'box-shadow:0 10px 30px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:4px;min-width:160px;';
+            menu.innerHTML =
+                '<button class="um-focusable" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:transparent;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;text-align:left;" onclick="UM.Cast.startCast()">' +
+                    '<span class="material-symbols-outlined" style="font-size:18px;">cast</span> Chromecast' +
+                '</button>' +
+                '<button class="um-focusable" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:transparent;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;text-align:left;" onclick="UM.Cast.startAirplay()">' +
+                    '<span class="material-symbols-outlined" style="font-size:18px;">airplay</span> AirPlay' +
+                '</button>';
+            document.body.appendChild(menu);
+            setTimeout(function() {
+                document.addEventListener('click', function _close(e) {
+                    if (!menu.contains(e.target) && e.target.id !== 'btnCast') {
+                        menu.remove();
+                        document.removeEventListener('click', _close);
+                    }
+                });
+            }, 0);
+        }
+
+        // Kanal/VOD değiştiğinde, aktif bir Cast oturumu varsa yeni içeriği otomatik yükle.
+        // (channelChange event'i uygulamanın geri kalanında zaten dispatch ediliyor.)
+        document.addEventListener('umittv:channelChange', function() {
+            if (_castState === 'CONNECTED' && _session) {
+                _loadMediaToSession();
+            }
+        });
+
+        // ── Public API ───────────────────────────────────────────────
+        window.UM.Cast = {
+            openPicker: openPicker,
+            startCast: function() { _closeChoiceMenu(); _startCastSession(); },
+            startAirplay: function() { _closeChoiceMenu(); _startAirplay(); },
+            stop: _stopCastSession,
+            isConnected: function() { return _castState === 'CONNECTED'; },
+            init: function() { _initAirplay(); _updateButton(); }
+        };
+
+        function _closeChoiceMenu() {
+            var m = document.getElementById('umCastChoiceMenu');
+            if (m) m.remove();
+        }
+
+        // DOM hazır olduğunda AirPlay tarafını başlat (Cast SDK kendi async callback'i ile gelir).
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { UM.Cast.init(); });
+        } else {
+            UM.Cast.init();
+        }
+    })();
+    </script>
+
     <script>
         
 
@@ -22606,7 +22883,11 @@ function applyiOSOptimizations() {
 
 // MİBOX OPTİMİZASYONLARI - GÜNCELLENMİŞ
 function applyMiboxOptimizations() {
-    
+    // Birden fazla çağrılırsa (ör. güvenli-bekleme mekanizması) tekrar tekrar
+    // aynı <style> elementini eklemesin diye tek seferlik koruma.
+    if (window._miboxOptimizationsApplied) return;
+    window._miboxOptimizationsApplied = true;
+
     // CSS efeklerini azalt
     document.documentElement.style.setProperty('--card-shadow', '0 2px 6px rgba(0,0,0,0.3)');
     document.documentElement.style.setProperty('--border-color', 'rgba(255,255,255,0.08)');
@@ -22640,14 +22921,15 @@ function applyMiboxOptimizations() {
     `;
     document.head.appendChild(style);
     
-    // Hafıza kullanımını azalt
+    // Hafıza kullanımını azalt (açılışta cache zaten boş; burada clear() ile
+    // gereksiz sıfırlama yapmıyoruz — sadece virtual scroll'u garantiye alıyoruz)
     state.isVirtualScrollEnabled = true;
-    state.imageCache.clear();
     
     // Mibox için özel kumanda ayarları
-    state.controlSettings.keySoundLevel = 0.8; // Normal ses
-    state.controlSettings.touchSensitivity = 40; // Daha az hassas
-    
+    if (state.controlSettings) {
+        state.controlSettings.keySoundLevel = 0.8; // Normal ses
+        state.controlSettings.touchSensitivity = 40; // Daha az hassas
+    }
 }
 
 // YENİ: PERFORMANS MONİTÖRÜ
@@ -28187,6 +28469,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.state.controlSettings.lowPerformanceMode = true;
                 }
             }
+            // ── MiBox / Xiaomi kutuları için ek optimizasyon paketi ──
+            // applyMiboxOptimizations() daha önce tanımlıydı ama hiçbir yerden
+            // çağrılmıyordu — bu yüzden GPU/animasyon/hafıza optimizasyonları
+            // hiç devreye girmiyordu. Burada, Mibox ailesi (MiBox/Xiaomi/MECOOL/
+            // Amlogic/H96/X96 vb. çoğu Mibox türevi aynı chipset ailesini kullanır)
+            // tespit edildiğinde çağrılır. state henüz hazır olmayabileceği için
+            // (state tanımı bu noktadan sonra gelebiliyor) küçük bir güvenli
+            // gecikmeyle, state var olduğunda çalıştırılır.
+            const isMiboxFamily = /MiBox|Xiaomi|MECOOL|Amlogic|H96|X96|TX[0-9]|Mi TV/i.test(ua);
+            if (isMiboxFamily) {
+                (function waitStateAndApply(tries) {
+                    if (window.state && typeof applyMiboxOptimizations === 'function') {
+                        try { applyMiboxOptimizations(); } catch(e) { console.warn('MiBox optimizasyon hatası:', e); }
+                    } else if (tries > 0) {
+                        setTimeout(function() { waitStateAndApply(tries - 1); }, 200);
+                    }
+                })(15); // en fazla 3sn dene, sonra vazgeç
+            }
         } catch(e) { console.warn('Perf check hatası:', e); }
     })();
 
@@ -31020,6 +31320,19 @@ function playChannelFromSidebar(index) {
                 openVodModal(channel.name);
             }
         } else {
+            // FIX: Canlı kanala geçişte önceki dizi oturumundan kalan
+            // state.series.currentSeries temizlenmiyordu — bu yüzden
+            // updatePlayerListBtn() hâlâ "eski dizi oynatılıyor" sanıp
+            // Liste butonunu "Bölümler" olarak göstermeye devam ediyordu
+            // (özellikle TVBox'ta, player içinden sidebar ile canlı yayına
+            // geçişte gözlemleniyordu). Canlı yayına geçerken dizi state'i
+            // burada da temizlenir.
+            if (state.series) {
+                state.series.currentSeries = null;
+                state.series.currentSeason = null;
+                state.series.currentEpisode = null;
+                state.series.autoNextEnabled = false;
+            }
             playChannel(index);
         }
 
@@ -44247,6 +44560,11 @@ function closePlayer() {
     if (typeof updateContinuousWatching === 'function' && !state.player.isLiveStream) {
         try { updateContinuousWatching(); } catch(e) {}
     }
+    // "Devam Et" kartları diğer cihazlarla senkronize kalsın diye player
+    // kapanınca bulut senkronunu tetikle (bkz. syncContinueWatchingFromCloud
+    // dinleyicisi — TVBox'ta visibilitychange event'i güvenilir olmadığı için
+    // bu event burada ayrıca tetikleniyor).
+    try { document.dispatchEvent(new CustomEvent('umittv:playerClosed')); } catch(e) {}
 
     const video = document.getElementById('videoPlayer'); 
     // Mini Player aktifse video'yu durdurma — arka planda oynamaya devam etsin
@@ -51262,7 +51580,16 @@ function tvNav(key){
     
 
     var _pv = document.getElementById('playerView');
-    if (_pv && _pv.style.display === 'flex' && window._controlsHidden) {
+    // FIX: Kanal listesi (sidebar) açıkken bu blok hâlâ devreye giriyordu —
+    // _controlsHidden bayrağı sidebar açılınca sıfırlanmadığı için, sidebar
+    // içinde yön tuşuna basınca burada nextCh/prevCh/openEpgModal gibi player
+    // kısayolları çalışıyor, event hiç handleSidebarRemote'a ulaşmıyordu.
+    // Bu da TVBox'ta "listeyi açınca kendi kendine kapanıyor / tuşlar farklı
+    // şey yapıyor" hissi yaratıyordu. Sidebar açıkken bu kısayol bloğu
+    // tamamen atlanır — event normal şekilde sidebar router'ına gider.
+    var _sbEl = document.getElementById('sidebar');
+    var _sidebarIsOpen = _sbEl && _sbEl.classList.contains('open');
+    if (_pv && _pv.style.display === 'flex' && window._controlsHidden && !_sidebarIsOpen) {
         var _isSeries = !!(window.state && window.state.series && window.state.series.currentSeries);
         var _isLive   = window.state && window.state.player && window.state.player.isLiveStream;
         if (key === 'ArrowUp') {
@@ -63419,6 +63746,26 @@ document.addEventListener('visibilitychange', function() {
         }, 500);
     }
 });
+// ── TVBox / uzun süre açık kalan cihazlar için periyodik senkron ──
+// TVBox'lar genelde tek uygulama modunda çalışır ve hiç arka plana
+// alınmadığı için visibilitychange event'i tetiklenmeyebilir. Bu durumda
+// açılıştaki tek seferlik senkron dışında hiçbir güncelleme gelmez —
+// telefonda silinen "Devam Et" kartı TVBox'ta günlerce ekranda kalabilir.
+// Bunu önlemek için, cihaz görünür durumdayken düzenli aralıklarla
+// (varsayılan 2 dakika) buluttan kontrol edilir.
+(function() {
+    var CW_POLL_INTERVAL_MS = 120000; // 2 dakika
+    setInterval(function() {
+        if (document.visibilityState !== 'hidden' && typeof syncContinueWatchingFromCloud === 'function') {
+            syncContinueWatchingFromCloud();
+        }
+    }, CW_POLL_INTERVAL_MS);
+    // Player kapatıldığında da tazele — kullanıcı bir içerik izleyip
+    // ana ekrana döndüğünde diğer cihazlardaki güncel liste görünsün.
+    document.addEventListener('umittv:playerClosed', function() {
+        if (typeof syncContinueWatchingFromCloud === 'function') syncContinueWatchingFromCloud();
+    });
+})();
 
 // ── DURUM ──
 const WP = {

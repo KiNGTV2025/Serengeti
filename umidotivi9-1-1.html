@@ -76043,6 +76043,7 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     var _pillCheckInFlight = {};
     function _silentCheckAndUpdatePill(idx, m3u) {
         if (!m3u || !m3u.url) return;
+        if (m3u.contentType === 'live') return; // canlı yayın listeleri bu yoldan yönetilmez, her zaman ayrı taze çekilir
         if (_pillCheckInFlight[m3u.url]) return;
         _pillCheckInFlight[m3u.url] = true;
 
@@ -76163,9 +76164,20 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             if (idx === 'all') { return _prevSelectM3U.apply(this, arguments); }
 
             var m3u = window.state && state.m3uList ? state.m3uList[idx] : null;
+
+            // CANLI YAYIN listeleri (Vavoo, kool.to, oha.to, huhu.to vb. dahil
+            // contentType==='live' olan her liste) HER ZAMAN taze ağdan çekilir.
+            // Bu listelerdeki stream token/linkleri M3U dosyası aynı kalsa bile
+            // sık sık rotasyona girer; "ağı atla" optimizasyonu burada kanalların
+            // açılmamasına yol açar. Bu yüzden live listeler orijinal davranışa
+            // (hiç dokunulmamış selectM3U) bırakılır.
+            if (!m3u || m3u.contentType === 'live') {
+                return _prevSelectM3U.apply(this, arguments);
+            }
+
             var alreadyHasData = _hasLocalChannels(idx);
 
-            if (m3u && alreadyHasData) {
+            if (alreadyHasData) {
                 window._umSkipNetworkForPill = idx;
                 var ret = _prevSelectM3U.apply(this, arguments);
                 window._umSkipNetworkForPill = null;
@@ -76188,6 +76200,12 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         if (_target._umNoNetPatched) return;
         var _prevLoadSingle = _target;
         var _wrapped = async function(idx, m3u, forceRefresh) {
+            // Ekstra güvenlik: canlı yayın listeleri (Vavoo vb.) burada da asla
+            // ağsız kısayola girmesin — token rotasyonu nedeniyle her zaman taze
+            // çekilmeleri gerekir.
+            if (!forceRefresh && window._umSkipNetworkForPill === idx && m3u && m3u.contentType === 'live') {
+                window._umSkipNetworkForPill = null;
+            }
             if (!forceRefresh && window._umSkipNetworkForPill === idx && window.state && state.channels) {
                 try {
                     if (typeof hideInlineLoading === 'function') hideInlineLoading();

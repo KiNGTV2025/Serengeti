@@ -43220,6 +43220,7 @@ function resumeChannel(startTime) {
                      _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      _urlLower.includes('vavootobir.umitm0d.workers.dev') ||  // vavootobir Worker → HLS döner
+                     _urlLower.includes('kanks.umitm0d2.workers.dev') ||     // kanks Worker (Vavoo proxy) → HLS döner
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
@@ -43229,7 +43230,7 @@ function resumeChannel(startTime) {
     // bu domain "Normal HLS" genel yoluna düşüp hls.js ile açılmaya çalışıyordu,
     // bu da App24'te yayının açılmamasına sebep oluyordu (tarayıcıda MSE tam
     // desteklendiği için sorun görünmüyordu).
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev');
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev') || rawUrl.includes('kanks.umitm0d2.workers.dev');
 
     // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
     const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
@@ -43637,6 +43638,7 @@ function resumeChannel(startTime) {
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
+            if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
             if (_isApp24WebView) {
                 video.src = rawUrl;
                 video.load();
@@ -43644,6 +43646,33 @@ function resumeChannel(startTime) {
             } else {
                 startHls(rawUrl);
             }
+            // FIX: isVavooRaw/isKoolTo dallarında var olan stall-dedektörü bu
+            // dalda (tam Worker URL'si, ör. kanks.umitm0d2.workers.dev/playlist
+            // içinden gelen kanal linkleri) hiç kurulmuyordu — bu yüzden HLS.js
+            // hata fırlatmadan sessizce ilerlemeyi durdurduğunda (takılma/başa
+            // sarma hissi) otomatik kurtarma devreye girmiyordu. Aynı 8sn'lik
+            // ilerleme kontrolünü burada da kuruyoruz.
+            let _vwLastTime = -1, _vwStallCount = 0;
+            window._koolReconnectTimer = setInterval(() => {
+                if (!video || video.paused || video.ended) return;
+                if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _vwLastTime) {
+                    _vwStallCount++;
+                    if (_vwStallCount >= 3) {
+                        _vwStallCount = 0;
+                        showToast('Yayın yenileniyor...');
+                        if (_isApp24WebView) {
+                            video.src = rawUrl + (rawUrl.includes('?') ? '&' : '?') + '_r=' + Date.now();
+                            video.load();
+                            video.play().catch(() => {});
+                        } else {
+                            startHls(rawUrl);
+                        }
+                    }
+                } else {
+                    _vwStallCount = 0;
+                }
+                _vwLastTime = video.currentTime;
+            }, 8000);
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);

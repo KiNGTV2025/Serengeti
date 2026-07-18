@@ -42754,47 +42754,6 @@ function resumeChannel(startTime) {
             } else if (stallCount <= 7) {
                 // Canlı: seekToLiveEdge — buffer'ı boşaltmadan live edge'e atla
                 // VOD: stopLoad/startLoad — segment yeniden yükle
-                //
-                // FIX (Vavoo 3dk siyah ekran sorunu): Vavoo/kool Worker linkleri
-                // kısa ömürlü bir "vavoo_auth" token'ı içerir. Token süresi
-                // dolduğunda upstream artık aynı URL'e sessizce boş/hatalı veri
-                // döner (fatal HLS hatası FIRLATMAZ, sadece "waiting" a sebep
-                // olur) — bu yüzden stopLoad/startLoad(ct) SAME (artık ölü)
-                // URL'i tekrar tekrar deniyordu ve hiçbir zaman kurtaramıyordu.
-                // Ekran, stallCount 12'yi geçip playChannel ile sert restart
-                // olana kadar (12 kademe × ~1-5sn bekleme) siyah kalıyordu —
-                // gözlemlenen "~3 dakika sonra siyah ekran" tam olarak budur.
-                // Çözüm: bu türden linklerde stopLoad/startLoad yerine, Worker'ı
-                // TAZE bir URL ile (cache-busting parametresiyle) yeniden
-                // çağırarak yeni bir token almasını sağlıyoruz.
-                var _isVavooLikeStall = false, _vavooFreshUrl = null;
-                try {
-                    if (typeof isVavooRaw !== 'undefined' && isVavooRaw && typeof effectiveUrl !== 'undefined') {
-                        _isVavooLikeStall = true;
-                        _vavooFreshUrl = effectiveUrl;
-                    } else if (typeof isVavooWorker !== 'undefined' && isVavooWorker && typeof rawUrl !== 'undefined') {
-                        _isVavooLikeStall = true;
-                        _vavooFreshUrl = rawUrl;
-                    } else if (typeof isKoolTo !== 'undefined' && isKoolTo && typeof effectiveUrl !== 'undefined') {
-                        _isVavooLikeStall = true;
-                        _vavooFreshUrl = effectiveUrl;
-                    }
-                } catch(e) {}
-
-                if (_isVavooLikeStall && _vavooFreshUrl && typeof startHls === 'function') {
-                    try {
-                        showToast('Yayın yenileniyor...');
-                        // Cache-busting: worker'ın hem edge cache'i hem KV resolve
-                        // cache'i bu farklı query param sayesinde bypass edilir,
-                        // taze bir /play veya /resolve isteği tetiklenir.
-                        var _sep = _vavooFreshUrl.includes('?') ? '&' : '?';
-                        var _freshCallUrl = _vavooFreshUrl + _sep + '_rt=' + Date.now();
-                        startHls(_freshCallUrl);
-                        setTimeout(() => { window._recoveryLock = false; }, 1200);
-                    } catch(e) { window._recoveryLock = false; }
-                    return;
-                }
-
                 try {
                     if (state.player.isLiveStream) {
                         // Canlı yayında stopLoad/startLoad YOK — seekToLiveEdge kullan
@@ -43261,7 +43220,6 @@ function resumeChannel(startTime) {
                      _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo Worker ile HLS
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      _urlLower.includes('vavootobir.umitm0d.workers.dev') ||  // vavootobir Worker → HLS döner
-                     _urlLower.includes('kanks.umitm0d2.workers.dev') ||     // kanks Worker (Vavoo proxy) → HLS döner
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
@@ -43271,7 +43229,7 @@ function resumeChannel(startTime) {
     // bu domain "Normal HLS" genel yoluna düşüp hls.js ile açılmaya çalışıyordu,
     // bu da App24'te yayının açılmamasına sebep oluyordu (tarayıcıda MSE tam
     // desteklendiği için sorun görünmüyordu).
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev') || rawUrl.includes('kanks.umitm0d2.workers.dev');
+    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev');
 
     // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
     const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
@@ -43679,7 +43637,6 @@ function resumeChannel(startTime) {
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
-            if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
             if (_isApp24WebView) {
                 video.src = rawUrl;
                 video.load();
@@ -43687,33 +43644,6 @@ function resumeChannel(startTime) {
             } else {
                 startHls(rawUrl);
             }
-            // FIX: isVavooRaw/isKoolTo dallarında var olan stall-dedektörü bu
-            // dalda (tam Worker URL'si, ör. kanks.umitm0d2.workers.dev/playlist
-            // içinden gelen kanal linkleri) hiç kurulmuyordu — bu yüzden HLS.js
-            // hata fırlatmadan sessizce ilerlemeyi durdurduğunda (takılma/başa
-            // sarma hissi) otomatik kurtarma devreye girmiyordu. Aynı 8sn'lik
-            // ilerleme kontrolünü burada da kuruyoruz.
-            let _vwLastTime = -1, _vwStallCount = 0;
-            window._koolReconnectTimer = setInterval(() => {
-                if (!video || video.paused || video.ended) return;
-                if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _vwLastTime) {
-                    _vwStallCount++;
-                    if (_vwStallCount >= 3) {
-                        _vwStallCount = 0;
-                        showToast('Yayın yenileniyor...');
-                        if (_isApp24WebView) {
-                            video.src = rawUrl + (rawUrl.includes('?') ? '&' : '?') + '_r=' + Date.now();
-                            video.load();
-                            video.play().catch(() => {});
-                        } else {
-                            startHls(rawUrl);
-                        }
-                    }
-                } else {
-                    _vwStallCount = 0;
-                }
-                _vwLastTime = video.currentTime;
-            }, 8000);
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);
@@ -76045,261 +75975,3 @@ body.tvbox-mode.fast-mode .neon-logo-img {
 
 })();
 </script>
-<script>
-/* ═══════════════════════════════════════════════════════════════
-   ÜMİT TV — AKILLI M3U PILL YÜKLEME PATCH
-   ───────────────────────────────────────────────────────────────
-   Amaç:
-   1) Açılışta TÜM listeler baştan (cache-first, sonra sessiz arka
-      plan tazeleme ile) yüklensin — bu zaten loadAllChannels /
-      loadFreshChannelsQuick tarafından yapılıyor, burada dokunmuyoruz.
-   2) Kullanıcı bir M3U pill'ine her bastığında uygulama o listeyi
-      AĞDAN TEKRAR İNDİRMESİN. Elde zaten o listeye ait kanal varsa
-      (state.channels içinde listIdx eşleşmesi), anında bellekten
-      filtrelenip gösterilir — sıfır network gecikmesi, sıfır donma.
-   3) O liste arka planda (kullanıcı görmeden, ana thread'i
-      bloklamadan) sessizce kontrol edilir. İçerik gerçekten
-      değişmişse (imza/hash farkı varsa) kanallar güncellenir ve
-      kullanıcıya sadece bir toast ile haber verilir:
-      "<Liste adı> güncelleniyor" → tamamlanınca "<Liste adı> güncellendi".
-      Değişiklik yoksa hiçbir şey göstermez, hiçbir şey indirmez.
-   4) TVBox / düşük donanımlı cihazlarda akıcılığı korumak için tüm
-      arka plan işleri requestIdleCallback (yoksa setTimeout) ile
-      ertelenir ve tek seferde bir listeden fazlası eşzamanlı taranmaz.
-   ═══════════════════════════════════════════════════════════════ */
-(function() {
-    'use strict';
-
-    var _ric = window.requestIdleCallback || function(cb) { return setTimeout(function() { cb({ timeRemaining: function() { return 8; }, didTimeout: true }); }, 250); };
-
-    var LS_KEY = '_umittv_pill_sig_v1';
-    function _readSigStore() {
-        try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (e) { return {}; }
-    }
-    function _writeSigStore(obj) {
-        try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch (e) {}
-    }
-
-    function _quickSig(txt) {
-        if (!txt) return null;
-        return txt.length + '|' + txt.slice(0, 200) + txt.slice(-200);
-    }
-
-    async function _headSig(url, timeoutMs) {
-        try {
-            var ctrl = new AbortController();
-            var t = setTimeout(function() { ctrl.abort(); }, timeoutMs || 6000);
-            var resp = await fetch(url, {
-                method: 'HEAD',
-                signal: ctrl.signal,
-                cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-            }).catch(function() { return null; });
-            clearTimeout(t);
-            if (!resp) return null;
-            var etag = resp.headers.get('etag');
-            var len = resp.headers.get('content-length');
-            var lastMod = resp.headers.get('last-modified');
-            return etag || len || lastMod ? ('H:' + (etag || '') + '|' + (len || '') + '|' + (lastMod || '')) : null;
-        } catch (e) { return null; }
-    }
-
-    function _hasLocalChannels(idx) {
-        try {
-            return !!(window.state && state.channels && state.channels.some(function(c) { return c.listIdx == idx; }));
-        } catch (e) { return false; }
-    }
-
-    var _pillCheckInFlight = {};
-    function _silentCheckAndUpdatePill(idx, m3u) {
-        if (!m3u || !m3u.url) return;
-        if (m3u.contentType === 'live') return; // canlı yayın listeleri bu yoldan yönetilmez, her zaman ayrı taze çekilir
-        if (_pillCheckInFlight[m3u.url]) return;
-        _pillCheckInFlight[m3u.url] = true;
-
-        _ric(function() {
-            (async function() {
-                try {
-                    if ((m3u.password || m3u.encryptedPassword) && window.state && state.passwordManager) {
-                        var unlocked = state.passwordManager.rememberedPasswords[m3u.url] ||
-                                       state.passwordManager.sessionUnlocked.has(m3u.url);
-                        if (!unlocked) return;
-                    }
-
-                    var sigStore = _readSigStore();
-                    var prevSig = sigStore[m3u.url];
-
-                    var newSig = await _headSig(m3u.url, 6000);
-
-                    if (!newSig) {
-                        try {
-                            var ctrl2 = new AbortController();
-                            var t2 = setTimeout(function() { ctrl2.abort(); }, 12000);
-                            var getResp = await fetch(m3u.url, {
-                                signal: ctrl2.signal, cache: 'no-store',
-                                headers: { 'Cache-Control': 'no-cache, no-store' }
-                            }).catch(function() { return null; });
-                            clearTimeout(t2);
-                            if (getResp && getResp.ok) {
-                                var txt = await getResp.text().catch(function() { return ''; });
-                                newSig = _quickSig(txt);
-                                if (newSig && prevSig && newSig === prevSig) {
-                                    return;
-                                }
-                                if (newSig && txt) {
-                                    sigStore[m3u.url] = newSig;
-                                    _writeSigStore(sigStore);
-                                    if (prevSig) {
-                                        await _applyPillUpdate(idx, m3u, txt);
-                                    }
-                                    return;
-                                }
-                            }
-                        } catch (e) {}
-                        return;
-                    }
-
-                    if (prevSig && prevSig === newSig) {
-                        return;
-                    }
-
-                    sigStore[m3u.url] = newSig;
-                    _writeSigStore(sigStore);
-                    if (!prevSig) return;
-
-                    var freshTxt = await fetchWithTimeout(m3u.url, 45000).catch(function() { return null; });
-                    if (!freshTxt) return;
-                    await _applyPillUpdate(idx, m3u, freshTxt);
-
-                } catch (e) {
-                } finally {
-                    delete _pillCheckInFlight[m3u.url];
-                }
-            })();
-        });
-    }
-
-    async function _applyPillUpdate(idx, m3u, freshTxt) {
-        try {
-            if (typeof showToast === 'function') showToast((m3u.name || 'Liste') + ' güncelleniyor');
-
-            var parsed = (typeof parseM3U === 'function') ? parseM3U(freshTxt, idx) : [];
-            if (!parsed || parsed.length === 0) return;
-
-            if (m3u.contentType === 'live') {
-                parsed.forEach(function(ch) { ch.isLive = true; ch.isVod = false; });
-            } else if (m3u.contentType === 'vod') {
-                parsed.forEach(function(ch) { ch.isLive = false; ch.isVod = true; });
-            }
-
-            if (window.state && state.channels) {
-                state.channels = state.channels.filter(function(c) { return c.listIdx != idx; });
-                for (var i = 0; i < parsed.length; i++) state.channels.push(parsed[i]);
-            }
-
-            try {
-                if (window.state && state.useIndexedDB && state.db && state.db.isReady()) {
-                    state.db.put(state.db.stores.M3U_CACHE, {
-                        url: m3u.url, channels: parsed, content: freshTxt, timestamp: Date.now()
-                    }).catch(function() {});
-                }
-            } catch (e) {}
-
-            try {
-                if (window.state && (state.selectedM3U === idx || state.selectedM3U === 'all')) {
-                    if (state.selectedM3U === idx) {
-                        state.filtered = state.channels.filter(function(c) { return c.listIdx == idx; });
-                    } else {
-                        state.filtered = state.channels.filter(function(c) { return c.listIdx !== undefined; });
-                    }
-                    if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
-                    else if (typeof updateCategories === 'function') updateCategories();
-                    if (typeof renderCats === 'function') renderCats();
-                    if (typeof renderChannels === 'function') renderChannels();
-                    if (typeof updateChannelCount === 'function') updateChannelCount(state.filtered.length);
-                }
-            } catch (e) {}
-
-            if (typeof showToast === 'function') showToast((m3u.name || 'Liste') + ' güncellendi');
-        } catch (e) {}
-    }
-
-    function _installPillPatch() {
-        if (typeof window.selectM3U !== 'function' || window.selectM3U._umPillPatched) {
-            if (typeof window.selectM3U !== 'function') { setTimeout(_installPillPatch, 300); }
-            return;
-        }
-        var _prevSelectM3U = window.selectM3U;
-        window.selectM3U = function(idx) {
-            if (idx === 'all') { return _prevSelectM3U.apply(this, arguments); }
-
-            var m3u = window.state && state.m3uList ? state.m3uList[idx] : null;
-
-            // CANLI YAYIN listeleri (Vavoo, kool.to, oha.to, huhu.to vb. dahil
-            // contentType==='live' olan her liste) HER ZAMAN taze ağdan çekilir.
-            // Bu listelerdeki stream token/linkleri M3U dosyası aynı kalsa bile
-            // sık sık rotasyona girer; "ağı atla" optimizasyonu burada kanalların
-            // açılmamasına yol açar. Bu yüzden live listeler orijinal davranışa
-            // (hiç dokunulmamış selectM3U) bırakılır.
-            if (!m3u || m3u.contentType === 'live') {
-                return _prevSelectM3U.apply(this, arguments);
-            }
-
-            var alreadyHasData = _hasLocalChannels(idx);
-
-            if (alreadyHasData) {
-                window._umSkipNetworkForPill = idx;
-                var ret = _prevSelectM3U.apply(this, arguments);
-                window._umSkipNetworkForPill = null;
-                _ric(function() { _silentCheckAndUpdatePill(idx, m3u); });
-                return ret;
-            }
-
-            return _prevSelectM3U.apply(this, arguments);
-        };
-        window.selectM3U._umPillPatched = true;
-    }
-    _installPillPatch();
-
-    function _installLoadSinglePatch() {
-        if (typeof window.loadSingleM3U !== 'function' && typeof loadSingleM3U !== 'function') {
-            setTimeout(_installLoadSinglePatch, 300);
-            return;
-        }
-        var _target = (typeof window.loadSingleM3U === 'function') ? window.loadSingleM3U : loadSingleM3U;
-        if (_target._umNoNetPatched) return;
-        var _prevLoadSingle = _target;
-        var _wrapped = async function(idx, m3u, forceRefresh) {
-            // Ekstra güvenlik: canlı yayın listeleri (Vavoo vb.) burada da asla
-            // ağsız kısayola girmesin — token rotasyonu nedeniyle her zaman taze
-            // çekilmeleri gerekir.
-            if (!forceRefresh && window._umSkipNetworkForPill === idx && m3u && m3u.contentType === 'live') {
-                window._umSkipNetworkForPill = null;
-            }
-            if (!forceRefresh && window._umSkipNetworkForPill === idx && window.state && state.channels) {
-                try {
-                    if (typeof hideInlineLoading === 'function') hideInlineLoading();
-                    state.filtered = state.channels.filter(function(c) { return c.listIdx == idx; });
-                    try { const _s = localStorage.getItem('channel_sort_order'); if (_s && typeof applySortOrderToChannels === 'function') applySortOrderToChannels(JSON.parse(_s)); } catch (e) {}
-                    if (typeof updateCategoriesFromFiltered === 'function') updateCategoriesFromFiltered();
-                    else if (typeof updateCategories === 'function') updateCategories();
-                    if (typeof renderCats === 'function') renderCats();
-                    if (typeof updateChannelCount === 'function') updateChannelCount(state.filtered.length);
-                    var titleEl = document.getElementById('activeCategoryTitle');
-                    if (titleEl) titleEl.innerText = 'Tüm Kanallar';
-                    if (typeof renderChannels === 'function') renderChannels();
-                    isInitialLoadComplete = true;
-                } catch (e) {}
-                return;
-            }
-            return _prevLoadSingle.apply(this, arguments);
-        };
-        _wrapped._umNoNetPatched = true;
-        window.loadSingleM3U = _wrapped;
-        try { loadSingleM3U = _wrapped; } catch (e) {}
-    }
-    _installLoadSinglePatch();
-
-})();
-</script>
-

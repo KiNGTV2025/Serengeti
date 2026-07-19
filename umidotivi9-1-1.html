@@ -63734,6 +63734,41 @@ async function syncContinueWatchingFromCloud() {
         var cloudObj = (cloud && typeof cloud === 'object') ? cloud : {};
         var cloudKeys = Object.keys(cloudObj).filter(function(k) { return k !== '__deviceSync'; });
         var changed = false;
+
+        // ── Cihazlar arası SİLME senkronu (push-up'tan ÖNCE çalışmalı) ──
+        // "Kartlar telefondan silindi mi tvbox'tan silinsin": bir kayıt daha
+        // önceki senkronda buluttan görülmüş (_cwLastCloudKeys içinde) ama
+        // şimdi bulutta artık yoksa, başka bir cihazda silinmiş demektir —
+        // bu cihazda da yerelden kaldır.
+        // KRİTİK-FIX: Bu blok aşağıdaki push-up döngüsünden ÖNCE çalışmalı.
+        // Eskiden sıra tersti: A cihazı bir kaydı silip buluttan kaldırınca,
+        // henüz senkron olmamış B/C cihazları push-up döngüsünde "cloud'da
+        // yok, yerelde var → daha yeni" sanıp kaydı buluta GERİ YAZIYORDU.
+        // Bu da A'nın bir sonraki senkronunda kaydı "başka cihazdan gelen
+        // yeni kayıt" gibi görüp geri getirmesine, yani silinen kartın
+        // 3 cihazda da tekrar belirmesine yol açıyordu.
+        var justDeletedSafeKeys = {};
+        try {
+            var prevSyncedKeys = JSON.parse(localStorage.getItem('_cwLastCloudKeys') || '[]');
+            if (prevSyncedKeys.length) {
+                Object.keys(state.continueWatching).forEach(function(name) {
+                    var safeKey = _cwSafeKey(name);
+                    if (prevSyncedKeys.indexOf(safeKey) !== -1 && cloudKeys.indexOf(safeKey) === -1) {
+                        console.debug('[CW-DEBUG] cloud-sync DELETED local record (missing from cloud)', name);
+                        delete state.continueWatching[name];
+                        justDeletedSafeKeys[safeKey] = true;
+                        changed = true;
+                        try {
+                            if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {
+                                state.db.delete(state.db.stores.CONTINUE, name).catch(function(){});
+                            }
+                        } catch(e) {}
+                    }
+                });
+            }
+            localStorage.setItem('_cwLastCloudKeys', JSON.stringify(cloudKeys));
+        } catch(e) {}
+
         cloudKeys.forEach(function(key) {
             var item = cloudObj[key];
             if (!item || !item.name) return;
@@ -63749,41 +63784,17 @@ async function syncContinueWatchingFromCloud() {
             }
         });
         // Yerelde bulutta olandan daha yeni kayıt varsa yukarı gönder
+        // (başka cihazda az önce silinmiş kayıtlar justDeletedSafeKeys
+        // içinde olduğu için buraya geri yazılmaz)
         Object.keys(state.continueWatching).forEach(function(name) {
+            var safeKey = _cwSafeKey(name);
+            if (justDeletedSafeKeys[safeKey]) return;
             var local = state.continueWatching[name];
-            var cItem = cloudObj[_cwSafeKey(name)];
+            var cItem = cloudObj[safeKey];
             if (!cItem || (local.timestamp || 0) > (cItem.timestamp || 0)) {
                 _cwPushToCloud(name, local);
             }
         });
-
-        // ── Cihazlar arası SİLME senkronu ──
-        // "Kartlar telefondan silindi mi tvbox'tan silinsin": bir kayıt daha
-        // önceki senkronda buluttan görülmüş (_cwLastCloudKeys içinde) ama
-        // şimdi bulutta artık yoksa, başka bir cihazda (ör. telefonda)
-        // silinmiş demektir — bu cihazda da (ör. tvbox'ta) yerelden kaldır.
-        // Hiç senkron olmamış (prevSyncedKeys boş) kayıtlara dokunulmaz;
-        // aksi halde ilk senkronda henüz buluta yazılmamış yeni kayıtlar
-        // yanlışlıkla silinir.
-        try {
-            var prevSyncedKeys = JSON.parse(localStorage.getItem('_cwLastCloudKeys') || '[]');
-            if (prevSyncedKeys.length) {
-                Object.keys(state.continueWatching).forEach(function(name) {
-                    var safeKey = _cwSafeKey(name);
-                    if (prevSyncedKeys.indexOf(safeKey) !== -1 && cloudKeys.indexOf(safeKey) === -1) {
-                        console.debug('[CW-DEBUG] cloud-sync DELETED local record (missing from cloud)', name);
-                        delete state.continueWatching[name];
-                        changed = true;
-                        try {
-                            if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {
-                                state.db.delete(state.db.stores.CONTINUE, name).catch(function(){});
-                            }
-                        } catch(e) {}
-                    }
-                });
-            }
-            localStorage.setItem('_cwLastCloudKeys', JSON.stringify(cloudKeys));
-        } catch(e) {}
 
         if (changed) {
             console.info('[CW] Diğer cihazdan devam et kayıtları senkronize edildi:', cloudKeys.length);
@@ -76421,6 +76432,142 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     }
     _installLoadSinglePatch();
 
+})();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// OTOMATİK GÜNCELLEME (GitHub'da sayfa yenilenince tespit et)
+// ── Uygulama, kendi yüklendiği HTML kaynağını (location.href) belirli
+//    aralıklarla cache'siz olarak tekrar indirir ve basit bir hash ile
+//    karşılaştırır. İçerik değiştiyse (GitHub'a yeni sürüm push edildiyse):
+//      • Player KAPALIYSA  → hemen toast gösterip sayfayı yeniler.
+//      • Player AÇIKSA     → izlemeyi kesmemek için hemen yenilemez,
+//        sadece bilgilendirme toast'ı gösterir ve player kapanınca
+//        (veya sekme arka plandan öne gelince) arka planda günceller.
+// ══════════════════════════════════════════════════════════════════
+(function () {
+    var CHECK_INTERVAL_MS = 4 * 60 * 1000; // 4 dakikada bir kontrol et
+    var _um_baselineHash = null;
+    var _um_updateAvailable = false;
+    var _um_toastShown = false;
+    var _um_checking = false;
+
+    function _umHash(str) {
+        // Basit ve hızlı checksum (djb2 varyasyonu) — kriptografik güç
+        // gerekmiyor, sadece içerik değişti mi tespiti için yeterli.
+        var h = 5381;
+        for (var i = 0; i < str.length; i++) {
+            h = ((h << 5) + h) + str.charCodeAt(i);
+            h = h & h; // 32bit'e sabitle
+        }
+        return h + '_' + str.length;
+    }
+
+    function _umIsPlayerOpen() {
+        try {
+            var pv = document.getElementById('playerView');
+            if (pv && (pv.style.display === 'flex' || pv.style.display === 'block')) return true;
+        } catch (e) {}
+        return false;
+    }
+
+    function _umShowUpdateToast() {
+        if (_um_toastShown) return;
+        _um_toastShown = true;
+        try {
+            if (typeof showToast === 'function') {
+                showToast('🔄 Uygulama otomatik güncelleniyor, rahatsız olma, sen iyi seyirler 🍿');
+            }
+        } catch (e) {}
+    }
+
+    function _umDoReload() {
+        try { window.location.reload(); } catch (e) { window.location.href = window.location.href; }
+    }
+
+    function _umApplyUpdate() {
+        if (_umIsPlayerOpen()) {
+            // Player açık: hemen yenileme — sadece bilgilendir, arka planda bekle.
+            _umShowUpdateToast();
+            _um_updateAvailable = true;
+        } else {
+            _umShowUpdateToast();
+            setTimeout(_umDoReload, 1500);
+        }
+    }
+
+    async function _umCheckForUpdate(isBaseline) {
+        if (_um_checking) return;
+        _um_checking = true;
+        try {
+            var bustUrl = window.location.href.split('#')[0];
+            bustUrl += (bustUrl.indexOf('?') === -1 ? '?' : '&') + '_umv=' + Date.now();
+            var res = await fetch(bustUrl, { cache: 'no-store', credentials: 'same-origin' });
+            if (!res || !res.ok) return;
+            var text = await res.text();
+            var h = _umHash(text);
+            if (isBaseline) {
+                _um_baselineHash = h;
+                return;
+            }
+            if (_um_baselineHash && h !== _um_baselineHash) {
+                console.info('[AutoUpdate] GitHub üzerinde yeni sürüm tespit edildi.');
+                _umApplyUpdate();
+            }
+        } catch (e) {
+            // Ağ hatası vb. — sessizce geç, bir sonraki denemede tekrar bakılır.
+        } finally {
+            _um_checking = false;
+        }
+    }
+
+    // Player kapatıldığında bekleyen güncelleme varsa uygula.
+    function _umHookPlayerClose() {
+        if (typeof window.closePlayer !== 'function' || window.closePlayer._umUpdateHooked) return;
+        var _origClosePlayer = window.closePlayer;
+        var _wrapped = function () {
+            var ret = _origClosePlayer.apply(this, arguments);
+            if (_um_updateAvailable) {
+                _um_updateAvailable = false;
+                // Kapanış animasyonlarının bitmesi için kısa bir gecikme.
+                setTimeout(_umDoReload, 800);
+            }
+            return ret;
+        };
+        _wrapped._umUpdateHooked = true;
+        window.closePlayer = _wrapped;
+        try { closePlayer = _wrapped; } catch (e) {}
+    }
+
+    function _umInit() {
+        _umHookPlayerClose();
+        // Baseline hash'i al (ilk yükleme cache'lenmiş olabileceği için
+        // gerçek kaynaktan taze bir referans alınır).
+        _umCheckForUpdate(true);
+        setInterval(function () { _umCheckForUpdate(false); }, CHECK_INTERVAL_MS);
+
+        // Sekme/uygulama arka plandan öne gelince de bir kez kontrol et —
+        // player kapalıyken kaçırılan bir güncelleme varsa hemen yakalanır,
+        // player açıksa yine sadece bekletilir.
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') {
+                _umCheckForUpdate(false);
+                if (_um_updateAvailable && !_umIsPlayerOpen()) {
+                    _um_updateAvailable = false;
+                    _umDoReload();
+                }
+            }
+        });
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(_umInit, 3000);
+    } else {
+        window.addEventListener('DOMContentLoaded', function () { setTimeout(_umInit, 3000); });
+    }
+
+    window._umCheckForUpdate = _umCheckForUpdate;
 })();
 </script>
 

@@ -16434,20 +16434,11 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         </div>
     </div>   
  
-    <div class="modal-bg" id="continueModal" onclick="if(event.target.id==='continueModal') closeContinueModal(true)">
-        <div class="continue-modal-wrapper">
-            <div class="continue-modal-content">
-                <h3 style="color:var(--accent-primary); margin-bottom: 15px; font-size:18px; text-align:center;">Kaldığınız Yerden Devam Edin</h3>
-                <p id="continueModalText" style="margin-bottom: 15px; font-size:15px; text-align:center; line-height:1.5;"></p>
-          <div class="continue-actions-grid">
-                    <button class="continue-modal-btn watch-later" id="btnWatchLater" onclick="closeContinueModal(true)">Sonra İzle</button>
-                    <button class="continue-modal-btn delete" id="btnContinueDelete" onclick="deleteContinueWatchingRecord(state.player.currentContinueName); closeContinueModal(false);">Sil</button>
-                    <button class="continue-modal-btn start" id="btnStartOver" onclick="resumeChannel(0); closeContinueModal(false);">Baştan İzle</button>
-                    <button class="continue-modal-btn continue" id="btnContinue" onclick="resumeChannel(state.player.continueTime); closeContinueModal(false);">Devam Et</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- NOT: continueModal artik statik olarak burada tutulmuyor.
+         openContinueModal() bu modali document.body.insertAdjacentHTML ile
+         dinamik olarak olusturup kaldiriyor; burada ayni id ile ikinci bir
+         kopya birakmak document.getElementById('continueModal') cagrilarinin
+         yanlis/eski elemente dusmesine yol aciyordu. -->
 
     <div class="modal-bg" id="deleteContinueModal" onclick="if(event.target.id==='deleteContinueModal') closeDeleteContinueModal()">
         <div class="modal-content modal-content-small" style="text-align: center;">
@@ -75245,44 +75236,138 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     // World Cup 2026 maçlarını wc2026-api Worker'ından çeker ve TheSportsDB event
     // formatına uyarlar — böylece umRenderMatches/umMatchStatus aynı kod yolunu kullanır.
     // Gerçek canlı dakika/skor için _wcStatus + _wcMinute alanları eklenir (bkz. umMatchStatus).
+    //
+    // YEDEK (FALLBACK) ZİNCİRİ — 3 bağımsız kaynak, sırayla denenir:
+    //   1) Özel worker (wc2026-api.footy26.workers.dev)      → en hızlı, canlı dakika verir
+    //   2) TheSportsDB eventsday.php?l=4429 (World Cup lig ID) → 1. kaynak çökerse/boşsa;
+    //      canlı dakika yok ama skor/durum/saat var
+    //   3) openfootball/worldcup.json (GitHub, anahtarsız)    → ilk ikisi de başarısızsa;
+    //      elle güncellenir (gerçek zamanlı değil) VE knockout turlarında (Ro32'den
+    //      finale kadar) takım isimleri kurayla netleşene kadar "W101", "3C/D/F" gibi
+    //      placeholder kodlarla durur — bu yüzden umOpenFootballToEvent() placeholder'lı
+    //      maçları eler (kullanıcıya "W101 vs W102" gibi anlamsız bir satır göstermemek
+    //      için). Yani bu kaynak final/yarı final gibi maçları GERÇEK isimlerle ancak
+    //      GitHub deposu güncellendikten sonra gösterir — anlık garanti değildir, ama
+    //      grup aşaması ve genel skor/sonuç bilgisi için sağlam bir son çaredir.
+    // Üçü de başarısız olursa boş dizi döner (önceki davranış korunur).
+    var UM_WC2026_TSDB_LEAGUE_ID = '4429'; // TheSportsDB'de "FIFA World Cup"
+    var UM_WC2026_OPENFOOTBALL_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
     var umWC2026Cache = null; // { ts, matches } — tüm turnuva tek response'ta geldiği için ayrıca cache'liyoruz
+    var umWC2026OpenFootballCache = null; // { ts, matches } — 3. kaynak için ayrı cache (nadiren değişir)
+
     async function umFetchWC2026Raw() {
         if (umWC2026Cache && (Date.now() - umWC2026Cache.ts) < 45000) return umWC2026Cache.matches;
         try {
             var res = await umFetchWithTimeout(WC2026_SCORES_API, 8000);
             var json = await res.json();
             var matches = (json && json.matches) || [];
-            umWC2026Cache = { ts: Date.now(), matches: matches };
-            return matches;
+            if (matches.length > 0) {
+                umWC2026Cache = { ts: Date.now(), matches: matches };
+                return matches;
+            }
+            // Worker ayakta ama veri boş/eksik döndürdüyse de yedek kaynağa düş.
+            throw new Error('um-wc2026-empty');
         } catch (e) {
-            return (umWC2026Cache && umWC2026Cache.matches) || [];
+            // Eldeki taze-ish cache varsa onu kullanmaya devam et, yoksa yedek kaynağa düş.
+            if (umWC2026Cache && (Date.now() - umWC2026Cache.ts) < 5 * 60000) {
+                return umWC2026Cache.matches;
+            }
+            return null; // null = "worker'a güvenilemedi", çağıran taraf yedek kaynağı denemeli
         }
     }
-    async function umFetchWC2026Day(dateStr) {
-        var matches = await umFetchWC2026Raw();
+
+    // 3. kaynak: openfootball/worldcup.json — team1/team2/score.ft formatını
+    // umFetchWC2026Day'in beklediği TheSportsDB benzeri event formatına çevirir.
+    // Round/knockout maçlarında team1/team2 henüz kesinleşmemişse ("1A", "W97" gibi
+    // placeholder kodlar) o event atlanır — kullanıcıya anlamsız takım adı gösterilmez.
+    function umOpenFootballToEvent(m, dateStr) {
+        if (!m || !m.team1 || !m.team2) return null;
+        if (/^([1-3][A-L]|[WL]\d+|\d?[A-Z]\/)/.test(m.team1) || /^([1-3][A-L]|[WL]\d+|\d?[A-Z]\/)/.test(m.team2)) {
+            return null; // kura henüz belli olmamış placeholder (örn. "W101", "3C/D/F")
+        }
+        var hasScore = m.score && Array.isArray(m.score.ft);
+        var st = hasScore ? 'FT' : 'NS';
+        // openfootball saat bilgisini "HH:MM UTC±N" formatında verir; sadece saat kısmını
+        // kabaca alıyoruz (dakika hassasiyeti önemli değil, zaten canlı dakika bu kaynakta yok).
+        var timeMatch = (m.time || '').match(/^(\d{2}):(\d{2})/);
+        return {
+            idEvent: 'wc2026_of_' + (m.num || (m.team1 + '_' + m.team2 + '_' + dateStr)),
+            strHomeTeam: m.team1, strAwayTeam: m.team2,
+            intHomeScore: hasScore ? m.score.ft[0] : '',
+            intAwayScore: hasScore ? m.score.ft[1] : '',
+            strStatus: st,
+            dateEvent: dateStr,
+            strTime: timeMatch ? (timeMatch[1] + ':' + timeMatch[2] + ':00') : '',
+            idHomeTeam: '', idAwayTeam: '',
+            strHomeTeamBadge: '', strAwayTeamBadge: ''
+            // _wcStatus/_wcMinute bilerek eklenmedi: bu kaynakta canlı dakika yok,
+            // umMatchStatus() otomatik olarak strStatus + saat tahmini mantığına düşer.
+        };
+    }
+
+    async function umFetchWC2026OpenFootballDay(dateStr) {
+        if (!umWC2026OpenFootballCache || (Date.now() - umWC2026OpenFootballCache.ts) > 10 * 60000) {
+            try {
+                var res = await umFetchWithTimeout(UM_WC2026_OPENFOOTBALL_URL, 8000);
+                var json = await res.json();
+                var matches = (json && json.matches) || [];
+                umWC2026OpenFootballCache = { ts: Date.now(), matches: matches };
+            } catch (e) {
+                // Ağ hatası: eski cache varsa onu kullan, yoksa pes et.
+                if (!umWC2026OpenFootballCache) return [];
+            }
+        }
+        var all = (umWC2026OpenFootballCache && umWC2026OpenFootballCache.matches) || [];
         var out = [];
-        for (var i = 0; i < matches.length; i++) {
-            var m = matches[i];
-            if (!m || !m.t) continue;
-            var d = new Date(m.t * 1000);
-            if (d.toISOString().slice(0, 10) !== dateStr) continue;
-            var st = WC2026_STATUS_MAP[m.status] || m.status || 'NS';
-            out.push({
-                idEvent: 'wc2026_' + m.id,
-                strHomeTeam: m.home, strAwayTeam: m.away,
-                intHomeScore: (m.h === null || m.h === undefined) ? '' : m.h,
-                intAwayScore: (m.a === null || m.a === undefined) ? '' : m.a,
-                strStatus: st,
-                dateEvent: dateStr,
-                strTime: d.toISOString().slice(11, 19),
-                idHomeTeam: '', idAwayTeam: '',
-                strHomeTeamBadge: '', strAwayTeamBadge: '',
-                _wcStatus: st,
-                _wcMinute: (m.minute === null || m.minute === undefined) ? null : m.minute
-            });
+        for (var i = 0; i < all.length; i++) {
+            if (all[i].date !== dateStr) continue;
+            var ev = umOpenFootballToEvent(all[i], dateStr);
+            if (ev) out.push(ev);
         }
         return out;
     }
+
+    async function umFetchWC2026Day(dateStr) {
+        var matches = await umFetchWC2026Raw();
+        if (matches) {
+            var out = [];
+            for (var i = 0; i < matches.length; i++) {
+                var m = matches[i];
+                if (!m || !m.t) continue;
+                var d = new Date(m.t * 1000);
+                if (d.toISOString().slice(0, 10) !== dateStr) continue;
+                var st = WC2026_STATUS_MAP[m.status] || m.status || 'NS';
+                out.push({
+                    idEvent: 'wc2026_' + m.id,
+                    strHomeTeam: m.home, strAwayTeam: m.away,
+                    intHomeScore: (m.h === null || m.h === undefined) ? '' : m.h,
+                    intAwayScore: (m.a === null || m.a === undefined) ? '' : m.a,
+                    strStatus: st,
+                    dateEvent: dateStr,
+                    strTime: d.toISOString().slice(11, 19),
+                    idHomeTeam: '', idAwayTeam: '',
+                    strHomeTeamBadge: '', strAwayTeamBadge: '',
+                    _wcStatus: st,
+                    _wcMinute: (m.minute === null || m.minute === undefined) ? null : m.minute
+                });
+            }
+            if (out.length > 0) return out;
+            // Worker'dan veri geldi ama bu tarihte maç yoktu — gerçekten boş olabilir,
+            // yine de emin olmak için diğer kaynakları da bir kez kontrol et.
+        }
+        // ── YEDEK #2: TheSportsDB (canlı dakika yok ama skor/durum/saat var) ──
+        try {
+            var tsdbOut = await umFetchLeagueDay(UM_WC2026_TSDB_LEAGUE_ID, dateStr);
+            if (tsdbOut && tsdbOut.length > 0) return tsdbOut;
+        } catch (e) {}
+        // ── YEDEK #3: openfootball/worldcup.json (son çare, elle güncellenir) ──
+        try {
+            return await umFetchWC2026OpenFootballDay(dateStr);
+        } catch (e) {
+            return [];
+        }
+    }
+
 
     async function umGetTeamBadge(teamName, teamId) {
         if (!teamName) return '';

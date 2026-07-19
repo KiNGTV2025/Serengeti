@@ -20497,6 +20497,61 @@ function backupToLocalStorage() {
 }
 
 async function loadContinueWatching() {
+    // ── TOMBSTONE (silinenler kaydı) ─────────────────────────────────
+    // "Kartı siliyorum, uygulamayı kapatıp açınca yine geliyor" sorununun
+    // kökü: aşağıdaki birleştirme mantığı, localStorage'da silinmiş ama
+    // IndexedDB'de (silme işlemi tamamlanmadan uygulama kapatıldıysa, ya
+    // da eski bir kopyası kaldıysa) hâlâ duran bir kaydı "yeni kayıt"
+    // sanıp OTOMATIK OLARAK GERİ YÜKLÜYORDU — çünkü sadece "var mı yok
+    // mu" bakılıyordu, "kasıtlı olarak silindi mi" hiç bakılmıyordu.
+    // Çözüm: silme işlemi her zaman bir "tombstone" (o ismin hangi zaman
+    // damgasına kadar silindiğini tutan kayıt) bırakır; yükleme sırasında,
+    // tombstone zamanından ESKİ VEYA EŞİT bir kayıt bulunursa (kullanıcı
+    // o içeriği silmeden SONRA tekrar izlememişse) görmezden gelinir ve
+    // IndexedDB'den de temizlenir. Kullanıcı içeriği tekrar izlerse yeni
+    // (daha güncel) bir kayıt oluşur ve tombstone'dan etkilenmez.
+    function _cwGetTombstones() {
+        try {
+            const raw = localStorage.getItem('_cwTombstones');
+            const obj = raw ? JSON.parse(raw) : {};
+            return (obj && typeof obj === 'object') ? obj : {};
+        } catch (e) { return {}; }
+    }
+    function _cwPruneTombstones(obj) {
+        const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const pruned = {};
+        Object.keys(obj).forEach(k => { if (obj[k] > cutoff) pruned[k] = obj[k]; });
+        return pruned;
+    }
+    window._cwAddTombstone = function (name) {
+        try {
+            let obj = _cwGetTombstones();
+            obj[name] = Date.now();
+            obj = _cwPruneTombstones(obj);
+            localStorage.setItem('_cwTombstones', JSON.stringify(obj));
+        } catch (e) {}
+    };
+    function _cwFilterTombstoned(obj) {
+        try {
+            const tomb = _cwGetTombstones();
+            Object.keys(obj).forEach(name => {
+                const tombTs = tomb[name];
+                const rec = obj[name];
+                if (tombTs && rec && (rec.timestamp || 0) <= tombTs) {
+                    delete obj[name];
+                    try {
+                        if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {
+                            state.db.delete(state.db.stores.CONTINUE, name).catch(function () {});
+                        }
+                    } catch (e2) {}
+                }
+            });
+        } catch (e) {}
+        return obj;
+    }
+    window._cwFilterTombstoned = _cwFilterTombstoned;
+
+
     
     
 
@@ -20560,11 +20615,10 @@ async function loadContinueWatching() {
                 const fixed = _cwRepairRecord(continueObj[k]);
                 if (fixed) _repairedObj[k] = fixed;
             });
-            if (Object.keys(_repairedObj).length > 0) {
-                state.continueWatching = _repairedObj;
-                localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
-                return;
-            }
+            _cwFilterTombstoned(_repairedObj);
+            state.continueWatching = _repairedObj;
+            localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+            return;
         } catch (error) {
         }
     } else {
@@ -20589,6 +20643,7 @@ async function loadContinueWatching() {
                 }
             });
             
+            _cwFilterTombstoned(filteredData);
             state.continueWatching = filteredData;
             
             
@@ -22921,6 +22976,67 @@ function applyMiboxOptimizations() {
         state.controlSettings.keySoundLevel = 0.8; // Normal ses
         state.controlSettings.touchSensitivity = 40; // Daha az hassas
     }
+
+    // ── KARE ATLAMASI FIX (decoder starvation) ──────────────────────
+    // Sorun: PerformanceMonitor, düşük FPS'te "state.player.hls.config.
+    // abrMaxQuality = 720" atayarak kaliteyi düşürmeye çalışıyordu, ama
+    // hls.js bu ismi (abrMaxQuality) TANIMIYOR — sessizce yok sayılıyor,
+    // yani kalite hiç düşmüyordu. Üstüne üstlük TVBox'larda CPU tasarrufu
+    // için FPS izleyici baştan kapatıldığından bu düşürme mekanizması
+    // zaten hiç tetiklenmiyordu. Sonuç: MiBox gibi zayıf çipli kutularda
+    // akış, decoder'ın kaldıramayacağı çözünürlükte oynatılmaya devam
+    // ediyor → görüntü akıyor ama düzenli aralıklarla kare atlıyor.
+    // Çözüm: hls.js'in GERÇEK API'si olan autoLevelCapping ile, her yeni
+    // Hls() oluşturulduğunda MiBox'ı üst çözünürlük sınırına sabitle.
+    try {
+        if (typeof window.Hls === 'function' && !window.Hls._umMiboxCapWrapped) {
+            var _OrigHls = window.Hls;
+            var _memGB = navigator.deviceMemory || 2;
+            var _cores = navigator.hardwareConcurrency || 2;
+            // Çok zayıf donanımda (≤2GB RAM veya ≤2 çekirdek) 480p, diğer
+            // MiBox ailesinde 720p tavanı — ikisi de orijinal kaynaktan
+            // daha zorlu olmayan, çoğu Amlogic/MTK TV çipinin rahatça
+            // decode edebildiği seviyeler.
+            var _capHeight = (_memGB <= 2 || _cores <= 2) ? 480 : 720;
+            var _applyCap = function (inst) {
+                try {
+                    var levels = inst.levels || [];
+                    if (!levels.length) return;
+                    var bestIdx = -1;
+                    for (var i = 0; i < levels.length; i++) {
+                        var h = levels[i].height || 0;
+                        if (h && h <= _capHeight && (bestIdx === -1 || h > levels[bestIdx].height)) {
+                            bestIdx = i;
+                        }
+                    }
+                    if (bestIdx === -1) {
+                        // Hiç uygun seviye yoksa en düşük seviyeyi kullan —
+                        // yine de decode yükünü mümkün olduğunca azaltır.
+                        bestIdx = 0;
+                        for (var j = 1; j < levels.length; j++) {
+                            if ((levels[j].height || 9999) < (levels[bestIdx].height || 9999)) bestIdx = j;
+                        }
+                    }
+                    inst.autoLevelCapping = bestIdx;
+                } catch (e) {}
+            };
+            var WrappedHls = function (cfg) {
+                var inst = new _OrigHls(cfg);
+                try {
+                    inst.on(_OrigHls.Events.MANIFEST_PARSED, function () { _applyCap(inst); });
+                    // Canlı yayında seviye listesi güncellenirse (ör. yeni
+                    // kalite eklendi) sınırı yeniden uygula.
+                    inst.on(_OrigHls.Events.LEVELS_UPDATED, function () { _applyCap(inst); });
+                } catch (e) {}
+                return inst;
+            };
+            WrappedHls.prototype = _OrigHls.prototype;
+            for (var _k in _OrigHls) { if (_OrigHls.hasOwnProperty(_k)) WrappedHls[_k] = _OrigHls[_k]; }
+            WrappedHls._umMiboxCapWrapped = true;
+            window.Hls = WrappedHls;
+            console.info('[MiBox-Fix] Kare atlamasını önlemek için kalite tavanı: ' + _capHeight + 'p');
+        }
+    } catch (e) { console.warn('MiBox kalite sınırlama hatası:', e); }
 }
 
 // YENİ: PERFORMANS MONİTÖRÜ
@@ -38765,6 +38881,11 @@ function addContinueCardStyles() {
             }
             
             // Önce state ve storage'ı temizle (hafif işlem)
+            // Tombstone bırak — açılışta IndexedDB/bulutta artakalmış eski
+            // kopyaların kartları geri diriltmesini önler.
+            if (typeof window._cwAddTombstone === 'function') {
+                Object.keys(state.continueWatching).forEach(function(n) { window._cwAddTombstone(n); });
+            }
             localStorage.removeItem('continueWatching');
             state.continueWatching = {};
             // IndexedDB'yi de temizle — silinmezse "Tümünü Temizle" sonrası
@@ -45377,6 +45498,7 @@ let virtualScrollSystem = null;
         } else if (progress >= MAX_WATCH_PERCENT) {
             delete state.continueWatching[cwKey];
             localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+            if (typeof window._cwAddTombstone === 'function') window._cwAddTombstone(cwKey);
             if (state.useIndexedDB && state.db && state.db.isReady && state.db.isReady()) {
                 state.db.delete(state.db.stores.CONTINUE, cwKey).catch(function(){});
             }
@@ -46531,6 +46653,9 @@ function deleteContinueWatchingRecord(name) {
     
     delete state.continueWatching[name]; 
     localStorage.setItem('continueWatching', JSON.stringify(state.continueWatching));
+    // Tombstone bırak — açılışta IndexedDB/bulut'ta artakalmış eski bir
+    // kopyanın kartı geri diriltmesini önler (bkz. loadContinueWatching).
+    if (typeof window._cwAddTombstone === 'function') window._cwAddTombstone(name);
     // IndexedDB'den de sil — silinmezse uygulama yeniden açıldığında kart geri gelir
     // (loadContinueWatching açılışta önce IndexedDB'yi okur, localStorage'a hiç bakmaz)
     if (state.useIndexedDB && state.db && typeof state.db.delete === 'function' && state.db.isReady && state.db.isReady()) {

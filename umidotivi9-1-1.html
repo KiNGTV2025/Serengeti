@@ -75577,6 +75577,36 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         return chCount + '_' + epgSize;
     }
 
+    // Bir kanalın EPG bilgisinden, eşleştirme için kullanılacak "aday program
+    // başlıkları" listesini çıkarır. Önceden SADECE o an yayında olan (current)
+    // programa bakılıyordu — ama bir maç henüz başlamamışsa (örn. "Kupa Saati"
+    // gibi bir öncül/stüdyo programı o an yayındaysa) asıl maç programı EPG'de
+    // "sıradaki" (next) veya biraz daha ilerideki bir slot olarak duruyor olabilir.
+    // Bu yüzden current + next + yakın gelecekteki (UM_EPG_LOOKAHEAD_MS içindeki)
+    // tüm programlar aday havuzuna dahil ediliyor; hangisi maçla eşleşirse o kanal
+    // "otomatik bulundu" sayılıyor. Replay filtresi (tekrar/özet) index inşa
+    // fonksiyonuna göre değişmeden uygulanmaya devam eder.
+    var UM_EPG_LOOKAHEAD_MS = 4 * 60 * 60000; // 4 saat ileriye kadar bak
+
+    function umCollectCandidateTitles(info) {
+        var titles = [];
+        if (!info) return titles;
+        if (info.current && info.current.title) titles.push(info.current.title);
+        if (info.next && info.next.title) titles.push(info.next.title);
+        if (info.all && info.all.length) {
+            var now = Date.now();
+            var horizon = now + UM_EPG_LOOKAHEAD_MS;
+            for (var i = 0; i < info.all.length; i++) {
+                var p = info.all[i];
+                var startMs = p.start ? p.start.getTime() : null;
+                if (startMs !== null && startMs >= now && startMs <= horizon && p.program && p.program.title) {
+                    titles.push(p.program.title);
+                }
+            }
+        }
+        return titles;
+    }
+
     function umBuildEpgIndex() {
         if (!window.state || !state.channels || typeof getEPGInfo !== 'function') return null;
         var sig = umEpgIndexSig();
@@ -75589,8 +75619,11 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             var ch = channels[i];
             try {
                 var info = getEPGInfo(ch.name, ch.tvgId);
-                var title = (info && info.current && info.current.title) ? umNorm(info.current.title) : '';
-                if (title && !umIsReplayTitle(title)) idx.push({ ch: ch, title: title });
+                var rawTitles = umCollectCandidateTitles(info);
+                for (var j = 0; j < rawTitles.length; j++) {
+                    var title = umNorm(rawTitles[j]);
+                    if (title && !umIsReplayTitle(title)) idx.push({ ch: ch, title: title });
+                }
             } catch (e) {}
         }
         umEpgIndexCache = idx; umEpgIndexCacheTs = Date.now(); umEpgIndexCacheSig = sig;
@@ -75611,8 +75644,11 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             var ch = channels[i];
             try {
                 var info = getEPGInfo(ch.name, ch.tvgId);
-                var title = (info && info.current && info.current.title) ? umNorm(info.current.title) : '';
-                if (title) idx.push({ ch: ch, title: title });
+                var rawTitles = umCollectCandidateTitles(info);
+                for (var j = 0; j < rawTitles.length; j++) {
+                    var title = umNorm(rawTitles[j]);
+                    if (title) idx.push({ ch: ch, title: title });
+                }
             } catch (e) {}
         }
         umFullEpgIndexCache = idx; umFullEpgIndexCacheTs = Date.now(); umFullEpgIndexCacheSig = sig;

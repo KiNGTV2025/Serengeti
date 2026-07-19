@@ -15949,6 +15949,9 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <button class="settings-btn secondary" id="btnOpenControlSettings" onclick="closeSettingsModal(); openControlSettingsModal();">
                 <span class="material-symbols-outlined">touch_app</span> Kontrol Ayarları
             </button>
+            <button class="settings-btn secondary" id="btnOpenSingleChannelAdd" onclick="closeSettingsModal(); openSingleChannelModal();">
+                <span class="material-symbols-outlined">add_circle</span> Tekli Yayın Ekle
+            </button>
             <button class="settings-btn secondary" id="btnOpenWatchStats" onclick="closeSettingsModal(); openStatsPanel();">
                 <span class="material-symbols-outlined">bar_chart</span> İzleme İstatistikleri
             </button>
@@ -16315,7 +16318,66 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             </button>
         </div>
     </div>
-    
+
+<div class="modal-bg" id="singleChannelModal" onclick="if(event.target.id==='singleChannelModal') closeSingleChannelModal()">
+    <div class="modal-content">
+        <div class="m3u-modal-header">
+            <h3 class="m3u-modal-title">Tekli Yayın Ekle</h3>
+            <button class="icon-btn" onclick="closeSingleChannelModal()" style="width:32px; height:32px;">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Kanal Adı (Örn: TRT 1 HD)</label>
+            <input type="text" id="scaNameInput" class="password-input" placeholder="Kanal Adı (Örn: TRT 1 HD)" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Hedef Liste</label>
+            <select id="scaListSelect" class="password-input" style="-webkit-appearance:none;appearance:none;"></select>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Grup / Kategori (Örn: ULUSAL)</label>
+            <input type="text" id="scaGroupInput" class="password-input" placeholder="Grup Title (Örn: ULUSAL)" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Yayın Linki (m3u8, mp4, ts)</label>
+            <input type="text" id="scaUrlInput" class="password-input" placeholder="https://..." autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Kanal Logosu (Link)</label>
+            <input type="text" id="scaLogoInput" class="password-input" placeholder="https://... (isteğe bağlı)" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">User Agent (İsteğe Bağlı)</label>
+            <input type="text" id="scaUaInput" class="password-input" placeholder="User Agent" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Referer (İsteğe Bağlı)</label>
+            <input type="text" id="scaRefInput" class="password-input" placeholder="Referer" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Origin (İsteğe Bağlı)</label>
+            <input type="text" id="scaOriginInput" class="password-input" placeholder="Origin" autocomplete="off">
+        </div>
+
+        <div class="modal-btns" style="margin-top: 20px; justify-content: flex-end;">
+            <button class="continue-modal-btn cancel" id="btnCancelSca" onclick="closeSingleChannelModal()">İptal</button>
+            <button class="continue-modal-btn continue" id="btnSaveSca" onclick="saveSingleChannel()">Kanalı Listeye Ekle</button>
+        </div>
+        <button class="modal-back-btn" tabindex="0" onclick="closeSingleChannelModal()">
+            <span class="material-symbols-outlined">arrow_back</span> Geri
+        </button>
+    </div>
+</div>
+
 <div class="modal-bg" id="searchModal" onclick="if(event.target.id==='searchModal') closeSearchModal()">
     <div class="modal-content" style="max-width:520px;padding:0;overflow:hidden;border-radius:20px;background:linear-gradient(160deg,#0e1020 0%,#0a0c18 100%);border:1px solid rgba(255,215,0,0.2);box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,215,0,0.08);">
 
@@ -19458,6 +19520,27 @@ const HLS_CONFIG = {
         if (_isApp24WebView) {
             try { xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'); } catch(e) {}
         }
+        // ── Kanal-özel User Agent / Referer / Origin ──────────────────
+        // Tekli Yayın Ekle formuyla veya M3U'daki #EXTVLCOPT satırlarıyla
+        // girilen kanala özel başlıkları uygula (varsa yukarıdaki varsayılan
+        // UA'yı ezer). NOT: Referer/Origin, tarayıcı/WebView güvenlik
+        // kısıtlamaları nedeniyle JS'ten setRequestHeader ile her zaman
+        // uygulanamayabilir (korumalı başlıklar) — bu yüzden best-effort
+        // olarak try/catch içinde denenir, desteklenmeyen ortamda sessizce
+        // atlanır.
+        try {
+            var _scaChName = (window.state && state.player && state.player.name) || null;
+            if (_scaChName && window.state && state.channels && state.channels.length) {
+                var _scaCh = (typeof _cwFindChannel === 'function')
+                    ? _cwFindChannel(_scaChName)
+                    : state.channels.find(function(c){ return c && c.name === _scaChName; });
+                if (_scaCh) {
+                    if (_scaCh.userAgent) { try { xhr.setRequestHeader('User-Agent', _scaCh.userAgent); } catch(e) {} }
+                    if (_scaCh.referrer) { try { xhr.setRequestHeader('Referer', _scaCh.referrer); } catch(e) {} }
+                    if (_scaCh.origin)   { try { xhr.setRequestHeader('Origin', _scaCh.origin); } catch(e) {} }
+                }
+            }
+        } catch(e) {}
     }
 };
 
@@ -19876,6 +19959,7 @@ let state = {
         rectangleModalIndex: 3,
         autoResumeTimer: null,
         addM3UIndex: 0,
+        singleChannelIndex: 0,
         playerHeaderIndex: 0,
         playerControlIndex: 0,
         viewMode: 'grid',
@@ -20916,6 +21000,7 @@ async function loadContinueWatching() {
                     { id: 'passwordModal',         action: closePasswordModal },
                     { id: 'embedModal',            action: closeEmbedModal },
                     { id: 'addM3UModal',           action: closeAddM3UModal },
+                    { id: 'singleChannelModal',    action: closeSingleChannelModal },
                     { id: 'controlSettingsModal',  action: closeControlSettingsModal },
                     { id: 'deleteContinueModal',   action: closeDeleteContinueModal },
                     { id: 'continueModal',         action: () => closeContinueModal(true) },
@@ -20998,7 +21083,7 @@ async function loadContinueWatching() {
         function closeAllModals() {
             const modals = [
                 'vodModal', 'sleepModeModal', 'm3uHintModal', 'passwordModal',
-                'addM3UModal', 'sortBackupModal', 'quickSortNumModal', 'controlSettingsModal', 'deleteContinueModal',
+                'addM3UModal', 'singleChannelModal', 'sortBackupModal', 'quickSortNumModal', 'controlSettingsModal', 'deleteContinueModal',
                 'continueModal', 'settingsModal', 'themeModal', 'epgModal'
             ];
             
@@ -28733,6 +28818,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             { id: 'passwordModal',        fn: () => { if(typeof closePasswordModal==='function') closePasswordModal(); } },
             { id: 'embedModal',           fn: () => { if(typeof closeEmbedModal==='function') closeEmbedModal(); } },
             { id: 'addM3UModal',          fn: () => { if(typeof closeAddM3UModal==='function') closeAddM3UModal(); } },
+            { id: 'singleChannelModal',   fn: () => { if(typeof closeSingleChannelModal==='function') closeSingleChannelModal(); } },
             { id: 'controlSettingsModal', fn: () => { if(typeof closeControlSettingsModal==='function') closeControlSettingsModal(); } },
             { id: 'deleteContinueModal',  fn: () => { if(typeof closeDeleteContinueModal==='function') closeDeleteContinueModal(); } },
             { id: 'continueModal',        fn: () => { if(typeof closeContinueModal==='function') closeContinueModal(true); } },
@@ -46649,6 +46735,162 @@ if (_ch) {
     } 
     playKeySound('back'); 
 }
+// ══════════════════════════════════════════════════════════════════
+// TEKLİ YAYIN EKLEME — kullanıcı tek bir kanalı (adı, grup/kategori,
+// link, logo, User Agent, Referer, Origin) elle girip istediği M3U
+// pilinin kategorisine ekleyebilir. Eklenen kanallar localStorage'da
+// ayrıca saklanır ve her liste yüklemesinden sonra o listenin kanal
+// dizisine tekrar enjekte edilir (aksi halde bir sonraki M3U
+// yenilemesinde/uygulama açılışında kaybolurlardı).
+// ══════════════════════════════════════════════════════════════════
+function _scaGetManualChannels() {
+    try {
+        const raw = localStorage.getItem('_umManualChannels');
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+}
+function _scaSaveManualChannels(arr) {
+    try { localStorage.setItem('_umManualChannels', JSON.stringify(arr)); } catch (e) {}
+}
+function _scaMakeId(name, url, listIdx) {
+    try {
+        return 'sca_' + listIdx + '_' + encodeURIComponent(String(name) + '|' + String(url)).replace(/%/g, '_').slice(0, 180);
+    } catch (e) { return 'sca_' + listIdx + '_' + Date.now(); }
+}
+// Uygulama açılışında / her liste yenilemesinden sonra çağrılır —
+// kayıtlı tekli-eklenen kanalları ilgili listIdx'in kanal dizisine
+// (varsa zaten ekliyse tekrar eklemeden) geri koyar.
+function _scaInjectManualChannels() {
+    try {
+        if (!window.state || !Array.isArray(state.channels)) return;
+        const manual = _scaGetManualChannels();
+        if (!manual.length) return;
+        const existingIds = new Set(state.channels.filter(c => c && c._scaId).map(c => c._scaId));
+        let added = false;
+        manual.forEach(function (item) {
+            if (existingIds.has(item._scaId)) return;
+            // Hedef liste hâlâ mevcut mu (kullanıcı listeyi silmiş olabilir) kontrol et.
+            if (!state.m3uList || !state.m3uList[item.listIdx]) return;
+            state.channels.push(Object.assign({}, item));
+            existingIds.add(item._scaId);
+            added = true;
+        });
+        if (added && typeof updateCategoriesFromFiltered === 'function') {
+            try { updateCategoriesFromFiltered(); } catch (e) {}
+        }
+    } catch (e) {}
+}
+window._scaInjectManualChannels = _scaInjectManualChannels;
+try {
+    document.addEventListener('umittv_channels_ready', function () {
+        try { _scaInjectManualChannels(); } catch (e) {}
+        // Enjekte edilen kanallar kategorilerde/ızgarada görünsün.
+        if (typeof renderCats === 'function') { try { renderCats(); } catch (e) {} }
+        if (typeof filterChannels === 'function') { try { filterChannels(); } catch (e) {} }
+    });
+} catch (e) {}
+
+function openSingleChannelModal() {
+    const sel = document.getElementById('scaListSelect');
+    if (sel) {
+        sel.innerHTML = '';
+        (state.m3uList || []).forEach(function (m3u, idx) {
+            const opt = document.createElement('option');
+            opt.value = String(idx);
+            opt.textContent = m3u && m3u.name ? m3u.name : ('Liste ' + (idx + 1));
+            sel.appendChild(opt);
+        });
+        if (!state.m3uList || !state.m3uList.length) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Önce bir M3U listesi ekleyin';
+            sel.appendChild(opt);
+        }
+    }
+    ['scaNameInput','scaGroupInput','scaUrlInput','scaLogoInput','scaUaInput','scaRefInput','scaOriginInput'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const modal = document.getElementById('singleChannelModal');
+    if (modal) modal.style.display = 'flex';
+    if (state.remote) {
+        state.remote.zone = 'singleChannelModal';
+        state.remote.singleChannelIndex = 0;
+    }
+}
+window.openSingleChannelModal = openSingleChannelModal;
+
+function closeSingleChannelModal() {
+    const modal = document.getElementById('singleChannelModal');
+    if (modal) modal.style.display = 'none';
+    if (state.remote && state.remote.active) {
+        state.remote.zone = 'header';
+        if (typeof updateRemoteFocus === 'function') { try { updateRemoteFocus(); } catch (e) {} }
+    }
+    playKeySound && playKeySound('back');
+}
+window.closeSingleChannelModal = closeSingleChannelModal;
+
+function saveSingleChannel() {
+    const name = (document.getElementById('scaNameInput').value || '').trim();
+    const group = (document.getElementById('scaGroupInput').value || '').trim() || 'Tekli Eklenen';
+    const url = (document.getElementById('scaUrlInput').value || '').trim();
+    const logo = (document.getElementById('scaLogoInput').value || '').trim();
+    const ua = (document.getElementById('scaUaInput').value || '').trim();
+    const referer = (document.getElementById('scaRefInput').value || '').trim();
+    const origin = (document.getElementById('scaOriginInput').value || '').trim();
+    const listIdxRaw = document.getElementById('scaListSelect').value;
+
+    if (!name) { showToast('Kanal adı gerekli', 'error'); return; }
+    if (!url) { showToast('Yayın linki gerekli', 'error'); return; }
+    if (listIdxRaw === '' || listIdxRaw === undefined || listIdxRaw === null) {
+        showToast('Önce bir M3U listesi ekleyin', 'error'); return;
+    }
+    const listIdx = parseInt(listIdxRaw, 10);
+
+    const scaId = _scaMakeId(name, url, listIdx);
+    const channel = {
+        _scaId: scaId,
+        name: name,
+        fullName: name,
+        group: group,
+        url: url,
+        logo: logo || '',
+        userAgent: ua || '',
+        referrer: referer || '',
+        origin: origin || '',
+        listIdx: listIdx,
+        isLive: true,
+        isVod: false,
+        isManual: true,
+        tvgId: ''
+    };
+
+    // Aynı isim+link+liste zaten eklenmişse üzerine yaz (güncelle), değilse ekle.
+    const manual = _scaGetManualChannels();
+    const existingManualIdx = manual.findIndex(function (m) { return m._scaId === scaId; });
+    if (existingManualIdx !== -1) manual[existingManualIdx] = channel;
+    else manual.push(channel);
+    _scaSaveManualChannels(manual);
+
+    if (!Array.isArray(state.channels)) state.channels = [];
+    const existingChIdx = state.channels.findIndex(function (c) { return c && c._scaId === scaId; });
+    if (existingChIdx !== -1) state.channels[existingChIdx] = Object.assign({}, channel);
+    else state.channels.push(Object.assign({}, channel));
+
+    if (typeof updateCategoriesFromFiltered === 'function') { try { updateCategoriesFromFiltered(); } catch (e) {} }
+    else if (typeof updateCategories === 'function') { try { updateCategories(); } catch (e) {} }
+    if (typeof renderCats === 'function') { try { renderCats(); } catch (e) {} }
+    if (typeof filterChannels === 'function') { try { filterChannels(); } catch (e) {} }
+    else if (typeof renderChannels === 'function') { try { renderChannels(); } catch (e) {} }
+
+    showToast('Kanal listeye eklendi');
+    playKeySound && playKeySound('confirm');
+    closeSingleChannelModal();
+}
+window.saveSingleChannel = saveSingleChannel;
+
 function deleteContinueWatchingRecord(name) {
     
     delete state.continueWatching[name]; 
@@ -47474,7 +47716,124 @@ function updateEpisodeFocus() {
     updateRemoteFocus();
 }
         
-        function handleAddM3UModalRemote(e) {
+        function handleSingleChannelModalRemote(e) {
+    const modal = document.getElementById('singleChannelModal');
+    if (!modal || modal.style.display !== 'flex') return;
+
+    const focusedElement = document.activeElement;
+    const isInputFocused = focusedElement &&
+                          (focusedElement.tagName === 'INPUT' && focusedElement.type === 'text');
+    const isSelectFocused = focusedElement && focusedElement.tagName === 'SELECT';
+
+    const keyboard = document.querySelector('.keyboard-container');
+    const keyboardOpen = keyboard && keyboard.style.display !== 'none';
+
+    if (isInputFocused && keyboardOpen) {
+        if (e.key === 'Escape' || e.key === 'Backspace') {
+            e.preventDefault();
+            if (typeof closeKeyboard === 'function') closeKeyboard();
+        }
+        return;
+    }
+
+    // SELECT açıkken (kullanıcı seçenekler arasında geziniyorken) yukarı/aşağı
+    // tuşlarını native <select> davranışına bırak — sadece Escape'i yakala.
+    if (isSelectFocused && document.activeElement === focusedElement && e.key !== 'Enter' && e.key !== 'OK' && e.key !== 'Escape' && e.key !== 'Backspace') {
+        return;
+    }
+
+    const modalElements = [
+        'scaNameInput',
+        'scaListSelect',
+        'scaGroupInput',
+        'scaUrlInput',
+        'scaLogoInput',
+        'scaUaInput',
+        'scaRefInput',
+        'scaOriginInput',
+        'btnCancelSca',
+        'btnSaveSca'
+    ];
+
+    const visibleElements = modalElements.filter(id => {
+        const el = document.getElementById(id);
+        return el && el.offsetParent !== null && el.style.display !== 'none';
+    });
+
+    if (!visibleElements.length) return;
+    if (state.remote.singleChannelIndex === undefined) state.remote.singleChannelIndex = 0;
+
+    const activeEl = document.getElementById(visibleElements[state.remote.singleChannelIndex]);
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'OK', 'Escape', 'Backspace'].includes(e.key)) {
+        e.preventDefault();
+
+        switch (e.key) {
+            case 'ArrowUp':
+                state.remote.singleChannelIndex = Math.max(0, state.remote.singleChannelIndex - 1);
+                break;
+            case 'ArrowDown':
+                state.remote.singleChannelIndex = Math.min(visibleElements.length - 1, state.remote.singleChannelIndex + 1);
+                break;
+            case 'ArrowLeft':
+                // Kaydet/İptal butonları yan yana — orada sol/sağ ile geçiş yap.
+                if (activeEl && (activeEl.id === 'btnSaveSca' || activeEl.id === 'btnCancelSca')) {
+                    state.remote.singleChannelIndex = visibleElements.indexOf('btnCancelSca');
+                } else {
+                    state.remote.singleChannelIndex = Math.max(0, state.remote.singleChannelIndex - 1);
+                }
+                break;
+            case 'ArrowRight':
+                if (activeEl && (activeEl.id === 'btnSaveSca' || activeEl.id === 'btnCancelSca')) {
+                    state.remote.singleChannelIndex = visibleElements.indexOf('btnSaveSca');
+                } else {
+                    state.remote.singleChannelIndex = Math.min(visibleElements.length - 1, state.remote.singleChannelIndex + 1);
+                }
+                break;
+
+            case 'Enter':
+            case 'OK':
+                if (!activeEl) return;
+                if (activeEl.tagName === 'INPUT' && activeEl.type === 'text') {
+                    activeEl.focus();
+                    activeEl.select();
+                    if (typeof openKeyboard === 'function') openKeyboard(activeEl);
+                } else if (activeEl.tagName === 'SELECT') {
+                    activeEl.focus();
+                    // TV kumandasında native açılır listeyi tetikle.
+                    try {
+                        const ev = document.createEvent('MouseEvents');
+                        ev.initMouseEvent('mousedown', true, true, window);
+                        activeEl.dispatchEvent(ev);
+                    } catch (e2) {}
+                } else if (activeEl.tagName === 'BUTTON') {
+                    activeEl.click();
+                }
+                break;
+
+            case 'Backspace':
+            case 'Escape':
+                if (keyboardOpen && typeof closeKeyboard === 'function') {
+                    closeKeyboard();
+                } else {
+                    closeSingleChannelModal();
+                }
+                break;
+        }
+
+        const newActive = document.getElementById(visibleElements[state.remote.singleChannelIndex]);
+        if (newActive) {
+            document.querySelectorAll('.remote-focused').forEach(el => el.classList.remove('remote-focused'));
+            newActive.classList.add('remote-focused');
+            newActive.focus({ preventScroll: true });
+            if (newActive.tagName === 'INPUT' && newActive.type === 'text') {
+                setTimeout(() => newActive.select(), 10);
+            }
+        }
+    }
+}
+
+function handleAddM3UModalRemote(e) {
     const modal = document.getElementById('addM3UModal');
     if (!modal || modal.style.display !== 'flex') return;
     
@@ -50026,6 +50385,7 @@ function handleFavoriteChannelSelect(key) {
     // vodModal patchVodModalDpad tarafından yönetiliyor — buradan kaldırıldı
     'sleepModeModal': handleSleepModeModalRemote,
     'addM3UModal': handleAddM3UModalRemote,
+    'singleChannelModal': handleSingleChannelModalRemote,
     'passwordModal': handlePasswordModalRemote,
     'controlSettingsModal': handleControlSettingsModalRemote,
     'settingsModal': handleSettingsModalRemote,
@@ -54720,6 +55080,7 @@ window.toggleFavPlayer = function() {
         { modalId: 'settingsModal',        closeBtnSelector: '.settings-btn.danger', closeFn: 'closeSettingsModal' },
         { modalId: 'controlSettingsModal', closeBtnId: 'btnControlClose',        closeFn: 'closeControlSettingsModal' },
         { modalId: 'addM3UModal',          closeBtnSelector: '#addM3UModal .icon-btn', closeFn: 'closeAddM3UModal' },
+        { modalId: 'singleChannelModal',   closeBtnSelector: '#singleChannelModal .icon-btn', closeFn: 'closeSingleChannelModal' },
         { modalId: 'searchModal',          closeBtnSelector: '#searchModal .icon-btn', closeFn: 'closeSearchModal' },
         { modalId: 'passwordModal',        closeBtnSelector: '#passwordModal .icon-btn', closeFn: 'closePasswordModal' },
         { modalId: 'themeModal',           closeBtnSelector: '#themeModal .settings-btn.danger', closeFn: 'closeThemeModal' },
@@ -61075,6 +61436,7 @@ window.addEventListener('popstate', function() {
         { id:'passwordModal',        cls:null,      fn:'closePasswordModal' },
         { id:'embedModal',           cls:null,      fn:'closeEmbedModal' },
         { id:'addM3UModal',          cls:null,      fn:'closeAddM3UModal' },
+        { id:'singleChannelModal',   cls:null,      fn:'closeSingleChannelModal' },
         { id:'controlSettingsModal', cls:null,      fn:'closeControlSettingsModal' },
         { id:'deleteContinueModal',  cls:null,      fn:'closeDeleteContinueModal' },
         { id:'settingsModal',        cls:null,      fn:'closeSettingsModal' },

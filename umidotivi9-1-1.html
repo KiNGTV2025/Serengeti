@@ -19493,7 +19493,7 @@ const HLS_CONFIG = {
 
     // ── ABR: Yüksek kalitede hızlı başla, kararlı kal ──
     abrEwmaDefaultEstimate: 5000000,     // 1.5→5Mbps: 1080p için gerçekçi başlangıç tahmini = HD'den başla
-    abrEwmaFastLive: 4,                  // 3→4: ani bant düşüşüne daha sakin tepki = kalite titremesi azalır
+    abrEwmaFastLive: 3,                  // 4→3: 4'te ani bant düşüşüne geç tepki = segment yetişemiyor, kare atlıyor
     abrEwmaSlowLive: 12,                 // 9→12: kalite artışı daha ölçülü = istikrar öncelikli
     abrBandWidthFactor: 0.85,            // 0.70→0.85: mevcut bant genişliğinin %85'i = güvenli yüksek kalite
     abrBandWidthUpFactor: 0.70,          // 0.50→0.70: kalite artışına daha güvenli yaklaş = donma olmaz
@@ -43532,8 +43532,8 @@ function resumeChannel(startTime) {
         // ── CANLI/VOD buffer ayrımı — hemen oynatma için kritik ──
         // Canlı: 10sn buffer = TVBox RAM dostu; VOD: 20sn = kesintisiz izleme (45→20 TVBox kasma önlenir)
         if (state.player.isLiveStream) {
-            hlsInst.config.maxBufferLength    = 6;
-            hlsInst.config.maxMaxBufferLength = 18;
+            hlsInst.config.maxBufferLength    = 12;  // 6→12: 6sn'de tampon payı yok, ağ dalgalanınca kare atlıyor
+            hlsInst.config.maxMaxBufferLength = 24;  // 18→24: yeni maxBufferLength ile orantılı
             hlsInst.config.backBufferLength   = 0;  // Canlı: geri buffer sıfır
         } else {
             hlsInst.config.maxBufferLength    = 20;  // 45→20: TVBox'ta 45sn buffer RAM'i tüketir

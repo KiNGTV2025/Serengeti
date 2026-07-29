@@ -11045,22 +11045,6 @@ body {
         max-height: 100dvh !important;
     }
 }
-
-/* ── BÜYÜK EKRAN (55"+ TV) GENEL ÖLÇEKLEME ──
-   Sabit px tabanlı header-btn, ikon, kart vb. elemanlar 1080p/4K TV'de
-   çok küçük ve sıkışık kalıyor. zoom ile tüm UI orantılı büyütülür. */
-@media (min-width: 1920px) and (min-height: 1000px) {
-    html { zoom: 1.35; }
-}
-@media (min-width: 2600px) and (min-height: 1400px) {
-    html { zoom: 1.75; }
-}
-/* zoom desteklemeyen (bazı eski TV WebView) motorlar için yedek */
-@supports not (zoom: 1) {
-    @media (min-width: 1920px) and (min-height: 1000px) {
-        body { transform: scale(1.35); transform-origin: top left; width: 74.07%; height: 74.07%; }
-    }
-}
 </style>
 
 

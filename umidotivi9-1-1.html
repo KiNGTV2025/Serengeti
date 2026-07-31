@@ -818,8 +818,10 @@
    Android TV WebView bu özelliği destekliyorsa büyük kazanım sağlar.
    Desteklemiyorsa tarayıcı ignore eder, zarar yok. */
 .channels-grid .channel-card {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 160px; /* tahmini kart yüksekliği */
+    /* content-visibility + contain-intrinsic-size KALDIRILDI:
+       TV/4K'da gerçek kart yüksekliği bu sabit tahminden çok farklı
+       (grid-scale büyümesi nedeniyle) olduğu için kartlar render
+       olurken üst üste biniyor/taşıyordu. */
 }
 /* Odaklı kart için kapat — scale animasyonu bozulmasın */
 .channels-grid .channel-card.remote-focused,
@@ -4296,8 +4298,6 @@ body {
     overflow: visible !important;
     transition: transform 0.15s ease;
     contain: layout style paint;
-    content-visibility: auto;
-    contain-intrinsic-size: 220px 260px;
 }
 .cw-poster-card:hover {
     transform: translateY(-2px);
@@ -10877,11 +10877,10 @@ body.sidebar-open {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
 }
-/* ── content-visibility: TVBox GPU compositing ── */
-.channel-card {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 120px;
-}
+/* ── content-visibility: TVBox GPU compositing ──
+   KALDIRILDI: yukarıdaki 160px değeriyle çakışıyordu ve TV'de
+   gerçek kart boyutundan küçük olduğu için kartlar üst üste
+   biniyordu. */
 /* ── GPU layer sadece kritik elemanlara ── */
 .app-header { contain: layout style; }
 .category-bar { contain: layout style; }

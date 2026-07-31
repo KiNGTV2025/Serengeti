@@ -1058,6 +1058,21 @@ img {
     transition: background-color 60ms linear !important;
 }
 
+/* ── Başlangıç Ayarları modalı — kumanda odak vurgusu ── */
+.startup-mode-option.remote-focused {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.55), 0 0 14px rgba(255,215,0,0.35) !important;
+    background: rgba(255,215,0,0.10) !important;
+}
+#startupCategorySelect.remote-focused {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.55), 0 0 14px rgba(255,215,0,0.35) !important;
+}
+#btnStartupSettingsSave.remote-focused,
+#btnStartupSettingsCancel.remote-focused {
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.55), 0 0 14px rgba(255,215,0,0.35) !important;
+}
+
 
 /* ── Header El Yazısı Kullanıcı Adı ── */
 #headerUsernameTag {
@@ -11427,6 +11442,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </head>
 <body class="fast-mode low-performance-mode"> 
+<script>
+// ── FOUC ENGELLEYİCİ ─────────────────────────────────────────
+// Tarayıcı body'yi yukarıdan aşağı parse ederken welcomeScreen div'ine
+// ulaşana kadar (sayfanın ortasında bir yerde) ana sayfa/kanal/player
+// elementleri kısa süreliğine boyanabiliyordu. Bunu önlemek için,
+// body açılır açılmaz, DOM'a hiçbir şey boyanmadan önce, senkron
+// document.write ile welcomeScreen dışındaki her şeyi gizleyen bir
+// stil enjekte ediyoruz. Bu satır render başlamadan (parser-blocking)
+// çalıştığı için hiçbir "flaş" oluşmaz.
+document.write('<style id="__umitPreWelcomeGate">body > *:not(#welcomeScreen):not(script):not(style){visibility:hidden !important;}</style>');
+setTimeout(function() {
+    var g = document.getElementById('__umitPreWelcomeGate');
+    if (g) g.remove();
+}, 8000);
+</script>
+<script>
+// Kayıtlı oturum varsa login overlay'i DOM'a bile boyanmadan gizle
+// (senkron, en erken an) — böylece geri dönen kullanıcı login formunu
+// asla görmez, direkt hoş geldin ekranına geçer.
+(function() {
+    try {
+        var raw = localStorage.getItem('umittv_auth');
+        if (raw) {
+            var a = JSON.parse(raw);
+            if (a && a.telegram_id) {
+                document.write('<style>#loginOverlay{display:none !important;}</style>');
+            }
+        }
+    } catch(e) {}
+})();
+</script>
 <!-- ════════════════════════════════════════════════════════════════════
      AÇILIŞ VİDEOSU — Sadece telefonlarda (TV Box/Android TV hariç)
      Video oynarken player/uygulama gizli kalır, video bitince kaldırılır.
@@ -14548,6 +14594,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let saved = null;
             try { saved = JSON.parse(localStorage.getItem('umittv_auth') || 'null'); } catch(_) {}
 
+            // Kayıtlı oturum varsa login formu hiç görünmesin — anında gizle
+            // ve "giriş onaylanıyor" toast'ı göster.
+            if (saved && saved.telegram_id) {
+                try {
+                    const _ov0 = document.getElementById('loginOverlay');
+                    if (_ov0) { _ov0.classList.add('hidden'); _ov0.style.display = 'none'; }
+                } catch(_) {}
+                try { if (typeof showToast === 'function') showToast('Giriş onaylanıyor...'); } catch(_) {}
+            }
+
             
 
             if (!saved || !saved.telegram_id) {
@@ -14719,7 +14775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="skip-num" id="skipCountdownNum">30</div>
     <button class="skip-cancel" onclick="cancelSkipCountdown()">İptal</button>
 </div>
-    <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay" id="loadingOverlay" style="display:none !important;">
     <div class="modern-logo-container">
         
         <div class="logo-glow-layer"></div>
@@ -14827,6 +14883,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
             <button class="header-btn" id="btnSettings" onclick="openSettingsModal()">
                 <span class="material-symbols-outlined">settings</span>
+            </button>
+            <button class="header-btn" id="btnStartupSettings" onclick="openStartupSettingsModal()" title="Başlangıç Ayarları - Açılışta Direkt Yayın Başlat" tabindex="0">
+                <span class="material-symbols-outlined">rocket_launch</span>
             </button>
             <button class="header-btn" id="btnRefresh" onclick="refreshM3ULists()">
                 <span class="material-symbols-outlined">refresh</span>
@@ -14943,6 +15002,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="continue-modal-btn continue" id="btnSleepModeSave" onclick="saveSleepModeSettings()">Kaydet</button>
             </div>
             <button class="modal-back-btn" tabindex="0" id="btnSleepModeBack" onclick="closeSleepModeModal()" style="margin-top:14px;">
+                <span class="material-symbols-outlined">arrow_back</span> Geri
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="startupSettingsModal" onclick="if(event.target.id==='startupSettingsModal') closeStartupSettingsModal()">
+        <div class="modal-content">
+            <h3 style="color:#FFD700; text-align:center; margin-bottom: 8px; font-size:20px;">Başlangıç Ayarları</h3>
+            <p style="color:rgba(255,255,255,0.55); text-align:center; font-size:12.5px; margin-bottom:18px;">Uygulama açıldığında otomatik olarak ne yapılsın?</p>
+
+            <button type="button" class="startup-mode-option" id="startupModeNormal" onclick="selectStartupMode('normal')"
+                style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;margin-bottom:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">
+                <span class="material-symbols-outlined">home</span>
+                Normal Açılış (Ana Ekran)
+            </button>
+
+            <button type="button" class="startup-mode-option" id="startupModeLastWatched" onclick="selectStartupMode('lastWatched')"
+                style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;margin-bottom:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">
+                <span class="material-symbols-outlined">history</span>
+                Son İzlenen Yayınla Başlat
+            </button>
+
+            <button type="button" class="startup-mode-option" id="startupModeCategory" onclick="selectStartupMode('category')"
+                style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">
+                <span class="material-symbols-outlined">live_tv</span>
+                Seçilen Kategoriyle Başlat
+            </button>
+
+            <select id="startupCategorySelect" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,215,0,0.3);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;margin-bottom:18px;outline:none;">
+            </select>
+
+            <div class="modal-btns" style="margin-top: 4px;">
+                <button class="continue-modal-btn cancel" id="btnStartupSettingsCancel" onclick="closeStartupSettingsModal()">İptal</button>
+                <button class="continue-modal-btn continue" id="btnStartupSettingsSave" onclick="saveStartupSettingsFromModal()">Kaydet</button>
+            </div>
+            <button class="modal-back-btn" tabindex="0" id="btnStartupSettingsBack" onclick="closeStartupSettingsModal()" style="margin-top:14px;">
                 <span class="material-symbols-outlined">arrow_back</span> Geri
             </button>
         </div>
@@ -16627,21 +16722,37 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     
     <div class="favorite-toast" id="favoriteToast"></div>
 
-    <!-- ═══ HOŞ GELDİN EKRANI ═══ -->
-    <div id="welcomeScreen" style="display:none;position:fixed;inset:0;z-index:999998;background:#04060d;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;">
+    <!-- ═══ HOŞ GELDİN + LİSTE YÜKLEME EKRANI (BİRLEŞİK) ═══ -->
+    <div id="welcomeScreen" style="display:flex;position:fixed;inset:0;z-index:999998;background:#04060d;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;">
+    <script>window._welcomeOpen = true; document.body.classList.add('__umd_welcome_open');</script>
         <div id="welcomeBg" style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(255,215,0,0.08) 0%,transparent 65%);pointer-events:none;"></div>
-        <div id="welcomeCard" style="position:relative;z-index:2;text-align:center;padding:40px 48px;transform:scale(0.7);opacity:0;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease;">
-            <div id="welcomeAvatarWrap" style="width:96px;height:96px;border-radius:50%;margin:0 auto 20px;background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.15));border:2.5px solid rgba(255,215,0,0.5);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:0 0 40px rgba(255,215,0,0.2);overflow:hidden;">
-                <span class="material-symbols-outlined" style="font-size:52px;color:#FFD700;opacity:1 !important;">person</span>
+        <div id="welcomeCard" style="position:relative;z-index:2;text-align:center;padding:44px 48px 38px;transform:scale(0.7);opacity:0;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease;max-width:380px;width:88vw;">
+            <div id="welcomeAvatarWrap" style="width:88px;height:88px;border-radius:50%;margin:0 auto 18px;background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.15));border:2.5px solid rgba(255,215,0,0.5);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:0 0 40px rgba(255,215,0,0.2);overflow:hidden;">
+                <span class="material-symbols-outlined" style="font-size:48px;color:#FFD700;opacity:1 !important;">person</span>
             </div>
-            <div style="font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;color:rgba(255,215,0,0.6);text-transform:uppercase;margin-bottom:8px;">HOŞ GELDİN</div>
-            <div id="welcomeName" style="font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900;color:#FFD700;text-shadow:0 0 40px rgba(255,215,0,0.5);letter-spacing:2px;margin-bottom:6px;">Kullanıcı</div>
-            <div id="welcomeWaveEmoji" style="font-size:2rem;display:inline-block;margin-bottom:18px;transform-origin:70% 70%;">👋</div>
-            <div id="welcomeSubtext" style="font-size:0.9rem;color:rgba(255,255,255,0.45);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:1px;">ÜMİT TV'ye bağlandın</div>
-            <div id="welcomeBar" style="width:0%;height:3px;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:2px;margin:20px auto 0;transition:width 1.8s cubic-bezier(0.4,0,0.2,1);max-width:200px;"></div>
+            <div style="font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;color:rgba(255,215,0,0.6);text-transform:uppercase;margin-bottom:6px;">HOŞ GELDİN</div>
+            <div id="welcomeName" style="font-family:'Orbitron',sans-serif;font-size:1.9rem;font-weight:900;color:#FFD700;text-shadow:0 0 40px rgba(255,215,0,0.5);letter-spacing:2px;margin-bottom:4px;">Kullanıcı</div>
+            <div id="welcomeWaveEmoji" style="font-size:1.7rem;display:inline-block;margin-bottom:10px;transform-origin:70% 70%;">👋</div>
+            <div id="welcomeSubtext" style="font-size:0.85rem;color:rgba(255,255,255,0.4);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:1px;">ÜMİT TV'ye bağlandın</div>
+
+            <!-- Ayırıcı -->
+            <div style="width:56px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.35),transparent);margin:20px auto;"></div>
+
+            <!-- Liste yükleme bölümü -->
+            <div id="welcomeLoadRow" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;">
+                <div id="welcomeSpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,215,0,0.2);border-top-color:#FFD700;animation:welcomeSpin 0.8s linear infinite;"></div>
+                <div id="welcomeLoadStatus" style="font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;color:#FFD700;letter-spacing:0.5px;">Ümit Listesi Yükleniyor...</div>
+            </div>
+            <div id="welcomeLoadPercent" style="font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:12px;">%0</div>
+            <div style="width:100%;max-width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:3px;margin:0 auto;overflow:hidden;">
+                <div id="welcomeBar" style="width:0%;height:100%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:3px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+            </div>
         </div>
         <div id="welcomeParticles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
     </div>
+    <style>
+        @keyframes welcomeSpin { to { transform: rotate(360deg); } }
+    </style>
 
     <!-- ═══ İZLEME İSTATİSTİKLERİ PANELİ ═══ -->
     <div id="statsPanel" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);align-items:center;justify-content:center;">
@@ -20137,7 +20248,7 @@ Object.defineProperty(window, 'state', {
 });
         
 
-        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnDeviceSync', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
+        const HEADER_BUTTONS = ['btnVoiceSearch', 'btnSearch', 'btnSleepMode', 'btnGridCols', 'btnTheme', 'btnSettings', 'btnStartupSettings', 'btnRefresh', 'btnControlSettings', 'btnAddM3U', 'btnWatchStats', 'btnHealthCheck', 'btnWatchParty', 'btnDeviceSync', 'btnNotifTest', 'btnProfile', 'btnMatches', 'btnExitHeader'];
         state.remote.headerButtons = HEADER_BUTTONS;
         const SETTINGS_BUTTONS = ['btnOpenControlSettings', 'btnOpenWatchStats', 'btnOpenHealthCheck', 'btnClearContinue', 'btnClearTheme', 'btnClearFavs', 'btnResetApp', 'btnSortChannels', 'btnExportSort', 'btnImportSort', 'btnSettingsBack']; 
         const RESET_CONFIRM_BUTTONS = ['resetConfirmCancel', 'resetConfirmOk', 'btnResetConfirmBack'];
@@ -21047,6 +21158,7 @@ async function loadContinueWatching() {
                     { id: 'epgModal',             action: () => { if (typeof closeEpgModal === 'function') closeEpgModal(); else document.getElementById('epgModal').style.display = 'none'; } },
                     { id: 'vodModal',             action: closeVodModal },
                     { id: 'sleepModeModal',        action: closeSleepModeModal },
+                    { id: 'startupSettingsModal',  action: closeStartupSettingsModal },
                     { id: 'm3uHintModal',          action: closeM3UHint },
                     { id: 'passwordModal',         action: closePasswordModal },
                     { id: 'embedModal',            action: closeEmbedModal },
@@ -21133,7 +21245,7 @@ async function loadContinueWatching() {
 
         function closeAllModals() {
             const modals = [
-                'vodModal', 'sleepModeModal', 'm3uHintModal', 'passwordModal',
+                'vodModal', 'sleepModeModal', 'startupSettingsModal', 'm3uHintModal', 'passwordModal',
                 'addM3UModal', 'singleChannelModal', 'sortBackupModal', 'quickSortNumModal', 'controlSettingsModal', 'deleteContinueModal',
                 'continueModal', 'settingsModal', 'themeModal', 'epgModal'
             ];
@@ -27099,6 +27211,274 @@ function closeSleepModeModal() {
     playKeySound('back');
 }
 
+// ═══════════════════════════════════════════
+// BAŞLANGIÇ AYARLARI — Uygulama açılışında otomatik yayın başlatma
+// Kullanıcı istediği kategoriyle veya son izlenen yayınla açılışta
+// direkt canlı yayın başlatabilir. Tam D-pad/kumanda destekli.
+// ═══════════════════════════════════════════
+const STARTUP_SETTINGS_KEY = 'umittv_startup_settings';
+const LAST_LIVE_CHANNEL_KEY = 'umittv_last_live_channel';
+const STARTUP_BUTTONS = ['startupModeNormal', 'startupModeLastWatched', 'startupModeCategory', 'startupCategorySelect', 'btnStartupSettingsSave', 'btnStartupSettingsCancel'];
+
+function getStartupSettings() {
+    try {
+        const raw = localStorage.getItem(STARTUP_SETTINGS_KEY);
+        if (raw) return Object.assign({ mode: 'normal', category: '' }, JSON.parse(raw));
+    } catch (e) {}
+    return { mode: 'normal', category: '' };
+}
+
+function saveStartupSettingsToStorage(settings) {
+    try { localStorage.setItem(STARTUP_SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+}
+
+// playChannel içinden çağrılır — canlı yayın oynatıldığında son izlenen olarak kaydeder
+function rememberLastLiveChannel(name, category) {
+    try { localStorage.setItem(LAST_LIVE_CHANNEL_KEY, JSON.stringify({ name: name, category: category || '', ts: Date.now() })); } catch (e) {}
+}
+
+function getLastLiveChannel() {
+    try {
+        const raw = localStorage.getItem(LAST_LIVE_CHANNEL_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+}
+
+// ── ÖNEMLİ: kanal değişimi SADECE playChannel() ile olmaz — kumanda
+// ChannelUp/Down ve dokunmatik dikey swipe (_doChSwitch) playChannel'i HİÇ
+// ÇAĞIRMADAN kanal değiştirir (bkz. _doChSwitch). Bu yüzden "son izlenen"
+// kaydını playChannel içine koymak yetersiz kalıyordu — swipe/kumanda ile
+// değişince kayıt güncellenmiyordu. Çözüm: her iki yolun da dispatch ettiği
+// ortak 'umittv:channelChange' event'ini dinleyip oradan güncelle.
+document.addEventListener('umittv:channelChange', function() {
+    try {
+        const ch = state.currentChannel;
+        const isLive = ch ? (ch.isLive && !ch.isVod) : !!(state.player && state.player.isLiveStream);
+        const name = (ch && ch.name) || (state.player && state.player.name);
+        if (isLive && name) rememberLastLiveChannel(name, state.activeCat);
+    } catch (e) {}
+});
+
+let _startupModalSelectedMode = 'normal';
+
+function selectStartupMode(mode) {
+    _startupModalSelectedMode = mode;
+    ['startupModeNormal', 'startupModeLastWatched', 'startupModeCategory'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const active = (id === 'startupModeNormal' && mode === 'normal') ||
+                       (id === 'startupModeLastWatched' && mode === 'lastWatched') ||
+                       (id === 'startupModeCategory' && mode === 'category');
+        el.style.borderColor = active ? '#FFD700' : 'rgba(255,255,255,0.12)';
+        el.style.background = active ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)';
+    });
+    const sel = document.getElementById('startupCategorySelect');
+    if (sel) sel.style.opacity = (mode === 'category') ? '1' : '0.4';
+    if (typeof playKeySound === 'function') playKeySound('click');
+}
+
+function _populateStartupCategorySelect(selectedCat) {
+    const sel = document.getElementById('startupCategorySelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const cats = (state.cats && state.cats.length) ? state.cats : ['Tümü'];
+    cats.forEach(function(c) {
+        const cleanCat = c.replace(/\(\d+\)/, '').trim();
+        if (cleanCat === 'Devam Et') return; // canlı yayın başlatma için anlamsız
+        const id = cleanCat === 'Tümü' ? 'all' : (cleanCat === 'Favoriler' ? 'fav' : cleanCat);
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = c;
+        if (id === selectedCat) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+
+function openStartupSettingsModal() {
+    const modal = document.getElementById('startupSettingsModal');
+    if (!modal) return;
+    const settings = getStartupSettings();
+    _populateStartupCategorySelect(settings.category);
+    selectStartupMode(settings.mode || 'normal');
+    modal.style.display = 'flex';
+
+    if (state.remote.active) {
+        state.remote.zone = 'startupSettingsModal';
+        state.remote.startupSettingsIndex = 0;
+        updateRemoteFocus();
+    }
+    playKeySound('click');
+}
+
+function closeStartupSettingsModal() {
+    const modal = document.getElementById('startupSettingsModal');
+    if (modal) modal.style.display = 'none';
+    if (state.remote.active) {
+        state.remote.zone = 'header';
+        state.remote.headerIndex = HEADER_BUTTONS.indexOf('btnStartupSettings');
+        updateRemoteFocus();
+    }
+    playKeySound('back');
+}
+
+function saveStartupSettingsFromModal() {
+    const sel = document.getElementById('startupCategorySelect');
+    const settings = {
+        mode: _startupModalSelectedMode || 'normal',
+        category: sel ? sel.value : ''
+    };
+    saveStartupSettingsToStorage(settings);
+    if (typeof showToast === 'function') showToast('✓ Başlangıç ayarları kaydedildi');
+    closeStartupSettingsModal();
+}
+
+function handleStartupSettingsModalRemote(e) {
+    const inputs = STARTUP_BUTTONS.map(function(id) { return document.getElementById(id); }).filter(Boolean);
+    if (!inputs.length) return;
+
+    const maxIndex = inputs.length - 1;
+    if (typeof state.remote.startupSettingsIndex !== 'number') state.remote.startupSettingsIndex = 0;
+    const activeEl = inputs[state.remote.startupSettingsIndex];
+    const isSelect = activeEl && activeEl.tagName === 'SELECT';
+
+    const cycleSelect = function(delta) {
+        if (!isSelect || !activeEl.options.length) return;
+        let idx = activeEl.selectedIndex + delta;
+        idx = Math.max(0, Math.min(activeEl.options.length - 1, idx));
+        activeEl.selectedIndex = idx;
+    };
+
+    switch (e.key) {
+        case 'ArrowUp':
+            e.preventDefault();
+            state.remote.startupSettingsIndex = Math.max(0, state.remote.startupSettingsIndex - 1);
+            break;
+        case 'ArrowDown':
+            e.preventDefault();
+            state.remote.startupSettingsIndex = Math.min(maxIndex, state.remote.startupSettingsIndex + 1);
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            if (isSelect) cycleSelect(-1);
+            else state.remote.startupSettingsIndex = Math.max(0, state.remote.startupSettingsIndex - 1);
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            if (isSelect) cycleSelect(1);
+            else state.remote.startupSettingsIndex = Math.min(maxIndex, state.remote.startupSettingsIndex + 1);
+            break;
+        case 'Enter':
+        case 'OK':
+            e.preventDefault();
+            if (activeEl && activeEl.tagName === 'BUTTON') activeEl.click();
+            break;
+        case 'Backspace':
+        case 'Escape':
+        case 'GoBack':
+        case 'Back':
+            e.preventDefault();
+            closeStartupSettingsModal();
+            return;
+    }
+    if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+}
+
+// ── Uygulama açılışında otomatik yayın başlatma ──
+let _startupAutoLaunchDone = false;
+let _startupAutoLaunchAttempts = 0;
+let _startupAutoLaunchScheduled = false;
+const _STARTUP_AUTO_MAX_ATTEMPTS = 24; // ~18 saniye boyunca dener (kanallar geç gelirse)
+
+function _scheduleStartupAutoLaunch(delay) {
+    if (_startupAutoLaunchDone || _startupAutoLaunchScheduled) return;
+    _startupAutoLaunchScheduled = true;
+    setTimeout(function() {
+        _startupAutoLaunchScheduled = false;
+        _tryStartupAutoLaunch();
+    }, delay || 600);
+}
+
+function _tryStartupAutoLaunch() {
+    if (_startupAutoLaunchDone) return;
+
+    // Login ekranı hâlâ açıksa (kullanıcı henüz giriş yapmadıysa) bekle
+    const _loginOv = document.getElementById('loginOverlay');
+    if (_loginOv && !_loginOv.classList.contains('hidden')) {
+        _scheduleStartupAutoLaunch(700);
+        return;
+    }
+
+    // Hoş Geldin / liste yükleme ekranı hâlâ açıksa bekle — yayın
+    // arkaplanda başlayıp welcome ekranının altında sesli/görüntülü
+    // çalışmasın diye ekran kapanana kadar deneme ertelenir.
+    if (window._welcomeOpen) {
+        _scheduleStartupAutoLaunch(400);
+        return;
+    }
+
+    const settings = getStartupSettings();
+    if (!settings || settings.mode === 'normal') { _startupAutoLaunchDone = true; return; }
+
+    _startupAutoLaunchAttempts++;
+    let played = false;
+    let giveUp = false;
+
+    try {
+        // umittv_channels_ready birden fazla kez tetiklenir (önce hızlı/kısmi liste,
+        // sonra tam liste) — kısmi listede aranan kanal bulunamazsa PES ETME,
+        // tam liste gelene kadar (max deneme sayısına kadar) tekrar dene.
+        const channelsReady = state.channels && state.channels.length > 0 && state.filtered;
+        if (channelsReady) {
+            if (settings.mode === 'lastWatched') {
+                const last = getLastLiveChannel();
+                if (!last || !last.name) {
+                    // Kaydedilmiş son izlenen yayın yok — deneme yapılacak bir şey kalmadı
+                    giveUp = true;
+                } else {
+                    let idx = state.filtered.findIndex(function(c) { return c && c.name === last.name; });
+                    if (idx === -1) {
+                        const ch = state.channels.find(function(c) { return c && c.name === last.name && c.isLive && !c.isVod; });
+                        if (ch) { state.filtered.push(ch); idx = state.filtered.length - 1; }
+                    }
+                    if (idx !== -1) {
+                        played = true;
+                        setTimeout(function() { playChannel(idx); }, 300);
+                    }
+                }
+            } else if (settings.mode === 'category' && settings.category) {
+                if (typeof selectCat === 'function') selectCat(settings.category);
+                setTimeout(function() {
+                    if (!state.filtered || state.filtered.length === 0) return;
+                    let liveIdx = state.filtered.findIndex(function(c) { return c && c.isLive && !c.isVod; });
+                    const idx = liveIdx !== -1 ? liveIdx : 0;
+                    playChannel(idx);
+                }, 400);
+                played = true;
+            } else {
+                giveUp = true;
+            }
+        }
+    } catch (e) {}
+
+    if (played || giveUp || _startupAutoLaunchAttempts >= _STARTUP_AUTO_MAX_ATTEMPTS) {
+        _startupAutoLaunchDone = true;
+    } else {
+        // Kanallar henüz (tam olarak) gelmedi veya aranan kanal kısmi listede yoktu — tekrar dene
+        _scheduleStartupAutoLaunch(750);
+    }
+}
+
+document.addEventListener('umittv_channels_ready', function() {
+    _scheduleStartupAutoLaunch(400);
+});
+// Güvenlik ağı: bazı yükleme senaryolarında umittv_channels_ready hiç
+// dispatch edilmeyebilir (ör. tamamen cache'den anında yükleme) — bu yüzden
+// sayfa yüklendikten belli bir süre sonra da bir kez daha tetikleyelim.
+window.addEventListener('load', function() {
+    _scheduleStartupAutoLaunch(1500);
+});
+
 /* ===============================
    SAVE SETTINGS
 ================================ */
@@ -27273,14 +27653,23 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             const fullscreenIconBottom = document.getElementById('fullscreenIconBottom');
             const vid = playerContainer ? playerContainer.querySelector('video') : null;
-            
+            // ÖNEMLİ: Tam ekran hedefi playerContainer DEĞİL, document.documentElement
+            // olmalı. Sadece playerContainer fullscreen yapılırsa tarayıcı onu ayrı bir
+            // "top layer"a alır ve DIŞINDA kalan her şey (üst menü/header, sesli arama
+            // modalı, diğer tüm modallar) — z-index'i ne olursa olsun — hiç render
+            // edilmez, altta kalmış gibi görünür/görünmez olur. document.documentElement'i
+            // fullscreen yaparak TÜM sayfa (header + modallar dahil) aynı top layer'a
+            // girer, böylece modallar ve üst menü tam ekranda da normal şekilde üstte
+            // görünür ve üst menü scroll/etkileşimi çalışmaya devam eder.
+            const fsTarget = document.documentElement;
+
             if (!document.fullscreenElement) {
-                if (playerContainer.requestFullscreen) {
-                    playerContainer.requestFullscreen().catch(function(){});
-                } else if (playerContainer.webkitRequestFullscreen) {
-                    try { playerContainer.webkitRequestFullscreen(); } catch(e) {}
-                } else if (playerContainer.msRequestFullscreen) {
-                    try { playerContainer.msRequestFullscreen(); } catch(e) {}
+                if (fsTarget.requestFullscreen) {
+                    fsTarget.requestFullscreen().catch(function(){});
+                } else if (fsTarget.webkitRequestFullscreen) {
+                    try { fsTarget.webkitRequestFullscreen(); } catch(e) {}
+                } else if (fsTarget.msRequestFullscreen) {
+                    try { fsTarget.msRequestFullscreen(); } catch(e) {}
                 }
                 // Tam ekranda video tüm alanı kaplar (siyah boşluk kalmaz)
                 if (vid) { vid.style.objectFit = 'cover'; vid.style.width = '100%'; vid.style.height = '100%'; }
@@ -28865,6 +29254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             { id: 'epgModal',             fn: () => { if(typeof closeEpgModal==='function') closeEpgModal(); else { const e=document.getElementById('epgModal'); if(e) e.style.display='none'; } } },
             { id: 'vodModal',             fn: () => { if(typeof closeVodModal==='function') closeVodModal(); } },
             { id: 'sleepModeModal',       fn: () => { if(typeof closeSleepModeModal==='function') closeSleepModeModal(); } },
+            { id: 'startupSettingsModal', fn: () => { if(typeof closeStartupSettingsModal==='function') closeStartupSettingsModal(); } },
             { id: 'm3uHintModal',         fn: () => { if(typeof closeM3UHint==='function') closeM3UHint(); } },
             { id: 'passwordModal',        fn: () => { if(typeof closePasswordModal==='function') closePasswordModal(); } },
             { id: 'embedModal',           fn: () => { if(typeof closeEmbedModal==='function') closeEmbedModal(); } },
@@ -28948,18 +29338,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Loading overlay'i kapat — TV Box'ta 3s çok uzun, 1.5s yeterli
     setTimeout(hideLoadingOverlay, 200); // ULTRA-FAST
+
+    // GÜVENLİK AĞI: loadConfig zinciri her nedense hiç ilerlemezse (beklenmeyen bir
+    // hata, ağ kopması vb.) yükleme ekranı %0'da sonsuza dek açık kalmasın diye
+    // 20sn sonra zorla kapatılıyor.
+    setTimeout(() => {
+        const pctText = document.getElementById('loadingPercentText');
+        const stillStuck = pctText && pctText.textContent === '%0';
+        const overlay = document.getElementById('loadingOverlay');
+        if (stillStuck || (overlay && overlay.style.display !== 'none')) {
+            try { updateLoadingProgress('Zaman aşımı', 100); } catch(e) {}
+            try { hideLoadingOverlay(); } catch(e) {}
+            try { if (typeof updateWelcomeLoadProgress === 'function') updateWelcomeLoadProgress(100, 'Zaman aşımı'); } catch(e) {}
+            try { if (typeof hideWelcomeScreen === 'function') hideWelcomeScreen(); } catch(e) {}
+            try { showToast('⚠️ Yükleme zaman aşımına uğradı, listeyi yenilemeyi deneyin'); } catch(e) {}
+        }
+    }, 20000);
     
     // 8️⃣ ASENKRON BAŞLATMA İŞLEMLERİ
     // TV Box / düşük RAM cihazlar için sıralı başlatma (paralel Promise.all bellek spike yaratıyordu)
     try {
         // 😄 setupRemote ÖNCE: login overlay kapanır kapanmaz kumanda çalışsın
         // loadConfig fetch tamamlanmadan önce keydown listener bağlanmalı
-        await setupRemote();
-        await setupPlayerEvents();
+        // FIX: her kurulum adımı ayrı try/catch'e alındı. Eskiden bu adımlardan
+        // biri hata fırlatırsa (setupRemote/setupPlayerEvents/setupTouchControls/
+        // setupPlayerControls) zincir kırılıyor ve loadConfig() HİÇ çağrılmıyordu —
+        // bu da "Ümit Listesi Yükleniyor... %0" ekranının sonsuza dek donuk kalmasının
+        // asıl sebebiydi (yüzdeyi ilerleten tek yer loadConfig/loadAllChannels).
+        // Artık bir adım patlasa bile diğerleri ve loadConfig() mutlaka çalışır.
+        try { await setupRemote(); } catch(e) { console.error('setupRemote hata:', e); }
+        try { await setupPlayerEvents(); } catch(e) { console.error('setupPlayerEvents hata:', e); }
         await new Promise(r => setTimeout(r, 30)); // kısa nefes — JS event loop boşalt
-        await setupTouchControls();
-        await setupPlayerControls();
-        await loadConfig();
+        try { await setupTouchControls(); } catch(e) { console.error('setupTouchControls hata:', e); }
+        try { await setupPlayerControls(); } catch(e) { console.error('setupPlayerControls hata:', e); }
+        try {
+            await loadConfig();
+        } catch(e) {
+            console.error('loadConfig hata:', e);
+            // Yüzde göstergesi %0'da kalmasın diye burada da güvenlik ağı:
+            try { updateLoadingProgress('Bağlantı hatası', 100); } catch(e2) {}
+            try { hideLoadingOverlay(); } catch(e2) {}
+            try { if (typeof updateWelcomeLoadProgress === 'function') updateWelcomeLoadProgress(100, 'Bağlantı hatası'); } catch(e2) {}
+        }
         
         
         // 9️⃣ DİĞER KURULUMLAR
@@ -29112,6 +29532,11 @@ function updateLoadingProgress(message = null, forcePercent = null) {
                 if (percentText) percentText.style.color = '#ffffff';
             }
         }
+
+        // Birleşik Hoş Geldin ekranındaki liste yükleme göstergesini de senkronize et
+        if (typeof updateWelcomeLoadProgress === 'function') {
+            updateWelcomeLoadProgress(newWidth);
+        }
         
         // Mesaj güncelleme
         if (message && loadingMessage) {
@@ -29159,6 +29584,11 @@ function hideLoadingOverlay() {
     const loadingMessage = document.getElementById('loadingMessage');
     if (loadingMessage) {
         loadingMessage.textContent = "Liste hazır! Açılıyor...";
+    }
+
+    // Birleşik Hoş Geldin ekranını da %100'e tamamla ve kapat
+    if (typeof updateWelcomeLoadProgress === 'function') {
+        updateWelcomeLoadProgress(100, 'Yüklendi!');
     }
     
     // 800ms "Yüklendi!" göster, sonra fade out
@@ -42217,6 +42647,8 @@ function playChannelByName(name) {
     if (ch.isLive && !ch.isVod) {
         if (typeof cvStartWatching === 'function') cvStartWatching(ch.name);
         else console.warn('[CV] playChannel: cvStartWatching fonksiyonu henüz tanımlı değil (script sırası sorunu olabilir)');
+        // Başlangıç Ayarları — "Son İzlenen Yayınla Başlat" özelliği için kaydet
+        if (typeof rememberLastLiveChannel === 'function') rememberLastLiveChannel(ch.name, state.activeCat);
     } else {
         if (typeof cvStopWatching === 'function') cvStopWatching();
     }
@@ -50150,6 +50582,12 @@ function handleFavoriteChannelSelect(key) {
             if (_tc) { _tc.classList.add('remote-focused'); (window._lastFocusedEls = window._lastFocusedEls || []).push(_tc); }
         }
     }
+    else if(state.remote.zone==='startupSettingsModal') {
+        const inputs = STARTUP_BUTTONS;
+        const idx = state.remote.startupSettingsIndex || 0;
+        el = document.getElementById(inputs[idx]);
+        hint = (el && el.tagName === 'SELECT') ? '← → Kategori Seç' : 'OK: Seç | ↑↓ Gezin';
+    }
     else if(state.remote.zone==='header') {
         // Görünmeyen/devre dışı header butonuna odaklanmayı önle — gerekirse index düzelt
         (function() {
@@ -50435,6 +50873,7 @@ function handleFavoriteChannelSelect(key) {
     'quickSortNumModal': handleQuickSortNumModalRemote,
     // vodModal patchVodModalDpad tarafından yönetiliyor — buradan kaldırıldı
     'sleepModeModal': handleSleepModeModalRemote,
+    'startupSettingsModal': handleStartupSettingsModalRemote,
     'addM3UModal': handleAddM3UModalRemote,
     'singleChannelModal': handleSingleChannelModalRemote,
     'passwordModal': handlePasswordModalRemote,
@@ -55136,6 +55575,7 @@ window.toggleFavPlayer = function() {
         { modalId: 'passwordModal',        closeBtnSelector: '#passwordModal .icon-btn', closeFn: 'closePasswordModal' },
         { modalId: 'themeModal',           closeBtnSelector: '#themeModal .settings-btn.danger', closeFn: 'closeThemeModal' },
         { modalId: 'sleepModeModal',       closeBtnId: 'btnSleepModeCancel',     closeFn: 'closeSleepModeModal' },
+        { modalId: 'startupSettingsModal', closeBtnId: 'btnStartupSettingsCancel', closeFn: 'closeStartupSettingsModal' },
         { modalId: 'continueModal',        closeBtnId: 'btnWatchLater',          closeFn: null },
         { modalId: 'deleteContinueModal',  closeBtnId: 'btnDeleteCancel',        closeFn: 'closeDeleteContinueModal' },
         
@@ -57370,6 +57810,7 @@ var _profAvatarIDB = (function() {
         preload: function() { return this.get(); }
     };
 })();
+window._profAvatarIDB = _profAvatarIDB;
 
 /* ── Profil oku (isim/kilit sync, avatar önbellekten) ── */
 function profGet() {
@@ -58693,6 +59134,10 @@ document.addEventListener('umittv_login_ok', function() {
             height: 100%;
         }
         
+        /* Hoş Geldin ekranı açıkken alt haber bandı gizli kalsın, sadece ana sayfada görünsün */
+        body.__umd_welcome_open #__UMD_TVX_DOCK {
+            display: none !important;
+        }
         body.__umd_modal_open #__UMD_TVX_DOCK,
         body.__umd_modal_open #__UMD_TVX_DOCK * {
             visibility: hidden !important;
@@ -61472,6 +61917,7 @@ window.addEventListener('popstate', function() {
         { id:'epgModal',             cls:null,      fn:'closeEpgModal' },
         { id:'vodModal',             cls:null,      fn:'closeVodModal' },
         { id:'sleepModeModal',       cls:null,      fn:'closeSleepModeModal' },
+        { id:'startupSettingsModal', cls:null,      fn:'closeStartupSettingsModal' },
         { id:'m3uHintModal',         cls:null,      fn:'closeM3UHint' },
         { id:'passwordModal',        cls:null,      fn:'closePasswordModal' },
         { id:'embedModal',           cls:null,      fn:'closeEmbedModal' },
@@ -62780,9 +63226,25 @@ video {
 #vodScrollUpBtn {
     -webkit-tap-highlight-color: transparent;
 }
+/* 4K TV FIX: bazı TV tarayıcıları (özellikle Brave/Chrome Android TV) 4K
+   çözünürlükte otomatik "text-size-adjust" uygulayıp pill/ikon satırlarının
+   flex-wrap yapmışçasına 2 satıra taşmasına neden oluyor. Bu satır bunu
+   kesin olarak engeller — !important ile hem satır kaymasını hem de
+   metin boyutu şişmesini durdurur. */
+.m3u-selector-bar,
+.category-bar,
+.header-controls {
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+}
+.m3u-pill, .cat-pill, .header-btn {
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+}
 
 </style>
-
 <script id="umittv-tvbox-js-ultimate">
 (function() {
 'use strict';
@@ -70328,16 +70790,31 @@ function _PanelNav(panelId, selectors) {
 })();
 
 function showWelcomeScreen() {
+    if (window._welcomeContentInit) return;
+    window._welcomeContentInit = true;
+
     var name = _getDisplayName() || 'Kullanıcı';
     var screen  = document.getElementById('welcomeScreen');
     var nameEl  = document.getElementById('welcomeName');
     var cardEl  = document.getElementById('welcomeCard');
-    var barEl   = document.getElementById('welcomeBar');
     var waveEl  = document.getElementById('welcomeWaveEmoji');
     var particlesEl = document.getElementById('welcomeParticles');
+    var avatarWrap = document.getElementById('welcomeAvatarWrap');
     if (!screen) return;
 
     if (nameEl) nameEl.textContent = name;
+
+    // Profil resmi kayıtlıysa göster, yoksa varsayılan kişi ikonu kalsın
+    if (avatarWrap) {
+        (async function() {
+            try {
+                var avatar = (typeof window._profAvatarIDB !== 'undefined') ? await window._profAvatarIDB.get() : '';
+                if (avatar && (avatar.indexOf('http') === 0 || avatar.indexOf('data:') === 0)) {
+                    avatarWrap.innerHTML = '<img src="' + avatar + '" alt="' + name.charAt(0).toUpperCase() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML=\'<span class=material-symbols-outlined style=font-size:48px;color:#FFD700;opacity:1 !important;>person</span>\'">';
+                }
+            } catch(e) {}
+        })();
+    }
 
     // Parçacık animasyonu
     if (particlesEl) {
@@ -70366,15 +70843,17 @@ function showWelcomeScreen() {
         }
     }
 
-    // Kumanda inputu engelle (welcome açıkken)
+    // Bu ekran artık liste yüklenene kadar açık kalır — sabit süreyle kapanmaz.
+    // Kapanış, gerçek yükleme tamamlandığında hideWelcomeScreen() ile tetiklenir.
     window._welcomeOpen = true;
+    window._welcomeListDone = false;
     screen.style.display = 'flex';
+    document.body.classList.add('__umd_welcome_open'); // alt haber bandını gizle
 
     setTimeout(function() {
         if (cardEl) { cardEl.style.transform = 'scale(1)'; cardEl.style.opacity = '1'; }
     }, 50);
     setTimeout(function() {
-        if (barEl) barEl.style.width = '100%';
         if (waveEl) {
             var t = 0;
             var wave = setInterval(function() {
@@ -70384,20 +70863,101 @@ function showWelcomeScreen() {
             }, 180);
         }
     }, 400);
-    setTimeout(function() {
-        if (cardEl) { cardEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(1.05)'; }
-    }, 2600);
+
+    // Güvenlik ağı: liste yükleme her nedense hiç sinyal vermezse
+    // ekranın sonsuza dek açık kalmaması için 6sn sonra otomatik kapat.
+    clearTimeout(window._welcomeFailsafeTimer);
+    window._welcomeFailsafeTimer = setTimeout(function() {
+        if (window._welcomeOpen) hideWelcomeScreen();
+    }, 10000);
+
+    // ── Sahte minimum ilerleme ──────────────────────────────────
+    // Gerçek yükleme sinyali (updateLoadingProgress) hiç gelmezse veya
+    // geç gelirse yüzde göstergesi %0'da donuk kalmasın diye burada
+    // görsel olarak kademeli artan bir ilerleme başlatılıyor. Gerçek
+    // bir sinyal geldiği an updateWelcomeLoadProgress çağrısı bu değeri
+    // olduğu gibi ezer (aşağıdaki _welcomeFakeTick kontrolü sayesinde).
+    window._welcomeFakeProgress = 0;
+    clearInterval(window._welcomeFakeTimer);
+    window._welcomeFakeTimer = setInterval(function() {
+        if (!window._welcomeOpen || window._welcomeListDone) {
+            clearInterval(window._welcomeFakeTimer);
+            return;
+        }
+        // Gerçek ilerleme sahte ilerlemeyi geçtiyse sahteyi durdur
+        var realPct = parseInt((document.getElementById('welcomeBar')||{}).style.width) || 0;
+        if (realPct > window._welcomeFakeProgress) {
+            window._welcomeFakeProgress = realPct;
+        }
+        if (window._welcomeFakeProgress >= 90) return; // %90'ı geçmesin, gerçek sinyali bekle
+        window._welcomeFakeProgress += 3;
+        updateWelcomeLoadProgress(window._welcomeFakeProgress);
+    }, 250);
+}
+
+// Birleşik ekranı kapat (liste yüklemesi tamamlanınca çağrılır)
+function hideWelcomeScreen() {
+    var screen = document.getElementById('welcomeScreen');
+    var cardEl = document.getElementById('welcomeCard');
+    if (!screen || screen.style.display === 'none') return;
+    clearTimeout(window._welcomeFailsafeTimer);
+
+    // FOUC engelleyici gate'i kaldır — artık ana sayfa görünsün
+    var _gate = document.getElementById('__umitPreWelcomeGate');
+    if (_gate) _gate.remove();
+
+    if (cardEl) { cardEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(1.05)'; }
     setTimeout(function() {
         screen.style.display = 'none';
         window._welcomeOpen = false;
+        document.body.classList.remove('__umd_welcome_open'); // ana sayfada alt haber bandı tekrar görünsün
         if (cardEl) { cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease'; cardEl.style.transform = 'scale(0.7)'; cardEl.style.opacity = '0'; }
-        if (barEl) barEl.style.width = '0%';
-    }, 3100);
+    }, 400);
+}
+
+// Birleşik ekrandaki liste yükleme yüzdesini güncelle
+function updateWelcomeLoadProgress(percent, doneText) {
+    var barEl    = document.getElementById('welcomeBar');
+    var pctEl    = document.getElementById('welcomeLoadPercent');
+    var statusEl = document.getElementById('welcomeLoadStatus');
+    var spinEl   = document.getElementById('welcomeSpinner');
+    var p = Math.min(100, Math.max(0, percent || 0));
+
+    // Yüzde asla geriye gitmesin (sahte ilerleme ile gerçek sinyal çakışmasın)
+    var _cur = parseInt((barEl && barEl.style.width) || '0') || 0;
+    if (p < _cur) p = _cur;
+
+    if (barEl) barEl.style.width = p + '%';
+    if (pctEl) pctEl.textContent = '%' + p;
+
+    if (p >= 100) {
+        if (statusEl) { statusEl.textContent = doneText || 'Yüklendi!'; statusEl.style.color = '#00e676'; }
+        if (pctEl) pctEl.style.color = '#00e676';
+        if (spinEl) spinEl.style.display = 'none';
+        window._welcomeListDone = true;
+        setTimeout(function() {
+            if (window._welcomeOpen) hideWelcomeScreen();
+        }, 500);
+    } else {
+        if (statusEl) { statusEl.textContent = 'Ümit Listesi Yükleniyor...'; statusEl.style.color = '#FFD700'; }
+        if (pctEl) pctEl.style.color = '#ffffff';
+        if (spinEl) spinEl.style.display = '';
+    }
 }
 
 document.addEventListener('umittv_login_ok', function _welcomeHandler() {
-    setTimeout(showWelcomeScreen, 300);
+    showWelcomeScreen();
 }, { once: true });
+
+// Ekran artık HTML parse anında zaten açık (bkz. yukarıdaki inline script).
+// umittv_login_ok event'i gelmezse de (otomatik giriş, önizleme ortamı vb.)
+// içerik/animasyon en geç kısa bir süre sonra devreye girsin.
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window._welcomeContentInit) showWelcomeScreen();
+});
+setTimeout(function() {
+    if (!window._welcomeContentInit) showWelcomeScreen();
+}, 400);
 
 // Welcome açıkken back/nav tuşlarını yut
 document.addEventListener('keydown', function(e) {

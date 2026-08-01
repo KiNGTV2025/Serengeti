@@ -11450,7 +11450,21 @@ document.addEventListener('DOMContentLoaded', function() {
 // document.write ile welcomeScreen dışındaki her şeyi gizleyen bir
 // stil enjekte ediyoruz. Bu satır render başlamadan (parser-blocking)
 // çalıştığı için hiçbir "flaş" oluşmaz.
-document.write('<style id="__umitPreWelcomeGate">body > *:not(#welcomeScreen):not(script):not(style){visibility:hidden !important;}</style>');
+// NOT: Aşağıdaki ikinci satır olmadan LOGO ve M3U butonu ("Ekle" ikonu)
+// hoş geldin ekranından ~1sn önce kısaca görünüyordu. Sebep: sayfada
+// (aşağıda) "img { visibility: visible !important; }" şeklinde TÜM
+// <img> etiketlerini zorla görünür yapan genel bir kural var — logo ve
+// M3U ikonu <img> etiketi olduğu için (diğer header butonları ise
+// ikon-font <span> kullandığından bu genel kuraldan etkilenmiyor) bu
+// kural, üst elemandan miras alınan visibility:hidden'ı eziyor.
+// ÖNEMLİ-FIX: bu kural İLK SÜRÜMDE "body > *:not(#welcomeScreen)... img"
+// şeklinde SAYFADAKİ TÜM img'leri hedefliyordu — bu da bazı cihazlarda
+// (ör. Hiremco Matrix; JS thread zaman zaman donduğu için hoşgeldin
+// ekranını kapatan setTimeout hiç ateşlenmeyip gate hiç kaldırılamıyor)
+// KANAL KARTI RESİMLERİNİN de kalıcı olarak gizli kalmasına yol açtı.
+// Çözüm: kuralı SADECE header'daki logo/M3U ikonuyla sınırla — kart
+// resimleri asla bu kuralın kapsamına girmesin, gate takılı kalsa bile.
+document.write('<style id="__umitPreWelcomeGate">body > *:not(#welcomeScreen):not(script):not(style){visibility:hidden !important;}.app-header img{visibility:hidden !important;opacity:0 !important;}</style>');
 setTimeout(function() {
     var g = document.getElementById('__umitPreWelcomeGate');
     if (g) g.remove();
@@ -27476,6 +27490,33 @@ document.addEventListener('umittv_channels_ready', function() {
 // sayfa yüklendikten belli bir süre sonra da bir kez daha tetikleyelim.
 window.addEventListener('load', function() {
     _scheduleStartupAutoLaunch(1500);
+});
+
+// ── FIX: "Uygulamayı kapatıp açınca Son İzlenen otomatik başlamıyor" ──
+// App24/AppCreator24 gibi WebView sarmalayıcılarda "uygulamayı kapatma"
+// çoğu zaman sayfayı yeniden YÜKLEMEZ — Activity arka plana atılıp geri
+// getirilir (WebView sayfası hafızada canlı kalır). Bu yüzden 'load' ve
+// 'umittv_channels_ready' event'leri sadece uygulamanın gerçek ilk açılışında
+// bir kez ateşleniyordu; kullanıcı uygulamayı kapatıp tekrar açtığında (aslında
+// arka plandan öne geldiğinde) bu event'ler tekrar tetiklenmediği için
+// _tryStartupAutoLaunch() bir daha hiç çalışmıyor, "Son İzlenen Yayınla Başlat"
+// sessizce devre dışı kalmış gibi görünüyordu. Çözüm: sekme/uygulama tekrar
+// görünür olduğunda (visibilitychange), EĞER o an aktif bir yayın OYNAMIYORSA
+// (kullanıcı izlerken arka plana atıp geri gelmiş olma ihtimaline karşı bu
+// şart konuyor — oynatımı kesmemek için) başlangıç oto-başlatmasını
+// sıfırlayıp yeniden dener.
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) return; // arka plana giderken bir şey yapma
+    try {
+        const video = document.getElementById('videoPlayer');
+        const isActivelyPlaying = !!(state.player && state.player.streamStarted && video && !video.paused && !video.ended);
+        if (isActivelyPlaying) return; // yayın izlenirken araya girme
+        // Yeniden dene — flag'leri sıfırla ki daha önce 'normal' modda veya
+        // kanallar hazır olmadan bitmiş olsa bile tekrar denensin.
+        _startupAutoLaunchDone = false;
+        _startupAutoLaunchAttempts = 0;
+        _scheduleStartupAutoLaunch(500);
+    } catch (e) {}
 });
 
 /* ===============================
@@ -70869,6 +70910,9 @@ function showWelcomeScreen() {
     window._welcomeFailsafeTimer = setTimeout(function() {
         if (window._welcomeOpen) hideWelcomeScreen();
     }, 10000);
+    // Bekçi (watchdog): %100'e ulaşıldığı hâlde ekran kapanmazsa
+    // (setTimeout zinciri tıkanmışsa) bağımsız olarak sert kapat.
+    _startWelcomeWatchdog();
 
     // ── Sahte minimum ilerleme ──────────────────────────────────
     // Gerçek yükleme sinyali (updateLoadingProgress) hiç gelmezse veya
@@ -70905,12 +70949,59 @@ function hideWelcomeScreen() {
     var _gate = document.getElementById('__umitPreWelcomeGate');
     if (_gate) _gate.remove();
 
-    if (cardEl) { cardEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(1.05)'; }
-    setTimeout(function() {
-        screen.style.display = 'none';
+    try {
+        if (cardEl) { cardEl.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(1.05)'; }
+        setTimeout(function() {
+            try {
+                screen.style.display = 'none';
+                window._welcomeOpen = false;
+                document.body.classList.remove('__umd_welcome_open'); // ana sayfada alt haber bandı tekrar görünsün
+                if (cardEl) { cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease'; cardEl.style.transform = 'scale(0.7)'; cardEl.style.opacity = '0'; }
+            } catch (e) { _forceCloseWelcomeScreen(); }
+        }, 400);
+    } catch (e) {
+        // Animasyon aşaması bile patlarsa direkt sert kapat
+        _forceCloseWelcomeScreen();
+    }
+}
+
+// ── DAYANIKLILIK FIX: "Yüklendi %100 / Açılıyor..." ekranı bazı
+// cihazlarda (ör. Hiremco Matrix) takılı kalıyordu. Sebep: kapanış TEK
+// bir setTimeout zincirine bağımlıydı — bu cihazlarda JS thread bazen
+// (ağır senkron işler sırasında) uzun süre tıkanabiliyor; o an
+// zamanlanan bir sonraki adım gecikebiliyor/atlanabiliyor ve arkada asıl
+// uygulama içeriği zaten görünür hâle gelmiş olsa bile hoş geldin
+// ekranı üstte donuk kalıyordu. Çözüm: animasyonsuz, anında kapatan bir
+// "sert kapatma" fonksiyonu + bunu tetikleyen bağımsız bir "bekçi"
+// (watchdog) interval'ı ekliyoruz. Interval, ana setTimeout zinciriyle
+// AYNI ANDA çalışır; biri tıkanırsa diğeri devreye girer.
+function _forceCloseWelcomeScreen() {
+    try {
+        var screen = document.getElementById('welcomeScreen');
+        if (screen) screen.style.display = 'none';
+        var _gate = document.getElementById('__umitPreWelcomeGate');
+        if (_gate) _gate.remove();
         window._welcomeOpen = false;
-        document.body.classList.remove('__umd_welcome_open'); // ana sayfada alt haber bandı tekrar görünsün
-        if (cardEl) { cardEl.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease'; cardEl.style.transform = 'scale(0.7)'; cardEl.style.opacity = '0'; }
+        document.body.classList.remove('__umd_welcome_open');
+        clearTimeout(window._welcomeFailsafeTimer);
+        clearInterval(window._welcomeWatchdog);
+    } catch (e) {}
+}
+window._forceCloseWelcomeScreen = _forceCloseWelcomeScreen;
+
+function _startWelcomeWatchdog() {
+    clearInterval(window._welcomeWatchdog);
+    window._welcomeDoneAt = null;
+    window._welcomeWatchdog = setInterval(function() {
+        if (!window._welcomeOpen) { clearInterval(window._welcomeWatchdog); return; }
+        if (window._welcomeListDone) {
+            if (!window._welcomeDoneAt) window._welcomeDoneAt = Date.now();
+            // %100'e ulaştıktan 2.5sn sonra hâlâ açıksa (normal kapanış
+            // animasyonu çoktan bitmiş olması gereken bir süre) sert kapat.
+            if (Date.now() - window._welcomeDoneAt > 2500) {
+                _forceCloseWelcomeScreen();
+            }
+        }
     }, 400);
 }
 

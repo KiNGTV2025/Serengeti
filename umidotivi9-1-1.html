@@ -19600,9 +19600,7 @@ const HIGH_RES_DIRECT_DOMAINS = [
     'trt.com.tr',
     'trtworld.com',
     'cdn.trt',
-    'umittv.sadecenjoy.workers.dev', // Vavoo HLS proxy Worker → direkt
-    'vavootobir.umitm0d.workers.dev',  // Vavoo HLS proxy Worker (tobir) → direkt
-    
+    'umitm0d.deno.net',   // Vavoo Deno proxy → direkt
 
     'akamaihd.net',       // Akamai CDN
     'akamaized.net',
@@ -42928,31 +42926,30 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
-                    const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
+                    const _isAlreadyProxiedFb = _fb && (_fb.includes('workers.dev') || _fb.includes('deno.net') || _fb.includes('deno.dev'));
+                    const _vavooRawFbMatch = (_fb && !_isAlreadyProxiedFb) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
                     if (_vavooRawFbMatch) {
-                        // vavoo.to ham URL → Vavoo Worker ile yeniden dene
+                        // vavoo.to/kool.to ham URL → Vavoo Deno proxy ile yeniden dene
                         try {
                             if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
                             video.pause(); video.removeAttribute('src');
                         } catch(e) {}
-                        const _vavooFbUrl = 'https://umittv.sadecenjoy.workers.dev/play/' + _vavooRawFbMatch[1];
+                        const _vavooFbUrl = 'https://vavo-4ak5sh1afyyt.umitm0d.deno.net/?url=' + encodeURIComponent(_fb);
                         const _hlsVFb = new Hls(HLS_CONFIG);
                         state.player.hls = _hlsVFb;
                         _hlsVFb.attachMedia(video);
                         _hlsVFb.loadSource(_vavooFbUrl);
                         video.play().catch(()=>{});
-                    } else if (!_isKool && _fb) {
-                        // Mevcut HLS'i durdur, proxy ile yeniden başlat
+                    } else if (_fb) {
+                        // Mevcut HLS'i durdur, genel stream proxy ile yeniden başlat
                         try {
                             if (state.player.hls) { state.player.hls.destroy(); state.player.hls = null; }
                             video.pause();
                             video.removeAttribute('src');
                         } catch(e) {}
-                        const _PROXY_FB = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
-                        const _STREAM_PROXY_FB = 'https://umittv.sadecenjoy.workers.dev/?url=';
+                        const _PROXY_FB = STREAM_PROXY2;
                         // Önce STREAM_PROXY dene (referer sorununu çözer), sonra PROXY
-                        const _proxyUrl = _STREAM_PROXY_FB + encodeURIComponent(_fb);
+                        const _proxyUrl = STREAM_PROXY + encodeURIComponent(_fb);
                         const _hlsFb = new Hls(HLS_CONFIG);
                         state.player.hls = _hlsFb;
                         _hlsFb.on(Hls.Events.ERROR, (ev, data) => {
@@ -43945,8 +43942,8 @@ function resumeChannel(startTime) {
     const DIRECT_DOMAINS = [
         'trycloudflare.com', 'ngrok.io', 'ngrok-free.app', 'localhost',
         '127.0.0.1', '192.168.', '10.0.', '172.16.',
-        'umido.umitm0d.workers.dev',   // kool.to proxy Worker
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
+        'deno.net', 'deno.dev',        // Deno Deploy Worker'lar (ör. Vavoo proxy) → direkt aç
         // 'umitmod-farki.onrender.com' → kapalı
     ];
     const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
@@ -43974,61 +43971,43 @@ function resumeChannel(startTime) {
                      _urlLower.includes('playlist') || _urlLower.includes('/hls/') ||
                      _urlLower.includes('/stream') || _urlLower.includes('/index.m3u') ||
                      _urlLower.includes('go.php') ||            // Go.php?ID= redirect → HLS olarak aç
-                     _urlLower.includes('umittv.sadecenjoy.workers.dev') ||
-                     _urlLower.includes('umitm0d.sadecenjoy.workers.dev') ||
-                     _urlLower.includes('kool.to') ||            // kool.to → Worker ile HLS
-                     _urlLower.includes('vavoo.to') ||           // vavoo.to → Vavoo Worker ile HLS
-                     _urlLower.includes('oha.to') ||             // oha.to → Vavoo Worker ile HLS
-                     _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo Worker ile HLS
-                     _urlLower.includes('umido.umitm0d.workers.dev') ||
-                     _urlLower.includes('vavootobir.umitm0d.workers.dev') ||  // vavootobir Worker → HLS döner
-                     _urlLower.includes('kanks.umitm0d2.workers.dev') ||     // kanks Worker (Vavoo proxy) → HLS döner
+                     _urlLower.includes('kool.to') ||            // kool.to → Vavoo proxy ile HLS
+                     _urlLower.includes('vavoo.to') ||           // vavoo.to → Vavoo proxy ile HLS
+                     _urlLower.includes('oha.to') ||             // oha.to → Vavoo proxy ile HLS
+                     _urlLower.includes('huhu.to') ||            // huhu.to → Vavoo proxy ile HLS
+                     _urlLower.includes('umitm0d.deno.net') ||   // Vavoo Deno proxy → HLS döner
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
-    // Vavoo Worker mi? (umittv.sadecenjoy.workers.dev veya vavoo.to/vavoo-iptv/play/ ham URL)
-    // FIX: yeni vavoo worker domaini (vavoop.sadecenjoy.workers.dev) eklendi —
-    // eksik olduğu için App24'te (native video.src bekleyen ExoPlayer WebView)
-    // bu domain "Normal HLS" genel yoluna düşüp hls.js ile açılmaya çalışıyordu,
-    // bu da App24'te yayının açılmamasına sebep oluyordu (tarayıcıda MSE tam
-    // desteklendiği için sorun görünmüyordu).
-    const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev') || rawUrl.includes('kanks.umitm0d2.workers.dev');
+    // Vavoo Worker mi? (umitm0d.deno.net proxy veya vavoo.to/vavoo-iptv/play/ ham URL)
+    // Eski Cloudflare Worker'lar (tümü kaldırıldı)
+    // tamamen kaldırıldı — tüm Vavoo trafiği artık tek proxy üzerinden geçiyor:
+    // https://vavo-4ak5sh1afyyt.umitm0d.deno.net
+    const isVavooWorker = rawUrl.includes('umitm0d.deno.net');
 
-    // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
-    const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
+    // Vavoo proxy base URL — vavoo.to/kool.to ham URL'lerini buraya yönlendir.
+    // Bu proxy kendi içinde resolve+HLS-rewrite yapıyor, ?url= parametresi
+    // olarak ham play linkini bekliyor (bkz. worker_final.ts).
+    const VAVOO_WORKER_BASE = 'https://vavo-4ak5sh1afyyt.umitm0d.deno.net/?url=';
 
-    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
-    // BUG FIX: regex çapasız olduğu için "vavoo.to/vavoo-iptv/play/ID" deseni
-    // BAŞKA bir worker'ın zaten ürettiği tam URL'nin (ör.
-    // vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=https://vavoo.to/...)
-    // İÇİNDE geçtiğinde de yanlışlıkla eşleşiyordu — gerçek (ve çalışan) URL
-    // atılıp sabit kodlu ESKİ bir worker'a (umittv.sadecenjoy.workers.dev/play/ID)
-    // yönlendiriliyordu, o worker'da bu endpoint çalışmadığı için yayın açılmıyordu.
-    // Artık URL zaten bir "workers.dev" proxy'sinden geliyorsa (yani zaten
-    // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
-    // olduğu gibi (rawUrl) kullanılıyor.
-    const _isAlreadyProxied = rawUrl.includes('workers.dev');
+    // vavoo.to/kool.to/oha.to/huhu.to /play/<id> → tek Vavoo proxy'sine yönlendir.
+    // Artık URL zaten proxy'den geliyorsa (deno.net veya workers.dev) ham vavoo
+    // URL'si gibi ele alınmıyor — olduğu gibi (rawUrl) kullanılıyor.
+    const _isAlreadyProxied = rawUrl.includes('workers.dev') || rawUrl.includes('deno.net') || rawUrl.includes('deno.dev');
     const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
     const isVavooRaw = !!_vavooRawMatch;
     if (isVavooRaw) {
-        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
-        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
+        // Ham play linkini proxy'ye ?url= parametresi olarak encode edip gönder
+        const _vavooWorkerUrl = VAVOO_WORKER_BASE + encodeURIComponent(rawUrl);
         Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
     }
 
-    // kool.to linki → umido.umitm0d.workers.dev proxy'ye yönlendir
-    const KOOL_PROXY   = 'https://umido.umitm0d.workers.dev/?url=';
-    const KOOL_PROXY_2 = 'https://umittv.sadecenjoy.workers.dev/?url=';
-    // isKoolTo: artık SADECE kool.to ham URL'leri (vavoo.to isVavooRaw ile ayrı ele alındı)
-    const isKoolTo = !isVavooRaw && (rawUrl.includes('kool.to') || rawUrl.includes('oha.to') || rawUrl.includes('huhu.to'));
-    if (isKoolTo) {
-        // rawUrl'yi Worker URL'sine dönüştür — bu domain DIRECT_DOMAINS'da,
-        // yani startHls direkt HLS olarak açar
-        const koolProxied = KOOL_PROXY + encodeURIComponent(rawUrl);
-        // rawUrl'yi override et — aşağıdaki tüm akış koolProxied ile çalışsın
-        Object.defineProperty(ch, '_resolvedUrl', { value: koolProxied, writable: true, configurable: true });
-    }
-    const effectiveUrl = ((isKoolTo || isVavooRaw) && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
+    // Artık ayrı bir "kool.to worker" yok — kool.to/oha.to/huhu.to da isVavooRaw
+    // regex'i tarafından yakalanıp aynı Vavoo proxy'sine yönlendiriliyor.
+    // isKoolTo geriye dönük uyumluluk için false tutuluyor (aşağıdaki
+    // effectiveUrl hesabı isVavooRaw'ı zaten kapsıyor).
+    const isKoolTo = false;
+    const effectiveUrl = (isVavooRaw && ch._resolvedUrl) ? ch._resolvedUrl : rawUrl;
 
     // Sade HLS yükleyici — tarayıcı default davranışına yakın
     function startHls(streamUrl) {
@@ -44253,20 +44232,13 @@ function resumeChannel(startTime) {
             state.player.hls = null;
 
             if (isVavooRaw) {
-                // Vavoo Worker hata verdi → Worker'ı tekrar çağır (taze resolve yapar)
+                // Vavoo proxy hata verdi → proxy'yi tekrar çağır (taze resolve yapar)
                 showToast('Vavoo yeniden bağlanıyor...');
                 startHls(effectiveUrl);
             } else if (isVavooWorker) {
-                // Vavoo Worker hata verdi → yeniden dene (UA spoof aktif)
+                // Vavoo proxy hata verdi → yeniden dene
                 showToast('Yeniden bağlanıyor...');
                 startHls(rawUrl);
-            } else if (isKoolTo && streamUrl === effectiveUrl) {
-                showToast('Yedek bağlantı deneniyor...');
-                const koolFallback = KOOL_PROXY_2 + encodeURIComponent(rawUrl);
-                startHls(koolFallback);
-            } else if (isKoolTo) {
-                showToast('Direkt bağlantı deneniyor...');
-                video.src = rawUrl; video.load(); video.play().catch(()=>{});
             } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
                 showToast('Yedek bağlantı deneniyor...');
@@ -44372,31 +44344,6 @@ function resumeChannel(startTime) {
                 }
                 _vavooLastTime = video.currentTime;
             }, 8000);
-        } else
-        if (isKoolTo) {
-            // kool.to → umido.umitm0d.workers.dev → HLS, stall olunca otomatik yeniden bağlan
-            if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
-            startHls(effectiveUrl);
-            // Stall dedektörü — 10sn ilerleme yoksa yeniden bağlan
-            let _koolLastTime = -1, _koolStallCount = 0;
-            window._koolReconnectTimer = setInterval(() => {
-                if (!video || video.paused || video.ended) return;
-                if (video.readyState >= 2 && video.currentTime !== 0 && video.currentTime === _koolLastTime) {
-                    _koolStallCount++;
-                    if (_koolStallCount >= 3) { // 2→3: daha az false positive
-                        _koolStallCount = 0;
-                        // Birincil proxy stall → yedek proxy ile dene
-                        const _koolFb = (state.player.hls && state.player.hls.url && state.player.hls.url.includes('umido.umitm0d'))
-                            ? KOOL_PROXY_2 + encodeURIComponent(rawUrl)
-                            : effectiveUrl;
-                        showToast('Yayın yenileniyor...');
-                        startHls(_koolFb);
-                    }
-                } else {
-                    _koolStallCount = 0;
-                }
-                _koolLastTime = video.currentTime;
-            }, 8000); // 5sn→8sn: çok sık stall tespiti yeniden bağlanmaya neden oluyor
         } else if (isVavooWorker) {
             // Vavoo Worker → App24'te native video.src (ExoPlayer m3u8 açar, UA sorunu yok)
             // Browser'da HLS.js ile aç
@@ -44409,8 +44356,8 @@ function resumeChannel(startTime) {
                 startHls(rawUrl);
             }
             // FIX: isVavooRaw/isKoolTo dallarında var olan stall-dedektörü bu
-            // dalda (tam Worker URL'si, ör. kanks.umitm0d2.workers.dev/playlist
-            // içinden gelen kanal linkleri) hiç kurulmuyordu — bu yüzden HLS.js
+            // dalda (tam proxy URL'si içinden gelen kanal linkleri) hiç
+            // kurulmuyordu — bu yüzden HLS.js
             // hata fırlatmadan sessizce ilerlemeyi durdurduğunda (takılma/başa
             // sarma hissi) otomatik kurtarma devreye girmiyordu. Aynı 8sn'lik
             // ilerleme kontrolünü burada da kuruyoruz.

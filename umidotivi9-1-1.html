@@ -43080,6 +43080,16 @@ function resumeChannel(startTime) {
     // ── PLAYER AÇILDI: Arka plan UI dondur — TVBox kasmasın ──
     window._playerUIFrozen = true;
     document.body.classList.add('utv-player-open');
+    // 0) Header logo/kullanıcı adı canvas döngülerini durdur.
+    //    NOT: closePlayer tarafında bu iki efekt zaten setTimeout ile yeniden
+    //    başlatılıyordu (bkz. "Player kapandı → el yazısı + logo efektlerini
+    //    yeniden başlat"), fakat açılışta durduran karşılık hiç yoktu — yani
+    //    oynatma boyunca arka planda 500-600ms'de bir canvas/gradient/filter
+    //    hesaplayıp header'a (görünmeyen, player'ın arkasında kalan) yazmaya
+    //    devam ediyorlardı. Video decode ile aynı ana thread'i paylaştıkları
+    //    için TVBox'ta oynatım sırasında kasmaya katkıda bulunuyordu.
+    if (typeof window.stopLogoGlow === 'function') window.stopLogoGlow();
+    if (typeof window.stopHeaderUsernameLoop === 'function') window.stopHeaderUsernameLoop();
     // 1) CSS animasyonlarını arka plan elementlerde durdur
     try {
         var _freezeStyle = document.getElementById('_playerFreezeStyle');
@@ -58084,6 +58094,13 @@ window.getProfileAvatarUrlAsync = async function() {
             _drawFrame(); // ilk frame hemen çiz
             _unameRaf = setInterval(_drawFrame, 500);
         }
+    };
+
+    // Player açılırken çağrılır — canvas döngüsünü durdurur (CPU tasarrufu).
+    // updateHeaderUsername() zaten idempotent (if(!_unameRaf)) olduğu için
+    // player kapanınca tekrar çağrıldığında güvenle yeniden başlar.
+    window.stopHeaderUsernameLoop = function() {
+        if (_unameRaf) { clearInterval(_unameRaf); _unameRaf = null; }
     };
 })();
 

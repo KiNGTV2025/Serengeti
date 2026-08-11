@@ -844,6 +844,12 @@
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    /* BEYAZ-EKRAN-FIX: translateZ(0) bu elementleri ayrı bir GPU katmanına
+       zorluyor; katman ilk oluşturulduğunda (özellikle yavaş TVBox
+       cihazlarda) arka planı olmayan katmanlar bir anlığına beyaz/şeffaf
+       görünüp altındaki sistem rengini (beyaz) gösterebiliyordu. Katmana
+       açıkça arka plan rengi vererek bu "flash" önleniyor. */
+    background-color: var(--bg-main, #1a1a1a);
 }
 
 /* ── 2. KANAL KARTLARI — Geçiş/Hover SIFIRLA ── */
@@ -11042,10 +11048,15 @@ html {
     scroll-behavior: auto;
     height: 100%;
     height: 100dvh;
+    /* BEYAZ-EKRAN-FIX: TVBox WebView, GPU compositing katmanı (translateZ ile
+       zorlanan elementler) henüz boyanmadan önce varsayılan beyaz renk gösterir.
+       html/body seviyesinde erken ve kalıcı koyu arka plan, bu ara kareyi önler. */
+    background-color: #000 !important;
 }
 body {
     height: 100dvh !important;
     min-height: 100dvh !important;
+    background-color: #000 !important;
 }
 /* iOS Safari + PWA mod: safe area */
 @supports (padding-top: env(safe-area-inset-top)) {
@@ -41920,6 +41931,12 @@ function renderChannels() {
     } else {
         grid.innerHTML = html;
     }
+    // ODAK-FIX: insertAdjacentHTML, innerHTML setter override'ını TETİKLEMEZ,
+    // bu yüzden append modunda _tvBoxCardMap cache'i eskimiş (stale) kalıp
+    // yeni eklenen kartları içermiyordu — kumanda ile son kartlara gidince
+    // odak kayboluyor veya beyaz/boş alan görünüyordu. Her iki modda da
+    // (append veya tam render) cache'i burada senkron olarak tazeliyoruz.
+    window._tvBoxCardMap = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
     state._utvRenderedCount = maxDisplay;
     state._utvRenderSig = _renderSig;
     
@@ -50703,7 +50720,14 @@ function handleFavoriteChannelSelect(key) {
                 }
             }
         } else {
-            const cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+            // ODAK-FIX: querySelectorAll yerine navigasyonla aynı _tvBoxCardMap cache'i
+            // kullanılıyor — iki farklı sorgu farklı sonuç kümesi döndürebiliyordu
+            // (özellikle append-render sırasında), bu da index/element uyuşmazlığına
+            // ve görünmeyen (beyaz) odağa yol açıyordu.
+            if (!window._tvBoxCardMap || window._tvBoxCardMap.length === 0) {
+                window._tvBoxCardMap = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+            }
+            const cards = window._tvBoxCardMap;
             // FIX: aynı odak-kaybı clamp'i normal kanal grid'i için de uygulanıyor.
             if (cards.length > 0) {
                 if (state.remote.index >= cards.length) state.remote.index = cards.length - 1;

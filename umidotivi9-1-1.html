@@ -16764,7 +16764,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 
             <!-- Liste yükleme bölümü -->
             <div id="welcomeLoadRow" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;">
-                <div id="welcomeSpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,215,0,0.2);border-top-color:#FFD700;animation:welcomeSpin 0.8s linear infinite;"></div>
+                <div id="welcomeSpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,215,0,0.2);border-top-color:#FFD700;animation:spin 0.8s linear infinite;will-change:transform;transform:translateZ(0);-webkit-transform:translateZ(0);flex-shrink:0;"></div>
                 <div id="welcomeLoadStatus" style="font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;color:#FFD700;letter-spacing:0.5px;">Ümit Listesi Yükleniyor...</div>
             </div>
             <div id="welcomeLoadPercent" style="font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:12px;">%0</div>
@@ -16775,7 +16775,9 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         <div id="welcomeParticles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
     </div>
     <style>
-        @keyframes welcomeSpin { to { transform: rotate(360deg); } }
+        /* welcomeSpin kaldırıldı — artık head'de erken tanımlı genel 'spin'
+           keyframe kullanılıyor (yarış durumu / geç @keyframes parse sorunu
+           TVBox WebView'da spinner'ın hiç dönmemesine yol açıyordu). */
     </style>
 
     <!-- ═══ İZLEME İSTATİSTİKLERİ PANELİ ═══ -->
@@ -70734,6 +70736,43 @@ function _getDisplayName() {
     } catch(e) { return ''; }
 }
 
+// GÖRÜNTÜ-FIX: Bazı kullanıcılar profil adına özel Unicode "fantezi font"
+// karakterleri (𝕬𝕄𝖎ţ gibi matematiksel alfanumerik bloklar), birleştirme
+// işaretleri (combining marks, ör. ⃝⃟) ve süs sembolleri (🜲 ࿐ ⸙ vb.)
+// ekliyor. TVBox WebView'ının sistem fontu bu blokları içermediğinde
+// karakterler kutu (□) olarak görünüyor. Beyaz liste (whitelist) yaklaşımı:
+// sadece bilinen-güvenli karakterler (Latin harf/rakam, TR harfleri, temel
+// noktalama, boşluk, emoji) bırakılır — geri kalan her şey (font bloğu ne
+// olursa olsun) elenir. Bu SADECE hoş geldin ekranındaki gösterimi temizler;
+// kullanıcının kayıtlı gerçek adını (localStorage/Telegram) değiştirmez.
+function _sanitizeDisplayName(raw) {
+    if (!raw) return raw;
+    try {
+        var s = String(raw);
+        var out = '';
+        for (var i = 0; i < s.length; i++) {
+            var cp = s.codePointAt(i);
+            if (cp > 0xFFFF) i++; // surrogate çifti (emoji vb.) - bir sonraki index'i atla
+            // İzin verilenler: temel Latin harf/rakam, Türkçe özel harfler,
+            // boşluk, yaygın noktalama, ve emoji blokları (😀-🿿, 2600-27BF vb.)
+            var ok =
+                (cp >= 0x30 && cp <= 0x39) ||               // 0-9
+                (cp >= 0x41 && cp <= 0x5A) ||               // A-Z
+                (cp >= 0x61 && cp <= 0x7A) ||               // a-z
+                cp === 0x20 ||                              // boşluk
+                'çÇğĞıİöÖşŞüÜ'.indexOf(String.fromCodePoint(cp)) !== -1 || // TR harfleri
+                '.,_-\'!?'.indexOf(String.fromCodePoint(cp)) !== -1 ||     // temel noktalama
+                (cp >= 0x1F300 && cp <= 0x1FAFF && !(cp >= 0x1F700 && cp <= 0x1F77F)) || // emoji (alkimya sembolleri 1F700-1F77F hariç)
+                (cp >= 0x2600 && cp <= 0x26FF) ||           // emoji (misc semboller: ☀☁⛄ vb.)
+                (cp >= 0x2700 && cp <= 0x27BF) ||           // emoji (dingbat: ✂✈✉ vb.)
+                cp === 0x200D;                              // ZWJ (bileşik emoji için)
+            if (ok) out += String.fromCodePoint(cp);
+        }
+        out = out.replace(/\s{2,}/g, ' ').trim();
+        return out || 'Kullanıcı'; // temizlik sonucu tamamen boş kaldıysa (isim tümüyle süs karakterlerden oluşuyorsa) varsayılana düş
+    } catch(e) { return raw; }
+}
+
 /* ──────────────────────────────────────────────────────
    ORTAK YARDIMCI: panel içi D-pad navigasyon motoru
    Kullanım: _PanelNav(panelId, selectorStr)
@@ -70857,7 +70896,7 @@ function showWelcomeScreen() {
     if (window._welcomeContentInit) return;
     window._welcomeContentInit = true;
 
-    var name = _getDisplayName() || 'Kullanıcı';
+    var name = _sanitizeDisplayName(_getDisplayName()) || 'Kullanıcı';
     var screen  = document.getElementById('welcomeScreen');
     var nameEl  = document.getElementById('welcomeName');
     var cardEl  = document.getElementById('welcomeCard');

@@ -76496,13 +76496,32 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         return Promise.race([fetchPromise, hardTimeout]);
     }
 
-    async function umFetchLeagueDay(leagueId, dateStr) {
+    async function umFetchLeagueDay(leagueId, dateStr, _retry) {
         var url = 'https://www.thesportsdb.com/api/v1/json/' + UM_API_KEY + '/eventsday.php?d=' + dateStr + '&l=' + leagueId;
         try {
             var res = await umFetchWithTimeout(url, 8000);
+            if (!res.ok) {
+                // MAÇ-KAYBOLMA-FIX: Ücretsiz TheSportsDB anahtarı ('123') kısa sürede
+                // çok sayıda paralel istek geldiğinde rate-limit uygulayabiliyor
+                // (429/5xx). Önceden bu durumda fonksiyon sessizce boş dizi
+                // döndürüyordu — ilgili ligin TÜM maçları (ör. Fenerbahçe'nin
+                // Şampiyonlar Ligi maçı) kullanıcıya hiç görünmeden kayboluyordu.
+                // Artık bir kez, kısa bir gecikmeyle yeniden deniyoruz.
+                if (!_retry) {
+                    await new Promise(function(r) { setTimeout(r, 700); });
+                    return umFetchLeagueDay(leagueId, dateStr, true);
+                }
+                return [];
+            }
             var json = await res.json();
             return (json && json.events) ? json.events : [];
         } catch (e) {
+            if (!_retry) {
+                try {
+                    await new Promise(function(r) { setTimeout(r, 700); });
+                    return umFetchLeagueDay(leagueId, dateStr, true);
+                } catch (e2) { return []; }
+            }
             return [];
         }
     }
@@ -76667,8 +76686,19 @@ body.tvbox-mode.fast-mode .neon-logo-img {
     async function umLoadMatchesForDate(dateStr) {
         var cached = umMatchesCache[dateStr];
         if (cached && (Date.now() - cached.ts) < UM_CACHE_MS) return cached.data;
-        var results = await Promise.all(UM_LEAGUES.map(function(l) {
-            return (l.id === 'wc2026') ? umFetchWC2026Day(dateStr) : umFetchLeagueDay(l.id, dateStr);
+        // MAÇ-KAYBOLMA-FIX: 9 lig isteği tamamen aynı anda (Promise.all ile
+        // sıfır gecikmeli) gönderilince ücretsiz API anahtarı rate-limit
+        // uygulayıp bazı liglere (ör. Şampiyonlar Ligi) hata dönebiliyordu —
+        // o ligin tüm maçları sessizce kayboluyordu. Her isteği ~80ms arayla
+        // kademeli başlatmak (ama yine paralel/aynı anda bekleyerek) toplam
+        // süreyi neredeyse hiç uzatmadan rate-limit riskini azaltıyor.
+        var results = await Promise.all(UM_LEAGUES.map(function(l, idx) {
+            return new Promise(function(resolve) {
+                setTimeout(function() {
+                    var p = (l.id === 'wc2026') ? umFetchWC2026Day(dateStr) : umFetchLeagueDay(l.id, dateStr);
+                    p.then(resolve).catch(function() { resolve([]); });
+                }, idx * 80);
+            });
         }));
         var events = [];
         results.forEach(function(evts, idx) {

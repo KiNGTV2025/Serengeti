@@ -42150,7 +42150,7 @@ function setupAutoLoadOnScroll(totalChannels) {
     viewport.addEventListener('scroll', viewport._autoScrollListener, { passive: true });
 }
 
-function loadMoreChannels() {
+function loadMoreChannels(_auto) {
     const displayChannels = typeof groupChannelsBySeries === 'function' ? 
                            groupChannelsBySeries(state.filtered) : 
                            state.filtered;
@@ -42162,6 +42162,9 @@ function loadMoreChannels() {
     window._utvAppendRender = true; // sadece yeni kartları ekle, grid'i baştan kurma
     renderChannels();
     
+    // Otomatik (kart göründüğü için tetiklenen) yüklemede scrollIntoView YAPMA —
+    // kullanıcı zaten o karta bakıyor, zorla odaklamak sıçramaya sebep olur.
+    if (_auto) return;
     setTimeout(() => {
         const loadMoreBtn = document.getElementById('loadMoreBtn');
         if (loadMoreBtn) {
@@ -42169,6 +42172,68 @@ function loadMoreChannels() {
         }
     }, 100);
 }
+
+// ── "Daha Fazla Yükle" kartı ekranda göründüğü an otomatik yükle ──
+// IntersectionObserver ile #loadMoreBtn'i izliyoruz; kart her render'da
+// DOM'dan silinip yeniden oluşturulduğu için observer'ı MutationObserver
+// yerine periyodik olarak (render sonrası) yeniden bağlıyoruz.
+(function() {
+    if (window._utvLoadMoreObserverInit) return;
+    window._utvLoadMoreObserverInit = true;
+
+    var _io = null;
+    var _observedBtn = null;
+
+    function _attachLoadMoreObserver() {
+        var btn = document.getElementById('loadMoreBtn');
+        if (!btn || btn === _observedBtn) return;
+
+        if (_io) { try { _io.disconnect(); } catch(e) {} }
+        _observedBtn = btn;
+
+        var viewport = document.getElementById('channelsViewport') ||
+                       document.querySelector('.channels-viewport');
+
+        _io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && typeof window.loadMoreChannels === 'function') {
+                    // Aynı butona birden fazla tetiklenmeyi önle
+                    if (btn._utvAutoLoaded) return;
+                    btn._utvAutoLoaded = true;
+                    window.loadMoreChannels(true);
+                }
+            });
+        }, {
+            root: viewport || null,
+            rootMargin: '200px', // kart tam görünmeden biraz önce tetikle
+            threshold: 0.01
+        });
+
+        _io.observe(btn);
+    }
+
+    // renderChannels her çağrıldığında yeni "Daha Fazla Yükle" kartı
+    // oluşabilir (eskisi silinip yenisi eklenir) — observer'ı her render
+    // sonrası yeniden bağlamak için grid'i izleyen bir MutationObserver
+    // kuruyoruz (hafif: sadece childList, throttle'lı).
+    var _reattachTimer = null;
+    function _scheduleReattach() {
+        if (_reattachTimer) return;
+        _reattachTimer = setTimeout(function() {
+            _reattachTimer = null;
+            _attachLoadMoreObserver();
+        }, 150);
+    }
+
+    function _initGridObserver() {
+        var grid = document.getElementById('channelsGrid');
+        if (!grid) { setTimeout(_initGridObserver, 500); return; }
+        var mo = new MutationObserver(_scheduleReattach);
+        mo.observe(grid, { childList: true });
+        _attachLoadMoreObserver();
+    }
+    setTimeout(_initGridObserver, 500);
+})();
 
 function playChannelFromContinueCategory(index) {
     const ch = state.filtered[index];
@@ -60488,11 +60553,31 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
         }
         var vp = getVP();
         var pos = vp ? vp.scrollTop : window.pageYOffset;
-        if (pos > THRESHOLD) {
+        // FIX: "Kartları hızlı aşağı kaydırırken scroll-to-top devreye girip
+        // başa sarıyor" — buton ekranın altında sabit durduğu için hızlı
+        // fling/swipe kaydırmada parmak oradan geçerken touchstart butona
+        // denk gelip yanlışlıkla tıklanmış gibi algılanıyordu. Artık kullanıcı
+        // aktif kaydırırken butonu GİZLİYORUZ (pointer-events de kapanıyor,
+        // yani üstünden geçen dokunuş artık butona ulaşmıyor); kaydırma
+        // tamamen durduktan ~250ms sonra, hâlâ eşik üzerindeyse buton
+        // tekrar görünüyor.
+        if (pos > THRESHOLD && !_isScrolling) {
             btn.classList.add('umk-show');
         } else {
             btn.classList.remove('umk-show');
         }
+    }
+
+    var _isScrolling = false;
+    var _scrollEndTimer = null;
+    function _onScrollActivity() {
+        _isScrolling = true;
+        btn.classList.remove('umk-show'); // anında gizle
+        clearTimeout(_scrollEndTimer);
+        _scrollEndTimer = setTimeout(function() {
+            _isScrolling = false;
+            update(); // kaydırma durduysa ve eşik üzerindeyse tekrar göster
+        }, 250);
     }
 
      
@@ -60574,6 +60659,8 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
      
     btn.addEventListener('click', doScroll);
     btn.addEventListener('touchstart', function(e) {
+        // Buton o an gizliyse (kaydırma devam ediyor / eşik altı) dokunuşu yok say
+        if (!btn.classList.contains('umk-show')) return;
         e.preventDefault(); doScroll();
     }, { passive: false });
 
@@ -60581,11 +60668,11 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
     function attach() {
         var vp = getVP();
         if (vp && !vp._umkListened) {
-            vp.addEventListener('scroll', update, { passive: true });
+            vp.addEventListener('scroll', _onScrollActivity, { passive: true });
             vp._umkListened = true;
         }
     }
-    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('scroll', _onScrollActivity, { passive: true });
     window.addEventListener('orientationchange', function() {
         setTimeout(function() { adjustBottom(); update(); }, 200);
     });

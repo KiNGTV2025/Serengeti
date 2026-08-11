@@ -70953,6 +70953,24 @@ function showWelcomeScreen() {
     screen.style.display = 'flex';
     document.body.classList.add('__umd_welcome_open'); // alt haber bandını gizle
 
+    // Yükleme yüzdesi %100 olana kadar spinner'ı JS ile döndür. CSS
+    // @keyframes animasyonu bazı TVBox WebView sürümlerinde (GPU/compositor
+    // kısıtlamaları veya animasyon throttling nedeniyle) hiç başlamıyor ya da
+    // donuk kalıyordu; JS tabanlı döndürme tüm cihazlarda garanti çalışır.
+    (function() {
+        var _spinDeg = 0;
+        function _tickSpin() {
+            if (!window._welcomeOpen || window._welcomeListDone) return;
+            var el = document.getElementById('welcomeSpinner');
+            if (el) {
+                _spinDeg = (_spinDeg + 30) % 360;
+                el.style.transform = 'translateZ(0) rotate(' + _spinDeg + 'deg)';
+            }
+            window._welcomeSpinTimer = setTimeout(_tickSpin, 65);
+        }
+        _tickSpin();
+    })();
+
     setTimeout(function() {
         if (cardEl) { cardEl.style.transform = 'scale(1)'; cardEl.style.opacity = '1'; }
     }, 50);
@@ -71007,6 +71025,7 @@ function hideWelcomeScreen() {
     var cardEl = document.getElementById('welcomeCard');
     if (!screen || screen.style.display === 'none') return;
     clearTimeout(window._welcomeFailsafeTimer);
+    clearTimeout(window._welcomeSpinTimer);
 
     // FOUC engelleyici gate'i kaldır — artık ana sayfa görünsün
     var _gate = document.getElementById('__umitPreWelcomeGate');
@@ -71048,6 +71067,7 @@ function _forceCloseWelcomeScreen() {
         document.body.classList.remove('__umd_welcome_open');
         clearTimeout(window._welcomeFailsafeTimer);
         clearInterval(window._welcomeWatchdog);
+        clearTimeout(window._welcomeSpinTimer);
     } catch (e) {}
 }
 window._forceCloseWelcomeScreen = _forceCloseWelcomeScreen;
@@ -71087,6 +71107,7 @@ function updateWelcomeLoadProgress(percent, doneText) {
         if (statusEl) { statusEl.textContent = doneText || 'Yüklendi!'; statusEl.style.color = '#00e676'; }
         if (pctEl) pctEl.style.color = '#00e676';
         if (spinEl) spinEl.style.display = 'none';
+        clearTimeout(window._welcomeSpinTimer);
         window._welcomeListDone = true;
         setTimeout(function() {
             if (window._welcomeOpen) hideWelcomeScreen();
@@ -76366,6 +76387,8 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         { id: '4332', name: 'Serie A',          flag: '🇮🇹' },
         { id: '4334', name: 'Ligue 1',          flag: '🇫🇷' },
         { id: '4480', name: 'Şampiyonlar Ligi', flag: '⭐' },
+        { id: '4481', name: 'Avrupa Ligi',      flag: '⭐' },
+        { id: '5071', name: 'Konferans Ligi',   flag: '⭐' },
         { id: 'wc2026', name: 'Dünya Kupası',   flag: '🏆' } // canlı veri wc2026-api Worker'ından (API-Football) gelir, bkz. umFetchWC2026Day
     ];
     var UM_API_KEY = '123'; // TheSportsDB genel test anahtarı (ücretsiz)

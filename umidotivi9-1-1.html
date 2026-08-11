@@ -60658,10 +60658,34 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
 
      
     btn.addEventListener('click', doScroll);
+    // FIX: "Hızlı kaydırırken hâlâ başa sarıyor" — touchstart parmağın
+    // ekrana DEĞDİĞİ ilk anda ateşlenir, yani kullanıcı butonun durduğu
+    // alandan bir fling/swipe başlatırsa (henüz hiçbir scroll eventi
+    // oluşmadan) buton anında tetikleniyordu — kaydırma sırasında gizleme
+    // mantığımız bu ilk temasa yetişemiyordu çünkü o an scroll event'i
+    // henüz ateşlenmemişti. touchstart'a artık güvenmiyoruz; touchend'de,
+    // parmağın DÜŞTÜĞÜ ve KALKTIĞI nokta birbirine yakınsa (gerçek "tap",
+    // sürükleme/fling değil) ve arada anlamlı bir zaman geçmemişse tetikliyoruz.
+    var _touchStartY = null, _touchStartT = 0;
     btn.addEventListener('touchstart', function(e) {
-        // Buton o an gizliyse (kaydırma devam ediyor / eşik altı) dokunuşu yok say
-        if (!btn.classList.contains('umk-show')) return;
-        e.preventDefault(); doScroll();
+        if (!btn.classList.contains('umk-show')) { _touchStartY = null; return; }
+        var t = e.touches && e.touches[0];
+        _touchStartY = t ? t.clientY : null;
+        _touchStartT = Date.now();
+    }, { passive: true });
+    btn.addEventListener('touchend', function(e) {
+        if (_touchStartY == null) return;
+        if (!btn.classList.contains('umk-show')) { _touchStartY = null; return; }
+        var t = e.changedTouches && e.changedTouches[0];
+        var endY = t ? t.clientY : _touchStartY;
+        var dy = Math.abs(endY - _touchStartY);
+        var dt = Date.now() - _touchStartT;
+        _touchStartY = null;
+        // Parmak >10px hareket ettiyse bu bir kaydırma/fling'dir, tap değil — yok say
+        if (dy > 10) return;
+        // Aşırı uzun basılı tutma da normal tap değil ama yine de izin veriyoruz (uzun basma engeli gerekmiyor)
+        e.preventDefault();
+        doScroll();
     }, { passive: false });
 
      

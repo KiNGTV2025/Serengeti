@@ -55872,6 +55872,120 @@ function _scheduleGC() {
 }
 setInterval(_scheduleGC, 30000);
 
+/* ── TVBox Performans Teşhis Aracı (varsayılan KAPALI, sıfır ek yük) ──
+   Statik kod analiziyle bulunabilecek şeylerin sonuna yaklaşıldı — bundan
+   sonrası gerçek cihazda NEREDE/NE ZAMAN kasma olduğunun ölçülmesini
+   gerektiriyor. Bu araç onu remote-debug olmadan da mümkün kılar:
+
+   • window._UTV._intervals zaten var olan aktif-interval kaydını kullanır.
+   • PerformanceObserver('longtask') ana thread'i >50ms bloklayan her olayı
+     event-driven yakalar (polling değil — arka planda her zaman açık, ama
+     olay nadir olduğu için maliyeti ihmal edilebilir). Her longtask ile
+     birlikte o anki kategori/player durumu/aktif interval sayısı/heap
+     kaydedilir → localStorage'da son 40 kayıt döner.
+   • window.umtvPerfOn() / umtvPerfOff() — sağ üstte küçük bir HUD açar/
+     kapar: FPS (throttle edilmemiş gerçek RAF ile), interval sayısı, heap,
+     player durumu, son longtask süresi. HUD kapalıyken FPS döngüsü de
+     çalışmaz — tamamen opsiyonel.
+   • window.umtvPerfDump() — kayıtları konsola basar + toast gösterir.
+   • window.umtvPerfClear() — log'u temizler.
+
+   Kullanım: remote-debug (chrome://inspect) bağlıyken konsoldan çağır,
+   ya da uzaktan erişim yoksa umtvPerfOn() ile ekranda canlı izle.
+*/
+(function() {
+    'use strict';
+    var LOG_KEY = '_umtvPerfLog';
+    var MAX_LOG = 40;
+    var _log = [];
+    try { _log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e) { _log = []; }
+
+    function _snapshot() {
+        var s = {
+            t: Date.now(),
+            cat: (window.state && window.state.activeCat) || '?',
+            player: !!window._playerUIFrozen,
+            intervals: (window._UTV && window._UTV._intervals) ? Object.keys(window._UTV._intervals).length : -1
+        };
+        try { if (performance.memory) s.heapMB = Math.round(performance.memory.usedJSHeapSize / 1048576); } catch(e) {}
+        return s;
+    }
+
+    // Long task yakalama — her zaman açık, event-driven, ihmal edilebilir maliyet
+    try {
+        if ('PerformanceObserver' in window) {
+            var _po = new PerformanceObserver(function(list) {
+                list.getEntries().forEach(function(entry) {
+                    var rec = _snapshot();
+                    rec.dur = Math.round(entry.duration);
+                    _log.push(rec);
+                    if (_log.length > MAX_LOG) _log.shift();
+                    try { localStorage.setItem(LOG_KEY, JSON.stringify(_log)); } catch(e) {}
+                    if (window._umtvHudOn) _umtvHudUpdate();
+                });
+            });
+            _po.observe({ entryTypes: ['longtask'] });
+        }
+    } catch(e) {}
+
+    // Gerçek (throttle'suz) RAF — window._UTV init bloğu bunu zaten saklıyor
+    var _nativeRAF = (window._UTV && window._UTV._origRAF) ? window._UTV._origRAF.bind(window) : window.requestAnimationFrame;
+
+    var _fpsFrames = 0, _fpsLast = 0, _fpsVal = 0;
+    function _fpsTick() {
+        var now = performance.now();
+        _fpsFrames++;
+        if (now - _fpsLast >= 1000) {
+            _fpsVal = _fpsFrames;
+            _fpsFrames = 0;
+            _fpsLast = now;
+            _umtvHudUpdate();
+        }
+        if (window._umtvHudOn) _nativeRAF(_fpsTick);
+    }
+
+    var _hudEl = null;
+    function _umtvHudUpdate() {
+        if (!_hudEl) return;
+        var s = _snapshot();
+        var last = _log.length ? _log[_log.length - 1] : null;
+        _hudEl.textContent =
+            'FPS ' + _fpsVal +
+            ' | interval ' + s.intervals +
+            (s.heapMB ? ' | heap ' + s.heapMB + 'MB' : '') +
+            ' | player ' + (s.player ? 'açık' : 'kapalı') +
+            ' | longtask ' + _log.length +
+            (last ? ' (son ' + last.dur + 'ms)' : '');
+    }
+
+    window.umtvPerfOn = function() {
+        if (_hudEl) return;
+        window._umtvHudOn = true;
+        _hudEl = document.createElement('div');
+        _hudEl.style.cssText = 'position:fixed;top:4px;right:4px;z-index:999999;' +
+            'background:rgba(0,0,0,0.75);color:#0f0;font:11px monospace;' +
+            'padding:4px 8px;border-radius:6px;pointer-events:none;white-space:nowrap;';
+        document.body.appendChild(_hudEl);
+        _fpsLast = performance.now();
+        _fpsFrames = 0;
+        _nativeRAF(_fpsTick);
+        _umtvHudUpdate();
+    };
+    window.umtvPerfOff = function() {
+        window._umtvHudOn = false;
+        if (_hudEl) { _hudEl.remove(); _hudEl = null; }
+    };
+    window.umtvPerfDump = function() {
+        console.log('[UMTV PERF] son ' + _log.length + ' longtask kaydı:', _log);
+        try { if (typeof showToast === 'function') showToast('Perf log: ' + _log.length + ' kayıt (konsola basıldı)'); } catch(e) {}
+        return _log;
+    };
+    window.umtvPerfClear = function() {
+        _log = [];
+        try { localStorage.removeItem(LOG_KEY); } catch(e) {}
+    };
+})();
+
 // 7. Channel card map rebuild - kanal grid render sonrası
 document.addEventListener('umittv_channels_ready', function() {
     setTimeout(function() {

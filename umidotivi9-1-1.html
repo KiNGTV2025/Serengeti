@@ -41959,7 +41959,29 @@ function renderChannels() {
     // bittikten hemen sonra odağı geçerli karta yeniden uyguluyoruz.
     if (window.state && state.remote && state.remote.zone === 'channels' && state.remote.active &&
         typeof updateRemoteFocus === 'function') {
-        setTimeout(function() { updateRemoteFocus(); }, 0);
+        // FIX: "Kartları hızlı kaydırırken hep başa dönüyor" — bu blok her
+        // renderChannels() çağrısından sonra çalışır, filtre/kategori
+        // değişimi kadar EPG/sağlık-kontrolü/izleyici-rozeti gibi arka plan
+        // yenilemeleri de dahil. updateRemoteFocus() içindeki scrollIntoView
+        // odaklı (çoğu zaman hâlâ ilk) karta görünümü geri sıçratıyordu —
+        // kullanıcı parmak/fare ile aktif kaydırırken araya bir arka plan
+        // yenilemesi girdiğinde tam da bildirilen "kaydırdığım yerde
+        // kalmıyor" hissini yaratıyordu. Kullanıcı son ~500ms içinde manuel
+        // scroll yaptıysa şimdi zorlamıyoruz — scroll durunca kendiliğinden
+        // tekrar denenir, böylece kumanda odağı yine de senkron kalır.
+        var _cvpFocus = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+        var _recentManualScroll = _cvpFocus && _cvpFocus._lastManualScrollAt &&
+            (Date.now() - _cvpFocus._lastManualScrollAt < 500);
+        if (_recentManualScroll) {
+            clearTimeout(window._utvDeferredFocusTimer);
+            window._utvDeferredFocusTimer = setTimeout(function() {
+                if (window.state && state.remote && state.remote.zone === 'channels' && state.remote.active) {
+                    updateRemoteFocus();
+                }
+            }, 550);
+        } else {
+            setTimeout(function() { updateRemoteFocus(); }, 0);
+        }
     }
 }
 
@@ -42082,6 +42104,10 @@ function setupAutoLoadOnScroll(totalChannels) {
     
     var _scrollDebounceTimer = null;
     viewport._autoScrollListener = function() {
+        // Her ham scroll olayında damga bas — kullanıcı şu an aktif kaydırıyor mu
+        // sorusuna başka kod (bkz. renderChannels sonundaki odak-scroll ataması)
+        // debounce beklemeden anında cevap verebilsin diye.
+        viewport._lastManualScrollAt = Date.now();
         if (_scrollDebounceTimer) return; // zaten bekliyor
         _scrollDebounceTimer = setTimeout(function() {
             _scrollDebounceTimer = null;

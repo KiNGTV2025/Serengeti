@@ -41970,15 +41970,28 @@ function renderChannels() {
         // scroll yaptıysa şimdi zorlamıyoruz — scroll durunca kendiliğinden
         // tekrar denenir, böylece kumanda odağı yine de senkron kalır.
         var _cvpFocus = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+        // 500ms → 900ms: hızlı/sürekli kaydırmada arka plan yenilemeleri
+        // art arda geldiğinde eski süre yetmiyor, odak yine de araya girip
+        // sıçrama yapabiliyordu. Bekleme süresini de scroll'un gerçekten
+        // durduğu ana göre yeniden planlıyoruz (aşağıdaki recheck).
         var _recentManualScroll = _cvpFocus && _cvpFocus._lastManualScrollAt &&
-            (Date.now() - _cvpFocus._lastManualScrollAt < 500);
+            (Date.now() - _cvpFocus._lastManualScrollAt < 900);
         if (_recentManualScroll) {
             clearTimeout(window._utvDeferredFocusTimer);
-            window._utvDeferredFocusTimer = setTimeout(function() {
+            window._utvDeferredFocusTimer = setTimeout(function _utvRecheckFocus() {
+                // Timer dolduğunda hâlâ yakın zamanda manuel scroll olduysa
+                // (kullanıcı hâlâ kaydırıyor), tekrar ertele — scroll tamamen
+                // durana kadar odağı zorlama.
+                var _stillScrolling = _cvpFocus && _cvpFocus._lastManualScrollAt &&
+                    (Date.now() - _cvpFocus._lastManualScrollAt < 900);
+                if (_stillScrolling) {
+                    window._utvDeferredFocusTimer = setTimeout(_utvRecheckFocus, 300);
+                    return;
+                }
                 if (window.state && state.remote && state.remote.zone === 'channels' && state.remote.active) {
                     updateRemoteFocus();
                 }
-            }, 550);
+            }, 950);
         } else {
             setTimeout(function() { updateRemoteFocus(); }, 0);
         }
@@ -60945,12 +60958,25 @@ function _setupVirtualSidebar() {
             VS.scroller.addEventListener('scroll', _onScroll, { passive: true });
         }
 
-        /* Aktif kanala scroll yap, sonra render */
-        var activeIdx = channels.findIndex(function(ch){ return ch.url === VS.currentUrl; });
-        if (activeIdx > 3) {
-            VS.scroller.scrollTop = Math.max(0, (activeIdx - 3) * VS.itemH);
-        } else {
-            VS.scroller.scrollTop = 0;
+        /* FIX: "Kartları/listeyi kaydırırken hep başa dönüyor" — bu fonksiyon
+           sadece kategori/arama değişince değil, arka plan yenilemelerinde
+           (EPG, canlı izleyici sayısı, sağlık kontrolü vb.) de çağrılıyordu
+           ve her seferinde scrollTop'u zorla aktif kanala/başa sıçratıyordu.
+           Kullanıcı o an listeyi kaydırıyorsa bu sıçrama "scroll-to-top
+           butonuna basmadan başa dönme" hissi yaratıyordu. Artık sadece
+           kanal SETİ gerçekten değiştiğinde (farklı kategori/arama/M3U
+           sonucu) scroll'u sıfırlıyoruz; aynı sette tekrar render'da mevcut
+           scroll pozisyonuna dokunmuyoruz. */
+        var _chKey = channels.length + '|' + (channels[0] ? channels[0].name : '') + '|' +
+                     (channels[channels.length-1] ? channels[channels.length-1].name : '');
+        if (VS._lastChKey !== _chKey) {
+            VS._lastChKey = _chKey;
+            var activeIdx = channels.findIndex(function(ch){ return ch.url === VS.currentUrl; });
+            if (activeIdx > 3) {
+                VS.scroller.scrollTop = Math.max(0, (activeIdx - 3) * VS.itemH);
+            } else {
+                VS.scroller.scrollTop = 0;
+            }
         }
 
         _renderWindow();

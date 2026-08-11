@@ -70571,35 +70571,16 @@ if (_isTVBox) {
     });
 }
 
-/* ── 6. FPS Koruma: Player açılınca logo durdur, kapanınca başlat ── */
-/* openPlayer / closePlayer hook'u */
-(function _watchPlayer() {
-    function _tryHook() {
-        if (typeof window.openPlayer !== 'function' || window._tvLogoHooked) return false;
-        window._tvLogoHooked = true;
-        var _origOpen = window.openPlayer;
-        window.openPlayer = function() {
-            var r = _origOpen.apply(this, arguments);
-            /* Player açıldı: logo durdur */
-            if (typeof window.stopLogoGlow === 'function') window.stopLogoGlow();
-            return r;
-        };
-        if (typeof window.closePlayer === 'function') {
-            var _origClose = window.closePlayer;
-            window.closePlayer = function() {
-                var r = _origClose.apply(this, arguments);
-                /* Player kapandı: logo başlat */
-                setTimeout(function() { if (window.startLogoGlow) window.startLogoGlow(); }, 400);
-                return r;
-            };
-        }
-        return true;
-    }
-    var _t = 0;
-    var _iv2 = setInterval(function() {
-        if (_tryHook() || ++_t > 30) clearInterval(_iv2);
-    }, 400);
-})();
+/* ── 6. FPS Koruma: Player açılınca logo durdur, kapanınca başlat ──
+   ÖLÜ KOD TESPİTİ: Bu blok window.openPlayer adında bir fonksiyonu
+   hook'lamayı bekliyordu, ama kod tabanında hiçbir yerde "openPlayer"
+   adında bir global fonksiyon TANIMLI DEĞİL (gerçek fonksiyon adı
+   resumeChannel). Bu yüzden _tryHook() hiçbir zaman true dönmüyordu,
+   30x400ms (~12sn) boşuna polling yapıp sessizce vazgeçiyordu — hiçbir
+   şey hook'lanmıyordu, stopLogoGlow() burada asla tetiklenmiyordu.
+   Gerçek çözüm artık resumeChannel içinde (player açılış noktası)
+   doğrudan çağrılıyor — bkz. "Header logo/kullanıcı adı canvas
+   döngülerini durdur" notu. Bu ölü blok kaldırıldı. */
 
 /* ── 7. Önbellek temizleme: Memory baskısını azalt ── */
 /* Android TVBox'ta RAM kısıtlı — image cache agresif temizle */

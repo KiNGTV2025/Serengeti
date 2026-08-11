@@ -73572,6 +73572,7 @@ body.tvbox-mode .vs-input-row {
 ═══════════════════════════════════════════════ */
 
 var _vsOpen        = false;
+window._vsOpen      = false; // dışarıdan erişim için (playerVoiceSearchTap / _pvsSync kullanır)
 var _vsRecognition = null;
 var _vsListening   = false;
 window._vsListening = false; // dışarıdan erişim için (handlePlayerRemote kullanır)
@@ -73615,6 +73616,7 @@ window.openVoiceSearch = function () {
         return;
     }
     _vsOpen = true;
+    window._vsOpen = true;
     _vsFocusZone = 'mic';
     _vsFocusIdx  = 0;
     modal.classList.add('vs-open');
@@ -73667,6 +73669,7 @@ window.closeVoiceSearch = function () {
     var modal = document.getElementById('voiceSearchModal');
     if (modal) modal.classList.remove('vs-open');
     _vsOpen = false;
+    window._vsOpen = false;
 
     /* Remote zone geri yükle */
     if (window.state && window.state.remote) {

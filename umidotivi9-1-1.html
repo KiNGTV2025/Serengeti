@@ -12959,6 +12959,16 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 </script>
 
 <div id="loginOverlay">
+    <script>
+    // FIX: Kayıtlı oturum yoksa (window._umdSkipWelcome), FOUC-engelleyici
+    // gate'i burada, loginOverlay DOM'a girer girmez kaldırıyoruz — böylece
+    // login formu gecikmeden görünür ve header'daki logo/M3U ikonu artık
+    // "yanıp söner" gibi görünmez (gate kaldırılana kadar zaten gizliydiler).
+    if (window._umdSkipWelcome) {
+        var _g0 = document.getElementById('__umitPreWelcomeGate');
+        if (_g0) _g0.remove();
+    }
+    </script>
     <div class="login-bg"></div>
     <div class="login-orb login-orb-1"></div>
     <div class="login-orb login-orb-2"></div>
@@ -71276,6 +71286,19 @@ function _umdWelcomeFallbackOk() {
     if (_umdLoginOverlayVisible()) return false;
     return true;
 }
+// FIX: _umdSkipWelcome true olduğunda (kayıtlı oturum yok, login formu
+// gösterilecek) showWelcomeScreen() hiç çağrılmıyor — dolayısıyla normalde
+// showWelcomeScreen()'in açtığı FOUC-engelleyici gate'i kapatan
+// hideWelcomeScreen() de hiç tetiklenmiyordu. Sonuç: gate 8 saniyelik
+// failsafe'e kadar takılı kalıyor, bu da header'daki logo/M3U ikonunun
+// (ve tüm sayfanın) gecikmeli/hatalı görünmesine yol açıyordu. Bu durumda
+// gate'i hemen, DOMContentLoaded'da kaldırıyoruz.
+document.addEventListener('DOMContentLoaded', function() {
+    if (window._umdSkipWelcome) {
+        var _g = document.getElementById('__umitPreWelcomeGate');
+        if (_g) _g.remove();
+    }
+});
 document.addEventListener('DOMContentLoaded', function() {
     if (!window._welcomeContentInit && _umdWelcomeFallbackOk()) showWelcomeScreen();
 });

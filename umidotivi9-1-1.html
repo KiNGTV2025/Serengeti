@@ -1478,7 +1478,7 @@ img {
     padding: 15px 12px;
     background: rgba(255,255,255,0.05);
     border: 1.5px solid rgba(255,255,255,0.11);
-    border-radius: 14px;
+    border-radius: 16px;
     color: rgba(255,255,255,0.75);
     font-family: 'Rajdhani', sans-serif;
     font-size: 15px;
@@ -1512,7 +1512,7 @@ img {
         var(--accent-primary, #FFD700) 0%,
         color-mix(in srgb, var(--accent-primary,#FFD700) 75%, #000) 100%);
     border: none;
-    border-radius: 14px;
+    border-radius: 16px;
     color: rgba(0,0,0,0.9);
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
@@ -1633,6 +1633,72 @@ img {
 }
 #exitConfirmModal .exit-hint-sep {
     color: rgba(255,255,255,0.12);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÇIKIŞ MODALI — GÜÇLENDİRİLMİŞ, NET D-PAD ODAK
+   Not: dosyanın ilerisindeki #umitFocusMasterOverride bloğu tüm
+   .remote-focused elemanlarını tek tip (soluk sarı, border:transparent)
+   hale getiriyor ve İptal / Evet-Çık butonlarında odağı belirsizleştiriyordu.
+   Buradaki kurallar #exitConfirmModal + #id + .class ile daha yüksek
+   özgüllüğe (specificity) sahip olduğu için master override'ı ezer ve
+   odak HER ZAMAN net görünür — sırası önemli değil.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Buton geçiş animasyonu — odak/kaybı arasında yumuşak geçiş */
+#exitConfirmModal #exitConfirmNo,
+#exitConfirmModal #exitConfirmYes {
+    transition: transform 140ms cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 140ms ease,
+                background 140ms ease,
+                border-color 140ms ease !important;
+}
+
+/* ── İPTAL — odaklanınca: dolu altın kenarlık + belirgin halka + büyüme ── */
+#exitConfirmModal #exitConfirmNo.remote-focused {
+    outline: none !important;
+    background: rgba(255,255,255,0.14) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    color: #fff !important;
+    box-shadow:
+        0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.30),
+        0 0 24px rgba(var(--accent-primary-rgb,255,215,0), 0.35),
+        inset 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.08) !important;
+    transform: scale(1.045) !important;
+}
+#exitConfirmModal #exitConfirmNo.remote-focused .exit-btn-icon {
+    color: var(--accent-primary, #FFD700) !important;
+    opacity: 1 !important;
+}
+
+/* ── EVET, ÇIK — odaklanınca: beyaz iç halka + güçlü dış parıltı + büyüme ──
+   (Buton zaten sarı dolgulu olduğu için ekstra beyaz halka odağı ayırt ettirir) */
+#exitConfirmModal #exitConfirmYes.remote-focused {
+    outline: none !important;
+    border-color: transparent !important;
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.92),
+        0 0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 0.55),
+        0 0 38px rgba(var(--accent-primary-rgb,255,215,0), 0.65),
+        0 10px 34px rgba(0,0,0,0.5) !important;
+    transform: scale(1.05) !important;
+}
+
+/* TVBox modunda da aynı net görünüm korunsun (hafif büyüme — GPU dostu) */
+body.tvbox-mode #exitConfirmModal #exitConfirmNo.remote-focused,
+body.tvbox-mode #exitConfirmModal #exitConfirmYes.remote-focused {
+    transform: scale(1.03) !important;
+}
+body.tvbox-mode #exitConfirmModal #exitConfirmNo.remote-focused {
+    background: rgba(255,255,255,0.14) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb,255,215,0), 0.30) !important;
+}
+body.tvbox-mode #exitConfirmModal #exitConfirmYes.remote-focused {
+    border-color: transparent !important;
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.92),
+        0 0 0 6px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
 }
 
 /* ── 15. TEXT-SHADOW / FILTER — TVBox Yükü Azalt ── */
@@ -56100,8 +56166,10 @@ window._skipNickname = function() {
     _nickModalClose();
 };
 
-/* Worker'dan kullanıcı bilgisi çek */
+/* Worker'dan kullanıcı bilgisi çek — nick + profil resmi (avatar) birlikte döner.
+   Geriye uyumluluk için isim aynı kaldı ama artık {nick, avatar} objesi dönüyor. */
 async function _fetchNickFromWorker(telegramId) {
+    var out = { nick: null, avatar: null };
     try {
         var WORKER = (typeof window !== 'undefined' && window.WORKER_URL) || 'https://kullanici.sadecenjoy.workers.dev';
         // Önce /user-info dene
@@ -56114,13 +56182,36 @@ async function _fetchNickFromWorker(telegramId) {
         if (r.ok) {
             var d = await r.json();
             var nick = d.nick || d.first_name || d.username || d.name || '';
-            if (nick && nick.trim()) return nick.trim();
+            if (nick && nick.trim()) out.nick = nick.trim();
+            // Telegram profil resmi — worker'ın döndüğü olası alan adları
+            var avatar = d.photo_url || d.avatar_url || d.avatar || d.photo || d.profile_photo || '';
+            if (avatar && String(avatar).trim() && /^https?:\/\//i.test(String(avatar).trim())) {
+                out.avatar = String(avatar).trim();
+            }
         }
     } catch(e) {}
-    return null;
+    return out;
 }
 
-/* Ana fonksiyon — login sonrası ve auto-login sonrası çağrılır */
+/* Kullanıcı avatarını manuel olarak kendisi mi ayarladı? (profil modalinden) */
+function _hasManualAvatar() {
+    try { return localStorage.getItem('umittv_avatar_manual') === '1'; } catch(e) { return false; }
+}
+
+/* Worker'dan gelen Telegram profil resmini uygula — kullanıcı manuel resim
+   seçmediyse otomatik senkronize eder, seçtiyse dokunmaz. */
+async function _applyTelegramAvatar(avatarUrl) {
+    if (!avatarUrl) return;
+    if (_hasManualAvatar()) return; // kullanıcı kendi resmini seçmiş, ezme
+    try {
+        var current = await _profAvatarIDB.get();
+        if (current === avatarUrl) return; // zaten aynı
+        await _profAvatarIDB.set(avatarUrl);
+        if (typeof updateHeaderAvatar === 'function') updateHeaderAvatar();
+    } catch(e) {}
+}
+
+/* Ana fonksiyon — login sonrası ve auto-login sonrası çağrılır (nick + avatar senkronu) */
 window.fetchAndSaveNick = async function(telegramId) {
     if (!telegramId || String(telegramId) === 'SANS_KODU') return;
 
@@ -56129,10 +56220,16 @@ window.fetchAndSaveNick = async function(telegramId) {
     try { existing = localStorage.getItem('umittv_tg_nick') || ''; } catch(e) {}
     var alreadyGood = existing && !_isNumericId(existing);
 
-    // 1. Worker'dan dene
-    var workerNick = await _fetchNickFromWorker(telegramId);
-    if (workerNick) {
-        _applyNick(workerNick);
+    // 1. Worker'dan dene (nick + avatar)
+    var result = await _fetchNickFromWorker(telegramId);
+
+    // Profil resmini (varsa) senkronize et — manuel seçilmediyse
+    if (result && result.avatar) {
+        _applyTelegramAvatar(result.avatar);
+    }
+
+    if (result && result.nick) {
+        _applyNick(result.nick);
         return; // başarı — modal gösterme
     }
 
@@ -56140,6 +56237,12 @@ window.fetchAndSaveNick = async function(telegramId) {
     if (!alreadyGood) {
         setTimeout(_showNicknameModal, 800); // login animasyonu bittikten sonra
     }
+};
+
+/* Otomatik girişte (telegram_id ile) profili tam senkronize et — dışarıdan
+   da (örn. auto-login akışından) doğrudan çağrılabilir. */
+window.syncTelegramProfile = function(telegramId) {
+    return window.fetchAndSaveNick(telegramId);
 };
 
 /* Login başarı event'ini dinle */
@@ -58314,6 +58417,12 @@ window.saveProfile = function() {
     // Kaydet — newAvatar boşsa null geç (mevcut avatarı silme)
     const shouldLock = isSans && !prof.locked && newName;
     profSave(newName, newAvatar || null, shouldLock);
+
+    // Kullanıcı elle bir resim girdiyse/yüklediyse, bundan sonra Telegram
+    // otomatik profil resmi senkronu bu seçimi EZMESİN diye işaretle.
+    if (newAvatar) {
+        try { localStorage.setItem('umittv_avatar_manual', '1'); } catch(e) {}
+    }
 
     // Yorumlar görünüyorsa yeniden yükle (avatar güncellemesi yansısın)
     try {

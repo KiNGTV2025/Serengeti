@@ -41357,10 +41357,33 @@ function addContinueCardStyles() {
             return true;
         });
         
-        // currentLoadedCards sıfırla (yeni kategori/filtre)
-        // PERF-FIX: 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
+        // currentLoadedCards sıfırla — SADECE kullanıcının filtresi
+        // (kategori/M3U/arama) gerçekten değiştiyse.
+        // FIX: "Uygulama ilk açılışta hızlı kaydırınca başa sarıyor,
+        // 5-10dk sonra düzeliyor" — kök neden burasıydı. filterChannels()
+        // sadece kategori değişince değil, arka planda YENİ M3U BATCH'İ
+        // geldiğinde de çağrılıyordu (bkz. loadAllChannels/streaming parse).
+        // Açılışın ilk dakikalarında büyük IPTV listeleri parça parça
+        // indirilirken bu fonksiyon defalarca tetikleniyor, her seferinde
+        // currentLoadedCards koşulsuz 24'e sıfırlanıyordu. Kullanıcı o an
+        // sayfanın altına doğru kaydırmışsa, grid aniden sadece ilk 24
+        // kartla yeniden kuruluyor, fiziksel olarak kısalıyor ve scroll
+        // sıfıra yakın bir noktaya zorlanıyordu. Liste tamamen yüklenip
+        // batch'ler kesilince tetikleme durduğu için sorun "kendiliğinden"
+        // düzeliyormuş gibi görünüyordu. Artık sadece gerçek filtre
+        // değişiminde (kategori/M3U/arama) sıfırlıyoruz; arka plan veri
+        // eklemelerinde kullanıcının o anki görünüm genişliğine dokunmuyoruz.
+        const _curFilterSig = state.activeCat + '|' + state.selectedM3U + '|' +
+            ((state.sidebar && state.sidebar.searchQuery) || '');
+        if (state._utvLastFilterSig !== _curFilterSig) {
+            state._utvLastFilterSig = _curFilterSig;
+            state.currentLoadedCards = 24;
+        } else if (!state.currentLoadedCards) {
+            // İlk çalıştırma — henüz hiç set edilmemiş
+            state.currentLoadedCards = 24;
+        }
+        // PERF-FIX (önceki not): 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
         // 50 kart DOM'a aynı anda yazılırken TVBox donuyordu; 24 = 2 satır × 3 sütun yeterli.
-        state.currentLoadedCards = 24;
         
         // 3. UI güncelle
         // FIX: state.filtered içindeki özel "Tümünü Temizle" kartı (isSpecial:true)

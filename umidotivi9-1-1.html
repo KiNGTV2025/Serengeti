@@ -11467,6 +11467,32 @@ document.addEventListener('DOMContentLoaded', function() {
 </head>
 <body class="fast-mode low-performance-mode"> 
 <script>
+// ── OTURUM KONTROLÜ (en erken, senkron) ─────────────────────────
+// Kayıtlı oturum varsa login overlay'i DOM'a bile boyanmadan gizle —
+// böylece geri dönen kullanıcı login formunu asla görmez, direkt hoş
+// geldin ekranına geçer. Kayıtlı oturum YOKSA (ilk açılış / login henüz
+// yapılmamış), window._umdSkipWelcome = true set edilir; bu bayrak hemen
+// aşağıdaki FOUC-engelleyici gate ve welcomeScreen div'i tarafından
+// okunarak welcomeScreen'in o açılışta hiç gösterilmemesi sağlanır.
+// FIX: Eskiden bu kontrol yoktu; welcomeScreen HTML'de her zaman
+// display:flex ile baştan görünürdü, bu yüzden login formunu görmesi
+// gereken kullanıcı önce 1-2sn hoş geldin/logo ekranını görüyor, sonra
+// login ekranına "geçiyordu".
+(function() {
+    window._umdSkipWelcome = true; // varsayılan: oturum yok say
+    try {
+        var raw = localStorage.getItem('umittv_auth');
+        if (raw) {
+            var a = JSON.parse(raw);
+            if (a && a.telegram_id) {
+                document.write('<style>#loginOverlay{display:none !important;}</style>');
+                window._umdSkipWelcome = false; // kayıtlı oturum var, welcome gösterilebilir
+            }
+        }
+    } catch(e) {}
+})();
+</script>
+<script>
 // ── FOUC ENGELLEYİCİ ─────────────────────────────────────────
 // Tarayıcı body'yi yukarıdan aşağı parse ederken welcomeScreen div'ine
 // ulaşana kadar (sayfanın ortasında bir yerde) ana sayfa/kanal/player
@@ -11489,27 +11515,15 @@ document.addEventListener('DOMContentLoaded', function() {
 // KANAL KARTI RESİMLERİNİN de kalıcı olarak gizli kalmasına yol açtı.
 // Çözüm: kuralı SADECE header'daki logo/M3U ikonuyla sınırla — kart
 // resimleri asla bu kuralın kapsamına girmesin, gate takılı kalsa bile.
-document.write('<style id="__umitPreWelcomeGate">body > *:not(#welcomeScreen):not(script):not(style){visibility:hidden !important;}.app-header img{visibility:hidden !important;opacity:0 !important;}</style>');
+// FIX: Kayıtlı oturum yoksa (welcomeScreen bu açılışta hiç gösterilmeyecekse)
+// bu gate'i welcomeScreen değil #loginOverlay istisna tutarak kuruyoruz —
+// aksi halde welcomeScreen zaten gizliyken gate TÜM sayfayı (login formu
+// dahil) görünmez bırakır ve kullanıcı boş siyah ekranla karşılaşır.
+document.write('<style id="__umitPreWelcomeGate">body > *:not(' + (window._umdSkipWelcome ? '#loginOverlay' : '#welcomeScreen') + '):not(script):not(style){visibility:hidden !important;}.app-header img{visibility:hidden !important;opacity:0 !important;}</style>');
 setTimeout(function() {
     var g = document.getElementById('__umitPreWelcomeGate');
     if (g) g.remove();
 }, 8000);
-</script>
-<script>
-// Kayıtlı oturum varsa login overlay'i DOM'a bile boyanmadan gizle
-// (senkron, en erken an) — böylece geri dönen kullanıcı login formunu
-// asla görmez, direkt hoş geldin ekranına geçer.
-(function() {
-    try {
-        var raw = localStorage.getItem('umittv_auth');
-        if (raw) {
-            var a = JSON.parse(raw);
-            if (a && a.telegram_id) {
-                document.write('<style>#loginOverlay{display:none !important;}</style>');
-            }
-        }
-    } catch(e) {}
-})();
 </script>
 <!-- ════════════════════════════════════════════════════════════════════
      AÇILIŞ VİDEOSU — Sadece telefonlarda (TV Box/Android TV hariç)
@@ -16761,8 +16775,20 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="favorite-toast" id="favoriteToast"></div>
 
     <!-- ═══ HOŞ GELDİN + LİSTE YÜKLEME EKRANI (BİRLEŞİK) ═══ -->
+    <!-- FIX: Kayıtlı oturum yoksa (window._umdSkipWelcome === true, bkz. yukarıdaki
+         head script'i) bu ekran hiç açılmadan gizli kalır, kullanıcı direkt login
+         formunu görür. Kayıtlı oturum varsa eskisi gibi görünür başlar ve
+         umittv_login_ok / showWelcomeScreen() akışıyla yönetilir. -->
     <div id="welcomeScreen" style="display:flex;position:fixed;inset:0;z-index:999998;background:#04060d;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;">
-    <script>window._welcomeOpen = true; document.body.classList.add('__umd_welcome_open');</script>
+    <script>
+    if (window._umdSkipWelcome) {
+        window._welcomeOpen = false;
+        document.write('<style>#welcomeScreen{display:none !important;}</style>');
+    } else {
+        window._welcomeOpen = true;
+        document.body.classList.add('__umd_welcome_open');
+    }
+    </script>
         <div id="welcomeBg" style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(var(--accent-primary-rgb,255,215,0),0.08) 0%,transparent 65%);pointer-events:none;"></div>
         <div id="welcomeCard" style="position:relative;z-index:2;text-align:center;padding:44px 48px 38px;transform:scale(0.7);opacity:0;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease;max-width:380px;width:88vw;">
             <div id="welcomeAvatarWrap" style="width:88px;height:88px;border-radius:50%;margin:0 auto 18px;background:linear-gradient(135deg,rgba(var(--accent-primary-rgb,255,215,0),0.25),rgba(255,140,0,0.15));border:2.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:0 0 40px rgba(var(--accent-primary-rgb,255,215,0),0.2);overflow:hidden;">
@@ -71229,15 +71255,38 @@ document.addEventListener('umittv_login_ok', function _welcomeHandler() {
     showWelcomeScreen();
 }, { once: true });
 
-// Ekran artık HTML parse anında zaten açık (bkz. yukarıdaki inline script).
-// umittv_login_ok event'i gelmezse de (otomatik giriş, önizleme ortamı vb.)
-// içerik/animasyon en geç kısa bir süre sonra devreye girsin.
+// Ekran HTML parse anında zaten DOM'da açık (bkz. yukarıdaki inline script)
+// ama içeriği (isim, animasyon, yüzde vs.) sadece gerçek giriş onaylandığında
+// (umittv_login_ok) doldurulmalı. Aşağıdaki fallback'ler SADECE login ekranı
+// hiç gösterilmeyecek/zaten geçilmiş durumlar için bir güvenlik ağıdır —
+// login overlay hâlâ ekrandaysa welcome ekranını asla erken açmamalı,
+// aksi halde kullanıcı login'den ÖNCE welcome ekranını görür.
+function _umdLoginOverlayVisible() {
+    var ov = document.getElementById('loginOverlay');
+    if (!ov) return false;
+    if (ov.classList.contains('hidden')) return false;
+    var cs = window.getComputedStyle ? window.getComputedStyle(ov) : null;
+    if (cs && cs.display === 'none') return false;
+    return true;
+}
+function _umdWelcomeFallbackOk() {
+    // _umdSkipWelcome true ise bu açılışta oturum yok/login gösterilecek —
+    // welcome ekranı umittv_login_ok gelene kadar asla açılmamalı.
+    if (window._umdSkipWelcome) return false;
+    if (_umdLoginOverlayVisible()) return false;
+    return true;
+}
 document.addEventListener('DOMContentLoaded', function() {
-    if (!window._welcomeContentInit) showWelcomeScreen();
+    if (!window._welcomeContentInit && _umdWelcomeFallbackOk()) showWelcomeScreen();
 });
 setTimeout(function() {
-    if (!window._welcomeContentInit) showWelcomeScreen();
+    if (!window._welcomeContentInit && _umdWelcomeFallbackOk()) showWelcomeScreen();
 }, 400);
+// Login overlay ilk açılışta henüz DOM'a yerleşmemiş/görünür olmamış olabilir;
+// biraz daha geç bir kontrolle de aynı güvenlik ağını tekrar dene.
+setTimeout(function() {
+    if (!window._welcomeContentInit && _umdWelcomeFallbackOk()) showWelcomeScreen();
+}, 1500);
 
 // Welcome açıkken back/nav tuşlarını yut
 document.addEventListener('keydown', function(e) {

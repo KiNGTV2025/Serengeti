@@ -179,10 +179,10 @@
         font-family: 'Orbitron', sans-serif;
         font-size: 26px;
         font-weight: 900;
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         letter-spacing: 5px;
         margin-top: 14px;
-        background: linear-gradient(135deg, #FFE55C 0%, #FFD700 50%, #E8A000 100%);
+        background: linear-gradient(135deg, #FFE55C 0%, var(--accent-primary, #FFD700) 50%, var(--accent-secondary, #E8A000) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -213,8 +213,8 @@
         transition: all 0.3s;
     }
     .login-progress-dot.active {
-        background: #FFD700;
-        border-color: #FFD700;
+        background: var(--accent-primary, #FFD700);
+        border-color: var(--accent-primary, #FFD700);
         box-shadow: 0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.6);
         transform: scale(1.3);
     }
@@ -252,7 +252,7 @@
         font-family: 'Orbitron', sans-serif;
         font-size: 12px;
         font-weight: 700;
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         flex-shrink: 0;
         box-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.15), inset 0 1px 0 rgba(255,255,255,0.1);
     }
@@ -284,10 +284,10 @@
         color: rgba(255,255,255,0.65);
         line-height: 1.7;
     }
-    .login-info-box strong { color: #FFD700; font-weight: 700; }
+    .login-info-box strong { color: var(--accent-primary, #FFD700); font-weight: 700; }
     .login-info-box code {
         background: rgba(var(--accent-primary-rgb,255,215,0),0.1);
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         padding: 2px 8px;
         border-radius: 5px;
         font-family: 'Share Tech Mono', monospace;
@@ -337,7 +337,7 @@
         pointer-events: auto !important;
         touch-action: manipulation;
         -webkit-text-fill-color: #fff;
-        caret-color: #FFD700;
+        caret-color: var(--accent-primary, #FFD700);
         position: relative;
     }
     .login-input:focus, .login-input.focused {
@@ -360,7 +360,7 @@
     .login-btn {
         width: 100%;
         padding: 16px;
-        background: linear-gradient(135deg, #FFD700 0%, #F0A800 60%, #E09500 100%);
+        background: linear-gradient(135deg, var(--accent-primary, #FFD700) 0%, var(--accent-secondary, #F0A800) 60%, var(--accent-secondary, #E09500) 100%);
         border: none;
         border-radius: 12px;
         font-family: 'Orbitron', sans-serif;
@@ -457,7 +457,7 @@
     .login-status.warning {
         background: rgba(255,180,0,0.1);
         border: 1px solid rgba(255,180,0,0.25);
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
     }
     .login-status.info {
         background: rgba(100,150,255,0.1);
@@ -488,7 +488,7 @@
     .verify-timer.active { display: block; }
     .verify-timer-bar {
         height: 100%;
-        background: linear-gradient(90deg, #FFD700, #F1A800);
+        background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #F1A800));
         border-radius: 2px;
         animation: timerDrain 30s linear forwards;
     }
@@ -717,7 +717,7 @@
         text-align: center;
         margin-bottom: 14px;
     }
-    .ban-link a { color: #FFD700; text-decoration: none; font-weight: 600; }
+    .ban-link a { color: var(--accent-primary, #FFD700); text-decoration: none; font-weight: 600; }
     .login-focusable.dpad-focused {
         outline: none !important;
         box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.70),
@@ -1068,12 +1068,12 @@ img {
 
 /* ── Başlangıç Ayarları modalı — kumanda odak vurgusu ── */
 .startup-mode-option.remote-focused {
-    border-color: #FFD700 !important;
+    border-color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.55), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0),0.35) !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.10) !important;
 }
 #startupCategorySelect.remote-focused {
-    border-color: #FFD700 !important;
+    border-color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.55), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0),0.35) !important;
 }
 #btnStartupSettingsSave.remote-focused,
@@ -1270,7 +1270,7 @@ img {
     box-shadow: 0 0 6px rgba(var(--accent-danger-rgb, 231,76,60),0.4);
 }
 .recent-badge.vod {
-    background: linear-gradient(135deg, var(--accent-primary,#FFD700), #E09500);
+    background: linear-gradient(135deg, var(--accent-primary,#FFD700), var(--accent-secondary, #E09500));
     color: #000;
     box-shadow: 0 0 6px rgba(var(--accent-primary-rgb,255,215,0),0.3);
 }
@@ -2540,7 +2540,7 @@ body {
     outline-offset: 3px !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.12) !important;
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
 }
 #btnQsnMinus:hover, #btnQsnPlus:hover { background: rgba(var(--accent-primary-rgb,255,215,0),0.15) !important; border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important; }
 #btnQsnFirst:hover, #btnQsnLast:hover { background: rgba(var(--accent-primary-rgb,255,215,0),0.15) !important; border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important; }
@@ -2570,7 +2570,7 @@ body {
     outline-offset: 3px !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.12) !important;
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.2) !important;
 }
 #sortBackupCodeInput.remote-focused,
@@ -2612,7 +2612,7 @@ body {
     outline-offset: 3px !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.12) !important;
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.2) !important;
 }
 #resetConfirmOk:hover {
@@ -2640,7 +2640,7 @@ body {
     outline: 2px solid var(--accent-primary, #FFD700) !important;
     outline-offset: 3px !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.15) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
 }
 .vod-play-btn.remote-focused,
 .vod-continue-btn.remote-focused,
@@ -3114,7 +3114,7 @@ body {
 .vod-season-btn:hover {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.15);
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
 }
 
  
@@ -3122,7 +3122,7 @@ body {
     outline: none !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.2) !important;
     border-color: var(--accent-primary) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),0.35) !important;
     transform: none !important;
 }
@@ -3266,7 +3266,7 @@ body {
     bottom: 7px;
     right: 7px;
     background: rgba(0,0,0,0.88);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     padding: 2px 7px 2px 5px;
     border-radius: 10px;
     font-size: 9px;
@@ -3279,7 +3279,7 @@ body {
     bottom: 7px;
     right: 7px;
     background: rgba(0,0,0,0.88);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     padding: 2px 7px 2px 5px;
     border-radius: 10px;
     font-size: 9px;
@@ -3296,7 +3296,7 @@ body {
     display: inline-block;
     width: 5px;
     height: 5px;
-    background: #FFD700;
+    background: var(--accent-primary, #FFD700);
     border-radius: 50%;
     animation: playingDot 1.2s ease-in-out infinite;
     flex-shrink: 0;
@@ -3341,7 +3341,7 @@ body {
     transition: width 0.3s ease;
 }
 .vod-episode-progress-bar.continue {
-    background: linear-gradient(90deg, #FFD700, #FFA500);
+    background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #FFA500));
 }
 
  
@@ -3445,7 +3445,7 @@ body {
     top: 0; left: 0; right: 0;
     height: 2px;
     background: linear-gradient(90deg,
-        transparent 0%, #FFD700 30%, #FFF176 50%, #FFD700 70%, transparent 100%);
+        transparent 0%, var(--accent-primary, #FFD700) 30%, #FFF176 50%, var(--accent-primary, #FFD700) 70%, transparent 100%);
 }
 
 /* Progress bar — altın, kart üstünde */
@@ -3453,7 +3453,7 @@ body {
     position: absolute;
     top: 2px; left: 0;
     height: 3px;
-    background: linear-gradient(90deg, #FFD700, #FF8C00);
+    background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #FF8C00));
     border-radius: 0 2px 2px 0;
     width: 100%;
     transform-origin: left center;
@@ -3513,7 +3513,7 @@ body {
     font-family: 'Orbitron', monospace;
     font-size: 22px;
     font-weight: 900;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     flex-shrink: 0;
     text-shadow: 0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.5);
 }
@@ -3552,7 +3552,7 @@ body {
     transition: background 0.15s;
 }
 .auto-next-btn.btn-next {
-    background: linear-gradient(135deg, #FFD700 0%, #E8A000 100%);
+    background: linear-gradient(135deg, var(--accent-primary, #FFD700) 0%, var(--accent-secondary, #E8A000) 100%);
     color: #111;
     border-color: transparent;
     box-shadow: 0 4px 20px rgba(255,180,0,0.25);
@@ -4704,11 +4704,11 @@ body {
     outline: none;
 }
 .vhs-slide.remote-focused .vhs-poster-wrap {
-    border-color: #FFD700 !important;
-    box-shadow: 0 0 0 2.5px #FFD700, 0 8px 32px rgba(var(--accent-primary-rgb,255,215,0),0.55) !important;
+    border-color: var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 2.5px var(--accent-primary, #FFD700), 0 8px 32px rgba(var(--accent-primary-rgb,255,215,0),0.55) !important;
 }
 .vhs-slide.remote-focused .vhs-rank-num {
-    -webkit-text-stroke: 3px #FFD700 !important;
+    -webkit-text-stroke: 3px var(--accent-primary, #FFD700) !important;
     filter: drop-shadow(0 0 10px rgba(var(--accent-primary-rgb,255,215,0),0.7)) !important;
 }
 @media (max-width:480px) { .vhs-slide { width:96px; } }
@@ -4734,7 +4734,7 @@ body {
 }
 /* Rank 1 — altın rengi */
 .vhs-slide[data-vi="0"] .vhs-rank-num {
-    -webkit-text-stroke: 3px #FFD700;
+    -webkit-text-stroke: 3px var(--accent-primary, #FFD700);
     color:transparent;
     filter: drop-shadow(0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.55));
 }
@@ -5243,7 +5243,7 @@ body {
 #speedResetBtn:hover, #speedResetBtn.dpad-focused {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.15);
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.5);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
 }
 /* Slider satırı */
 #speedSliderRow {
@@ -5383,14 +5383,14 @@ body {
 }
 .seek-amt-btn.active {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.14);
-    border-color: #FFD700;
+    border-color: var(--accent-primary, #FFD700);
     box-shadow: 0 0 6px rgba(var(--accent-primary-rgb,255,215,0),0.2);
 }
 .seek-amt-btn .seek-sec {
     display: block;
     font-size: 10px;
     font-weight: 900;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
 }
 .seek-amt-btn.active .seek-sec { color: #fff; }
 .seek-amt-label-top {
@@ -5516,7 +5516,7 @@ body {
 .sub-adj-btn {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.12);
     border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.3);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 12px;
@@ -6081,7 +6081,7 @@ body {
             pointer-events: none;
         }
         .resolution-change-indicator .res-value {
-            color: #FFD700;
+            color: var(--accent-primary, #FFD700);
             font-size: 15px;
             font-weight: 800;
             margin: 0 3px;
@@ -6464,7 +6464,7 @@ body {
             outline: 3px solid var(--accent-primary) !important;
             outline-offset: 2px;
             background: rgba(var(--accent-primary-rgb,255,215,0),0.22) !important;
-            color: #FFD700 !important;
+            color: var(--accent-primary, #FFD700) !important;
             transform: none !important;
             box-shadow: none !important;
         }
@@ -7032,13 +7032,13 @@ body {
 .channel-list-item.remote-focused.sidebar-confirm-ready {
     background: rgba(var(--accent-primary-rgb,255,215,0), 0.22) !important;
     border-left: 4px solid #fff !important;
-    box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px #FFD700 !important;
+    box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px var(--accent-primary, #FFD700) !important;
     animation: confirmPulse 0.6s ease;
 }
 @keyframes confirmPulse {
-    0% { box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px #FFD700; }
+    0% { box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px var(--accent-primary, #FFD700); }
     50% { box-shadow: inset 0 0 30px rgba(var(--accent-primary-rgb,255,215,0),0.35), 0 0 0 3px #fff; }
-    100% { box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px #FFD700; }
+    100% { box-shadow: inset 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.18), 0 0 0 2px var(--accent-primary, #FFD700); }
 }
 
 .channel-list-item.remote-focused .channel-name,
@@ -7452,19 +7452,19 @@ body {
 }
 #vodTrailerStopBtn.remote-focused {
     background: rgba(255,50,50,1) !important;
-    border-color: #FFD700 !important;
+    border-color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),0.8), 0 4px 20px rgba(0,0,0,0.5) !important;
     transform: scale(1.02) !important;
 }
 .vod-trailer-close.remote-focused,
 .vod-trailer-volume.remote-focused {
-    border-color: #FFD700 !important;
+    border-color: var(--accent-primary, #FFD700) !important;
     box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.8) !important;
     background: rgba(30,30,30,0.95) !important;
 }
 .trailer-play-overlay.remote-focused .trailer-play-circle {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.3);
-    border-color: #FFD700;
+    border-color: var(--accent-primary, #FFD700);
     transform: none !important;
 }
 .trailer-play-circle .material-symbols-outlined {
@@ -9074,7 +9074,7 @@ body.sidebar-open {
         
         .tmdb-rating .material-symbols-outlined {
             font-size: 14px;
-            color: #FFD700;
+            color: var(--accent-primary, #FFD700);
             margin-right: 4px;
         }
 
@@ -10095,7 +10095,7 @@ body.sidebar-open {
 }
 .live-epg-now {
     font-size: 9.5px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
@@ -10121,7 +10121,7 @@ body.sidebar-open {
 }
 .live-epg-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #FFD700, #FF8C00);
+    background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #FF8C00));
     border-radius: 2px;
 }
 .live-epg-time {
@@ -10175,7 +10175,7 @@ body.sidebar-open {
 }
 
 .epg-next {
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     white-space: normal;
     overflow: center;
     text-overflow: ellipsis;
@@ -10364,7 +10364,7 @@ body.sidebar-open {
         
         .epg-next-program {
             background: rgba(var(--accent-primary-rgb,255,215,0), 0.1);
-            border: 1px solid #FFD700;
+            border: 1px solid var(--accent-primary, #FFD700);
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 15px;
@@ -10754,11 +10754,11 @@ body.sidebar-open {
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, 
-        #FFD700 0%, 
-        #FF8C00 25%, 
+        var(--accent-primary, #FFD700) 0%, 
+        var(--accent-secondary, #FF8C00) 25%, 
         #FF4500 50%, 
-        #FF8C00 75%, 
-        #FFD700 100%);
+        var(--accent-secondary, #FF8C00) 75%, 
+        var(--accent-primary, #FFD700) 100%);
     background-size: 200% 100%;
     animation: none;  
     z-index: 5;
@@ -11705,7 +11705,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .vod-meta { display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:wrap !important; }
 .vod-rating {
   background:rgba(255,193,7,0.18) !important;border:1px solid rgba(255,193,7,0.55) !important;
-  color:#FFD700 !important;padding:1.5px 5px !important;border-radius:5px !important;
+  color:var(--accent-primary, #FFD700) !important;padding:1.5px 5px !important;border-radius:5px !important;
   font-size:9.5px !important;font-weight:800 !important;display:flex !important;
   align-items:center !important;gap:2px !important;letter-spacing:0.2px !important;
 }
@@ -11869,12 +11869,12 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .player-action-btn:hover, .player-action-btn:focus {
   background: rgba(var(--accent-primary-rgb,255,215,0),0.14) !important;
   border-color: rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
-  color: #FFD700 !important;
+  color: var(--accent-primary, #FFD700) !important;
 }
 .play-pause-btn {
   background: rgba(var(--accent-primary-rgb,255,215,0),0.14) !important;
   border-color: rgba(var(--accent-primary-rgb,255,215,0),0.45) !important;
-  color: #FFD700 !important;
+  color: var(--accent-primary, #FFD700) !important;
 }
 .play-pause-btn:hover { background: rgba(var(--accent-primary-rgb,255,215,0),0.28) !important; }
 
@@ -12024,7 +12024,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .verify-timer.active { display: block; }
 .verify-timer-bar {
     height: 100%;
-    background: linear-gradient(90deg, #FFD700, #F1A800);
+    background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #F1A800));
     border-radius: 2px;
     animation: timerDrain 30s linear forwards;
 }
@@ -12056,7 +12056,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .login-status.warning {
     background: rgba(255,180,0,0.08);
     border: 1px solid rgba(255,180,0,0.22);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
 }
 .login-status.info {
     background: rgba(100,150,255,0.08);
@@ -12112,7 +12112,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 .ban-reason-label { font-size: 0.65rem; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); text-transform: uppercase; margin-bottom: 4px; font-family: 'Share Tech Mono', monospace; }
 .ban-reason-value { font-size: 0.9rem; color: rgba(255,255,255,0.75); }
 .ban-link { font-size: 0.8rem; color: rgba(255,255,255,0.4); text-align: center; }
-.ban-link a { color: #FFD700; text-decoration: none; font-weight: 700; }
+.ban-link a { color: var(--accent-primary, #FFD700); text-decoration: none; font-weight: 700; }
 /* Progress dots */
 .login-progress-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; }
 .login-progress-dot {
@@ -12123,8 +12123,8 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     transition: all 0.25s;
 }
 .login-progress-dot.active {
-    background: #FFD700;
-    border-color: #FFD700;
+    background: var(--accent-primary, #FFD700);
+    border-color: var(--accent-primary, #FFD700);
     box-shadow: 0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.5);
     transform: scale(1.4);
 }
@@ -12249,7 +12249,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     font-family: 'Orbitron', 'Exo 2', sans-serif;
     font-size: 1.25rem;
     font-weight: 900;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     letter-spacing: 2px;
     margin-bottom: 8px;
     text-shadow: 0 0 18px rgba(var(--accent-primary-rgb,255,215,0),0.35);
@@ -12299,7 +12299,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     flex-shrink: 0;
     width: 24px;
     height: 24px;
-    background: linear-gradient(135deg, #FFD700, #F1A800);
+    background: linear-gradient(135deg, var(--accent-primary, #FFD700), var(--accent-secondary, #F1A800));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -12314,14 +12314,14 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     line-height: 1.5;
     padding-top: 2px;
 }
-.tut-step-text strong { color: #FFD700; }
+.tut-step-text strong { color: var(--accent-primary, #FFD700); }
 .tut-step-text code {
     background: rgba(var(--accent-primary-rgb,255,215,0),0.12);
     border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.22);
     border-radius: 5px;
     padding: 1px 6px;
     font-size: 0.82rem;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-family: 'Share Tech Mono', monospace;
     letter-spacing: 0.5px;
 }
@@ -12356,7 +12356,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     padding: 4px 12px;
     font-size: 0.72rem;
     font-weight: 700;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-bottom: 14px;
@@ -12376,7 +12376,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     transition: background 0.2s, transform 0.2s;
 }
 .tut-dot.tut-dot-active {
-    background: #FFD700;
+    background: var(--accent-primary, #FFD700);
     transform: scale(1.35);
     box-shadow: 0 0 7px rgba(var(--accent-primary-rgb,255,215,0),0.55);
 }
@@ -12409,7 +12409,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
 /* İleri / Bitir butonu */
 .tut-btn-next {
-    background: linear-gradient(135deg, #FFD700 0%, #F1A800 100%);
+    background: linear-gradient(135deg, var(--accent-primary, #FFD700) 0%, var(--accent-secondary, #F1A800) 100%);
     border: none;
     border-radius: 10px;
     padding: 12px 28px;
@@ -12457,7 +12457,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     transition: none !important;
 }
 .tut-btn-next.tut-dpad {
-    background: linear-gradient(135deg, #ffe040 0%, #F1A800 100%) !important;
+    background: linear-gradient(135deg, #ffe040 0%, var(--accent-secondary, #F1A800) 100%) !important;
 }
 .tut-btn-back.tut-dpad {
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.55) !important;
@@ -12526,7 +12526,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);
     border-radius: 8px 8px 2px 8px;
     padding: 8px 12px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-size: 0.83rem;
     font-family: 'Exo 2', sans-serif;
     display: block;
@@ -12535,7 +12535,7 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
     text-align: right;
 }
 .tut-screen-highlight {
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-weight: 700;
     font-family: 'Share Tech Mono', monospace;
     font-size: 1rem;
@@ -12553,10 +12553,10 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <div class="tut-title">HOŞ GELDİN!</div>
                 <div class="tut-subtitle">ÜmitTV · Giriş Rehberi</div>
                 <div class="tut-desc">
-                    <strong style="color:#FFD700;">ÜmitTV'ye ilk kez mi giriyorsun?</strong><br><br>
+                    <strong style="color:var(--accent-primary, #FFD700);">ÜmitTV'ye ilk kez mi giriyorsun?</strong><br><br>
                     Bu kısa rehber sana <strong>nasıl giriş yapacağını</strong> adım adım gösterecek.<br><br>
                     Endişelenme — çok basit! 🎉<br>
-                    Toplamda sadece <strong style="color:#FFD700;">5 ekran</strong> var.
+                    Toplamda sadece <strong style="color:var(--accent-primary, #FFD700);">5 ekran</strong> var.
                 </div>
                 <div class="tut-tip">
                     💡 Bu rehberi bir daha görmek istemiyorsan, sonraki girişlerde otomatik olarak açılmaz.
@@ -12657,13 +12657,13 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <div class="tut-desc" style="text-align:center;">
                     Hepsi bu kadar!<br><br>
                     Aklında kalsın:<br><br>
-                    📱 <strong style="color:#FFD700;">Telegram ID</strong> → @userinfobot'tan<br>
-                    🔑 <strong style="color:#FFD700;">Şifre</strong> → İlk girişte sen belirlersin<br>
-                    🎰 <strong style="color:#FFD700;">Şans Kodu</strong> → Admin sana verir (opsiyonel)
+                    📱 <strong style="color:var(--accent-primary, #FFD700);">Telegram ID</strong> → @userinfobot'tan<br>
+                    🔑 <strong style="color:var(--accent-primary, #FFD700);">Şifre</strong> → İlk girişte sen belirlersin<br>
+                    🎰 <strong style="color:var(--accent-primary, #FFD700);">Şans Kodu</strong> → Admin sana verir (opsiyonel)
                 </div>
                 <div class="tut-tip">
                     🛟 Sorun yaşarsan:
-                    <a href="https://t.me/umitm0d" target="_blank" style="color:#FFD700;font-weight:700;text-decoration:none;">t.me/umitm0d</a>
+                    <a href="https://t.me/umitm0d" target="_blank" style="color:var(--accent-primary, #FFD700);font-weight:700;text-decoration:none;">t.me/umitm0d</a>
                     adresinden yardım alabilirsin.
                 </div>
                 <div style="margin-top:6px;font-size:0.75rem;color:rgba(255,255,255,0.25);text-align:center;">
@@ -13112,14 +13112,14 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
                 <span style="color:rgba(var(--accent-primary-rgb,255,215,0),0.5);font-size:11px;">⏱ 10 dakika süren var.</span><br><br>
                 <div style="background:rgba(255,100,0,0.1);border:1px solid rgba(255,100,0,0.3);border-radius:8px;padding:10px 12px;margin-top:4px;">
                     <span style="color:#ff9944;font-size:12px;font-weight:700;">⚠️</span>
-                    <span style="color:rgba(255,255,255,0.7);font-size:12px;"> Mesajı <strong style="color:#FFD700;">anonim admin olarak değil</strong>, kendi hesabınla gönder.</span>
+                    <span style="color:rgba(255,255,255,0.7);font-size:12px;"> Mesajı <strong style="color:var(--accent-primary, #FFD700);">anonim admin olarak değil</strong>, kendi hesabınla gönder.</span>
                 </div>
                 <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.4);">
-                    Aktif ID: <code id="step5IdDisplay" style="color:#FFD700;font-size:12px;">—</code>
+                    Aktif ID: <code id="step5IdDisplay" style="color:var(--accent-primary, #FFD700);font-size:12px;">—</code>
                 </div>
             </div>
             <div id="changePollingBox" style="display:none;text-align:center;padding:18px 0;">
-                <div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px;"></div>
+                <div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-top-color:var(--accent-primary, #FFD700);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px;"></div>
                 <div id="changePollingTick" style="color:rgba(var(--accent-primary-rgb,255,215,0),0.65);font-size:13px;margin-top:4px;">Admin onayı bekleniyor...</div>
             </div>
             <button class="login-btn login-focusable" id="btnConfirmChange" onclick="handleConfirmChange()">
@@ -13943,7 +13943,7 @@ window.handleStep1 = async function() {
         }
 
         if (!inGroup) {
-            setStatus('status1','error','❌ Bu Telegram ID grubumuzda kayıtlı değil. Önce gruba katıl: <a href=https://t.me/umitm0d target=_blank style=color:#FFD700>t.me/umitm0d</a>');
+            setStatus('status1','error','❌ Bu Telegram ID grubumuzda kayıtlı değil. Önce gruba katıl: <a href=https://t.me/umitm0d target=_blank style=color:var(--accent-primary, #FFD700)>t.me/umitm0d</a>');
             _refocusStep1Btn();
             return;
         }
@@ -14438,7 +14438,7 @@ function doLogin() {
                     '<html><body style="margin:0;background:#0a0a0f;display:flex;align-items:center;' +
                     'justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;">' +
                     '<div style="margin-bottom:8px;"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-danger, #ff4444)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>' +
-                    '<div style="color:#FFD700;font-size:1.5em;font-weight:bold;margin-top:16px;">BANLANDINIZ</div>' +
+                    '<div style="color:var(--accent-primary, #FFD700);font-size:1.5em;font-weight:bold;margin-top:16px;">BANLANDINIZ</div>' +
                     '<div style="color:#888;margin-top:8px;font-size:0.9em;">Uygulamayı kapatabilirsiniz.</div>' +
                     '</body></html></html>';
                 
@@ -14847,7 +14847,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div id="loadingBigStatus" style="
         font-size: 22px;
         font-weight: 800;
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         text-align: center;
         letter-spacing: 1px;
         text-shadow: 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.7);
@@ -14953,7 +14953,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span id="notifBadge" style="display:none;position:absolute;top:3px;right:3px;min-width:16px;height:16px;background:var(--accent-danger, #ff4757);border-radius:8px;border:1.5px solid #000;font-size:9px;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;line-height:1;"></span>
             </button>
             <button class="header-btn" id="btnProfile" onclick="openProfileModal()" title="Profil" tabindex="-1" style="position:relative;padding:4px;">
-                <div id="headerProfileAvatar" style="width:32px;height:32px;border-radius:50%;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:13px;font-weight:700;color:#FFD700;">
+                <div id="headerProfileAvatar" style="width:32px;height:32px;border-radius:50%;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:13px;font-weight:700;color:var(--accent-primary, #FFD700);">
                     <span class="material-symbols-outlined" style="font-size:20px;">account_circle</span>
                 </div>
             </button>
@@ -14990,11 +14990,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <div id="inlineLoadingBar" style="display:none; padding: 10px 16px 6px 16px;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                        <span id="inlineLoadingText" style="color:#FFD700; font-weight:700; font-size:15px;">Yükleniyor...</span>
+                        <span id="inlineLoadingText" style="color:var(--accent-primary, #FFD700); font-weight:700; font-size:15px;">Yükleniyor...</span>
                         <span id="inlineLoadingPct" style="color:#fff; font-weight:900; font-size:18px;">%0</span>
                     </div>
                     <div style="background:rgba(255,255,255,0.1); border-radius:6px; height:7px; overflow:hidden;">
-                        <div id="inlineLoadingFill" style="height:100%; background:linear-gradient(90deg,#FFD700,#F1C40F); border-radius:6px; width:0%; transition:width 0.3s ease;"></div>
+                        <div id="inlineLoadingFill" style="height:100%; background:linear-gradient(90deg,var(--accent-primary, #FFD700),#F1C40F); border-radius:6px; width:0%; transition:width 0.3s ease;"></div>
                     </div>
                 </div>
 
@@ -15047,7 +15047,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="modal-bg" id="startupSettingsModal" onclick="if(event.target.id==='startupSettingsModal') closeStartupSettingsModal()">
         <div class="modal-content">
-            <h3 style="color:#FFD700; text-align:center; margin-bottom: 8px; font-size:20px;">Başlangıç Ayarları</h3>
+            <h3 style="color:var(--accent-primary, #FFD700); text-align:center; margin-bottom: 8px; font-size:20px;">Başlangıç Ayarları</h3>
             <p style="color:rgba(255,255,255,0.55); text-align:center; font-size:12.5px; margin-bottom:18px;">Uygulama açıldığında otomatik olarak ne yapılsın?</p>
 
             <button type="button" class="startup-mode-option" id="startupModeNormal" onclick="selectStartupMode('normal')"
@@ -15208,7 +15208,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 onfocus="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                                 <span id="vodReviewUser" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;"></span>
-                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gönder</button>
+                                <button id="vodSubmitBtn" onclick="vodSubmitReview()" style="background:linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FFA500));border:none;border-radius:8px;padding:8px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#000;cursor:pointer;letter-spacing:0.5px;">Gönder</button>
                             </div>
                         </div>
                         <div id="vodReviewsList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;scrollbar-width:none;padding-right:2px;"></div>
@@ -15245,7 +15245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- Kullanıcı adı -->
     <div style="margin-bottom:16px;">
       <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:7px;">Kullanıcı Adın</label>
-      <input id="wpNickInput" placeholder="Adını gir..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:10px;padding:12px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.2)'">
+      <input id="wpNickInput" placeholder="Adını gir..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:10px;padding:12px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.2)'">
     </div>
 
     <!-- İki sütun: Oluştur / Katıl -->
@@ -15254,8 +15254,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Oda Oluştur -->
       <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:12px;padding:16px;">
         <div style="font-size:12px;font-weight:700;color:var(--accent-primary,#FFD700);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>Oda Oluştur</div>
-        <input id="wpRoomPasswordInput" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'" placeholder="Şifre (opsiyonel)">
-        <button id="wpCreateBtn" onclick="wpCreateRoom()" class="wp-remote-focus" style="width:100%;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:8px;padding:11px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
+        <input id="wpRoomPasswordInput" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'" placeholder="Şifre (opsiyonel)">
+        <button id="wpCreateBtn" onclick="wpCreateRoom()" class="wp-remote-focus" style="width:100%;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,var(--accent-secondary, #FFA500)));border:none;border-radius:8px;padding:11px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:5px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>ODA AÇ
         </button>
       </div>
@@ -15263,8 +15263,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Odaya Katıl -->
       <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;">
         <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;opacity:0.7"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>Koda Gir</div>
-        <input id="wpJoinCodeInput" placeholder="ODA KODU..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;outline:none;text-transform:uppercase;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter'){wpJoinRoom()}">
-        <input id="wpJoinPasswordInput" placeholder="Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <input id="wpJoinCodeInput" placeholder="ODA KODU..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;outline:none;text-transform:uppercase;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter'){wpJoinRoom()}">
+        <input id="wpJoinPasswordInput" placeholder="Şifre (varsa)" maxlength="20" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px;display:none;" class="wp-remote-focus wp-text-input" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
         <button id="wpJoinBtn" onclick="wpJoinRoom()" class="wp-remote-focus" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:0.5px;">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>KATIL
         </button>
@@ -15284,11 +15284,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <input id="wpRoomPwPromptInput" type="password" placeholder="Oda şifresi..." maxlength="20"
             style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-radius:8px;padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:#fff;outline:none;box-sizing:border-box;"
             class="wp-remote-focus wp-text-input"
-            onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'#FFD700'"
+            onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')||'var(--accent-primary, #FFD700)'"
             onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.25)'"
             onkeydown="if(event.key==='Enter'){wpRoomPwPromptConfirm();}if(event.key==='Escape'){wpRoomPwPromptCancel();}">
           <button onclick="wpRoomPwPromptConfirm()" class="wp-remote-focus"
-            style="background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:8px;padding:9px 16px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;white-space:nowrap;">
+            style="background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,var(--accent-secondary, #FFA500)));border:none;border-radius:8px;padding:9px 16px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:#000;cursor:pointer;white-space:nowrap;">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>GİR
           </button>
           <button onclick="wpRoomPwPromptCancel()" class="wp-remote-focus"
@@ -15341,8 +15341,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <div id="wpChatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:auto;"></div>
     <!-- Giriş -->
     <div style="padding:8px 10px;border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.1);display:flex;gap:7px;flex-shrink:0;background:#0f0f18;">
-      <input id="wpChatInput" placeholder="Mesaj yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:8px;padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wpSendChat()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.2)'">
-      <button onclick="wpSendChat()" class="wp-remote-focus" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0;">➤</button>
+      <input id="wpChatInput" placeholder="Mesaj yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-radius:8px;padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wpSendChat()}" onfocus="this.style.borderColor='var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.2)'">
+      <button onclick="wpSendChat()" class="wp-remote-focus" style="background:linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FFA500));border:none;border-radius:8px;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0;">➤</button>
     </div>
   </div>
 
@@ -15359,8 +15359,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="wp-star wp-remote-focus" data-val="5" onclick="wpSetStar(5)" style="font-size:24px;color:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.1s;" tabindex="0">★</span>
       </div>
       <div style="display:flex;gap:7px;">
-        <input id="wpCommentInput" placeholder="Yorum yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 11px;font-family:'Rajdhani',sans-serif;font-size:13px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();wpSendComment()}" onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'">
-        <button onclick="wpSendComment()" class="wp-remote-focus" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer;flex-shrink:0;">➤</button>
+        <input id="wpCommentInput" placeholder="Yorum yaz..." class="wp-remote-focus wp-text-input" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:8px;padding:9px 11px;font-family:'Rajdhani',sans-serif;font-size:13px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();wpSendComment()}" onfocus="this.style.borderColor='var(--accent-primary, #FFD700)'" onblur="this.style.borderColor='rgba(var(--accent-primary-rgb,255,215,0),0.15)'">
+        <button onclick="wpSendComment()" class="wp-remote-focus" style="background:linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FFA500));border:none;border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer;flex-shrink:0;">➤</button>
       </div>
     </div>
   </div>
@@ -15371,7 +15371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- Oda ortalaması -->
     <div style="padding:10px 12px;border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.1);text-align:center;flex-shrink:0;background:#0f0f18;">
       <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;">ODA PUANI ORTALAMASI</div>
-      <div style="font-size:22px;font-weight:900;color:#FFD700;font-family:'Orbitron',sans-serif;" id="wpAvgRating">—</div>
+      <div style="font-size:22px;font-weight:900;color:var(--accent-primary, #FFD700);font-family:'Orbitron',sans-serif;" id="wpAvgRating">—</div>
     </div>
   </div>
 
@@ -15505,7 +15505,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 
 /* Odaya Gir butonu */
 .wp-room-enter-btn {
-  background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));
+  background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,var(--accent-secondary, #FFA500)));
   border:none;border-radius:8px;padding:7px 14px;
   font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;
   color:#000;cursor:pointer;white-space:nowrap;flex-shrink:0;
@@ -15622,7 +15622,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 background:rgba(var(--accent-primary-rgb,255,215,0),0.1);
                 padding:30px;
                 border-radius:100px;
-                border:2px solid #FFD700;
+                border:2px solid var(--accent-primary, #FFD700);
             ">
                 <img loading="lazy" src="https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/Umitm0d.svg"
                      onerror="this.style.display='none'"
@@ -15637,11 +15637,11 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 font-weight:900;
                 letter-spacing:12px;
                 text-transform:uppercase;
-                color:#FFD700;
+                color:var(--accent-primary, #FFD700);
                 padding:14px 36px;
                 border-radius:100px;
                 background:rgba(0,0,0,0.7);
-                border:1px solid #FFD700;
+                border:1px solid var(--accent-primary, #FFD700);
                 white-space:nowrap;
             ">⏸ DURAKLATILDI</div>
         </div>
@@ -15738,7 +15738,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             </div>
             <div style="display:flex; flex-direction:column; margin-left:6px; flex-shrink:1; overflow:hidden; min-width:0;">
                 <div id="playerTitle" class="player-title" style="color:white; font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">KANAL YÜKLENİYOR...</div>
-                <div id="playerEpgNow" style="color:#FFD700; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:none; margin-top:1px;"></div>
+                <div id="playerEpgNow" style="color:var(--accent-primary, #FFD700); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:none; margin-top:1px;"></div>
             </div>
             <div id="streamStatsBadge" style="display:none; margin-right:4px; flex-shrink:0; align-items:center; gap:5px;">
                 <div id="bufferBadge" style="
@@ -15768,7 +15768,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 pointer-events:none;
                 user-select:none;
             ">
-                <span id="playerDateTimeDay" style="color:#FFD700; font-size:11px; font-weight:700; white-space:nowrap;"></span>
+                <span id="playerDateTimeDay" style="color:var(--accent-primary, #FFD700); font-size:11px; font-weight:700; white-space:nowrap;"></span>
                 <span id="playerDateTimeDate" style="color:rgba(255,255,255,0.75); font-size:10px; white-space:nowrap;"></span>
             </div>
             <span class="material-symbols-outlined" style="font-size:14px;color:rgba(var(--accent-primary-rgb,255,215,0),0.5);flex-shrink:0;margin-left:4px;">info</span>
@@ -15790,7 +15790,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                 <div id="infoToastLogo" style="flex-shrink:0;"></div>
                 <div style="flex:1;min-width:0;">
-                    <div id="infoToastTitle" style="color:#FFD700;font-weight:800;font-size:16px;line-height:1.2;white-space:normal;word-break:break-word;"></div>
+                    <div id="infoToastTitle" style="color:var(--accent-primary, #FFD700);font-weight:800;font-size:16px;line-height:1.2;white-space:normal;word-break:break-word;"></div>
                     <div id="infoToastEpg" style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px;white-space:normal;"></div>
                 </div>
                 <span class="material-symbols-outlined" style="color:rgba(var(--accent-primary-rgb,255,215,0),0.5);font-size:20px;flex-shrink:0;">close</span>
@@ -16171,7 +16171,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                     <span class="material-symbols-outlined">fullscreen</span>
                     Tam Ekran Butonu
                 </span>
-                <span id="fsBtnToggleLabel" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);color:#FFD700;">AÇ</span>
+                <span id="fsBtnToggleLabel" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);color:var(--accent-primary, #FFD700);">AÇ</span>
             </button>
             <button class="modal-back-btn" tabindex="0" id="btnSettingsBack" onclick="closeSettingsModal()">
                 <span class="material-symbols-outlined">arrow_back</span> Geri
@@ -16449,13 +16449,13 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="modal-bg" id="embedModal" style="display:none;z-index:99999;padding:0;">
         <div style="position:relative;width:96vw;max-width:900px;height:90vh;background:#0a0a0f;border-radius:18px;overflow:hidden;border:1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);box-shadow:0 0 60px rgba(0,0,0,0.8);display:flex;flex-direction:column;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(20,20,30,0.98);border-bottom:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);flex-shrink:0;position:relative;z-index:2;">
-                <span id="embedModalTitle" style="font-weight:700;font-size:15px;color:#FFD700;letter-spacing:1px;"></span>
+                <span id="embedModalTitle" style="font-weight:700;font-size:15px;color:var(--accent-primary, #FFD700);letter-spacing:1px;"></span>
                 <button id="btnCloseEmbed" onclick="closeEmbedModal()" tabindex="0"
-                    style="background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);color:#FFD700;border-radius:8px;padding:10px 22px;cursor:pointer;font-size:14px;font-weight:700;outline:none;transition:all 0.15s;flex-shrink:0;">
+                    style="background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);color:var(--accent-primary, #FFD700);border-radius:8px;padding:10px 22px;cursor:pointer;font-size:14px;font-weight:700;outline:none;transition:all 0.15s;flex-shrink:0;">
                     <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;">close</span> Kapat (Geri)
                 </button>
             </div>
-            <div id="embedLoadingBar" style="height:3px;background:linear-gradient(90deg,#FFD700,#d4af37);width:0%;transition:width 0.4s;flex-shrink:0;"></div>
+            <div id="embedLoadingBar" style="height:3px;background:linear-gradient(90deg,var(--accent-primary, #FFD700),#d4af37);width:0%;transition:width 0.4s;flex-shrink:0;"></div>
             <iframe id="embedIframe" src="" style="flex:1;border:none;width:100%;background:#0a0a0f;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock" allow="clipboard-write *"></iframe>
         </div>
     </div>
@@ -16609,7 +16609,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <div style="display:flex;gap:10px;margin-bottom:14px;">
                 <button id="btnSearchCancel" onclick="closeSearchModal()" tabindex="0" style="flex:1;padding:12px;background:rgba(var(--accent-primary-rgb,255,255,255),0.07);border:1.5px solid rgba(var(--accent-primary-rgb,255,255,255),0.25);border-radius:12px;color:var(--accent-primary,rgba(255,255,255,0.7));font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;">İptal</button>
                 <button id="btnSearchClear" onclick="clearSearch()" tabindex="0" style="flex:1;padding:12px;background:rgba(255,100,100,0.1);border:1.5px solid rgba(255,100,100,0.3);border-radius:12px;color:#ff8080;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;display:none;">Temizle</button>
-                <button id="btnSearchPerform" onclick="performSearch()" tabindex="0" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));border:none;border-radius:12px;color:#000;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:7px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ARA</button>
+                <button id="btnSearchPerform" onclick="performSearch()" tabindex="0" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,var(--accent-secondary, #FFA500)));border:none;border-radius:12px;color:#000;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:7px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ARA</button>
             </div>
 
             <!-- Sonuç başlığı -->
@@ -16766,10 +16766,10 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         <div id="welcomeBg" style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(var(--accent-primary-rgb,255,215,0),0.08) 0%,transparent 65%);pointer-events:none;"></div>
         <div id="welcomeCard" style="position:relative;z-index:2;text-align:center;padding:44px 48px 38px;transform:scale(0.7);opacity:0;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1),opacity 0.5s ease;max-width:380px;width:88vw;">
             <div id="welcomeAvatarWrap" style="width:88px;height:88px;border-radius:50%;margin:0 auto 18px;background:linear-gradient(135deg,rgba(var(--accent-primary-rgb,255,215,0),0.25),rgba(255,140,0,0.15));border:2.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:0 0 40px rgba(var(--accent-primary-rgb,255,215,0),0.2);overflow:hidden;">
-                <span class="material-symbols-outlined" style="font-size:48px;color:#FFD700;opacity:1 !important;">person</span>
+                <span class="material-symbols-outlined" style="font-size:48px;color:var(--accent-primary, #FFD700);opacity:1 !important;">person</span>
             </div>
             <div style="font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;color:rgba(var(--accent-primary-rgb,255,215,0),0.6);text-transform:uppercase;margin-bottom:6px;">HOŞ GELDİN</div>
-            <div id="welcomeName" style="font-family:'Orbitron',sans-serif;font-size:1.9rem;font-weight:900;color:#FFD700;text-shadow:0 0 40px rgba(var(--accent-primary-rgb,255,215,0),0.5);letter-spacing:2px;margin-bottom:4px;">Kullanıcı</div>
+            <div id="welcomeName" style="font-family:'Orbitron',sans-serif;font-size:1.9rem;font-weight:900;color:var(--accent-primary, #FFD700);text-shadow:0 0 40px rgba(var(--accent-primary-rgb,255,215,0),0.5);letter-spacing:2px;margin-bottom:4px;">Kullanıcı</div>
             <div id="welcomeWaveEmoji" style="font-size:1.7rem;display:inline-block;margin-bottom:10px;transform-origin:70% 70%;">👋</div>
             <div id="welcomeSubtext" style="font-size:0.85rem;color:rgba(255,255,255,0.4);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:1px;">ÜMİT TV'ye bağlandın</div>
 
@@ -16778,12 +16778,12 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 
             <!-- Liste yükleme bölümü -->
             <div id="welcomeLoadRow" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;">
-                <div id="welcomeSpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-top-color:#FFD700;animation:spin 0.8s linear infinite;will-change:transform;transform:translateZ(0);-webkit-transform:translateZ(0);flex-shrink:0;"></div>
-                <div id="welcomeLoadStatus" style="font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;color:#FFD700;letter-spacing:0.5px;">Ümit Listesi Yükleniyor...</div>
+                <div id="welcomeSpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-top-color:var(--accent-primary, #FFD700);animation:spin 0.8s linear infinite;will-change:transform;transform:translateZ(0);-webkit-transform:translateZ(0);flex-shrink:0;"></div>
+                <div id="welcomeLoadStatus" style="font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;color:var(--accent-primary, #FFD700);letter-spacing:0.5px;">Ümit Listesi Yükleniyor...</div>
             </div>
             <div id="welcomeLoadPercent" style="font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:12px;">%0</div>
             <div style="width:100%;max-width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:3px;margin:0 auto;overflow:hidden;">
-                <div id="welcomeBar" style="width:0%;height:100%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:3px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+                <div id="welcomeBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FF8C00));border-radius:3px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
             </div>
         </div>
         <div id="welcomeParticles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
@@ -16799,7 +16799,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         <div style="background:linear-gradient(160deg,rgba(14,16,26,0.98),rgba(10,12,20,0.99));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);border-radius:20px;width:min(92vw,480px);max-height:88vh;overflow-y:auto;padding:28px 24px 24px;box-shadow:0 0 80px rgba(255,170,0,0.1),0 40px 100px rgba(0,0,0,0.8);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
                 <div>
-                    <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#FFD700;letter-spacing:2px;">İZLEME</div>
+                    <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:var(--accent-primary, #FFD700);letter-spacing:2px;">İZLEME</div>
                     <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">İstatistiklerin</div>
                 </div>
                 <button onclick="closeStatsPanel()" class="umit-panel-btn">✕ Kapat</button>
@@ -16807,7 +16807,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <!-- Haftalık özet -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
                 <div style="background:rgba(var(--accent-primary-rgb,255,215,0),0.07);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.15);border-radius:14px;padding:16px 14px;text-align:center;">
-                    <div id="statWeekHours" style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;color:#FFD700;">0s</div>
+                    <div id="statWeekHours" style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;color:var(--accent-primary, #FFD700);">0s</div>
                     <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:1px;">BU HAFTA</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 14px;text-align:center;">
@@ -16872,7 +16872,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     @keyframes hpbgPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
     .hpbg-info { flex:1; min-width:0; }
     .hpbg-title { font-size:11px; color:rgba(255,255,255,0.5); letter-spacing:1px; text-transform:uppercase; }
-    .hpbg-progress { font-size:12px; font-family:'Orbitron',sans-serif; color:#FFD700; margin-top:2px; }
+    .hpbg-progress { font-size:12px; font-family:'Orbitron',sans-serif; color:var(--accent-primary, #FFD700); margin-top:2px; }
     .hpbg-open {
         width:28px; height:28px; border-radius:7px;
         border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);
@@ -16909,7 +16909,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         font-family: 'Orbitron', sans-serif;
         font-size: 1.05rem;
         font-weight: 900;
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         letter-spacing: 2px;
         display: flex;
         align-items: center;
@@ -16955,12 +16955,12 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     .hp-cat-tab.active {
         background: rgba(var(--accent-primary-rgb,255,215,0),0.15);
         border-color: rgba(var(--accent-primary-rgb,255,215,0),0.45);
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
     }
     .hp-cat-tab.remote-focused {
         box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7) !important;
         border-color: rgba(var(--accent-primary-rgb,255,215,0),0.6) !important;
-        color: #FFD700 !important;
+        color: var(--accent-primary, #FFD700) !important;
         background: rgba(var(--accent-primary-rgb,255,215,0),0.12) !important;
     }
 
@@ -16989,12 +16989,12 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     .hp-limit-btn.active {
         background: rgba(var(--accent-primary-rgb,255,215,0),0.12);
         border-color: rgba(var(--accent-primary-rgb,255,215,0),0.35);
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
     }
     .hp-limit-btn.remote-focused {
         box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb,255,215,0),0.7) !important;
         border-color: rgba(var(--accent-primary-rgb,255,215,0),0.6) !important;
-        color: #FFD700 !important;
+        color: var(--accent-primary, #FFD700) !important;
     }
 
     /* Buton grubu — sağ taraf */
@@ -17012,7 +17012,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         border-radius: 10px;
         border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);
         background: linear-gradient(135deg,rgba(var(--accent-primary-rgb,255,215,0),0.18),rgba(255,140,0,0.26));
-        color: #FFD700;
+        color: var(--accent-primary, #FFD700);
         font-family: 'Orbitron', sans-serif;
         font-size: 11px;
         font-weight: 700;
@@ -17342,7 +17342,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 <div class="hp-title-row">
                     <div>
                         <div class="hp-title">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                             KANAL SAĞLIK KONTROLÜ
                         </div>
                         <div class="hp-subtitle" id="healthSubtitle">Kategori seç → Taramayı başlat</div>
@@ -17379,7 +17379,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
                 <button class="hp-limit-btn" data-limit="0"   onclick="hpSetLimit(this)">Tümü</button>
                 <div class="hp-btn-group">
                     <button class="hp-start-btn umit-panel-btn primary" id="healthStartBtn" onclick="startHealthCheck()">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="#FFD700"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--accent-primary, #FFD700)"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         TARAMAYA BAŞLA
                     </button>
                     <button class="hp-pause-btn umit-panel-btn" id="healthPauseBtn" onclick="pauseHealthCheck()">
@@ -17469,7 +17469,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <div class="hpbg-progress" id="hpBgProgress">0 / 0</div>
         </div>
         <div class="hpbg-open">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         </div>
     </div>
 
@@ -23769,7 +23769,7 @@ function createOptimizedChannelCard(index) {
                 const _r = _vc.vote_average ? _vc.vote_average.toFixed(1) : null;
                 const _y = (_vc.release_date||_vc.first_air_date) ? (_vc.release_date||_vc.first_air_date).substring(0,4) : null;
                 let _mh = '';
-                if (_r) _mh += `<div class="vod-rating"><span class="material-symbols-outlined" style="font-size:9px;color:#FFD700;">star</span>${_r}</div>`;
+                if (_r) _mh += `<div class="vod-rating"><span class="material-symbols-outlined" style="font-size:9px;color:var(--accent-primary, #FFD700);">star</span>${_r}</div>`;
                 if (_y) _mh += `<div class="vod-year">${_y}</div>`;
                 if (_mh) metaEl.innerHTML = _mh;
             }
@@ -27310,7 +27310,7 @@ function selectStartupMode(mode) {
         const active = (id === 'startupModeNormal' && mode === 'normal') ||
                        (id === 'startupModeLastWatched' && mode === 'lastWatched') ||
                        (id === 'startupModeCategory' && mode === 'category');
-        el.style.borderColor = active ? '#FFD700' : 'rgba(255,255,255,0.12)';
+        el.style.borderColor = active ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.12)';
         el.style.background = active ? 'rgba(var(--accent-primary-rgb,255,215,0),0.12)' : 'rgba(255,255,255,0.05)';
     });
     const sel = document.getElementById('startupCategorySelect');
@@ -27874,7 +27874,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             var restoreBtn = document.createElement('button');
             restoreBtn.id = 'miniRestoreBtn';
             restoreBtn.title = 'Normale Dön';
-            restoreBtn.style.cssText = 'flex:1;height:26px;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);border-radius:5px;color:#FFD700;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 6px;margin-right:4px;transition:background 0.15s;';
+            restoreBtn.style.cssText = 'flex:1;height:26px;background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);border-radius:5px;color:var(--accent-primary, #FFD700);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 6px;margin-right:4px;transition:background 0.15s;';
             restoreBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg><span>Tam Ekran</span>';
             restoreBtn.addEventListener('mouseenter', function(){ this.style.background='rgba(var(--accent-primary-rgb,255,215,0),0.3)'; });
             restoreBtn.addEventListener('mouseleave', function(){ this.style.background='rgba(var(--accent-primary-rgb,255,215,0),0.15)'; });
@@ -27908,7 +27908,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
                 'left:50%',
                 'transform:translateX(-50%)',
                 'background:rgba(0,0,0,0.82)',
-                'color:#FFD700',
+                'color:var(--accent-primary, #FFD700)',
                 'font-size:10px',
                 'font-weight:600',
                 'padding:4px 10px',
@@ -27938,7 +27938,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             // ── Kumanda focus vurgulama ──
             function _setRemoteFocused(focused) {
                 if (focused) {
-                    wrap.style.border = '2px solid #FFD700';
+                    wrap.style.border = '2px solid var(--accent-primary, #FFD700)';
                     wrap.style.boxShadow = '0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),0.5), 0 8px 32px rgba(0,0,0,0.7)';
                     restoreBtn.style.background = 'rgba(var(--accent-primary-rgb,255,215,0),0.35)';
                 } else {
@@ -28325,7 +28325,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             document.getElementById('volumeValue').textContent = pct + '%';
             var fill = document.getElementById('volumeBarFill');
             // Bar rengi: --accent-secondary (Galatasaray'da kırmızı)
-            var secColor = _getThemeColor('--accent-secondary', '#FFD700');
+            var secColor = _getThemeColor('--accent-secondary', 'var(--accent-primary, #FFD700)');
             if (fill) {
                 fill.style.height = Math.max(2, pct) + '%';
                 fill.style.background = 'linear-gradient(to top, ' + secColor + ', ' + secColor + 'aa)';
@@ -28386,7 +28386,7 @@ document.addEventListener('touchstart', cancelSleepShutdown);
             document.getElementById('brightnessValue').textContent = pct + '%';
             var fill = document.getElementById('brightnessBarFill');
             // Bar rengi: --accent-primary (Galatasaray'da sarı)
-            var primColor = _getThemeColor('--accent-primary', '#FFD700');
+            var primColor = _getThemeColor('--accent-primary', 'var(--accent-primary, #FFD700)');
             if (fill) {
                 fill.style.height = Math.max(2, pct) + '%';
                 fill.style.background = 'linear-gradient(to top, ' + primColor + ', ' + primColor + 'aa)';
@@ -29594,7 +29594,7 @@ function updateLoadingProgress(message = null, forcePercent = null) {
                 if (percentText) percentText.style.color = '#00e676';
             } else {
                 bigStatus.textContent = 'Ümit Listesi Yükleniyor...';
-                bigStatus.style.color = '#FFD700';
+                bigStatus.style.color = 'var(--accent-primary, #FFD700)';
                 bigStatus.style.textShadow = '0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.7)';
                 if (percentText) percentText.style.color = '#ffffff';
             }
@@ -31683,7 +31683,7 @@ function _renderSeriesEpisodesInSidebar(seriesName) {
     let seasonHtml = '<div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px 8px 4px;">';
     seasons.forEach(s => {
         const isActive = String(s) === String(currentSeason);
-        seasonHtml += `<button onclick="_sbSelectSeason('${seriesName}',${s})" style="padding:4px 10px;border-radius:6px;border:1px solid ${isActive ? '#FFD700' : 'rgba(255,255,255,0.2)'};background:${isActive ? 'rgba(var(--accent-primary-rgb,255,215,0),0.15)' : 'rgba(255,255,255,0.05)'};color:${isActive ? '#FFD700' : '#ccc'};font-size:12px;font-weight:700;cursor:pointer;">${s}. Sezon</button>`;
+        seasonHtml += `<button onclick="_sbSelectSeason('${seriesName}',${s})" style="padding:4px 10px;border-radius:6px;border:1px solid ${isActive ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.2)'};background:${isActive ? 'rgba(var(--accent-primary-rgb,255,215,0),0.15)' : 'rgba(255,255,255,0.05)'};color:${isActive ? 'var(--accent-primary, #FFD700)' : '#ccc'};font-size:12px;font-weight:700;cursor:pointer;">${s}. Sezon</button>`;
     });
     seasonHtml += '</div>';
 
@@ -31698,12 +31698,12 @@ function _renderSeriesEpisodesInSidebar(seriesName) {
         episodeHtml += `<li class="channel-list-item${isPlaying ? ' active' : ''}" style="cursor:pointer;" onclick="_sbPlayEpisode('${seriesName.replace(/'/g,"\'")}',${currentSeason},${ep.episode})">
             <div class="channel-number" style="min-width:32px;text-align:center;">${ep.episode}</div>
             <div class="channel-logo-small" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
-                ${isPlaying ? '<span class="material-symbols-outlined" style="color:#FFD700;font-size:20px;">play_circle</span>' :
+                ${isPlaying ? '<span class="material-symbols-outlined" style="color:var(--accent-primary, #FFD700);font-size:20px;">play_circle</span>' :
                   isWatched ? '<span class="material-symbols-outlined" style="color:#4dbb7a;font-size:18px;">check_circle</span>' :
                   '<span class="material-symbols-outlined" style="color:#888;font-size:18px;">radio_button_unchecked</span>'}
             </div>
             <div class="channel-info">
-                <div class="channel-name" style="${isPlaying ? 'color:#FFD700;' : ''}">${epTitle}</div>
+                <div class="channel-name" style="${isPlaying ? 'color:var(--accent-primary, #FFD700);' : ''}">${epTitle}</div>
                 ${ep.duration ? '<div class="channel-group" style="font-size:11px;color:#888;">' + ep.duration + '</div>' : ''}
             </div>
         </li>`;
@@ -32785,7 +32785,7 @@ function showDeviceWarningToast() {
                 DİKKAT — 3. CİHAZ
             </div>
             <div style="color:rgba(255,255,255,0.9);font-size:13px;line-height:1.6;margin-bottom:18px;">
-                Bu <strong style="color:#FFD700;">3. cihazınız</strong> ile giriş yaptınız.<br><br>
+                Bu <strong style="color:var(--accent-primary, #FFD700);">3. cihazınız</strong> ile giriş yaptınız.<br><br>
                 🚨 Bir sonraki <strong style="color:var(--accent-danger, #ff4444);">4. cihaz denemesinde</strong> tüm cihazlarınız <strong>kalıcı olarak banlanacaktır</strong>.<br><br>
                 Lütfen şifrenizi / kodunuzu kimseyle paylaşmayın.
             </div>
@@ -36504,7 +36504,7 @@ function updateVodCardRating(channelName, vodInfo) {
             const yearRaw = vodInfo.release_date || vodInfo.first_air_date;
             const year = yearRaw ? yearRaw.substring(0, 4) : null;
             let html = '';
-            if (rating) html += `<div class="vod-rating"><span class="material-symbols-outlined" style="font-size:10px;color:#FFD700;">star</span>${rating}</div>`;
+            if (rating) html += `<div class="vod-rating"><span class="material-symbols-outlined" style="font-size:10px;color:var(--accent-primary, #FFD700);">star</span>${rating}</div>`;
             if (year) html += `<div class="vod-year">${year}</div>`;
             if (html) metaEl.innerHTML = html;
         });
@@ -37192,7 +37192,7 @@ function showInlineLoading(pct, text) {
     if (pctEl) pctEl.textContent = '%' + Math.round(pct);
     if (textEl) {
         textEl.textContent = text || 'Yükleniyor...';
-        textEl.style.color = pct >= 100 ? '#00e676' : '#FFD700';
+        textEl.style.color = pct >= 100 ? '#00e676' : 'var(--accent-primary, #FFD700)';
         if (fill && pct >= 100) fill.style.background = 'linear-gradient(90deg,#00e676,#00c853)';
     }
 }
@@ -38179,7 +38179,7 @@ setTimeout(_vhsInit, 1200);
                 // Renk + Türkçe durum kelimesi: yeşil>5s Sağlıklı, sarı>2s Orta, kırmızı<2s Riskli
                 let color, label;
                 if (bufAhead >= 5)      { color = '#4ade80'; label = 'Sağlıklı'; }
-                else if (bufAhead >= 2) { color = '#FFD700'; label = 'Orta';     }
+                else if (bufAhead >= 2) { color = 'var(--accent-primary, #FFD700)'; label = 'Orta';     }
                 else                    { color = 'var(--accent-danger, #f87171)'; label = 'Riskli';  }
                 if (dot) dot.style.background = color;
                 if (status) { status.textContent = label; status.style.color = color; }
@@ -39480,7 +39480,7 @@ function addContinueCardStyles() {
                 if (lbl) {
                     lbl.textContent = hidden ? 'GİZLİ' : 'AÇ';
                     lbl.style.background = hidden ? 'rgba(var(--accent-danger-rgb, 231,76,60),0.2)' : 'rgba(var(--accent-primary-rgb,255,215,0),0.15)';
-                    lbl.style.color = hidden ? 'var(--accent-danger, #e74c3c)' : '#FFD700';
+                    lbl.style.color = hidden ? 'var(--accent-danger, #e74c3c)' : 'var(--accent-primary, #FFD700)';
                 }
             } catch(e) {}
         }
@@ -41498,10 +41498,10 @@ function renderChannels() {
                         font-size: 15px;
                         line-height: 1.8;
                     ">
-                        <span class="material-symbols-outlined" style="font-size: 52px; display: block; margin-bottom: 14px; color: #FFD700;">
+                        <span class="material-symbols-outlined" style="font-size: 52px; display: block; margin-bottom: 14px; color: var(--accent-primary, #FFD700);">
                             wifi_off
                         </span>
-                        <div style="font-size: 17px; font-weight: 700; color: #FFD700; margin-bottom: 10px;">
+                        <div style="font-size: 17px; font-weight: 700; color: var(--accent-primary, #FFD700); margin-bottom: 10px;">
                             Liste Otomatik Yüklenemedi
                         </div>
                         <div style="color: rgba(255,255,255,0.65); font-size: 13px; margin-bottom: 20px;">
@@ -41517,14 +41517,14 @@ function renderChannels() {
                             color: rgba(255,255,255,0.85);
                             text-align: left;
                         ">
-                            <span style="color:#FFD700; font-weight:700;">💡 Ne yapmalısınız?</span><br><br>
-                            👉 Yukarıdaki <b style="color:#FFD700;">"CANLI YAYIN"</b> butonuna dokunun.<br>
+                            <span style="color:var(--accent-primary, #FFD700); font-weight:700;">💡 Ne yapmalısınız?</span><br><br>
+                            👉 Yukarıdaki <b style="color:var(--accent-primary, #FFD700);">"CANLI YAYIN"</b> butonuna dokunun.<br>
                             <span style="font-size:12px; color:rgba(255,255,255,0.5);">(Otomatik indirilmediyse listeler oradan açılır)</span>
                         </div>
                         <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
                             <button onclick="if(typeof refreshM3ULists==='function')refreshM3ULists(); else location.reload();"
                                 style="
-                                    background: linear-gradient(135deg,#FFD700,#E09500);
+                                    background: linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #E09500));
                                     border: none; border-radius: 10px;
                                     padding: 12px 22px;
                                     font-size: 14px; font-weight: 700;
@@ -41546,7 +41546,7 @@ function renderChannels() {
                                     border-radius: 10px;
                                     padding: 12px 22px;
                                     font-size: 14px; font-weight: 700;
-                                    color: #FFD700; cursor: pointer;
+                                    color: var(--accent-primary, #FFD700); cursor: pointer;
                                     display:flex; align-items:center; gap:6px;
                                 ">
                                 <span class="material-symbols-outlined" style="font-size:18px;">live_tv</span>
@@ -42377,7 +42377,7 @@ function playChannelByUrl(url, channelName = '', startTime = 0, isSeriesFlag = f
                     startedBy: WP.myNick
                 }).catch(function(){});
                 window.fbPush && window.fbPush('/rooms/' + WP.roomCode + '/chat', {
-                    nick: 'Sistem', color: '#FFD700',
+                    nick: 'Sistem', color: 'var(--accent-primary, #FFD700)',
                     text: '▶ ' + WP.myNick + ' oynatıyor: ' + (channelName || 'Dizi Bölümü'),
                     isSystem: true, ts: Date.now()
                 }).catch(function(){});
@@ -44786,7 +44786,7 @@ function showChannelInfoBanner(channelName, logoUrl, tvgIdHint) {
                 ${epgNowRow}
                 <div class="cib-next-row">
                     ${epgNextRow}
-                    <span class="cib-clock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2.2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>${nowTime}</span>
+                    <span class="cib-clock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2.2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>${nowTime}</span>
                 </div>
             </div>`;
     }
@@ -46945,7 +46945,7 @@ function displaySearchResults(results) {
         const typeLabel = isVod ? 'VOD' : 'CANLI';
         const typeBg = isVod
             ? 'background:linear-gradient(135deg,var(--accent-danger, #e74c3c),var(--accent-danger-dark, #c0392b));color:#fff;'
-            : 'background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,#FFA500));color:#000;';
+            : 'background:linear-gradient(135deg,var(--accent-primary,#FFD700),var(--accent-secondary,var(--accent-secondary, #FFA500)));color:#000;';
 
         html += '<div class="search-result-item" data-index="' + index + '" data-channel-name="' + channelName.replace(/"/g, '&quot;') + '" tabindex="0" style="touch-action:manipulation;">' +
             '<div class="search-result-logo" style="width:44px;height:44px;min-width:44px;">' +
@@ -50609,10 +50609,10 @@ function showChNumOverlay(buf) {
         el.id = 'chNumOverlay';
         el.style.cssText = `
             position:fixed; bottom:80px; right:24px; z-index:999998;
-            background:rgba(0,0,0,0.85); color:#FFD700;
+            background:rgba(0,0,0,0.85); color:var(--accent-primary, #FFD700);
             font-family:'Orbitron',monospace; font-size:36px; font-weight:900;
             padding:14px 28px; border-radius:14px;
-            border:2px solid #FFD700; letter-spacing:6px;
+            border:2px solid var(--accent-primary, #FFD700); letter-spacing:6px;
             box-shadow:0 4px 30px rgba(var(--accent-primary-rgb,255,215,0),0.4);
             pointer-events:none;
         `;
@@ -52702,7 +52702,7 @@ function optimizeVideoPlayer() {
 .low-performance-mode .channel-card[data-is-series="true"]::before,
 .fast-mode .channel-card[data-is-series="true"]::before {
     animation: none !important;
-    background: linear-gradient(90deg, #FFD700, #FF8C00) !important;
+    background: linear-gradient(90deg, var(--accent-primary, #FFD700), var(--accent-secondary, #FF8C00)) !important;
 }
  
 .channel-card {
@@ -53341,7 +53341,7 @@ if (typeof window.fetchM3UChannels === 'undefined') {
         }
         .vod-episode-card.tv-focused {
             background: rgba(var(--accent-primary-rgb,255,215,0), 0.25) !important;
-            border-color: #FFD700 !important;
+            border-color: var(--accent-primary, #FFD700) !important;
         }
     `;
     document.head.appendChild(style);
@@ -54211,7 +54211,7 @@ function buildSubtitleItems() {
     // ── DOSYADAN YÜKLE BÖLÜMÜ ──
     html += `<div style="padding:8px 4px 2px; font-size:10px; font-weight:800; color:rgba(var(--accent-primary-rgb,255,215,0),0.7); text-transform:uppercase; letter-spacing:0.5px;">📂 Dosyadan Yükle</div>`;
     html += `<div class="qm-item sub-file-btn" onclick="triggerSubtitleFilePicker()">
-        <span class="material-symbols-outlined qm-item-icon" style="color:#FFD700">upload_file</span>
+        <span class="material-symbols-outlined qm-item-icon" style="color:var(--accent-primary, #FFD700)">upload_file</span>
         <div class="qm-item-info">
             <div class="qm-item-name">Altyazı Dosyası Seç</div>
             <div class="qm-item-desc">SRT · VTT · ASS · SSA</div>
@@ -56032,7 +56032,7 @@ function togglePlayerInfoToast() {
         var addBadge = function(text, color) {
             if (!text) return;
             var b = document.createElement('span');
-            b.style.cssText = 'background:rgba(var(--accent-primary-rgb,255,215,0),0.12);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-radius:6px;padding:3px 9px;font-size:11px;color:' + (color||'#FFD700') + ';font-weight:700;';
+            b.style.cssText = 'background:rgba(var(--accent-primary-rgb,255,215,0),0.12);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-radius:6px;padding:3px 9px;font-size:11px;color:' + (color||'var(--accent-primary, #FFD700)') + ';font-weight:700;';
             b.textContent = text;
             toastStats.appendChild(b);
         };
@@ -56041,7 +56041,7 @@ function togglePlayerInfoToast() {
         if (day) addBadge(day + ' ' + date);
         var buf = bufTxt ? bufTxt.textContent : '';
         var stat = bufStat ? bufStat.textContent : '';
-        if (buf && buf !== '--') addBadge(buf + (stat ? ' ' + stat : ''), stat === 'Sağlıklı' ? '#48bb78' : '#FFD700');
+        if (buf && buf !== '--') addBadge(buf + (stat ? ' ' + stat : ''), stat === 'Sağlıklı' ? '#48bb78' : 'var(--accent-primary, #FFD700)');
     }
 
     toast.style.display = 'block';
@@ -56072,14 +56072,14 @@ function togglePlayerInfoToast() {
     <div style="background:linear-gradient(160deg,rgba(14,16,26,0.98),rgba(10,12,20,0.99));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);border-radius:18px;padding:32px 28px 24px;width:min(360px,90vw);box-shadow:0 0 60px rgba(255,170,0,0.1),0 30px 80px rgba(0,0,0,0.7);font-family:'Rajdhani',sans-serif;position:relative;">
         <div style="text-align:center;margin-bottom:20px;">
             <div style="font-size:32px;margin-bottom:8px;">👤</div>
-            <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#FFD700;letter-spacing:2px;">KULLANICI ADI</div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--accent-primary, #FFD700);letter-spacing:2px;">KULLANICI ADI</div>
             <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:6px;line-height:1.5;">Telegram adını veya istediğin bir adı gir.<br>Sağ üstte görünecek.</div>
         </div>
         <input id="nicknameInput" type="text" maxlength="32" placeholder="Adını gir..." autocomplete="off" tabindex="0"
             style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.3);border-radius:10px;padding:13px 14px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:#fff;outline:none;margin-bottom:16px;">
         <div style="display:flex;gap:10px;">
             <button id="nicknameSaveBtn" onclick="window._saveNickname()" tabindex="0"
-                style="flex:1;background:linear-gradient(135deg,#FFD700,#E8A000);border:none;border-radius:10px;padding:13px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
+                style="flex:1;background:linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #E8A000));border:none;border-radius:10px;padding:13px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:800;color:#000;cursor:pointer;letter-spacing:1px;">
                 KAYDET
             </button>
             <button id="nicknameSkipBtn" onclick="window._skipNickname()" tabindex="0"
@@ -57557,7 +57557,7 @@ function _favIcons(ch, isFav) {
     font-family: 'Orbitron', sans-serif;
     font-size: 16px;
     font-weight: 900;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     letter-spacing: 2px;
     flex: 1;
 }
@@ -57590,7 +57590,7 @@ function _favIcons(ch, isFav) {
     display: flex; align-items: center; justify-content: center;
     font-size: 36px;
     font-weight: 700;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     margin-bottom: 10px;
     box-shadow: 0 0 20px rgba(var(--accent-primary-rgb,255,215,0),0.2);
     flex-shrink: 0;
@@ -57646,7 +57646,7 @@ function _favIcons(ch, isFav) {
     color: #fff;
     outline: none;
     box-sizing: border-box;
-    caret-color: #FFD700;
+    caret-color: var(--accent-primary, #FFD700);
     transition: border-color 0.15s, background 0.15s;
     -webkit-appearance: none;
     -webkit-text-fill-color: #fff;
@@ -57682,7 +57682,7 @@ function _favIcons(ch, isFav) {
 .profile-save-btn {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #FFD700 0%, #F0A800 60%, #E09500 100%);
+    background: linear-gradient(135deg, var(--accent-primary, #FFD700) 0%, var(--accent-secondary, #F0A800) 60%, var(--accent-secondary, #E09500) 100%);
     border: none;
     border-radius: 12px;
     font-family: 'Orbitron', sans-serif;
@@ -57734,10 +57734,10 @@ function _favIcons(ch, isFav) {
 .rutbe-caylak        { background:rgba(100,180,255,0.12);border:1px solid rgba(100,180,255,0.35);color:#64b4ff; }
 .rutbe-yorumcu-basi  { background:rgba(100,200,255,0.12);border:1px solid rgba(100,200,255,0.35);color:#64c8ff; }
 .rutbe-yorumcu-sapi  { background:rgba(180,100,255,0.12);border:1px solid rgba(180,100,255,0.35);color:#b464ff; }
-.rutbe-yorumcu-krali { background:rgba(var(--accent-primary-rgb,255,215,0),0.12); border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4); color:#FFD700; }
+.rutbe-yorumcu-krali { background:rgba(var(--accent-primary-rgb,255,215,0),0.12); border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4); color:var(--accent-primary, #FFD700); }
 .rutbe-usta          { background:rgba(255,150,30,0.15); border:1px solid rgba(255,150,30,0.5); color:#ff961e; box-shadow:0 0 6px rgba(255,150,30,0.2); }
 .rutbe-sampiyonu     { background:rgba(255,80,80,0.15);  border:1px solid rgba(255,80,80,0.45); color:#ff6060; box-shadow:0 0 8px rgba(255,80,80,0.2); }
-.rutbe-efsane        { background:linear-gradient(90deg,rgba(var(--accent-primary-rgb,255,215,0),0.2),rgba(255,100,200,0.15));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.6);color:#FFD700;box-shadow:0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.3);animation:rutbeShine 2s ease-in-out infinite; }
+.rutbe-efsane        { background:linear-gradient(90deg,rgba(var(--accent-primary-rgb,255,215,0),0.2),rgba(255,100,200,0.15));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.6);color:var(--accent-primary, #FFD700);box-shadow:0 0 12px rgba(var(--accent-primary-rgb,255,215,0),0.3);animation:rutbeShine 2s ease-in-out infinite; }
 @keyframes rutbeShine {
   0%,100% { box-shadow:0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.3); }
   50%      { box-shadow:0 0 16px rgba(var(--accent-primary-rgb,255,215,0),0.6),0 0 24px rgba(255,150,0,0.2); }
@@ -57792,7 +57792,7 @@ function _favIcons(ch, isFav) {
     font-size:12px;font-weight:700;color:rgba(var(--accent-primary-rgb,255,215,0),0.75);
     font-family:'Exo 2',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.upv-review-stars { color:#FFD700;font-size:11px; }
+.upv-review-stars { color:var(--accent-primary, #FFD700);font-size:11px; }
 .upv-review-text { font-size:12px;color:rgba(220,220,240,0.75);line-height:1.4; }
 .upv-review-date { font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px; }
 .upv-empty { text-align:center;color:rgba(255,255,255,0.25);font-size:12px;padding:24px 16px; }
@@ -58316,7 +58316,7 @@ async function updateHeaderAvatar() {
     if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
         wrap.innerHTML = `<img src="${avatar}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:20px>account_circle</span>'">`;
     } else {
-        wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:#FFD700;">${initial}</span>`;
+        wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:var(--accent-primary, #FFD700);">${initial}</span>`;
     }
     /* Profil adını da güncelle */
     updateHeaderUsername();
@@ -58395,7 +58395,7 @@ function _updateModalAvatar(url, name) {
     if (url && (url.startsWith('http') || url.startsWith('data:'))) {
         wrap.innerHTML = `<img src="${url}" alt="${initial}" onerror="this.parentNode.innerHTML='<span class=material-symbols-outlined style=font-size:44px>account_circle</span>'">`;
     } else {
-        wrap.innerHTML = `<span style="font-size:36px;font-weight:700;color:#FFD700;">${initial}</span>`;
+        wrap.innerHTML = `<span style="font-size:36px;font-weight:700;color:var(--accent-primary, #FFD700);">${initial}</span>`;
     }
 }
 
@@ -60280,7 +60280,7 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
     width: 50px !important;
     height: 50px !important;
     border-radius: 50% !important;
-    background: linear-gradient(135deg,#FFD700 0%,#F0A500 100%) !important;
+    background: linear-gradient(135deg,var(--accent-primary, #FFD700) 0%,#F0A500 100%) !important;
     border: none !important;
     outline: none !important;
     display: flex !important;
@@ -60389,7 +60389,7 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
         var root = document.documentElement;
         var primary = root.style.getPropertyValue('--accent-primary').trim() ||
                       getComputedStyle(root).getPropertyValue('--accent-primary').trim() ||
-                      '#FFD700';
+                      'var(--accent-primary, #FFD700)';
         var secondary = root.style.getPropertyValue('--accent-secondary').trim() ||
                         getComputedStyle(root).getPropertyValue('--accent-secondary').trim() ||
                         '#F0A500';
@@ -62339,7 +62339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     background: rgba(0,0,0,0.82);
     border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.55);
     border-radius: 6px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-family: 'Orbitron', 'Rajdhani', monospace;
     font-size: 11px;
     font-weight: 800;
@@ -62389,7 +62389,7 @@ document.addEventListener('DOMContentLoaded', function() {
     font-family: 'Orbitron', 'Rajdhani', monospace;
     font-size: 96px;
     font-weight: 900;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     line-height: 1;
     letter-spacing: 4px;
     text-shadow: 0 0 30px rgba(var(--accent-primary-rgb,255,215,0),0.6), 0 2px 0 rgba(0,0,0,0.8);
@@ -62433,7 +62433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 #zapOsdTimerBar {
     height: 100%;
-    background: #FFD700;
+    background: var(--accent-primary, #FFD700);
     border-radius: 2px;
     width: 100%;
     transform-origin: left;
@@ -64106,7 +64106,7 @@ function vodRenderReview(key, rev, myName) {
   } catch(e) {}
 
   // Kullanıcı rengi
-  var uColor   = (typeof vrUserColor === 'function') ? vrUserColor(nick) : '#FFD700';
+  var uColor   = (typeof vrUserColor === 'function') ? vrUserColor(nick) : 'var(--accent-primary, #FFD700)';
   var uInitial = (nick[0] || '?').toUpperCase();
 
   // ── Ana kart elementi ──
@@ -64174,7 +64174,7 @@ function vodRenderReview(key, rev, myName) {
   // ── Yıldızlar ──
   if (stars > 0) {
     var starDiv = document.createElement("div");
-    starDiv.style.cssText = "color:#FFD700;font-size:13px;margin-bottom:5px;letter-spacing:1px;";
+    starDiv.style.cssText = "color:var(--accent-primary, #FFD700);font-size:13px;margin-bottom:5px;letter-spacing:1px;";
     starDiv.textContent = starsStr;
     el.appendChild(starDiv);
   }
@@ -64200,7 +64200,7 @@ function vodRenderReview(key, rev, myName) {
     if (active) {
       btn.style.background = isDislike ? 'rgba(var(--accent-danger-rgb, 231,76,60),0.18)' : 'rgba(var(--accent-primary-rgb,255,215,0),0.18)';
       btn.style.border     = isDislike ? '1px solid rgba(var(--accent-danger-rgb, 231,76,60),0.5)' : '1px solid rgba(var(--accent-primary-rgb,255,215,0),0.5)';
-      btn.style.color      = isDislike ? 'var(--accent-danger, #e74c3c)' : '#FFD700';
+      btn.style.color      = isDislike ? 'var(--accent-danger, #e74c3c)' : 'var(--accent-primary, #FFD700)';
     } else {
       btn.style.background = 'rgba(255,255,255,0.06)';
       btn.style.border     = '1px solid rgba(255,255,255,0.1)';
@@ -64305,7 +64305,7 @@ window.vodPickStar = function(val) {
   _vrMyStars = val;
   const stars = document.querySelectorAll('.vod-review-star');
   stars.forEach((s, i) => {
-    s.style.color = i < val ? '#FFD700' : 'rgba(255,255,255,0.2)';
+    s.style.color = i < val ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.2)';
     s.style.textShadow = i < val ? '0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.6)' : 'none';
   });
   const lbl = document.getElementById('vodStarLabel');
@@ -65272,7 +65272,7 @@ function wpShowToast(msg) {
   Object.assign(t.style, {
     position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',
     background:'#1a1a28',border:'1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4)',borderRadius:'30px',
-    padding:'9px 22px',fontSize:'14px',fontWeight:'700',color:'#FFD700',
+    padding:'9px 22px',fontSize:'14px',fontWeight:'700',color:'var(--accent-primary, #FFD700)',
     zIndex:'999999',pointerEvents:'none',fontFamily:'Rajdhani,sans-serif',
     boxShadow:'0 8px 30px rgba(0,0,0,0.5)'
   });
@@ -65332,7 +65332,7 @@ window.wpLoadRooms = async function wpLoadRooms() {
       list.innerHTML = '<div style="text-align:center;font-size:12px;padding:10px;">' +
         '<div style="color:var(--accent-danger, #e74c3c);margin-bottom:8px;">⚠ Firebase bağlantısı kurulamadı</div>' +
         '<div style="color:rgba(255,255,255,0.4);font-size:10px;margin-bottom:8px;">İnternet bağlantınızı kontrol edin</div>' +
-        '<button onclick="wpLoadRooms()" style="background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);border-radius:8px;color:#FFD700;padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
+        '<button onclick="wpLoadRooms()" style="background:rgba(var(--accent-primary-rgb,255,215,0),0.15);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.4);border-radius:8px;color:var(--accent-primary, #FFD700);padding:6px 16px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🔄 Tekrar Dene</button>' +
         '</div>';
       return;
     }
@@ -65601,7 +65601,7 @@ window.wpCreateRoom = async function() {
         // Mevcut odanın kartını vurgula
         setTimeout(() => {
           const card = document.querySelector('#wpRoomsList .wp-room-item[data-code="' + existCode + '"]');
-          if (card) { card.style.border = '1px solid #FFD700'; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { card.style.border = ''; }, 2500); }
+          if (card) { card.style.border = '1px solid var(--accent-primary, #FFD700)'; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { card.style.border = ''; }, 2500); }
         }, 200);
         return;
       }
@@ -65818,7 +65818,7 @@ async function wpEnterRoom({ nick, code, roomName, contentTitle, isHost }) {
       if(msg.isSystem) {
         wpAddSystemMsg(msg.text || '');
       } else {
-        wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
+        wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'var(--accent-primary, #FFD700)', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
       }
     });
   }
@@ -65868,7 +65868,7 @@ function wpStartListeners(code) {
           if(!m || !m.nick) return;
           if(m.online === false) return;
           var isMe = id === WP.myId;
-          wpAddMember({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0, avatar: m.avatar || '' });
+          wpAddMember({ nick: m.nick, color: m.color || 'var(--accent-primary, #FFD700)', isHost: !!m.isHost, isMe: isMe, lastSeen: m.lastSeen || 0, avatar: m.avatar || '' });
         });
         // Kendimiz yoksa ekle
         if(!WP.members.find(function(m){ return m.isMe; })) {
@@ -65890,7 +65890,7 @@ function wpStartListeners(code) {
           if(msg.isSystem) {
             wpAddSystemMsg(msg.text || '');
           } else {
-            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'#FFD700', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
+            wpAddChatMsg({ nick: msg.nick||'?', color: msg.color||'var(--accent-primary, #FFD700)', text: msg.text||'', isReaction: !!msg.isReaction, avatar: msg.avatar||'' });
           }
         });
       }
@@ -65906,7 +65906,7 @@ function wpStartListeners(code) {
           WP.lastCommentKeys.add(k);
           if(isFirst) return; // İlk yüklemede geçmiş yorumları gösterme
           if(!c || typeof c !== 'object') return;
-          wpAddComment({ nick: c.nick||'?', color: c.color||'#FFD700', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem, avatar: c.avatar||'' });
+          wpAddComment({ nick: c.nick||'?', color: c.color||'var(--accent-primary, #FFD700)', text: c.text||'', stars: c.stars||0, isSystem: !!c.isSystem, avatar: c.avatar||'' });
           if(c.stars) { WP.ratings.push({ nick: c.nick, stars: c.stars }); wpUpdateAvgRating(); }
         });
       }
@@ -65990,10 +65990,10 @@ function wpShowExpiryDialog() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
     var html = '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.35);border-radius:18px;padding:28px 28px 22px;max-width:320px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.7);text-align:center;">';
     html += '<div style="font-size:32px;margin-bottom:10px;">⏰</div>';
-    html += '<div style="font-family:Orbitron,sans-serif;font-size:14px;font-weight:700;color:#FFD700;letter-spacing:1px;margin-bottom:8px;">ODA SÜRESİ DOLUYOR</div>';
+    html += '<div style="font-family:Orbitron,sans-serif;font-size:14px;font-weight:700;color:var(--accent-primary, #FFD700);letter-spacing:1px;margin-bottom:8px;">ODA SÜRESİ DOLUYOR</div>';
     html += '<div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:20px;">Odanın 2 saatlik süresi <strong style=\"color:var(--accent-danger, #e74c3c);\">5 dakika içinde</strong> dolacak.<br>Ne yapmak istiyorsun?</div>';
     html += '<div style="display:flex;flex-direction:column;gap:10px;">';
-    html += '<button id="wpExpExtend" style="background:linear-gradient(135deg,#FFD700,#FFA500);border:none;border-radius:10px;padding:12px;font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;color:#000;cursor:pointer;letter-spacing:1px;">⏱ +2 SAAT UZAT</button>';
+    html += '<button id="wpExpExtend" style="background:linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FFA500));border:none;border-radius:10px;padding:12px;font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;color:#000;cursor:pointer;letter-spacing:1px;">⏱ +2 SAAT UZAT</button>';
     html += '<button id="wpExpDelete" style="background:rgba(var(--accent-danger-rgb, 231,76,60),0.15);border:1px solid rgba(var(--accent-danger-rgb, 231,76,60),0.5);border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:var(--accent-danger, #e74c3c);cursor:pointer;">🗑 ODAYI SİL</button>';
     html += '</div></div>';
     overlay.innerHTML = html;
@@ -66112,7 +66112,7 @@ window.wpSwitchTab = function(tab) {
           if(!m || !m.nick) return;
           if(m.online === false) return;
           var isMe = id === WP.myId;
-          WP.members.push({ nick: m.nick, color: m.color || '#FFD700', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
+          WP.members.push({ nick: m.nick, color: m.color || 'var(--accent-primary, #FFD700)', isHost: !!m.isHost, isMe, lastSeen: m.lastSeen || 0 });
         });
         // Kendimiz ekli değilse ekle
         if(!WP.members.find(function(m){ return m.isMe; })) {
@@ -66142,7 +66142,7 @@ function wpRenderMembers() {
   WP.members.forEach(m => {
     // lastSeen son 120sn içindeyse veya kendimizse aktif say
     const isActive = m.isMe || !m.lastSeen || (now - m.lastSeen) < 120000;
-    const dotColor = isActive ? '#2ed573' : '#FFD700';
+    const dotColor = isActive ? '#2ed573' : 'var(--accent-primary, #FFD700)';
     const dotLabel = isActive ? 'Aktif' : 'Arka planda';
     const initial = wpInitials(m.nick);
     // Avatar: kendi mesajımızsa IDB'den, başkasıysa m.avatar (Firebase'den gelen)
@@ -66159,7 +66159,7 @@ function wpRenderMembers() {
     el.innerHTML = `
       ${avatarHtml}
       <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:${m.isMe?'#a29bfe':m.isHost?'#FFD700':'#e8e8f0'}">${m.nick}${m.isMe?' (Sen)':''}</div>
+        <div style="font-size:13px;font-weight:700;color:${m.isMe?'#a29bfe':m.isHost?'var(--accent-primary, #FFD700)':'#e8e8f0'}">${m.nick}${m.isMe?' (Sen)':''}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.35);">${m.isHost?'Ev Sahibi':'İzleyici'}</div>
       </div>
       <div title="${dotLabel}" style="width:7px;height:7px;border-radius:50%;background:${dotColor};box-shadow:0 0 5px ${dotColor};flex-shrink:0;"></div>
@@ -66263,7 +66263,7 @@ window.wpSetStar = function(val) {
 
 function wpUpdateStars(val) {
   document.querySelectorAll('.wp-star').forEach((s,i)=>{
-    s.style.color = i<val ? '#FFD700' : 'rgba(255,255,255,0.2)';
+    s.style.color = i<val ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.2)';
     s.style.textShadow = i<val ? '0 0 8px rgba(var(--accent-primary-rgb,255,215,0),0.5)' : 'none';
   });
 }
@@ -66302,7 +66302,7 @@ function wpAddComment({ nick, color, text, stars, isSystem, avatar }) {
   const list = document.getElementById('wpCommentsList');
   const el = document.createElement('div');
   el.style.cssText = 'display:flex;gap:8px;animation:wpMsgIn 0.2s ease;';
-  const starsHtml = stars ? `<div style="color:#FFD700;font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
+  const starsHtml = stars ? `<div style="color:var(--accent-primary, #FFD700);font-size:12px;margin-top:3px;">${'★'.repeat(stars)}<span style="color:rgba(255,255,255,0.2)">${'★'.repeat(5-stars)}</span></div>` : '';
   // Avatar: önce gelen parametre, sonra WP.members'dan, sonra kendi IDB
   const initial = (nick||'?')[0].toUpperCase();
   let avatarSrc = avatar || '';
@@ -66320,7 +66320,7 @@ function wpAddComment({ nick, color, text, stars, isSystem, avatar }) {
   el.innerHTML = avatarHtml +
     `<div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:baseline;gap:6px;">
-        <span style="font-size:12px;font-weight:700;color:${isSystem?'#FFD700':color}">${nick}</span>
+        <span style="font-size:12px;font-weight:700;color:${isSystem?'var(--accent-primary, #FFD700)':color}">${nick}</span>
         <span style="font-size:10px;color:rgba(255,255,255,0.25);">${wpNow()}</span>
       </div>
       <div style="font-size:13px;color:${isSystem?'rgba(255,255,255,0.5)':'#e8e8f0'};line-height:1.4;${isSystem?'font-style:italic;':''}">${text}</div>
@@ -66385,7 +66385,7 @@ function _wpSyncChannelPlay(indexOrCh) {
               startedBy: WP.myNick
             }).catch(()=>{});
             fbPush('/rooms/' + WP.roomCode + '/chat', {
-              nick: 'Sistem', color: '#FFD700',
+              nick: 'Sistem', color: 'var(--accent-primary, #FFD700)',
               text: '📺 ' + WP.myNick + ' şimdi izliyor: ' + ch.name,
               isSystem: true, ts: Date.now()
             }).catch(()=>{});
@@ -66406,7 +66406,7 @@ function _wpSyncChannelPlay(indexOrCh) {
                 startedBy: WP.myNick
               }).catch(()=>{});
               fbPush('/rooms/' + WP.roomCode + '/chat', {
-                nick: 'Sistem', color: '#FFD700',
+                nick: 'Sistem', color: 'var(--accent-primary, #FFD700)',
                 text: '🎬 ' + WP.myNick + ' izliyor: ' + ch.name,
                 isSystem: true, ts: Date.now()
               }).catch(()=>{});
@@ -66452,7 +66452,7 @@ function _wpWrapOpenVodModal() {
             startedBy: WP.myNick
           }).catch(()=>{});
           fbPush('/rooms/' + WP.roomCode + '/chat', {
-            nick: 'Sistem', color: '#FFD700',
+            nick: 'Sistem', color: 'var(--accent-primary, #FFD700)',
             text: '🎬 ' + WP.myNick + ' seçti: ' + title,
             isSystem: true, ts: Date.now()
           }).catch(()=>{});
@@ -67540,7 +67540,7 @@ html, body {
     background: rgba(0,0,0,0.7);
     border: 1.5px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);
     border-radius: 12px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-size: 22px;
     align-items: center;
     justify-content: center;
@@ -67869,7 +67869,7 @@ html, body {
                             'bottom:76px',
                             'right:8px',
                             'background:rgba(20,20,30,0.97)',
-                            'color:#FFD700',
+                            'color:var(--accent-primary, #FFD700)',
                             'font-size:11px',
                             'font-weight:600',
                             'padding:7px 12px',
@@ -68208,8 +68208,8 @@ var _unreadCnt  = 0;
 var _dpIdx      = -1;  /* D-pad odak indeksi: 0=MarkAll, 1=DelAll, 2+= bildirim satırları */
 
 var TYPES = {
-    comment:    { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',    label: 'YEN\u0130 YORUM',       accent: '#FFD700' },
-    chat:       { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',       label: 'SOHBET',            accent: '#FFD700' },
+    comment:    { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',    label: 'YEN\u0130 YORUM',       accent: 'var(--accent-primary, #FFD700)' },
+    chat:       { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',       label: 'SOHBET',            accent: 'var(--accent-primary, #FFD700)' },
     watchparty: { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>', label: 'WATCH PARTY',       accent: '#a29bfe' },
     room_open:  { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg>',  label: 'ODA AÇILDI',        accent: '#2ed573' },
     room_join:  { icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',  label: 'KATILIM',           accent: '#74b9ff' },
@@ -69874,7 +69874,7 @@ window.openUserProfileView = async function(userName) {
   if (loadEl)  loadEl.style.display = 'block';
   if (emptyEl) emptyEl.style.display= 'none';
 
-  var color = (typeof vrUserColor === 'function') ? vrUserColor(userName) : '#FFD700';
+  var color = (typeof vrUserColor === 'function') ? vrUserColor(userName) : 'var(--accent-primary, #FFD700)';
   var initial = (userName[0] || '?').toUpperCase();
   if (avatarEl) {
     avatarEl.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;'
@@ -69934,7 +69934,7 @@ window.openUserProfileView = async function(userName) {
         + '<span>Bir sonraki rütbe</span><span>' + total + ' / ' + rutbe.next + '</span>'
         + '</div>'
         + '<div style="height:5px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">'
-        + '<div style="height:100%;width:' + Math.min(pct,100) + '%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:10px;transition:width 0.6s;"></div>'
+        + '<div style="height:100%;width:' + Math.min(pct,100) + '%;background:linear-gradient(90deg,var(--accent-primary, #FFD700),var(--accent-secondary, #FF8C00));border-radius:10px;transition:width 0.6s;"></div>'
         + '</div></div>';
     } else {
       nextInfo = '<div style="font-size:10px;color:rgba(var(--accent-primary-rgb,255,215,0),0.6);margin-top:4px;">🏅 En yüksek rütbeye ulaştın!</div>';
@@ -70057,9 +70057,9 @@ document.addEventListener('keydown', function(e) {
 .upv-film-badge:hover {
   background:rgba(var(--accent-primary-rgb,255,215,0),0.1);
   border-color:rgba(var(--accent-primary-rgb,255,215,0),0.35);
-  color:#FFD700;
+  color:var(--accent-primary, #FFD700);
 }
-.upv-film-badge .stars-sm { color:#FFD700;font-size:10px;letter-spacing:1px; }
+.upv-film-badge .stars-sm { color:var(--accent-primary, #FFD700);font-size:10px;letter-spacing:1px; }
 
 /* Rütbe tablosu */
 .rutbe-table {
@@ -70081,7 +70081,7 @@ document.addEventListener('keydown', function(e) {
   background:rgba(var(--accent-primary-rgb,255,215,0),0.08);
   border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);
   border-radius:20px;padding:6px 14px;
-  font-size:12px;color:#FFD700;cursor:pointer;
+  font-size:12px;color:var(--accent-primary, #FFD700);cursor:pointer;
   transition:all 0.2s;margin:0 auto 12px;
 }
 #vrLeaderboardBtn:hover {
@@ -70110,7 +70110,7 @@ document.addEventListener('keydown', function(e) {
 }
 .vlb-title {
   font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;
-  color:#FFD700;letter-spacing:2px;
+  color:var(--accent-primary, #FFD700);letter-spacing:2px;
 }
 .vlb-close {
   width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
@@ -70129,7 +70129,7 @@ document.addEventListener('keydown', function(e) {
   width:26px;text-align:center;font-weight:900;font-size:14px;
   color:rgba(255,255,255,0.3);flex-shrink:0;
 }
-.vlb-rank.gold   { color:#FFD700; }
+.vlb-rank.gold   { color:var(--accent-primary, #FFD700); }
 .vlb-rank.silver { color:#C0C0C0; }
 .vlb-rank.bronze { color:#CD7F32; }
 .vlb-avatar {
@@ -70636,7 +70636,7 @@ if (_isTVBox) {
         _tries++;
         var root = document.documentElement;
         var accent = root.style.getPropertyValue('--accent-primary') || getComputedStyle(root).getPropertyValue('--accent-primary');
-        if (accent && accent.trim() && accent.trim() !== '#FFD700' && typeof window.stopLogoGlow === 'function') {
+        if (accent && accent.trim() && accent.trim() !== 'var(--accent-primary, #FFD700)' && typeof window.stopLogoGlow === 'function') {
             clearInterval(_iv);
             window.stopLogoGlow();
             setTimeout(function() { if (window.startLogoGlow) window.startLogoGlow(); }, 100);
@@ -70752,7 +70752,7 @@ if (_isTVBox) {
 .umit-panel-btn.primary {
     background: linear-gradient(135deg,rgba(var(--accent-primary-rgb,255,215,0),0.18),rgba(255,140,0,0.28));
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.4);
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
     letter-spacing: 1px;
@@ -70768,7 +70768,7 @@ if (_isTVBox) {
     box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0),0.65), 0 0 14px rgba(var(--accent-primary-rgb,255,215,0),0.25) !important;
     background: rgba(var(--accent-primary-rgb,255,215,0),0.14) !important;
     border-color: rgba(var(--accent-primary-rgb,255,215,0),0.55) !important;
-    color: #FFD700 !important;
+    color: var(--accent-primary, #FFD700) !important;
 }
 .umit-panel-btn.primary.remote-focused,
 .umit-panel-btn.primary:focus-visible {
@@ -71017,7 +71017,7 @@ function showWelcomeScreen() {
             try {
                 var avatar = (typeof window._profAvatarIDB !== 'undefined') ? await window._profAvatarIDB.get() : '';
                 if (avatar && (avatar.indexOf('http') === 0 || avatar.indexOf('data:') === 0)) {
-                    avatarWrap.innerHTML = '<img src="' + avatar + '" alt="' + name.charAt(0).toUpperCase() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML=\'<span class=material-symbols-outlined style=font-size:48px;color:#FFD700;opacity:1 !important;>person</span>\'">';
+                    avatarWrap.innerHTML = '<img src="' + avatar + '" alt="' + name.charAt(0).toUpperCase() + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML=\'<span class=material-symbols-outlined style=font-size:48px;color:var(--accent-primary, #FFD700);opacity:1 !important;>person</span>\'">';
                 }
             } catch(e) {}
         })();
@@ -71033,7 +71033,7 @@ function showWelcomeScreen() {
                 var x = Math.random() * 100;
                 var delay = Math.random() * 1.5;
                 var dur   = 1.8 + Math.random() * 2;
-                var colors = ['#FFD700','#FFA500','#FFE066','#FFEC8B'];
+                var colors = ['var(--accent-primary, #FFD700)','var(--accent-secondary, #FFA500)','var(--accent-primary, #FFE066)','var(--accent-primary, #FFEC8B)'];
                 p.style.cssText = [
                     'position:absolute',
                     'width:' + size + 'px',
@@ -71217,7 +71217,7 @@ function updateWelcomeLoadProgress(percent, doneText) {
             if (window._welcomeOpen) hideWelcomeScreen();
         }, 500);
     } else {
-        if (statusEl) { statusEl.textContent = 'Ümit Listesi Yükleniyor...'; statusEl.style.color = '#FFD700'; }
+        if (statusEl) { statusEl.textContent = 'Ümit Listesi Yükleniyor...'; statusEl.style.color = 'var(--accent-primary, #FFD700)'; }
         if (pctEl) pctEl.style.color = '#ffffff';
         if (spinEl) spinEl.style.display = '';
     }
@@ -71374,7 +71374,7 @@ function _renderStats() {
         dayData.forEach(function(dd) {
             var pct = Math.max(4, Math.round((dd.secs / maxSecs) * 100));
             var bar = document.createElement('div');
-            bar.style.cssText = 'flex:1;background:' + (dd.secs > 0 ? 'linear-gradient(180deg,#FFD700,rgba(var(--accent-primary-rgb,255,215,0),0.4))' : 'rgba(255,255,255,0.06)') + ';border-radius:4px 4px 0 0;height:' + pct + '%;';
+            bar.style.cssText = 'flex:1;background:' + (dd.secs > 0 ? 'linear-gradient(180deg,var(--accent-primary, #FFD700),rgba(var(--accent-primary-rgb,255,215,0),0.4))' : 'rgba(255,255,255,0.06)') + ';border-radius:4px 4px 0 0;height:' + pct + '%;';
             bar.title = dd.label + ': ' + _fmtHours(dd.secs);
             barsEl.appendChild(bar);
         });
@@ -71405,7 +71405,7 @@ function _renderStats() {
                 + '<span style="font-size:12px;color:rgba(var(--accent-primary-rgb,255,215,0),0.8);font-family:Orbitron,sans-serif;">' + _fmtHours(c.v) + '</span>'
                 + '</div>'
                 + '<div style="background:rgba(255,255,255,0.06);border-radius:3px;height:4px;overflow:hidden;">'
-                + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#FFD700,rgba(var(--accent-primary-rgb,255,215,0),0.4));border-radius:3px;"></div>'
+                + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--accent-primary, #FFD700),rgba(var(--accent-primary-rgb,255,215,0),0.4));border-radius:3px;"></div>'
                 + '</div>';
             catEl.appendChild(row);
         });
@@ -71419,7 +71419,7 @@ function _renderStats() {
         recent.slice(0, 6).forEach(function(r, i) {
             var row = document.createElement('div');
             row.className = 'umit-stat-recent-row';
-            row.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:#FFD700;font-family:Orbitron,sans-serif;font-weight:700;flex-shrink:0;">' + (i+1) + '</div>'
+            row.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(var(--accent-primary-rgb,255,215,0),0.1);border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent-primary, #FFD700);font-family:Orbitron,sans-serif;font-weight:700;flex-shrink:0;">' + (i+1) + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="font-size:13px;color:rgba(255,255,255,0.8);font-family:Rajdhani,sans-serif;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (r.name || '') + '</div>'
                 + '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + (r.cat || '') + '</div>'
@@ -72029,8 +72029,8 @@ document.addEventListener('keydown', function(e) {
   <div id="chTimerCard" style="position:relative;background:linear-gradient(160deg,rgba(14,16,26,0.99),rgba(10,12,20,1));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);border-radius:18px;padding:28px 28px 22px;width:370px;max-width:94vw;box-shadow:0 0 60px rgba(0,0,0,0.85),0 0 0 1px rgba(var(--accent-primary-rgb,255,215,0),0.06);">
     <!-- Başlık -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span style="font-size:16px;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;">Kanal Zamanlayıcısı</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span style="font-size:16px;font-weight:800;color:var(--accent-primary, #FFD700);letter-spacing:1.5px;text-transform:uppercase;">Kanal Zamanlayıcısı</span>
       <button id="chTimerCloseBtn" onclick="closeChTimerModal()" style="margin-left:auto;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.35);border-radius:7px;color:#ff7070;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
 
@@ -72083,8 +72083,8 @@ document.addEventListener('keydown', function(e) {
 <div id="chNoteModal" style="display:none;position:fixed;inset:0;z-index:999990;background:rgba(0,0,0,0.78);align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;">
   <div id="chNoteCard" style="position:relative;background:linear-gradient(160deg,rgba(14,16,26,0.99),rgba(10,12,20,1));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);border-radius:18px;padding:26px 26px 20px;width:380px;max-width:94vw;box-shadow:0 0 60px rgba(0,0,0,0.85);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      <span style="font-size:15px;font-weight:800;color:#FFD700;letter-spacing:1.2px;text-transform:uppercase;">Kanal Notu</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <span style="font-size:15px;font-weight:800;color:var(--accent-primary, #FFD700);letter-spacing:1.2px;text-transform:uppercase;">Kanal Notu</span>
       <span id="chNoteChannelLabel" style="margin-left:4px;font-size:12px;color:rgba(255,255,255,0.45);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
       <button id="chNoteCloseBtn" onclick="closeChNoteModal()" style="margin-left:auto;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.35);border-radius:7px;color:#ff7070;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
@@ -72106,8 +72106,8 @@ document.addEventListener('keydown', function(e) {
 <div id="epgAlarmModal" style="display:none;position:fixed;inset:0;z-index:999990;background:rgba(0,0,0,0.78);align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;">
   <div style="position:relative;background:linear-gradient(160deg,rgba(14,16,26,0.99),rgba(10,12,20,1));border:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);border-top:1px solid rgba(var(--accent-primary-rgb,255,215,0),0.45);border-radius:18px;padding:26px 26px 20px;width:400px;max-width:94vw;box-shadow:0 0 60px rgba(0,0,0,0.85);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span style="font-size:15px;font-weight:800;color:#FFD700;letter-spacing:1.2px;text-transform:uppercase;">Program Bildirimleri</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span style="font-size:15px;font-weight:800;color:var(--accent-primary, #FFD700);letter-spacing:1.2px;text-transform:uppercase;">Program Bildirimleri</span>
       <button id="epgAlarmCloseBtn" onclick="closeEpgAlarmModal()" style="margin-left:auto;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.35);border-radius:7px;color:#ff7070;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:12px;line-height:1.6;">
@@ -72129,7 +72129,7 @@ document.addEventListener('keydown', function(e) {
   background: rgba(var(--accent-primary-rgb,255,215,0),0.08);
   border: 1px solid rgba(var(--accent-primary-rgb,255,215,0),0.22);
   border-radius: 8px;
-  color: #FFD700;
+  color: var(--accent-primary, #FFD700);
   font-size: 16px;
   font-weight: 700;
   width: 36px;
@@ -72156,7 +72156,7 @@ document.addEventListener('keydown', function(e) {
   left: 6px;
   height: 20px;
   padding: 0 7px;
-  background: linear-gradient(135deg,#FFD700,#E09500);
+  background: linear-gradient(135deg,var(--accent-primary, #FFD700),var(--accent-secondary, #E09500));
   border-radius: 5px;
   display: flex;
   align-items: center;
@@ -72207,7 +72207,7 @@ document.addEventListener('keydown', function(e) {
   border-color: rgba(var(--accent-primary-rgb,255,215,0),0.5) !important;
 }
 #btnChNote.note-active .material-symbols-outlined {
-  color: #FFD700 !important;
+  color: var(--accent-primary, #FFD700) !important;
 }
 /* EPG Alarm list item */
 .epg-alarm-item {
@@ -72237,7 +72237,7 @@ document.addEventListener('keydown', function(e) {
   position: absolute;
   top: 4px; right: 4px;
   width: 7px; height: 7px;
-  background: #FFD700;
+  background: var(--accent-primary, #FFD700);
   border-radius: 50%;
   box-shadow: 0 0 6px rgba(var(--accent-primary-rgb,255,215,0),0.8);
 }
@@ -72260,14 +72260,14 @@ document.addEventListener('keydown', function(e) {
 .chtimer-fav-pill.remote-focused {
   background: rgba(var(--accent-primary-rgb,255,215,0),0.18) !important;
   border-color: rgba(var(--accent-primary-rgb,255,215,0),0.55) !important;
-  color: #FFD700 !important;
+  color: var(--accent-primary, #FFD700) !important;
   outline: 2px solid rgba(var(--accent-primary-rgb,255,215,0),0.6);
   outline-offset: 2px;
 }
 .chtimer-fav-pill.selected {
   background: rgba(var(--accent-primary-rgb,255,215,0),0.22) !important;
   border-color: rgba(var(--accent-primary-rgb,255,215,0),0.6) !important;
-  color: #FFD700 !important;
+  color: var(--accent-primary, #FFD700) !important;
 }
 /* Zamanlayıcı / Not / Alarm buton — player bar */
 #btnChTimer, #btnChNote, #btnEpgAlarm {
@@ -72376,8 +72376,8 @@ function _ctUpdateActiveInfo() {
     if (!el) return;
     if (_ctState.active && _ctState.chName) {
         el.style.display = 'block';
-        el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
-            '<strong style="color:#FFD700;">' + _ctFmt(_ctState.hour) + ':' + _ctFmt(_ctState.min) + '</strong>' +
+        el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+            '<strong style="color:var(--accent-primary, #FFD700);">' + _ctFmt(_ctState.hour) + ':' + _ctFmt(_ctState.min) + '</strong>' +
             ' &nbsp;→&nbsp; <strong style="color:#fff;">' + _ctState.chName + '</strong> kanalına geçiş yapılacak.';
     } else {
         el.style.display = 'none';
@@ -72956,12 +72956,12 @@ function _buildEpgAlarmList() {
         }
 
         item.innerHTML =
-            '<div style="width:8px;height:8px;border-radius:50%;background:' + (isOn ? '#FFD700' : 'rgba(255,255,255,0.15)') + ';flex-shrink:0;box-shadow:' + (isOn ? '0 0 6px rgba(var(--accent-primary-rgb,255,215,0),0.7)' : 'none') + ';"></div>' +
+            '<div style="width:8px;height:8px;border-radius:50%;background:' + (isOn ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.15)') + ';flex-shrink:0;box-shadow:' + (isOn ? '0 0 6px rgba(var(--accent-primary-rgb,255,215,0),0.7)' : 'none') + ';"></div>' +
             '<div style="flex:1;min-width:0;">' +
-              '<div style="font-size:13px;font-weight:700;color:' + (isOn ? '#FFD700' : 'rgba(255,255,255,0.8)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + chName + '</div>' +
+              '<div style="font-size:13px;font-weight:700;color:' + (isOn ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.8)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + chName + '</div>' +
               (epgText ? '<div style="font-size:10px;color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">' + epgText + '</div>' : '') +
             '</div>' +
-            '<div style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:' + (isOn ? 'rgba(var(--accent-primary-rgb,255,215,0),0.15)' : 'rgba(255,255,255,0.06)') + ';border:1px solid ' + (isOn ? 'rgba(var(--accent-primary-rgb,255,215,0),0.35)' : 'rgba(255,255,255,0.1)') + ';color:' + (isOn ? '#FFD700' : 'rgba(255,255,255,0.4)') + ';white-space:nowrap;">' + (isOn ? 'AÇIK' : 'KAPALI') + '</div>';
+            '<div style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:' + (isOn ? 'rgba(var(--accent-primary-rgb,255,215,0),0.15)' : 'rgba(255,255,255,0.06)') + ';border:1px solid ' + (isOn ? 'rgba(var(--accent-primary-rgb,255,215,0),0.35)' : 'rgba(255,255,255,0.1)') + ';color:' + (isOn ? 'var(--accent-primary, #FFD700)' : 'rgba(255,255,255,0.4)') + ';white-space:nowrap;">' + (isOn ? 'AÇIK' : 'KAPALI') + '</div>';
 
         item.onclick = function() { _toggleEpgAlarm(chName); };
         listEl.appendChild(item);
@@ -73344,7 +73344,7 @@ body.tvbox-mode .vs-input-row {
     flex-shrink: 0;
     padding: 0 18px;
     min-width: 64px;
-    background: linear-gradient(135deg, var(--accent-primary,#FFD700), #E09500);
+    background: linear-gradient(135deg, var(--accent-primary,#FFD700), var(--accent-secondary, #E09500));
     border: none;
     border-radius: 10px;
     color: #000;
@@ -73588,7 +73588,7 @@ body.tvbox-mode .vs-input-row {
 .pp-btn-yes {
     flex: 1;
     padding: 14px;
-    background: linear-gradient(135deg, var(--accent-primary,#FFD700), #E09500);
+    background: linear-gradient(135deg, var(--accent-primary,#FFD700), var(--accent-secondary, #E09500));
     border: none;
     border-radius: 12px;
     color: #000;
@@ -75118,7 +75118,7 @@ window.umitSendPush      = window.umitSendPush;
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-family: 'Rajdhani', sans-serif;
     font-size: 12px;
     font-weight: 700;
@@ -75182,7 +75182,7 @@ window.umitSendPush      = window.umitSendPush;
     <!-- Bilgilendirme balonu -->
     <div id="playerVsInfoBalloon">
         <div class="pvsh-balloon-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #FFD700)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             Sesli Arama
         </div>
         <div class="pvsh-balloon-desc">
@@ -75366,7 +75366,7 @@ window.umitSendPush      = window.umitSendPush;
 }
 #altChOverlay .alt-title {
     font-size: 12px;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-weight: 700;
     letter-spacing: .5px;
     text-transform: uppercase;
@@ -75428,7 +75428,7 @@ window.umitSendPush      = window.umitSendPush;
     background: #1a1a1a;
     border-radius: 6px;
     flex-shrink: 0;
-    color: #FFD700;
+    color: var(--accent-primary, #FFD700);
     font-size: 20px;
 }
 #altChList .alt-item .alt-name {

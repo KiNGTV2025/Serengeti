@@ -41430,6 +41430,38 @@ function renderChannels() {
     if (!grid) {
         return;
     }
+
+    // FIX: "Uygulama ilk açılışta hızlı kaydırınca başa sarıyor, 5-10dk
+    // sonra normale dönüyor" — açılışın ilk dakikalarında EPG/TMDB
+    // poster/canlı-izleyici/sağlık-kontrolü gibi arka plan senkronizasyon
+    // dalgaları sık sık renderChannels()'ı ÇAĞRIYOR olabilir (append
+    // bayrağı taşımadan) ve grid.innerHTML ile tam yeniden kurulum
+    // yapılıyordu. Kullanıcı TAM O SIRADA parmağıyla hızlı kaydırıyorsa,
+    // grid'in altından çekilip yeniden kurulması "başa sarma" hissi
+    // yaratıyordu. Zamanla senkronizasyon dalgaları seyrekleşince
+    // sorun kendiliğinden ortadan kayboluyordu — bu da bu teşhisi
+    // doğruluyor. Çözüm: kullanıcı o an aktif kaydırıyorsa VE bu bir
+    // append (kart ekleme) çağrısı DEĞİLSE, tam render'ı DOM'a
+    // dokunmadan kısa bir süre erteleyip kaydırma durunca tekrar dene.
+    if (!window._utvAppendRender) {
+        const _cvpGuard = document.getElementById('channelsViewport') ||
+                           document.querySelector('.channels-viewport');
+        const _activelyScrolling = _cvpGuard && _cvpGuard._lastManualScrollAt &&
+            (Date.now() - _cvpGuard._lastManualScrollAt < 400);
+        if (_activelyScrolling) {
+            window._utvDeferredRenderCount = (window._utvDeferredRenderCount || 0) + 1;
+            // Güvenlik: kullanıcı kesintisiz ~3sn kaydırırsa yine de render et,
+            // sonsuz erteleme olmasın (state gerçekten değişmiş olabilir).
+            if (window._utvDeferredRenderCount <= 10) {
+                clearTimeout(window._utvDeferredRenderTimer);
+                window._utvDeferredRenderTimer = setTimeout(function() {
+                    if (typeof renderChannels === 'function') renderChannels();
+                }, 300);
+                return;
+            }
+        }
+        window._utvDeferredRenderCount = 0;
+    }
     
     // realCols cache'ini sadece tam yeniden render'da sıfırla
     // (append modunda sütun sayısı değişmediğinden sıfırlamaya gerek yok)

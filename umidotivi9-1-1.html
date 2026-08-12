@@ -4519,8 +4519,8 @@ body {
 .cw-clear-tile {
     aspect-ratio: 2 / 3;
     border-radius: 12px;
-    background: linear-gradient(135deg, rgba(255,90,90,0.14), rgba(255,40,40,0.05));
-    border: 1px solid rgba(255,85,85,0.35);
+    background: linear-gradient(135deg, rgba(var(--accent-danger-rgb,255,90,90),0.14), rgba(var(--accent-danger-rgb,255,40,40),0.05));
+    border: 1px solid rgba(var(--accent-danger-rgb,255,85,85),0.35);
     transition: none;
     contain: layout style;
 }
@@ -4535,11 +4535,11 @@ body {
 }
 .cw-clear-tile-icon {
     font-size: 34px;
-    color: #ff5f5f;
+    color: var(--accent-danger, #ff5f5f);
     margin-bottom: 8px;
 }
 .cw-clear-tile-title {
-    color: #ff5f5f !important;
+    color: var(--accent-danger, #ff5f5f) !important;
     font-weight: 800 !important;
     font-size: 12px;
     text-align: center;
@@ -7068,8 +7068,8 @@ body {
     justify-content: center;
     font-size: 10.5px;
     font-weight: 700;
-    color: rgba(255,255,255,0.55);
-    background: rgba(255,255,255,0.05);
+    color: var(--accent-primary, rgba(255,255,255,0.55));
+    background: rgba(var(--accent-primary-rgb,255,255,255), 0.10);
     border-radius: 6px;
     margin-right: 10px;
     flex-shrink: 0;
@@ -46483,17 +46483,19 @@ function updateSidebarFavIcons(channelName) {
             requestAnimationFrame(function() {
             // bg ve panel'i karanlık tut — açık renkli temalar (premium sarı vb.) sayfa bg'sini parlak yapmasın
             (function() {
-                const clampDark = (hex, maxLum) => {
-                    if (!hex || !hex.startsWith('#')) return hex;
-                    const h = hex.replace('#','');
-                    const toC = s => { const v = parseInt(s,16)/255; return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4); };
-                    const lum = 0.2126*toC(h.substring(0,2))+0.7152*toC(h.substring(2,4))+0.0722*toC(h.substring(4,6));
-                    if (lum <= maxLum) return hex; // zaten koyu, dokunma
-                    // Çok açık → koyu gri fallback (primary'den hafif tintli)
-                    return '#111111';
+                // Panel/arkaplan rengi her zaman tema primary'sinin koyu bir tonuyla tintli olsun —
+                // nötr siyah/gri sabit kalmasın, hangi tema seçilirse seçilsin hissedilsin.
+                const tintDark = (tintSource, mixAmount) => {
+                    try {
+                        const th = (tintSource||'#FFD700').replace('#','').padEnd(6,'0');
+                        const tr = parseInt(th.substring(0,2),16), tg = parseInt(th.substring(2,4),16), tb = parseInt(th.substring(4,6),16);
+                        const mix = (a,b,f) => Math.round(a*(1-f)+b*f);
+                        const rr = mix(14,tr,mixAmount), gg = mix(14,tg,mixAmount), bb = mix(18,tb,mixAmount);
+                        return `rgb(${rr},${gg},${bb})`;
+                    } catch(_e) { return '#111111'; }
                 };
-                r.style.setProperty('--bg-main',  clampDark(t.bg,    0.12));
-                r.style.setProperty('--bg-panel', clampDark(t.panel, 0.18));
+                r.style.setProperty('--bg-main',  tintDark(t.primary, 0.10));
+                r.style.setProperty('--bg-panel', tintDark(t.primary, 0.14));
             })();
             r.style.setProperty('--accent-primary', t.primary); 
             r.style.setProperty('--accent-secondary', t.secondary);

@@ -41931,7 +41931,31 @@ function renderChannels() {
         if (_oldLoadMore) _oldLoadMore.remove(); // eski "daha fazla yükle" kartı varsa kaldır, yenisi html içinde
         grid.insertAdjacentHTML('beforeend', html);
     } else {
+        // FIX: "Hızlı kaydırırken hâlâ başa sarıyor" — append modu şartları
+        // tutmadığında (kategori/liste aynı görünse de arka plan yenilemesi
+        // _utvAppendRender bayrağını taşımadan renderChannels() çağırdığında)
+        // buraya düşülüyor ve grid TAMAMEN sıfırdan kuruluyordu. innerHTML
+        // ataması sırasında (özellikle TVBox WebView'lerinde) viewport'un
+        // scrollTop'u sıfırlanabiliyor; kullanıcı tam o an hızlı kaydırıyorsa
+        // bu "başa sarma" olarak hissediliyordu. Şimdi yazmadan ÖNCE
+        // scrollTop'u kaydedip yazdıktan HEMEN SONRA (senkron) geri
+        // yüklüyoruz — böylece hangi tetikleyici olursa olsun kullanıcının
+        // konumu korunuyor.
+        const _cvpForScroll = document.getElementById('channelsViewport') ||
+                               document.querySelector('.channels-viewport');
+        const _preservedScrollTop = _cvpForScroll ? _cvpForScroll.scrollTop : 0;
         grid.innerHTML = html;
+        if (_cvpForScroll && _preservedScrollTop > 0) {
+            _cvpForScroll.scrollTop = _preservedScrollTop;
+            // Bazı WebView'lerde layout bir sonraki frame'de netleşiyor —
+            // bir rAF sonra da doğrulayıp gerekiyorsa tekrar uyguluyoruz.
+            requestAnimationFrame(function() {
+                if (_cvpForScroll.scrollTop !== _preservedScrollTop &&
+                    _preservedScrollTop <= _cvpForScroll.scrollHeight) {
+                    _cvpForScroll.scrollTop = _preservedScrollTop;
+                }
+            });
+        }
     }
     // ODAK-FIX: insertAdjacentHTML, innerHTML setter override'ını TETİKLEMEZ,
     // bu yüzden append modunda _tvBoxCardMap cache'i eskimiş (stale) kalıp

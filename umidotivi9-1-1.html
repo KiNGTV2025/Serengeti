@@ -73241,10 +73241,17 @@ window._toggleEpgAlarm    = _toggleEpgAlarm;
     box-sizing: border-box;
     min-width: 0;
 }
-/* TVBox modu: klavye ile yazma pratik değil — sadece mikrofon butonu kalsın,
-   metin kutusu ve ARA butonu tamamen gizlensin. */
+/* TVBox modu: klavye ile yazma pratik değil — normalde sadece mikrofon
+   butonu kalsın, metin kutusu ve ARA butonu gizlensin. ANCAK cihaz
+   SpeechRecognition'ı desteklemiyorsa (çoğu TVBox WebView'da böyledir)
+   mikrofon hiçbir şey yapmaz ve kullanıcı aramaya erişemez — bu yüzden
+   body'e 'vs-no-speech' class'ı eklendiğinde (bkz. _vsStartListen)
+   metin kutusu TVBox'ta da görünür hale getirilir. */
 body.tvbox-mode .vs-input-row {
     display: none !important;
+}
+body.tvbox-mode.vs-no-speech .vs-input-row {
+    display: flex !important;
 }
 .vs-input {
     flex: 1;
@@ -73724,10 +73731,51 @@ function _vsStartListen() {
     var micBtn = document.getElementById('vsMicBtn');
     var status = document.getElementById('vsStatus');
     if (!SpeechRecognition) {
-        if (status) status.textContent = '⚠ Tarayıcınız sesli aramayı desteklemiyor';
-        if (typeof showToast === 'function') showToast('⚠ Sesli arama bu tarayıcıda desteklenmiyor', 'error');
+        // FIX: TVBox'ta SpeechRecognition neredeyse hiç desteklenmiyor.
+        // Eskiden burada sadece toast gösterilip modal 12sn sonra kendiliğinden
+        // kapanıyordu; TVBox'ta metin kutusu da gizli olduğu için kullanıcının
+        // aramaya erişecek hiçbir yolu kalmıyordu. Artık:
+        //  1) body'e 'vs-no-speech' ekleyip metin kutusunu (TVBox dahil) açığa
+        //     çıkarıyoruz ve dpad odak sırasına ekliyoruz (bkz. _vsGetFocusables),
+        //  2) 12sn'lik otomatik kapanmayı iptal ediyoruz (yazarken kapanmasın),
+        //  3) odağı otomatik olarak metin kutusuna taşıyıp klavyeyi açıyoruz.
+        document.body.classList.add('vs-no-speech');
+        if (window._vsAutoCloseTimer) { clearTimeout(window._vsAutoCloseTimer); window._vsAutoCloseTimer = null; }
+        if (status) status.textContent = '⚠ Bu cihaz sesli aramayı desteklemiyor — yazarak ara';
+        if (typeof showToast === 'function') showToast('⚠ Mikrofon desteklenmiyor, klavye ile yazın', 'error');
+        setTimeout(function () {
+            var focs = (typeof _vsGetFocusables === 'function') ? _vsGetFocusables() : [];
+            var inputIdx = -1;
+            for (var i = 0; i < focs.length; i++) { if (focs[i].zone === 'input') { inputIdx = i; break; } }
+            if (inputIdx >= 0) {
+                _vsFlatIdx = inputIdx;
+                if (typeof _vsUpdateFocus === 'function') _vsUpdateFocus();
+            }
+            var inp = document.getElementById('vsTextInput');
+            if (inp) { try { inp.focus(); inp.click(); } catch(e) {} }
+        }, 50);
         return;
     }
+
+    // Cihaz destekliyor: eskiden vs-no-speech kalmış olabilir (önceki başarısız
+    // deneme), temizle ki metin kutusu gizlenme davranışına geri dönsün.
+    document.body.classList.remove('vs-no-speech');
+
+    // ── Mikrofon izni ön isteği ──
+    // Bazı Android WebView'larda SpeechRecognition constructor mevcut olsa
+    // bile mikrofon izni hiç istenmediği için start() sessizce "not-allowed"
+    // hatası veriyordu. getUserMedia ile izni önden tetikliyoruz (best-effort,
+    // desteklenmiyorsa/hata verirse görmezden gel — SpeechRecognition kendi
+    // izin akışını da deneyecektir).
+    try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function (stream) {
+                    try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+                })
+                .catch(function () { /* izin reddedildi/desteklenmiyor — start() zaten hata verecek */ });
+        }
+    } catch (e) {}
 
     // Önceki oturumu temizle
     if (_vsRecognition) { try { _vsRecognition.abort(); } catch(e) {} _vsRecognition = null; }
@@ -74461,11 +74509,14 @@ function _vsGetFocusables() {
     var arr = [];
     arr.push({ zone: 'close',  el: document.getElementById('vsCloseBtn') });
     arr.push({ zone: 'mic',    el: document.getElementById('vsMicBtn') });
-    // TVBox modunda metin kutusu/ARA butonu CSS ile gizlenir ama DOM'dan
-    // kaldırılmaz — bu yüzden dpad odak sırasından da elle çıkarmamız gerekiyor,
-    // aksi halde kumanda görünmez bir öğede "takılı" kalır.
+    // TVBox modunda metin kutusu/ARA butonu normalde CSS ile gizlenir ve
+    // dpad odak sırasından da çıkarılır. FIX: SpeechRecognition desteklenmiyorsa
+    // (body.vs-no-speech) — ki TVBox WebView'larda neredeyse hep böyledir —
+    // mikrofon işe yaramadığı için metin kutusunu odak sırasına GERİ EKLİYORUZ,
+    // aksi halde TVBox kullanıcısının aramaya erişecek hiçbir yolu kalmıyordu.
     var _vsIsTvBox = document.body.classList.contains('tvbox-mode');
-    if (!_vsIsTvBox) {
+    var _vsNoSpeech = document.body.classList.contains('vs-no-speech');
+    if (!_vsIsTvBox || _vsNoSpeech) {
         arr.push({ zone: 'input',  el: document.getElementById('vsTextInput') });
         arr.push({ zone: 'search', el: document.getElementById('vsSearchBtn') });
     }
@@ -74962,7 +75013,7 @@ document.addEventListener('keydown', function (e) {
 /* ── Tuş tespiti yardımcısı: konsoldan hangi kodu gönderdiğini görmek için ──
    Kullanım: window._vsMicDebug = true → kumandanın mic tuşuna bas → konsola bakar
 ── */
-window._vsMicDebug = true; /* MiBox keyCode tespiti için açık — tespit sonrası false yap */
+window._vsMicDebug = false; /* MiBox keyCode tespiti tamamlandı — prod'da kapalı */
 document.addEventListener('keydown', function (e) {
     if (!window._vsMicDebug) return;
     console.log('[ÜmitTV MicDebug] key:', e.key, '| keyCode:', e.keyCode, '| code:', e.code);

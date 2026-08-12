@@ -2112,6 +2112,11 @@ document.addEventListener('keydown', function(e) {
             --accent-danger: #e74c3c;
             --accent-danger-rgb: 231,76,60;
             --accent-danger-dark: #c0392b;
+            /* Kart / header arkaplanı — applyTheme() tarafından tema rengiyle tintlenir */
+            --card-bg-tinted: rgba(255,255,255,0.04);
+            --card-bg-tinted-hover: rgba(255,255,255,0.08);
+            --header-bg-tinted: rgba(9,9,15,0.97);
+            --catbar-bg-tinted: rgba(9,9,15,0.9);
         }
         
          
@@ -3833,7 +3838,7 @@ body {
         
          
 .channel-card {
-    background: rgba(255,255,255,0.04);
+    background: var(--card-bg-tinted, rgba(255,255,255,0.04));
     border-radius: var(--card-radius);
     padding: 0;
     text-align: center;
@@ -11809,13 +11814,13 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 
  
 .app-header {
-  background: rgba(9,9,15,0.97) !important;
+  background: var(--header-bg-tinted, rgba(9,9,15,0.97)) !important;
   border-bottom: 1px solid rgba(255,255,255,0.06) !important;
 }
 
  
-.m3u-selector-bar { background: rgba(9,9,15,0.95) !important; }
-.category-bar { background: rgba(9,9,15,0.9) !important; border-bottom: 1px solid rgba(255,255,255,0.04) !important; }
+.m3u-selector-bar { background: var(--header-bg-tinted, rgba(9,9,15,0.95)) !important; }
+.category-bar { background: var(--catbar-bg-tinted, rgba(9,9,15,0.9)) !important; border-bottom: 1px solid rgba(255,255,255,0.04) !important; }
 
  
 .cat-pill, .m3u-pill {
@@ -46666,9 +46671,30 @@ function updateSidebarFavIcons(channelName) {
                     r.style.setProperty('--accent-danger-rgb', hexToRgb(dangerHex));
                     r.style.setProperty('--accent-danger-dark', dangerDarkHex);
                 } catch(e4) {
-                    r.style.setProperty('--accent-danger', 'var(--accent-danger, #e74c3c)');
+                    r.style.setProperty('--accent-danger', '#e74c3c');
                     r.style.setProperty('--accent-danger-rgb', '231,76,60');
-                    r.style.setProperty('--accent-danger-dark', 'var(--accent-danger-dark, #c0392b)');
+                    r.style.setProperty('--accent-danger-dark', '#c0392b');
+                }
+                // ── Kart / header arkaplanı: tema rengiyle hafif tintli, sabit siyah kalmasın ──
+                // Amaç: hangi tema seçilirse seçilsin panel/kart/header o rengin koyu tonuyla
+                // hafifçe boyansın (tam opak siyah değil), ama okunabilirlik için hâlâ koyu kalsın.
+                try {
+                    const rgbCard = hexToRgb(t.primary);
+                    const [crv,cgv,cbv] = rgbCard.split(',').map(Number);
+                    const mixC = (a,b,f) => Math.round(a*(1-f)+b*f);
+                    // Kart: çok koyu taban (16,16,20) üzerine %9 tema rengi tint
+                    const cardR = mixC(16,crv,0.09), cardG = mixC(16,cgv,0.09), cardB = mixC(20,cbv,0.09);
+                    r.style.setProperty('--card-bg-tinted', `rgb(${cardR},${cardG},${cardB})`);
+                    r.style.setProperty('--card-bg-tinted-hover', `rgba(${crv},${cgv},${cbv},0.10)`);
+                    // Header/kategori barı: biraz daha koyu taban, %6 tint
+                    const hdR = mixC(9,crv,0.06), hdG = mixC(9,cgv,0.06), hdB = mixC(15,cbv,0.06);
+                    r.style.setProperty('--header-bg-tinted', `rgba(${hdR},${hdG},${hdB},0.97)`);
+                    r.style.setProperty('--catbar-bg-tinted', `rgba(${hdR},${hdG},${hdB},0.90)`);
+                } catch(e5) {
+                    r.style.setProperty('--card-bg-tinted', 'rgba(255,255,255,0.04)');
+                    r.style.setProperty('--card-bg-tinted-hover', 'rgba(255,255,255,0.08)');
+                    r.style.setProperty('--header-bg-tinted', 'rgba(9,9,15,0.97)');
+                    r.style.setProperty('--catbar-bg-tinted', 'rgba(9,9,15,0.9)');
                 }
             } catch(e) {}
             

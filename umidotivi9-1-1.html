@@ -49627,7 +49627,19 @@ function cleanupDeleteContinueModalRemote() {
         focusedElement.classList.add('remote-focused');
         
         // Görünür alana getir (input hariç)
-        if (focusedElement !== filterInput) {
+        // FIX: Kanal listesi (zone 2) sanal kaydırma (virtual scroll) kullanıyor.
+        // scrollToSelectedChannel() zaten scroller.scrollTop'u piksel bazında
+        // doğru şekilde ayarlıyor. Buradaki native scrollIntoView({block:'center'})
+        // ayrıca bir 'scroll' event'i tetikleyip _renderWindow'u asenkron olarak
+        // yeniden çalıştırıyor; bu da listenin innerHTML'ini yeniden yazarak az
+        // önce eklenen remote-focused class'ını siliyordu (odak kaybı) ve iki
+        // scroll mekanizması birbiriyle çakışarak liste kendi kendine kayıyordu
+        // (özellikle 3-4. karttan sonra, viewport dolup gerçek kaydırma başlayınca).
+        // Sanal kanal listesinde konumlandırma zaten scrollToSelectedChannel()
+        // tarafından yapıldığı için burada tekrar native scroll tetiklemiyoruz.
+        var _isVirtualChannelItem = state.remote.sidebarZone === 2 &&
+            focusedElement.classList && focusedElement.classList.contains('channel-list-item');
+        if (focusedElement !== filterInput && !_isVirtualChannelItem) {
             focusedElement.scrollIntoView({
                 block: 'center',
                 behavior: 'instant'

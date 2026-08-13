@@ -50110,7 +50110,27 @@ function cleanupDeleteContinueModalRemote() {
                 state.remote.index=0; 
             }
             else if(state.remote.zone==='channels') { 
-                state.remote.index = Math.min(cards.length - 1, state.remote.index + realCols); 
+                var _nextDownIdx = state.remote.index + realCols;
+                // D-PAD FIX: Grid'in son satırında aşağı basılınca daha fazla kanal
+                // varsa (henüz DOM'a basılmamış) otomatik yükle — eskiden sadece
+                // fare/dokunmatik scroll tetikliyordu, kumandayla sona gelince
+                // hiçbir şey olmuyormuş gibi "takılmış" görünüyordu.
+                if (_nextDownIdx >= cards.length && typeof loadMoreChannels === 'function' &&
+                    typeof state.filtered !== 'undefined') {
+                    var _dispCh = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(state.filtered) : state.filtered;
+                    if (_dispCh && (state.currentLoadedCards || 0) < _dispCh.length) {
+                        loadMoreChannels();
+                        window._tvBoxCardMap = null; // cache invalidate, yeni kartlar dahil
+                        setTimeout(function() {
+                            var _freshCards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+                            state.remote.index = Math.min(_freshCards.length - 1, _nextDownIdx);
+                            if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                            if (typeof scrollToCard === 'function') scrollToCard(state.remote.index);
+                        }, 60);
+                        break;
+                    }
+                }
+                state.remote.index = Math.min(cards.length - 1, _nextDownIdx); 
             }
             break;
             
@@ -50243,7 +50263,25 @@ function cleanupDeleteContinueModalRemote() {
             }
 
             else if(state.remote.zone==='channels') { 
-                state.remote.index = Math.min(cards.length-1, state.remote.index+1); 
+                var _nextRightIdx = state.remote.index + 1;
+                // D-PAD FIX: aynı otomatik-yükleme mantığı sağa gezinmede de —
+                // son karta sağdan bastıkça daha fazla kanal varsa yükle.
+                if (_nextRightIdx >= cards.length && typeof loadMoreChannels === 'function' &&
+                    typeof state.filtered !== 'undefined') {
+                    var _dispChR = typeof groupChannelsBySeries === 'function' ? groupChannelsBySeries(state.filtered) : state.filtered;
+                    if (_dispChR && (state.currentLoadedCards || 0) < _dispChR.length) {
+                        loadMoreChannels();
+                        window._tvBoxCardMap = null;
+                        setTimeout(function() {
+                            var _freshCardsR = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+                            state.remote.index = Math.min(_freshCardsR.length - 1, _nextRightIdx);
+                            if (typeof updateRemoteFocus === 'function') updateRemoteFocus();
+                            if (typeof scrollToCard === 'function') scrollToCard(state.remote.index);
+                        }, 60);
+                        break;
+                    }
+                }
+                state.remote.index = Math.min(cards.length-1, _nextRightIdx); 
             }
             else if(state.remote.zone==='heroSlider') {
                 // → : sonraki kart

@@ -19631,6 +19631,7 @@ const EPG_MULTI_SOURCES = [
 const STREAM_PROXY = 'https://proxy.umitmodpremiumtr.workers.dev/?stream='; // primary
 const STREAM_PROXY2 = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
 const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=';
+const MKV_PROXY_NEW = 'https://mkv.sadecenjoy.workers.dev/?url=';
 
 // ── REDIRECT-RESOLVE DOMAINS: fetch ile gerçek URL'yi bul, sonra HLS.js'e ver ──
 // Bu domainler 302 redirect yapıyor; HLS.js redirect'i takip edemez veya CORS patlar.
@@ -44590,7 +44591,10 @@ function resumeChannel(startTime) {
         state.player.isLiveStream = false;
         state.player.vodPlaying = true;
 
-        // ── MKV/MP4 proxy zinciri: direkt → proxy2 → proxy1 → proxy3 ──
+        // ── MKV/MP4 proxy zinciri: mkvProxyNew → direkt → proxy2 → proxy1 → proxy3 ──
+        const _mkvProxyNewUrl = (typeof MKV_PROXY_NEW !== 'undefined')
+            ? MKV_PROXY_NEW + encodeURIComponent(rawUrl)
+            : null;
         const _proxy2Url = (typeof STREAM_PROXY2 !== 'undefined')
             ? STREAM_PROXY2 + encodeURIComponent(rawUrl)
             : null;
@@ -44662,13 +44666,14 @@ function resumeChannel(startTime) {
             video.addEventListener('error', _errHandler, { once: true });
         }
 
-        // Fallback zinciri: direkt başarısız olursa proxy'leri sırayla dene
+        // Fallback zinciri: yeni mkv proxy → direkt → proxy2 → proxy1 → proxy3
         const _fallbacks = [];
+        _fallbacks.push(_directMediaUrl);
         if (_proxy2Url) _fallbacks.push(_proxy2Url);
         _fallbacks.push(_proxy1Url);
         if (_proxy3Url) _fallbacks.push(_proxy3Url);
 
-        _tryPlayMkv(_directMediaUrl, _fallbacks);
+        _tryPlayMkv(_mkvProxyNewUrl || _directMediaUrl, _fallbacks);
     }
 
     state.remote.zone = 'player'; 

@@ -20994,6 +20994,17 @@ async function loadContinueWatching() {
     }
 }
         function pushHistoryState(view, data = {}) {
+            // FIX: "Son Yayınla Başlat" açılışta playChannel()→pushHistoryState('player',...)
+            // çağırıyor; bu bazı (özellikle yavaş TVBox) cihazlarda DOMContentLoaded
+            // akışındaki pushHistoryState('main') henüz çalışmadan yetişebiliyor.
+            // Sonuç: historyStack tek elemanlı ('player') kalıyor, popHistoryState()
+            // historyStack.length>1 şartını hiç sağlamadığı için geri tuşu player'ı
+            // kapatmak yerine direkt showExitConfirmModal()'a düşüyordu. Stack boşken
+            // 'main' dışında bir view push edilirse, altına önce sessizce 'main'
+            // katmanını ekleyerek geri tuşunun her zaman player'ı kapatmasını garanti ediyoruz.
+            if (historyStack.length === 0 && view !== 'main') {
+                historyStack.push({ view: 'main', data: {}, timestamp: Date.now() });
+            }
             const state = {
                 view: view,
                 data: data,
@@ -49909,6 +49920,23 @@ function cleanupDeleteContinueModalRemote() {
     
     /* ── realCols: direkt currentGridCols kullan — DOM ölçümü yok ── */
     var realCols = state.currentGridCols || 4;
+    // FIX: "Devam Et" kategorisi (activeCont) normal ızgaradan FARKLI bir CSS
+    // grid kullanıyor — cw-poster-grid: repeat(auto-fill, minmax(120/150px,1fr)).
+    // Bu, ekran genişliğine göre kendi sütun sayısını otomatik belirliyor ve
+    // kullanıcının Ayarlar'dan seçtiği state.currentGridCols (normal ızgara için)
+    // ile ÖRTÜŞMÜYOR. Yanlış realCols, ↑↓ satır atlamalarını ve ← sol-kenar
+    // tespitini bozup "Tümünü Temizle" kartına (index 0) kumandayla ulaşmayı/
+    // odaklanmayı engelliyordu. cont modunda gerçek sütun sayısını kartların
+    // offsetTop'ını karşılaştırarak DOM'dan ölçüyoruz.
+    if (activeCont && cards.length > 1) {
+        var _measuredCols = 1;
+        var _firstTop = cards[0].offsetTop;
+        for (var _mci = 1; _mci < cards.length; _mci++) {
+            if (Math.abs(cards[_mci].offsetTop - _firstTop) > 2) break;
+            _measuredCols++;
+        }
+        if (_measuredCols > 0) realCols = _measuredCols;
+    }
     
     if(state.remote.isLongPress && (e.key==='Enter'||e.key==='OK')) return;
     if(state.remote.preventClick) return;
@@ -50873,6 +50901,18 @@ function handleFavoriteChannelSelect(key) {
             // kullanılıyor — iki farklı sorgu farklı sonuç kümesi döndürebiliyordu
             // (özellikle append-render sırasında), bu da index/element uyuşmazlığına
             // ve görünmeyen (beyaz) odağa yol açıyordu.
+            // FIX: "Üst menüden kartlara geçişte odak kayboluyor" — _tvBoxCardMap
+            // document.querySelectorAll'un döndürdüğü STATİK bir NodeList; grid bir
+            // yerde (renderChannels dışı bir yol, header/kategori/m3u geçişleri
+            // sırasında tetiklenen arka plan güncellemeleri vb.) yeniden yazılıp cache
+            // hiç invalidate edilmezse, cache'teki elementler artık DOM'dan KOPMUŞ
+            // (isConnected=false) oluyor. classList.add('remote-focused') hatasız
+            // çalışıyor ama element ekranda hiç yok — kullanıcı "odak kayboldu" görüyor.
+            // Kullanmadan önce ilk elemanın hâlâ DOM'a bağlı olduğunu doğrulayıp
+            // değilse cache'i zorla tazeliyoruz.
+            if (window._tvBoxCardMap && window._tvBoxCardMap.length > 0 && !window._tvBoxCardMap[0].isConnected) {
+                window._tvBoxCardMap = null;
+            }
             if (!window._tvBoxCardMap || window._tvBoxCardMap.length === 0) {
                 window._tvBoxCardMap = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
             }

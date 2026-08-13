@@ -74828,12 +74828,10 @@ document.addEventListener('keydown', function (e) {
         /* Modal zaten açık → mikrofonu toggle et */
         vsToggleListen();
     } else {
-        /* Modal kapalı → aç ve dinlemeye hemen başla */
+        /* Modal kapalı → aç; openVoiceSearch kendi içinde rAF ile
+           otomatik dinlemeye başlıyor, burada tekrar toggle ETMEYİN
+           — yoksa _vsListening true olduğu an toggle onu kapatır. */
         openVoiceSearch();
-        /* Kısa gecikme: modal DOM'a eklendikten sonra mic başlasın */
-        setTimeout(function () {
-            if (_vsOpen) vsToggleListen();
-        }, 250);
     }
 
     if (typeof playKeySound === 'function') playKeySound('click');

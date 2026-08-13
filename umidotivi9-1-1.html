@@ -74817,6 +74817,17 @@ document.addEventListener('keydown', function (e) {
 
     if (!isMicKey) return;
 
+    /* Debounce — bazı kumandalar/STB'ler tek basışta 2 keydown event'i
+       üretiyor (BrowserSearch/169 vb.), bu da openVoiceSearch + mic
+       start/abort çakışmasına yol açıp tanımayı bozuyordu. */
+    var _now = Date.now();
+    if (window._micKeyLastTs && (_now - window._micKeyLastTs) < 700) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+    window._micKeyLastTs = _now;
+
     /* Başka bir modal açıksa (login, epgAlarm vb.) → sesli aramayı açma */
     var loginOverlay = document.getElementById('loginOverlay');
     if (loginOverlay && !loginOverlay.classList.contains('hidden')) return;

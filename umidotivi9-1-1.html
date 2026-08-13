@@ -42021,7 +42021,11 @@ function renderChannels() {
     // bittikten hemen sonra odağı geçerli karta yeniden uyguluyoruz.
     if (window.state && state.remote && state.remote.zone === 'channels' && state.remote.active &&
         typeof updateRemoteFocus === 'function') {
-        setTimeout(function() { updateRemoteFocus(); }, 0);
+        // SESSİZ-FIX: bu çağrı her renderChannels() sonrasında (kullanıcı tuşa
+        // basmasa da arka plan güncellemelerinde) tetiklenir — sadece odak class'ını
+        // geri koymalı, kartı ekrana kaydırıp (scrollIntoView) listenin kendiliğinden
+        // yukarı/aşağı gitmesine sebep OLMAMALI. Bu yüzden _silent=true ile çağrılır.
+        setTimeout(function() { updateRemoteFocus(true); }, 0);
     }
 }
 
@@ -50729,7 +50733,7 @@ function handleFavoriteChannelSelect(key) {
         showToast(`Favori ${favIndex + 1} bulunamadı`);
     }
 }
-        function updateRemoteFocus() {
+        function updateRemoteFocus(_silent) {
     // ODAK-FIX: Zone sidebar/epgModal/searchModal iken skipCountdownOverlay gizle
     var _skipZone = window.state && window.state.remote && window.state.remote.zone;
     if (_skipZone && _skipZone !== 'player' && _skipZone !== 'playerTopBar' && _skipZone !== 'progressBar') {
@@ -51064,7 +51068,15 @@ function handleFavoriteChannelSelect(key) {
     if(el) {
         el.classList.add('remote-focused');
         (window._lastFocusedEls = window._lastFocusedEls || []).push(el);
-        if(el.scrollIntoView && state.remote.zone !== 'sidebar' && state.remote.zone !== 'continueCards' && state.remote.zone !== 'header' && state.remote.zone !== 'heroSlider' && state.remote.zone !== 'player') {
+        // SESSİZ-FIX: renderChannels() arka planda (izleyici sayısı, TMDB poster,
+        // yeni kanal ekleme, filtre yenileme vb.) kullanıcı hiçbir tuşa basmadan
+        // sıkça tetiklenip updateRemoteFocus()'u çağırıyordu. scrollIntoView her
+        // seferinde çalışınca liste kullanıcı müdahalesi olmadan kendiliğinden
+        // yukarı/aşağı kayıyormuş gibi görünüyordu. _silent=true iken (arka plan
+        // yeniden render'ı) sadece odak class'ı yeniden uygulanır, scroll YAPILMAZ;
+        // scroll sadece gerçek kumanda tuşu basışlarında (updateRemoteFocus(true)
+        // OLMADAN çağrıldığında) tetiklenir.
+        if(!_silent && el.scrollIntoView && state.remote.zone !== 'sidebar' && state.remote.zone !== 'continueCards' && state.remote.zone !== 'header' && state.remote.zone !== 'heroSlider' && state.remote.zone !== 'player') {
             el.scrollIntoView({block:'nearest',inline:'nearest', behavior: 'auto'});
         }
         // player zone: butonlar sabit bir satırda, scrollIntoView yerine sadece

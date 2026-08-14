@@ -2,7 +2,6 @@
   "name": "Umitmod",
   "description": "M3U kanalları dizi bölümü olarak",
   "manifestVersion": 1,
-  "accessCode": "1881",
   "pluginLists": [
     {
       "name": "HABER ÜⲘ𝖎ţ Ⲙ0Ď🇹🇷",
@@ -6502,5 +6501,7 @@
       "icon": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png"
     }
   ],
-  "icon": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png"
+  "icon": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
+  "accessCodeSalt": "81e15cc9a8382e10",
+  "accessCodeHash": "11bfe2e5f63c8a3b56b6cd70365aae93fc357572d0e6bea868c55a460bf874e5"
 }

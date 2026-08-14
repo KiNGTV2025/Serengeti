@@ -38602,7 +38602,13 @@ setTimeout(_vhsInit, 1200);
     const continueList = Object.values(state.continueWatching).filter(c => {
         return c.progress > MIN_WATCH_PERCENT && c.progress < MAX_WATCH_PERCENT;
     }).sort((a, b) => b.timestamp - a.timestamp);
-    console.debug('[CW-DEBUG] render', { activeCat: state.activeCat, totalRecords: Object.keys(state.continueWatching).length, matchingList: continueList.length, all: Object.values(state.continueWatching).map(c => ({ name: c.name, progress: c.progress })) });
+    // PERF FIX: console.debug zaten noop ama argüman ifadesi (Object.values().map())
+    // her renderContinueWatching() çağrısında YİNE DE hesaplanıyordu — noop olsa bile
+    // gereksiz array/obje inşası + GC yükü TVBox'ta kasmaya katkıda bulunuyordu.
+    // Sadece debug bayrağı açıkken hesapla.
+    if (window._cwDebug) {
+        console.debug('[CW-DEBUG] render', { activeCat: state.activeCat, totalRecords: Object.keys(state.continueWatching).length, matchingList: continueList.length, all: Object.values(state.continueWatching).map(c => ({ name: c.name, progress: c.progress })) });
+    }
 
 
     // Devam Et kategorisindeysem farklı render et
@@ -51203,7 +51209,7 @@ function handleFavoriteChannelSelect(key) {
             }
         }
         
-        const modalHandlers = {
+        const modalHandlers = window.__utvModalHandlers || (window.__utvModalHandlers = {
     'searchModal': handleSearchModalRemote,
     'sortBackupModal': handleSortBackupModalRemote,
     'quickSortNumModal': handleQuickSortNumModalRemote,
@@ -51223,7 +51229,7 @@ function handleFavoriteChannelSelect(key) {
     'epgModal': handleEpgModalRemote,
     'sortModal': handleSortModalRemote,
     'embedModal': handleEmbedModalRemote
-};
+});
 
         // ── Kanal Notu Modalı — açıkken tüm tuşları yakala, buradan çık ──
         const _cnModal = document.getElementById('chNoteModal');
@@ -51280,6 +51286,40 @@ function handleFavoriteChannelSelect(key) {
         }
 
         // ── Watch Party & Çıkış Modalı — class ile açılır, özel kontrol ──
+        // PERF FIX: Bu noktadan itibaren eskiden 20+ ayrı document.getElementById
+        // çağrısı SIRAYLA yapılıyordu (wpLobbyModal, wpPanel, exitConfirmModal,
+        // sonra modalHandlers'daki 18 modal, sonra catHideModal/qualityModal/
+        // subtitleModal/weatherModal) — bu, channels/player zone'unda gezinirken
+        // (yani hiçbir modal açık olmadığı en sık senaryoda bile) HER TEK ok
+        // tuşunda TVBox'ta ölçülebilir bir gecikme yaratıyordu. Tek bir toplu
+        // querySelectorAll ile "görünür herhangi bir modal var mı" sorusu ucuza
+        // yanıtlanıp, yoksa aşağıdaki tüm ayrı sorgular atlanıyor.
+        var _anyModalVisible = document.querySelector(
+            '#wpLobbyModal.wp-open, #wpPanel.wp-open, ' +
+            '#exitConfirmModal[style*="flex"], #exitConfirmModal[style*="block"], ' +
+            '#searchModal[style*="flex"], #searchModal[style*="block"], ' +
+            '#sortBackupModal[style*="flex"], #sortBackupModal[style*="block"], ' +
+            '#quickSortNumModal[style*="flex"], #quickSortNumModal[style*="block"], ' +
+            '#sleepModeModal[style*="flex"], #sleepModeModal[style*="block"], ' +
+            '#startupSettingsModal[style*="flex"], #startupSettingsModal[style*="block"], ' +
+            '#addM3UModal[style*="flex"], #addM3UModal[style*="block"], ' +
+            '#singleChannelModal[style*="flex"], #singleChannelModal[style*="block"], ' +
+            '#passwordModal[style*="flex"], #passwordModal[style*="block"], ' +
+            '#controlSettingsModal[style*="flex"], #controlSettingsModal[style*="block"], ' +
+            '#settingsModal[style*="flex"], #settingsModal[style*="block"], ' +
+            '#themeModal[style*="flex"], #themeModal[style*="block"], ' +
+            '#continueModal[style*="flex"], #continueModal[style*="block"], ' +
+            '#deleteContinueModal[style*="flex"], #deleteContinueModal[style*="block"], ' +
+            '#m3uHintModal[style*="flex"], #m3uHintModal[style*="block"], ' +
+            '#sidebar.open, ' +
+            '#epgModal[style*="flex"], #epgModal[style*="block"], ' +
+            '#sortModal[style*="flex"], #sortModal[style*="block"], ' +
+            '#embedModal[style*="flex"], #embedModal[style*="block"], ' +
+            '#catHideModal.open, #qualityModal.qm-open, #subtitleModal.qm-open, ' +
+            '#__UMD_WEATHER_MODAL[style*="flex"]'
+        );
+
+        if (_anyModalVisible) {
         const _wpLobby = document.getElementById('wpLobbyModal');
         const _wpPanel = document.getElementById('wpPanel');
         const _exitMod  = document.getElementById('exitConfirmModal');
@@ -51350,6 +51390,7 @@ function handleFavoriteChannelSelect(key) {
         if (weatherModal && weatherModal.style.display === 'flex') {
             return;
         }
+        } // ← if (_anyModalVisible) kapanışı — PERF FIX
 
         // GERİ TUŞU ÇİFT İŞLEME DÜZELTMESİ: handleBackButton (capture aşaması,
         // document seviyesinde bu listener'dan ÖNCE eklendi) back tuşunu zaten

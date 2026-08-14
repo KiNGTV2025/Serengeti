@@ -1747,25 +1747,32 @@ img {
 .login-btn-secondary.dpad-focused,
 .login-btn.focused,
 .login-btn-secondary.focused {
+    /* FIX: sonsuz focusPulse animasyonu kaldırıldı — menülerde kumandayla
+       gezinirken kasılma ve odak geçişinde çift-görüntü/kaymaya sebep
+       oluyordu. Tek seferlik giriş animasyonu (focusEnter) kalır, sürekli
+       nabız atmıyor. */
     animation:
-        focusEnter 200ms cubic-bezier(0.22,1,0.36,1) forwards,
-        focusPulse 1.4s ease-in-out 200ms infinite !important;
+        focusEnter 200ms cubic-bezier(0.22,1,0.36,1) forwards !important;
     transform-origin: center center !important;
     outline: none !important;
-    will-change: box-shadow !important;
+    will-change: auto !important;
     z-index: 2 !important;
     position: relative !important;
 }
 
-/* ── Kanal kartı — ızgara kırılmasın, scale YOK ── */
+/* ── Kanal kartı — ızgara kırılmasın, scale YOK ──
+   FIX: sonsuz focusPulse animasyonu ve will-change kaldırıldı — bunlar
+   D-pad ile gezinirken her adımda repaint/compositing tetikleyip
+   kasılmaya ve odak geçişinde çift-görüntü/kaymaya sebep oluyordu.
+   Artık player-action-btn ile aynı mantık: statik, anlık highlight. */
 .channel-card.remote-focused,
 .channel-card.focused {
-    animation:
-        focusPulse 1.4s ease-in-out infinite !important;
-    transform-origin: center center !important;
-    outline: none !important;
+    animation: none !important;
+    transform: none !important;
+    outline: 3px solid var(--accent-primary, #FFD700) !important;
+    outline-offset: 2px !important;
     border-color: var(--accent-primary) !important;
-    will-change: box-shadow !important;
+    will-change: auto !important;
     z-index: 2 !important;
     position: relative !important;
 }
@@ -1773,11 +1780,11 @@ img {
 /* ── VOD episode kart ── */
 .vod-episode-card.remote-focused,
 .vod-episode-card.focused {
-    animation:
-        focusPulse 1.4s ease-in-out infinite !important;
+    /* FIX: sonsuz focusPulse animasyonu kaldırıldı — aynı kasılma sebebi */
+    animation: none !important;
     transform-origin: center center !important;
     outline: none !important;
-    will-change: box-shadow !important;
+    will-change: auto !important;
     z-index: 2 !important;
     position: relative !important;
 }
@@ -76950,31 +76957,20 @@ body.tvbox-mode #exitConfirmYes.remote-focused::after {
     display: none !important;
 }
 
-/* ── 6) focusPulse animasyonunu standart hale uygula (yoksa ekle) ── */
+/* ── 6) focusPulse animasyonu — KOŞULSUZ KAPALI ──
+   ESKİ DAVRANIŞ: sonsuz nabız animasyonu her zaman açılıyordu, sadece
+   body.tvbox-mode veya body.low-performance-mode class'ı VARSA kapanıyordu.
+   Bu class'lar "Kontrol Ayarları" ekranından Düşük Performans Modu
+   kapatılınca (varsayılan değeri kapalı) body'den siliniyordu — bu da
+   animasyonu geri getirip kumandayla gezinirken kasılmaya ve odak
+   geçişinde çift-görüntü/kaymaya sebep oluyordu.
+   FIX: ayar durumundan bağımsız, her zaman sabit/statik highlight. */
 .recent-card.remote-focused,
 .hp-card.remote-focused,
 .vod-episode-card.remote-focused,
 .vod-episode-card.focused,
 .channel-card.remote-focused,
 .channel-card.focused {
-    animation: focusPulse 1.4s ease-in-out infinite !important;
-}
-/* PERF FIX: TVBox / düşük performans modunda sürekli box-shadow animasyonu
-   kapatılır — her 1.4 saniyede tetiklenen repaint/composite, kumandayla hızlı
-   buton gezinmesiyle üst üste binince kasmaya katkı yapıyordu. Odak halen
-   net outline ile görünür kalır, sadece nabız animasyonu durur. */
-body.tvbox-mode .recent-card.remote-focused,
-body.tvbox-mode .hp-card.remote-focused,
-body.tvbox-mode .vod-episode-card.remote-focused,
-body.tvbox-mode .vod-episode-card.focused,
-body.tvbox-mode .channel-card.remote-focused,
-body.tvbox-mode .channel-card.focused,
-body.low-performance-mode .recent-card.remote-focused,
-body.low-performance-mode .hp-card.remote-focused,
-body.low-performance-mode .vod-episode-card.remote-focused,
-body.low-performance-mode .vod-episode-card.focused,
-body.low-performance-mode .channel-card.remote-focused,
-body.low-performance-mode .channel-card.focused {
     animation: none !important;
     box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.55) !important;
 }

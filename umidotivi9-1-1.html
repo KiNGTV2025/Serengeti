@@ -23192,7 +23192,8 @@ function applyTVBoxOptimizations() {
     // G) scrollToCard hızlandır: querySelectorAll yerine indexed map
     window._tvBoxCardMap = null;
     window._buildCardMap = function() {
-        var cards = document.querySelectorAll('.channel-card');
+        // ODAK-FIX: diğer tüm yerlerle tutarlı seçici — continue-card-in-grid hariç
+        var cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
         window._tvBoxCardMap = cards;
         return cards;
     };
@@ -56362,7 +56363,10 @@ setInterval(_scheduleGC, 30000);
 // 7. Channel card map rebuild - kanal grid render sonrası
 document.addEventListener('umittv_channels_ready', function() {
     setTimeout(function() {
-        window._tvBoxCardMap = document.querySelectorAll('.channel-card');
+        // ODAK-FIX: diğer tüm yerlerle tutarlı seçici — continue-card-in-grid hariç
+        // (aksi halde bu event sonrası _tvBoxCardMap'e continue-card'lar karışıyor,
+        // navigasyon/odak index'i 3-4-5. kartlarda kaymış oluyordu)
+        window._tvBoxCardMap = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
     }, 500);
 });
 
@@ -62578,7 +62582,16 @@ function _patchUpdateRemoteFocus() {
         var grid = document.getElementById('channelsGrid');
         if (!grid) { _cardCache = null; return null; }
         if (_cardCache && _cardCacheLen === _cardCache.length && _cardCacheGrid === grid) return _cardCache;
-        _cardCache = grid.querySelectorAll('.channel-card');
+        // ODAK-FIX: "3. 4. 5. kartta odak kayboluyor" — burada seçici
+        // '.channel-card' idi (continue-card-in-grid'i HARİÇ TUTMUYORDU),
+        // ama navigasyon (handleModernChannelNavigation) ve updateRemoteFocus
+        // '.channel-card:not(.continue-card-in-grid)' kullanıyor. Grid'in
+        // başında "Devam Et" kartları varsa bu iki liste farklı uzunlukta
+        // ve farklı sırada oluyordu — window._tvBoxCardMap buradan yanlış
+        // (kaymış) bir listeyle dolunca sonraki her index bir/birkaç kart
+        // kaymış oluyor, odak DOM'da var ama yanlış/kopuk elemente
+        // uygulanıyordu. Seçici artık diğerleriyle birebir aynı.
+        _cardCache = grid.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
         _cardCacheLen = _cardCache.length;
         _cardCacheGrid = grid;
         window._tvBoxCardMap = _cardCache;
@@ -62587,7 +62600,15 @@ function _patchUpdateRemoteFocus() {
     // renderChannels cache invalidate
     var _origRender = window.renderChannels;
     if (typeof _origRender === 'function' && !_origRender._cacheInv) {
-        window.renderChannels = function() { if (window._renderFrozenByPlayer) return; _cardCache = null; _cardCacheLen = 0; return _origRender.apply(this, arguments); };
+        window.renderChannels = function() {
+            if (window._renderFrozenByPlayer) return;
+            _cardCache = null; _cardCacheLen = 0;
+            // ODAK-FIX: window._tvBoxCardMap da burada sıfırlanmalı — aksi halde
+            // render sonrası eski (artık DOM'dan kopmuş) NodeList kullanılmaya
+            // devam eder ve odak "kayboluyormuş" gibi görünür.
+            window._tvBoxCardMap = null;
+            return _origRender.apply(this, arguments);
+        };
         window.renderChannels._cacheInv = true;
     }
     window.updateRemoteFocus = function() {

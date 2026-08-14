@@ -47919,6 +47919,11 @@ function deleteContinueWatchingRecord(name) {
                         state.remote.playerBoxIndex = visibleButtons.length - 1;
                     }
                     updateRemoteFocus();
+                    /* FIX: butonlar arası gezinirken oto-gizleme sayacı hiç
+                       sıfırlanmıyordu — canlı yayında 2sn içinde doğru butona
+                       ulaşamadan kontroller kapanıyordu. Her gezinmede süreyi
+                       yenile. */
+                    if (typeof _scheduleHide === 'function') _scheduleHide();
                     return;
 
                 case 'ArrowRight':
@@ -47931,6 +47936,7 @@ function deleteContinueWatchingRecord(name) {
                         state.remote.playerBoxIndex = 0;
                     }
                     updateRemoteFocus();
+                    if (typeof _scheduleHide === 'function') _scheduleHide();
                     return;
 
                 case 'ArrowUp':
@@ -62204,11 +62210,22 @@ setInterval(function() {
 </html>
 
 <script>
-// ═══ EVRENSEl GERİ TUŞU DÜZELTMESİ ═══
-// Tüm modal open fonksiyonları wrap'lenir → her açılışta pushState yapılır
-// Android geri tuşu (popstate) her zaman bir modal kapatır
+// ═══ EVRENSEL GERİ TUŞU DÜZELTMESİ — DEVRE DIŞI ═══
+// FIX: Bu blok, dosyanın üst kısmındaki asıl popstate/historyStack sistemiyle
+// (bkz. pushHistoryState/popHistoryState, ~satır 20996) AYNI ANDA çalışıyordu.
+// İki ayrı history yönetim sistemi (bu bloğun kendi window.history.pushState
+// buffer'ı ile diğerinin historyStack'i) birbirinden habersiz aynı native
+// history üzerinde push/pop yapınca senkron bozuluyordu. Özellikle açılışta
+// "Son İzlenen Yayın" otomatik başladığında, bu bloğun setTimeout(1500) ile
+// gecikmeli pushState'leri asıl sistemin state index'lerini kaydırıp geri
+// tuşunun (popstate) beklenmedik şekilde showExitConfirmModal()'a düşmesine
+// (playerdan çıkmak yerine uygulamayı kapatma isteğine) yol açıyordu.
+// Asıl geri tuşu / modal kapatma mantığı zaten üstteki popstate listener'ında
+// (pushHistoryState/popHistoryState + modal listesi) var — bu ikinci, çakışan
+// katman tamamen devre dışı bırakıldı.
 (function() {
 'use strict';
+return; // <<< bu IIFE artık hiçbir şey yapmıyor, aşağısı çalışmıyor
 
 function _pushBack() {
     try { window.history.pushState({ _modal: true }, ''); } catch(e) {}

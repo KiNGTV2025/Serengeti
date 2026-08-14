@@ -38491,53 +38491,25 @@ setTimeout(_vhsInit, 1200);
 
     function setupRecentCardsRemoteNavigation() {
         const cards = document.querySelectorAll('.recent-card');
-        const clearBtn = document.getElementById('btnClearRecentChannels');
         if (!cards.length) return;
 
         // State init
         if (!state.remote.recentCards) {
-            state.remote.recentCards = { selectedIndex: 0, cards: [] };
+            state.remote.recentCards = { selectedIndex: 0, cards: [], onClearBtn: false };
         }
         state.remote.recentCards.cards = Array.from(cards);
+        // FIX: yeni render sonrası her zaman kartlardan başla, önceki "Temizle
+        // butonundayım" durumu kalıntı olarak taşınmasın.
+        state.remote.recentCards.onClearBtn = false;
 
-        // Her kart için event
-        cards.forEach((card, idx) => {
-            // Focus görsel
-            card.addEventListener('focus', function() {
-                if (state.remote.zone === 'recentCards') {
-                    state.remote.recentCards.selectedIndex = idx;
-                    updateRecentCardsFocus();
-                }
-            });
-
-            card.addEventListener('blur', function() {
-                this.classList.remove('remote-focused');
-            });
-
-            card.addEventListener('keydown', function(e) {
-                if (state.remote.zone !== 'recentCards') return;
-                handleRecentCardsRemote(e);
-            });
-        });
-
-        // Temizle butonu
-        if (clearBtn) {
-            clearBtn.addEventListener('keydown', function(e) {
-                if (state.remote.zone !== 'recentCards') return;
-                if (e.key === 'Enter' || e.key === 'OK') {
-                    e.preventDefault();
-                    clearRecentChannels();
-                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    clearBtn.classList.remove('remote-focused');
-                    state.remote.recentCards.selectedIndex = 0;
-                    updateRecentCardsFocus();
-                }
-            });
-            clearBtn.addEventListener('blur', function() {
-                this.classList.remove('remote-focused');
-            });
-        }
+        // NOT: Kartlar ve Temizle butonu için ayrı 'keydown'/'focus' event
+        // listener'ları KASITLI OLARAK kaldırıldı. Uygulamanın kumanda
+        // sistemi tamamen MERKEZİ state (state.remote.zone + index) üzerinden
+        // çalışıyor — handleMainRemote() zone==='recentCards' olduğunda
+        // DOĞRUDAN handleRecentCardsRemote()'u çağırıyor, document.activeElement'e
+        // bakmıyor. Kartlara/butona ayrı native focus()/keydown listener
+        // eklemek gereksiz ve TV WebView'lerinde (çoğunda gerçek DOM focus
+        // D-pad ile hareket etmez) güvenilmezdi.
     }
 
     function updateRecentCardsFocus() {
@@ -38545,10 +38517,25 @@ setTimeout(_vhsInit, 1200);
         document.querySelectorAll('.recent-card').forEach(c => {
             c.classList.remove('remote-focused');
         });
-        document.querySelectorAll('#btnClearRecentChannels').forEach(b => b.classList.remove('remote-focused'));
+        const _clearBtnUrf = document.getElementById('btnClearRecentChannels');
+        if (_clearBtnUrf) _clearBtnUrf.classList.remove('remote-focused');
 
         const rc = state.remote.recentCards;
         if (!rc || !rc.cards || !rc.cards.length) return;
+
+        // FIX: "Tümünü Sil butonuna kumanda ile basınca silinmiyor" — odak
+        // Temizle butonundaysa artık bunu net bir state bayrağıyla (onClearBtn)
+        // takip ediyoruz; kart index'i (selectedIndex) HİÇ değiştirilmiyor ki
+        // OK tuşuna basılınca hangi eylemin yapılacağı (silme mi, oynatma mı)
+        // her zaman doğru belirlensin.
+        if (rc.onClearBtn) {
+            if (_clearBtnUrf) {
+                _clearBtnUrf.classList.add('remote-focused');
+                _clearBtnUrf.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'auto' });
+            }
+            showRemoteHint('Tümünü Sil');
+            return;
+        }
 
         const idx = Math.max(0, Math.min(rc.selectedIndex, rc.cards.length - 1));
         rc.selectedIndex = idx;
@@ -38569,23 +38556,28 @@ setTimeout(_vhsInit, 1200);
         switch(e.key) {
             case 'ArrowLeft':
                 e.preventDefault();
+                if (rc.onClearBtn) {
+                    // Zaten Temizle butonundayız — solda başka bir şey yok
+                    break;
+                }
                 if (rc.selectedIndex > 0) {
                     rc.selectedIndex--;
                     updateRecentCardsFocus();
                 } else {
-                    // En soldayken: Temizle butonuna git
-                    const cb = document.getElementById('btnClearRecentChannels');
-                    if (cb) {
-                        document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
-                        cb.classList.add('remote-focused');
-                        cb.focus({ preventScroll: true });
-                    }
+                    // En soldayken: Temizle butonuna geç (merkezi state ile)
+                    rc.onClearBtn = true;
+                    updateRecentCardsFocus();
                 }
                 break;
 
             case 'ArrowRight':
                 e.preventDefault();
-                if (rc.selectedIndex < cards.length - 1) {
+                if (rc.onClearBtn) {
+                    // Temizle butonundan sağa: ilk karta dön
+                    rc.onClearBtn = false;
+                    rc.selectedIndex = 0;
+                    updateRecentCardsFocus();
+                } else if (rc.selectedIndex < cards.length - 1) {
                     rc.selectedIndex++;
                     updateRecentCardsFocus();
                 }
@@ -38595,6 +38587,7 @@ setTimeout(_vhsInit, 1200);
                 e.preventDefault();
                 // Yukarı → continueCards varsa ona, yoksa categories'e
                 {
+                    rc.onClearBtn = false;
                     const continueCards = document.querySelectorAll('.continue-card');
                     if (continueCards.length > 0 && state.activeCat === 'all') {
                         state.remote.zone = 'continueCards';
@@ -38614,6 +38607,7 @@ setTimeout(_vhsInit, 1200);
             case 'ArrowDown':
                 e.preventDefault();
                 // Aşağı → channels grid'e
+                rc.onClearBtn = false;
                 document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
@@ -38623,6 +38617,14 @@ setTimeout(_vhsInit, 1200);
             case 'Enter':
             case 'OK':
                 e.preventDefault();
+                if (rc.onClearBtn) {
+                    // FIX: Asıl hata buradaydı — eskiden bu dal hiç yoktu ve
+                    // Temizle butonundayken bile aşağıdaki kart oynatma kodu
+                    // çalışıyordu, kullanıcı "Tümünü Sil"e bassa da hiçbir şey
+                    // silinmiyor, en soldaki kanal açılıyordu.
+                    clearRecentChannels();
+                    break;
+                }
                 const card = cards[rc.selectedIndex];
                 if (card) {
                     const name = card.dataset.recentName;
@@ -38633,6 +38635,7 @@ setTimeout(_vhsInit, 1200);
             case 'Backspace':
             case 'Escape':
                 e.preventDefault();
+                rc.onClearBtn = false;
                 document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
@@ -42573,13 +42576,24 @@ function selectCat(id) {
     renderCats(); 
     filterChannels(); // Bu zaten var
     
-    // Remote kontrol için catIndex güncelle
-    const catDisplayName = id === 'all' ? 'Tümü' : 
-                          (id === 'fav' ? 'Favoriler' : 
-                          (id === 'cont' ? 'Devam Et' : id));
-    
-    state.remote.catIndex = state.cats.findIndex(c => c === catDisplayName);
-    if (state.remote.catIndex === -1) state.remote.catIndex = 0;
+    // FIX: "Kumanda odağı belli olmuyor / liste tümüne basınca işlevsiz
+    // oluyor, kategori seçemiyoruz" — catIndex eskiden state.cats (TÜM
+    // kategoriler, gizlenenler dahil) üzerinde hesaplanıyordu, ama ekranda
+    // sadece GİZLİ OLMAYAN kategoriler .cat-pill olarak render ediliyor
+    // (renderCats() gizli kategorileri atlıyor). Kullanıcı kategori
+    // gizleme özelliğini kullandığında bu iki liste birbirinden kayıyordu:
+    // catIndex, ekrandaki pill sayısından büyük ya da yanlış bir pill'e
+    // denk geliyordu → updateRemoteFocus() içinde el=undefined olup odak
+    // hiç görünmüyordu, ve OK/Enter ile seçim de yanlış/boş kategoriye
+    // düşüp listeyi işlevsiz bırakıyordu. Artık index, GERÇEKTEN render
+    // edilen .cat-pill listesindeki data-category eşleşmesine göre
+    // hesaplanıyor — ikisi arasında birebir tutarlılık garanti ediliyor.
+    const _selCatPills = document.querySelectorAll('.cat-pill');
+    let _selCatIdx = -1;
+    for (let _sci = 0; _sci < _selCatPills.length; _sci++) {
+        if (_selCatPills[_sci].dataset && _selCatPills[_sci].dataset.category === id) { _selCatIdx = _sci; break; }
+    }
+    state.remote.catIndex = _selCatIdx !== -1 ? _selCatIdx : 0;
     
     // Eğer Tüm Kanallar kategorisine geçiyorsak continue cards'ı render et - EKLENDİ
     if (id === 'all') {
@@ -51104,7 +51118,16 @@ function handleFavoriteChannelSelect(key) {
         hint='Liste (OK: Seç, OK Basılı Tut: Düzenle)';
     }
     else if(state.remote.zone==='categories') {
-        el=document.querySelectorAll('.cat-pill')[state.remote.catIndex];
+        // FIX: "Kumanda odağı belli olmuyor" — kategori sayısı değişince
+        // (gizleme, M3U değişimi, filtre) catIndex eskisi gibi geçersiz
+        // kalabiliyordu; channels zone'undaki gibi geçerli aralığa clamp
+        // edilmezse el=undefined olup odak görünmüyordu.
+        const _catPillsUrf = document.querySelectorAll('.cat-pill');
+        if (_catPillsUrf.length > 0) {
+            if (state.remote.catIndex >= _catPillsUrf.length) state.remote.catIndex = _catPillsUrf.length - 1;
+            if (state.remote.catIndex < 0) state.remote.catIndex = 0;
+        }
+        el = _catPillsUrf[state.remote.catIndex];
         hint='Kategori';
     }
     else if(state.remote.zone==='recentCards') {

@@ -27673,13 +27673,11 @@ function _tryStartupAutoLaunch() {
         return;
     }
 
-    // Hoş Geldin / liste yükleme ekranı hâlâ açıksa bekle — yayın
-    // arkaplanda başlayıp welcome ekranının altında sesli/görüntülü
-    // çalışmasın diye ekran kapanana kadar deneme ertelenir.
-    if (window._welcomeOpen) {
-        _scheduleStartupAutoLaunch(400);
-        return;
-    }
+    // FIX: "Son yayını başlat, login ekranı geçer geçmez başlasın" — eskiden
+    // burada window._welcomeOpen (Hoş Geldin/liste yükleme ekranı) kapanana
+    // kadar da ayrıca bekleniyordu. Artık SADECE login ekranının kapanması
+    // yeterli; welcome ekranı hâlâ açıksa yayın bulunduğu anda (aşağıda)
+    // kendisi kapatılıp video görünür hâle getiriliyor.
 
     const settings = getStartupSettings();
     if (!settings || settings.mode === 'normal') { _startupAutoLaunchDone = true; return; }
@@ -27707,7 +27705,11 @@ function _tryStartupAutoLaunch() {
                     }
                     if (idx !== -1) {
                         played = true;
-                        setTimeout(function() { playChannel(idx); }, 300);
+                        setTimeout(function() {
+                            // Welcome ekranı hâlâ açıksa video görünsün diye önce onu kapat
+                            if (window._welcomeOpen && typeof hideWelcomeScreen === 'function') hideWelcomeScreen();
+                            playChannel(idx);
+                        }, 300);
                     }
                 }
             } else if (settings.mode === 'category' && settings.category) {
@@ -27727,6 +27729,8 @@ function _tryStartupAutoLaunch() {
                         if (!state.filtered || state.filtered.length === 0) return;
                         let liveIdx = state.filtered.findIndex(function(c) { return c && c.isLive && !c.isVod; });
                         const idx = liveIdx !== -1 ? liveIdx : 0;
+                        // Welcome ekranı hâlâ açıksa video görünsün diye önce onu kapat
+                        if (window._welcomeOpen && typeof hideWelcomeScreen === 'function') hideWelcomeScreen();
                         playChannel(idx);
                     }, 400);
                 };
@@ -38624,8 +38628,16 @@ setTimeout(_vhsInit, 1200);
         }
         state.remote.recentCards.cards = Array.from(cards);
         // FIX: yeni render sonrası her zaman kartlardan başla, önceki "Temizle
-        // butonundayım" durumu kalıntı olarak taşınmasın.
-        state.remote.recentCards.onClearBtn = false;
+        // butonundayım" durumu kalıntı olarak taşınmasın — AMA SADECE kullanıcı
+        // o an bu zone'da DEĞİLKEN. Kullanıcı zaten 'recentCards' zone'undayken
+        // (ör. bir kanal oynatılıp arka planda strip yeniden render olduğunda)
+        // bu satır onClearBtn'i sessizce false'a çeviriyordu; buton görsel
+        // olarak hâlâ odaklı görünüyordu ama OK tuşuna basınca artık silme
+        // yerine soldaki kanal açılıyordu. "Tümünü Sil kumandayla basılmıyor"
+        // şikayetinin sebeplerinden biri buydu.
+        if (state.remote.zone !== 'recentCards') {
+            state.remote.recentCards.onClearBtn = false;
+        }
 
         // NOT: Kartlar ve Temizle butonu için ayrı 'keydown'/'focus' event
         // listener'ları KASITLI OLARAK kaldırıldı. Uygulamanın kumanda
@@ -50180,6 +50192,7 @@ function cleanupDeleteContinueModalRemote() {
             if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
             state.remote.recentCards.cards = Array.from(recentCards);
             state.remote.recentCards.selectedIndex = 0;
+            state.remote.recentCards.onClearBtn = false; // FIX: eski/kalıntı bayrak taşınmasın
             updateRecentCardsFocus();
         } else if (hasContinueCards) {
             state.remote.zone = 'continueCards';
@@ -50355,6 +50368,7 @@ function cleanupDeleteContinueModalRemote() {
                         if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
                         state.remote.recentCards.cards = Array.from(_recentCardsUp);
                         state.remote.recentCards.selectedIndex = 0;
+                        state.remote.recentCards.onClearBtn = false; // FIX: eski/kalıntı bayrak taşınmasın
                         if (typeof updateRecentCardsFocus === 'function') updateRecentCardsFocus();
                     } else if (_goTopBtn && _goTopBtn.classList.contains('umk-show')) {
                         state.remote.zone = 'umkGoTop';
@@ -50870,6 +50884,7 @@ function handleContinueCardsRemote(e) {
                     if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
                     state.remote.recentCards.cards = Array.from(_rCards);
                     state.remote.recentCards.selectedIndex = 0;
+                    state.remote.recentCards.onClearBtn = false; // FIX: eski/kalıntı bayrak taşınmasın
                     // continueCards focus temizle
                     document.querySelectorAll('.continue-card').forEach(c => c.classList.remove('remote-focused'));
                     document.querySelectorAll('.continue-action-btn').forEach(b => b.classList.remove('remote-focused'));

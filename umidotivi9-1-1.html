@@ -42899,6 +42899,23 @@ function playChannelByName(name) {
  */
 
 function resumeChannel(startTime) {
+    // FIX: "0 Kanal / Bu kategoride kanal bulunamadı" — player kapanınca
+    // closePlayer state.channels'ı yeniden filtreleyip state.filtered'ı
+    // GERİ ÇAĞIRMAYA (yeniden kurmaya) çalışıyordu; bazı durumlarda
+    // state.channels o an ilgili listId için boş/eksik kalabiliyor ve bu
+    // yeniden kurma başarısız oluyordu. Onun yerine: player'a girmeden HEMEN
+    // ÖNCE (henüz frozen değilken, yani kanal değiştirme değil gerçek giriş
+    // anında) o anki TAM listeyi (state.filtered) olduğu gibi bir kopya
+    // olarak sakla — closePlayer artık "yeniden çağırmak" yerine bu hazır
+    // kopyayı geri yükleyecek, ağa/duruma bağımlı kalmayacak.
+    if (!window._playerUIFrozen) {
+        window._UTV = window._UTV || {};
+        try {
+            window._UTV._savedFilteredSnapshot = (state.filtered || []).slice();
+            window._UTV._savedFilteredM3U = state.selectedM3U;
+            window._UTV._savedFilteredCat = state.activeCat;
+        } catch(e) {}
+    }
     const video = document.getElementById('videoPlayer');
     window._userPaused = false;  // Yeni kanal — pause flag sıfırla
     window._recoveryLock = false; // DONMA-FIX: Önceki kanaldan kalan recovery lock'u temizle
@@ -45596,7 +45613,7 @@ function closePlayer() {
     setTimeout(function() {
         try { if (typeof renderCats === 'function') renderCats(); } catch(e) {}
         setTimeout(function() {            try {
-                // state.filtered boşsa yeniden doldur
+                // state.filtered boşsa yeniden doldur (state.channels üzerinden ilk deneme)
                 if (!window.state.filtered || window.state.filtered.length === 0) {
                     if (window.state.channels && window.state.channels.length > 0) {
                         window.state.filtered = window.state.channels.filter(function(c) {
@@ -45633,6 +45650,26 @@ function closePlayer() {
                 } else if (typeof renderChannels === 'function') {
                     try { renderChannels(); } catch(e) {}
                 }
+                // FIX (asıl çözüm): filterChannels() state.channels'tan yeniden
+                // hesaplama YAPIP yine de boş çıkarsa (state.channels o an ilgili
+                // listId için eksik/boş kalmış olabilir), "yeniden çağırmak" yerine
+                // player açılmadan hemen önce alınmış HAZIR kopyayı (resumeChannel
+                // içindeki _savedFilteredSnapshot) doğrudan geri yükle — aynı
+                // M3U/kategoride kalındıysa bu her zaman doğrudur ve state.channels
+                // bütünlüğünden bağımsızdır.
+                try {
+                    if ((!window.state.filtered || window.state.filtered.length === 0) && window._UTV) {
+                        var _snap = window._UTV._savedFilteredSnapshot;
+                        var _snapMatches = _snap && _snap.length > 0 &&
+                            window._UTV._savedFilteredM3U === window.state.selectedM3U &&
+                            window._UTV._savedFilteredCat === window.state.activeCat;
+                        if (_snapMatches) {
+                            window.state.filtered = _snap.slice();
+                            if (typeof updateChannelCount === 'function') updateChannelCount(window.state.filtered.filter(function(c){return !c.isSpecial;}).length);
+                            if (typeof renderChannels === 'function') { try { renderChannels(); } catch(e2) {} }
+                        }
+                    }
+                } catch(e) {}
                 var _cat = window.state && window.state.activeCat;
                 if (typeof renderContinueWatching === 'function' && (_cat === 'all' || _cat === 'Tümü')) { try { renderContinueWatching(); } catch(e) {} }
                 if (typeof renderRecentChannels === 'function') { try { renderRecentChannels(); } catch(e) {} }

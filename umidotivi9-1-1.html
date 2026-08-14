@@ -39077,6 +39077,20 @@ function showRemoteHint(text) {
     state.player.vodPlaying = !channel.isLive;
     state.player.continueTime = startTime;
     
+    // FIX: playChannel() player açılmadan önce scroll + aktif kategori bilgisini
+    // window._UTV._savedScrollTop / _savedActiveCat içine kaydediyor, closePlayer()
+    // bunları geri yüklüyor. Bu fonksiyon (Son İzlenenler/Devam Et kartından oynatma)
+    // resumeChannel()'ı DOĞRUDAN çağırdığı için bu kayıt hiç yapılmıyordu — player
+    // kapanınca closePlayer stale/eski bir _savedActiveCat'e geri dönüyor, o kategori
+    // seçili M3U'da 0 kanal içerebiliyor ve "Bu kategoride kanal bulunamadı" görünüyordu.
+    // Burada da aynı kaydı yapıyoruz ki restore doğru kategoriye/scroll'a dönsün.
+    window._UTV = window._UTV || {};
+    try {
+        var _vpSaveCW = document.getElementById('channelsViewport');
+        window._UTV._savedScrollTop = _vpSaveCW ? _vpSaveCW.scrollTop : 0;
+        window._UTV._savedActiveCat = state.activeCat || 'all';
+    } catch(e) {}
+    
     playKeySound('confirm');
     state.remote.zone = 'player';
 

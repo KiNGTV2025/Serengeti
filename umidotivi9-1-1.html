@@ -27311,9 +27311,9 @@ const STARTUP_BUTTONS = ['startupModeNormal', 'startupModeLastWatched', 'startup
 function getStartupSettings() {
     try {
         const raw = localStorage.getItem(STARTUP_SETTINGS_KEY);
-        if (raw) return Object.assign({ mode: 'normal', category: '' }, JSON.parse(raw));
+        if (raw) return Object.assign({ mode: 'normal', category: '', selectedM3U: 'all' }, JSON.parse(raw));
     } catch (e) {}
-    return { mode: 'normal', category: '' };
+    return { mode: 'normal', category: '', selectedM3U: 'all' };
 }
 
 function saveStartupSettingsToStorage(settings) {
@@ -27414,7 +27414,14 @@ function saveStartupSettingsFromModal() {
     const sel = document.getElementById('startupCategorySelect');
     const settings = {
         mode: _startupModalSelectedMode || 'normal',
-        category: sel ? sel.value : ''
+        category: sel ? sel.value : '',
+        // FIX: "Seçilen kategoride başlamıyor" — kategori hangi M3U/panelin
+        // içindeyse (ör. "ATVPanel") o bilgi kaydedilmiyordu. selectCat()
+        // sadece O AN aktif olan M3U içinde filtreler; açılışta farklı/
+        // varsayılan bir M3U ile başlanınca kategori orada hiç bulunamıyor ve
+        // sessizce başarısız oluyordu. Artık kategoriyle birlikte hangi M3U'da
+        // seçildiği de saklanıyor, açılışta önce o M3U'ya geçiliyor.
+        selectedM3U: state.selectedM3U
     };
     saveStartupSettingsToStorage(settings);
     if (typeof showToast === 'function') showToast('✓ Başlangıç ayarları kaydedildi');
@@ -27535,13 +27542,42 @@ function _tryStartupAutoLaunch() {
                     }
                 }
             } else if (settings.mode === 'category' && settings.category) {
-                if (typeof selectCat === 'function') selectCat(settings.category);
-                setTimeout(function() {
-                    if (!state.filtered || state.filtered.length === 0) return;
-                    let liveIdx = state.filtered.findIndex(function(c) { return c && c.isLive && !c.isVod; });
-                    const idx = liveIdx !== -1 ? liveIdx : 0;
-                    playChannel(idx);
-                }, 400);
+                // FIX: Kategori kaydedildiği andaki M3U'da (settings.selectedM3U)
+                // yaşıyor olabilir — açılışta o M3U aktif değilse önce ona geç
+                // (gerekirse lazy-load tetiklenir) ve o M3U'nun kanalları
+                // gelene kadar bekle, ANCAK bunu selectCat/playChannel'dan önce
+                // yap. Eski kod her zaman "şu an aktif olan" M3U bağlamında
+                // filtreliyordu — kategori başka bir panelde ise hiçbir şey
+                // bulunamıyor, sessizce başarısız oluyordu.
+                const _targetM3U = (settings.selectedM3U !== undefined && settings.selectedM3U !== null) ? settings.selectedM3U : 'all';
+                const _needM3USwitch = state.selectedM3U !== _targetM3U;
+
+                const _finishCategoryLaunch = function() {
+                    if (typeof selectCat === 'function') selectCat(settings.category);
+                    setTimeout(function() {
+                        if (!state.filtered || state.filtered.length === 0) return;
+                        let liveIdx = state.filtered.findIndex(function(c) { return c && c.isLive && !c.isVod; });
+                        const idx = liveIdx !== -1 ? liveIdx : 0;
+                        playChannel(idx);
+                    }, 400);
+                };
+
+                if (_needM3USwitch && typeof selectM3U === 'function') {
+                    selectM3U(_targetM3U);
+                    // selectM3U('all' olmayan) durumunda loadSingleM3U async çalışır —
+                    // o listenin kanalları gelene kadar (veya makul bir süre) bekle.
+                    const _waitForM3U = function(attempt) {
+                        const _ready = _targetM3U === 'all'
+                            ? (state.channels && state.channels.length > 0)
+                            : (!window._isLoadingM3U && state.channels && state.channels.some(function(c) { return c.listIdx == _targetM3U; }));
+                        if (_ready) { _finishCategoryLaunch(); return; }
+                        if (attempt < 20) { setTimeout(function() { _waitForM3U(attempt + 1); }, 500); return; }
+                        // Yüklenemedi — pes et, en azından mevcut ekranda kal
+                    };
+                    _waitForM3U(0);
+                } else {
+                    _finishCategoryLaunch();
+                }
                 played = true;
             } else {
                 giveUp = true;

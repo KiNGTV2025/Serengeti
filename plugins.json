@@ -2,14 +2,14 @@
     {
         "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/UmitmodProvider.cs3",
         "status": 1,
-        "version": 9,
+        "version": 10,
         "name": "UmitmodProvider",
         "internalName": "UmitmodProvider",
         "authors": [
             "Umitmod"
         ],
-        "description": "Umitmod TV kanallar\u0131 - kategoriler dizi, kanallar b\u00f6l\u00fcm olarak listelenir",
-        "fileSize": 21861,
+        "description": "Umitmod TV kanallar\u0131 - \ud83d\udf32\u00dc\u2c98\ud835\udd8e\u0163 \u2c980\u010e\ud83d\udf32 fark\u0131yla\ud83c\uddf9\ud83c\uddf7",
+        "fileSize": 21862,
         "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
         "language": "tr",
         "tvTypes": [
@@ -17,6 +17,26 @@
         ],
         "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
         "apiVersion": 1,
-        "fileHash": "sha256-0ecab01a5869687d1ae2afdc96aa2a04aeb7420f9a40e0ecff0ab1140de8411a"
+        "fileHash": "sha256-d044b6a023984b3ea2a718fe2fbc952ea885ad5923edff55c7347d684794d571"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/VpnsizUmitmodProvider.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "VpnsizUmitmodProvider",
+        "internalName": "VpnsizUmitmodProvider",
+        "authors": [
+            "Umitmod"
+        ],
+        "description": "VpnsizUmitmod - VPN gerektirmeden do\u011frudan oynayan TR kanallar\u0131",
+        "fileSize": 13302,
+        "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
+        "language": "tr",
+        "tvTypes": [
+            "Live"
+        ],
+        "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-deae1fd677eed62d93e8f96ba6f0cbfa8b2ea34b95e0ebb2160131fabd621033"
     }
 ]

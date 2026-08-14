@@ -5655,12 +5655,7 @@ body {
         .player-overlay { 
             position: fixed; 
             inset: 0; 
-            /* FIX: beyaz ekran flaşı — bu katman position:fixed ile kendi GPU
-               compositing layer'ını oluşturuyor; TVBox WebView'lerinde layer
-               ilk boyanmadan önce varsayılan beyaz gösterebiliyor (html/body'de
-               zaten uygulanan aynı fix burada da gerekli). background:none
-               yerine kalıcı siyah. */
-            background: #000; 
+            background: none; 
             z-index: 2000; 
             display: none; 
             width: 100vw; 
@@ -12001,51 +11996,6 @@ body, .app-wrapper, #mainView { background:#09090f !important; }
 #zappingScreen {
   background:radial-gradient(ellipse at center, rgba(18,18,30,0.97) 0%, rgba(4,4,8,0.99) 100%) !important;
 }
-/* FIX: zapping ekranı içeriği (logo/isim/spinner) için stiller — element
-   HTML'e geri eklendiğinde bu class'lar da eksikti. */
-.zapping-logo-wrapper {
-  width:110px;
-  height:110px;
-  border-radius:24px;
-  background:rgba(255,255,255,0.05);
-  border:2px solid rgba(var(--accent-primary-rgb,255,215,0),0.5);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-.zapping-logo-img {
-  max-width:78%;
-  max-height:78%;
-  object-fit:contain;
-}
-.zapping-channel-name {
-  color:#fff;
-  font-size:18px;
-  font-weight:700;
-  letter-spacing:0.5px;
-  text-align:center;
-  max-width:80vw;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.zapping-loading {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.zapping-spinner {
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  border:3px solid rgba(var(--accent-primary-rgb,255,215,0),0.25);
-  border-top-color:var(--accent-primary,#FFD700);
-  animation:zappingSpin 0.8s linear infinite;
-}
-@keyframes zappingSpin {
-  to { transform:rotate(360deg); }
-}
 
  
 #skipCountdownOverlay {
@@ -15634,7 +15584,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 }
 </style>
 
-    <div class="player-overlay" id="playerView" style="background: #000 !important;">
+    <div class="player-overlay" id="playerView" style="background: none !important;">
 
     
     <div class="modern-seeking-overlay" id="modernSeekingOverlay" style="display:none;">
@@ -15694,37 +15644,15 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         </div>
     </div>
 
-<div class="player-container" id="playerContainer" style="background: #000 !important;">
+<div class="player-container" id="playerContainer" style="background: none !important;">
     
     <video id="videoPlayer" 
            preload="auto"
            autoplay 
            muted
-           style="background-color: #000 !important; width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); backface-visibility: hidden; will-change: auto;">
+           style="background-color: #000 !important; width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); backface-visibility: hidden; will-change: auto;"
+           poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
     </video>
-
-    <!-- FIX: "kanal geçişlerinde beyaz ekran gözüküyor" — showZappingScreen()/
-         hideZappingScreen() JS fonksiyonları document.getElementById('zappingScreen')
-         arıyordu ama bu element HTML'de HİÇ TANIMLI DEĞİLDİ (muhtemelen önceki bir
-         düzenlemede yanlışlıkla silinmiş). Sonuç: kanal değişiminde tasarlanan koyu
-         geçiş ekranı hiç görünmüyor, kullanıcı video henüz decode olmadan/frame
-         gelmeden önceki boş anı (bazı TVBox WebView'lerinde opak beyaz) görüyordu.
-         Element burada geri eklendi — video'nun hemen üstünde, kanal değişirken
-         video tamamen kaplanacak şekilde. -->
-    <div id="zappingScreen" style="
-        display:none;
-        position:absolute;
-        inset:0;
-        z-index:50;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        gap:18px;
-        background:radial-gradient(ellipse at center, rgba(18,18,30,0.97) 0%, rgba(4,4,8,0.99) 100%);
-        opacity:0;
-        transition:opacity 0.15s ease;
-        pointer-events:none;
-    "></div>
 
     
     <div id="pauseCenterLogo" onclick="handlePlayPauseClick()" style="
@@ -38602,7 +38530,6 @@ setTimeout(_vhsInit, 1200);
                 } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                     e.preventDefault();
                     clearBtn.classList.remove('remote-focused');
-                    if (state.remote.recentCards) state.remote.recentCards.onClearBtn = false;
                     state.remote.recentCards.selectedIndex = 0;
                     updateRecentCardsFocus();
                 }
@@ -38618,20 +38545,10 @@ setTimeout(_vhsInit, 1200);
         document.querySelectorAll('.recent-card').forEach(c => {
             c.classList.remove('remote-focused');
         });
-        const _clearBtnUF = document.getElementById('btnClearRecentChannels');
-        if (_clearBtnUF) _clearBtnUF.classList.remove('remote-focused');
+        document.querySelectorAll('#btnClearRecentChannels').forEach(b => b.classList.remove('remote-focused'));
 
         const rc = state.remote.recentCards;
         if (!rc || !rc.cards || !rc.cards.length) return;
-
-        // Temizle butonu seçiliyse onu odakla, kartlardan hiçbirini değil
-        if (rc.onClearBtn) {
-            if (_clearBtnUF) {
-                _clearBtnUF.classList.add('remote-focused');
-                showRemoteHint('Tümünü Sil (Enter)');
-            }
-            return;
-        }
 
         const idx = Math.max(0, Math.min(rc.selectedIndex, rc.cards.length - 1));
         rc.selectedIndex = idx;
@@ -38652,38 +38569,22 @@ setTimeout(_vhsInit, 1200);
         switch(e.key) {
             case 'ArrowLeft':
                 e.preventDefault();
-                if (rc.onClearBtn) break; // zaten Temizle butonundayız, daha sola gidilmez
                 if (rc.selectedIndex > 0) {
                     rc.selectedIndex--;
                     updateRecentCardsFocus();
                 } else {
                     // En soldayken: Temizle butonuna git
-                    // FIX: "Tümünü Sil butonuna kumandayla gelemiyorum/Enter işe yaramıyor"
-                    // — buton görsel olarak odaklanıyordu ama state.remote.recentCards
-                    // içinde "buton seçili" bilgisi hiç tutulmuyordu; bu yüzden Enter/OK
-                    // her zaman kart oynatma mantığını çalıştırıyor, butona basmak hiçbir
-                    // şey yapmıyordu. Artık rc.onClearBtn flag'i ile buton seçili durumu
-                    // ayrıca izleniyor.
-                    rc.onClearBtn = true;
                     const cb = document.getElementById('btnClearRecentChannels');
                     if (cb) {
                         document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
                         cb.classList.add('remote-focused');
                         cb.focus({ preventScroll: true });
-                        showRemoteHint('Tümünü Sil (Enter)');
                     }
                 }
                 break;
 
             case 'ArrowRight':
                 e.preventDefault();
-                if (rc.onClearBtn) {
-                    // Temizle butonundan sağa: ilk karta dön
-                    rc.onClearBtn = false;
-                    rc.selectedIndex = 0;
-                    updateRecentCardsFocus();
-                    break;
-                }
                 if (rc.selectedIndex < cards.length - 1) {
                     rc.selectedIndex++;
                     updateRecentCardsFocus();
@@ -38694,7 +38595,6 @@ setTimeout(_vhsInit, 1200);
                 e.preventDefault();
                 // Yukarı → continueCards varsa ona, yoksa categories'e
                 {
-                    rc.onClearBtn = false;
                     const continueCards = document.querySelectorAll('.continue-card');
                     if (continueCards.length > 0 && state.activeCat === 'all') {
                         state.remote.zone = 'continueCards';
@@ -38702,7 +38602,6 @@ setTimeout(_vhsInit, 1200);
                         state.remote.continueCards.selectedCardIndex = 0;
                         state.remote.continueCards.selectedButtonIndex = 0;
                         document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
-                        document.getElementById('btnClearRecentChannels')?.classList.remove('remote-focused');
                         if (typeof updateContinueCardsFocus === 'function') updateContinueCardsFocus();
                     } else {
                         state.remote.zone = 'categories';
@@ -38715,9 +38614,7 @@ setTimeout(_vhsInit, 1200);
             case 'ArrowDown':
                 e.preventDefault();
                 // Aşağı → channels grid'e
-                rc.onClearBtn = false;
                 document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
-                document.getElementById('btnClearRecentChannels')?.classList.remove('remote-focused');
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
                 updateRemoteFocus();
@@ -38726,10 +38623,6 @@ setTimeout(_vhsInit, 1200);
             case 'Enter':
             case 'OK':
                 e.preventDefault();
-                if (rc.onClearBtn) {
-                    clearRecentChannels();
-                    break;
-                }
                 const card = cards[rc.selectedIndex];
                 if (card) {
                     const name = card.dataset.recentName;
@@ -38740,9 +38633,7 @@ setTimeout(_vhsInit, 1200);
             case 'Backspace':
             case 'Escape':
                 e.preventDefault();
-                rc.onClearBtn = false;
                 document.querySelectorAll('.recent-card').forEach(c => c.classList.remove('remote-focused'));
-                document.getElementById('btnClearRecentChannels')?.classList.remove('remote-focused');
                 state.remote.zone = 'channels';
                 state.remote.index = 0;
                 updateRemoteFocus();
@@ -47053,13 +46944,7 @@ function updateSidebarFavIcons(channelName) {
                 }
             } catch(e) {}
             
-            // FIX: "video playerin arkası siyah olsun" — --player-bg önceden
-            // temanın arka plan rengine göre (darkenColor(t.bg, 0.8)) hesaplanıyordu.
-            // 0.8 faktörü sadece %20 karartma yaptığından açık/pastel bir tema
-            // seçiliyken player'ın video etrafındaki boşluğu beyaza yakın/pastel
-            // görünüyordu (özellikle kanal geçişi sırasında video henüz görünmeden).
-            // Tema ne olursa olsun player arkaplanı artık her zaman sabit siyah.
-            const playerBg = '#000000';
+            const playerBg = darkenColor(t.bg, 0.8);
             r.style.setProperty('--player-bg', playerBg);
             state.player.playerBgColor = playerBg;
             }); // end requestAnimationFrame
@@ -50145,7 +50030,6 @@ function cleanupDeleteContinueModalRemote() {
             if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
             state.remote.recentCards.cards = Array.from(recentCards);
             state.remote.recentCards.selectedIndex = 0;
-            state.remote.recentCards.onClearBtn = false;
             updateRecentCardsFocus();
         } else if (hasContinueCards) {
             state.remote.zone = 'continueCards';
@@ -50321,7 +50205,6 @@ function cleanupDeleteContinueModalRemote() {
                         if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
                         state.remote.recentCards.cards = Array.from(_recentCardsUp);
                         state.remote.recentCards.selectedIndex = 0;
-                        state.remote.recentCards.onClearBtn = false;
                         if (typeof updateRecentCardsFocus === 'function') updateRecentCardsFocus();
                     } else if (_goTopBtn && _goTopBtn.classList.contains('umk-show')) {
                         state.remote.zone = 'umkGoTop';
@@ -50837,7 +50720,6 @@ function handleContinueCardsRemote(e) {
                     if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
                     state.remote.recentCards.cards = Array.from(_rCards);
                     state.remote.recentCards.selectedIndex = 0;
-                    state.remote.recentCards.onClearBtn = false;
                     // continueCards focus temizle
                     document.querySelectorAll('.continue-card').forEach(c => c.classList.remove('remote-focused'));
                     document.querySelectorAll('.continue-action-btn').forEach(b => b.classList.remove('remote-focused'));
@@ -62223,11 +62105,7 @@ var _nativeGEBI = document.getElementById.bind(document);
     s.textContent =
         ':root{--transition-fast:0s !important}' +
         '.channel-card{contain:layout style paint !important}' +
-        /* FIX: kumanda odağı belli olmuyor — üstteki satır contain:paint
-           uyguluyor, bu da odaklı karttaki box-shadow halkasının kartın
-           kenarında kırpılmasına (görünmemesine) sebep oluyordu. Odaklı
-           kartta paint containment'ı kaldırıyoruz ki glow dışa taşabilsin. */
-        '.channel-card.remote-focused,.channel-card.focused{contain:layout style !important;overflow:visible !important;box-shadow:0 0 0 3px var(--accent-primary,#FFD700),0 0 16px rgba(var(--accent-primary-rgb,255,215,0),0.6) !important;border:2px solid var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important;z-index:5 !important}' +
+        '.channel-card.remote-focused{box-shadow:0 0 0 3px var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important}' +
         'body.streaming-mode #channelsGrid{pointer-events:none !important}' +
         'body.streaming-mode #__UMD_TVX_DOCK{display:none !important}' +
         '#mainHeader{contain:layout style paint !important}' +
@@ -63782,24 +63660,16 @@ document.readyState === 'loading'
     box-shadow: none !important;
 }
 
-/* Seçili kart — belirgin kumanda odağı halkası.
-   FIX: "kanal listesinde kumanda odağı belli olmuyor" — bu kural sadece
-   ince (1px) border rengini değiştiriyordu ve `contain: paint !important`
-   ekleyerek 3874. satırdaki overflow:visible/contain düzeltmesini eziyordu,
-   bu da olası box-shadow glow'unun kırpılmasına sebep oluyordu. Artık
-   overflow kırpılmıyor ve kalın+parlak bir box-shadow halkası ekleniyor,
-   büyük TV ekranlarında da net görünür. */
+/* Seçili kart — box-shadow dışa, overflow:hidden'dan bağımsız */
 .channel-card.remote-focused,
 .channel-card.focused,
 .channel-card:focus-visible {
     outline: none !important;
-    border: 2px solid var(--accent-primary, #FFD700) !important;
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.6) !important;
+    border-color: var(--accent-primary) !important;
     transform: translateZ(0) !important;
     transition: none !important;
-    contain: layout style !important;
-    overflow: visible !important;
-    z-index: 5 !important;
+    contain: layout style paint !important;
+    z-index: 2 !important;
 }
 
 /* VOD kartı seçili — aynı */
@@ -63808,8 +63678,7 @@ document.readyState === 'loading'
 .channel-card[data-is-series="true"].remote-focused,
 .channel-card[data-is-series="true"].focused {
     outline: none !important;
-    border: 2px solid var(--accent-primary, #FFD700) !important;
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.6) !important;
+    border-color: var(--accent-primary) !important;
 }
 
 /* ══════════════════════════════════════

@@ -43049,14 +43049,30 @@ function resumeChannel(startTime) {
     // kool.to stall timer temizle
     if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
 
-    // SES BOZULMASI DÜZELTMESİ: video elementini tam olarak sıfırla
+    // --- KANAL ATLAMA GERİ SAYIM ---
+    // TVBox + 4K: çok uzun manifest+segment indirme, geniş tolerans
+    // NOT: _isTV artık video reset stratejisini de belirlediği için SES BOZULMASI
+    // bloğundan ÖNCE hesaplanıyor (önceden aşağıdaydı, sıra değişti).
+    const _isTV = window._isAndroidTV === true
+        || /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
+        || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
+
+    // SES BOZULMASI DÜZELTMESİ: video elementini sıfırla
     // Önceki HLS instance'ının bıraktığı audio decoder/buffer kalıntılarını temizlemek için
-    // önce mute et, src'yi temizle, load() çağır — bu sıra Android TV/TVBox'ta ses
-    // bozulmasını (crackling/distortion/glitch) önler.
+    // önce mute et, src'yi temizle — bu sıra Android TV/TVBox'ta ses bozulmasını
+    // (crackling/distortion/glitch) önler.
+    // TVBOX KASMA-FIX: video.load() TVBox donanım decoder'ında senkron/pahalı bir
+    // "tam decoder reset" tetikler (Amlogic/Rockchip chipsetlerde ~150-400ms donma
+    // hissi). HLS zaten kendi destroy() + yeni instance ile decoder'ı temizden
+    // başlatıyor, bu yüzden TVBox'ta ayrıca video.load() çağırmaya gerek yok —
+    // src'yi temizlemek yeterli. Telefon/PC'de eski davranış (load() ile tam
+    // reset) korunuyor çünkü orada donanım decoder'ı daha hızlı toparlanıyor.
     video.pause();
     video.muted = true;           // geçici mute — eski codec flush ederken ses çıkmasın
     video.removeAttribute('src');
-    video.load();                 // tüm buffer + decoder state'i sıfırla
+    if (!_isTV) {
+        video.load();              // Telefon/PC: tüm buffer + decoder state'i sıfırla
+    }
     // 80ms sonra sesi aç — decoder resetlenmesi için kısa nefes
     setTimeout(function() { video.muted = false; video.volume = video.volume > 0 ? video.volume : 1.0; }, 80);
     // Anlık erişimler için de ayarla
@@ -43068,11 +43084,6 @@ function resumeChannel(startTime) {
         hideZappingScreen();
         return;
     }
-
-    // --- KANAL ATLAMA GERİ SAYIM ---
-    // TVBox + 4K: çok uzun manifest+segment indirme, geniş tolerans
-    const _isTV = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
-        || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
     const _chName4k = (ch.name || '').toLowerCase();
     const _is4kCh = _chName4k.includes('4k') || _chName4k.includes('uhd') || _chName4k.includes('2160') || _chName4k.includes('ultra');
     const _is2kCh = _chName4k.includes('2k') || _chName4k.includes('fhd') || _chName4k.includes('1080') || _chName4k.includes('fullhd');
@@ -61454,6 +61465,8 @@ function _wrapPlayChannel() {
     window._playChannelWrapped = true;
     var _orig = window.playChannel;
 
+    var _isTvBoxWPC = !!(window._isAndroidTV || (document.body && document.body.classList.contains('tvbox-mode')));
+
     window.playChannel = function(idx) {
          
         try {
@@ -61466,15 +61479,20 @@ function _wrapPlayChannel() {
         // Kanal değişince recovery kilidi sıfırla
         window._recoveryLock = false;
 
-         
-        try {
-            var logoImg = document.getElementById('channelLogoImg');
-            if (logoImg) {
-                var src = logoImg.src;
-                logoImg.removeAttribute('src');  
-                setTimeout(function() { if (logoImg) logoImg.src = src; }, 500);
-            }
-        } catch(e) {}
+        // TVBOX KASMA-FIX: logo src'yi silip 500ms sonra geri koyma hilesi
+        // TVBox'ta atlanıyor — her kanal değişiminde gereksiz bir image
+        // decode/reflow tetikleyip HLS başlatma ile aynı ana denk geliyordu.
+        // Telefon/PC'de eski davranış (logo "yenileme" efekti) korunuyor.
+        if (!_isTvBoxWPC) {
+            try {
+                var logoImg = document.getElementById('channelLogoImg');
+                if (logoImg) {
+                    var src = logoImg.src;
+                    logoImg.removeAttribute('src');  
+                    setTimeout(function() { if (logoImg) logoImg.src = src; }, 500);
+                }
+            } catch(e) {}
+        }
 
          
         clearTimeout(window._rcStreamDelay);
@@ -62264,12 +62282,25 @@ window.showControls = function(duration) {
 })();
 
 // ── 8. playChannel — HLS reset + rAF gecikmesi ──
+// TVBOX KASMA-FIX: rAF gecikmesi TVBox'ta kaldırıldı. resumeChannel() zaten
+// stopLoad+detachMedia+destroy ile tam temizlik yapıyor, buradaki stopLoad()
+// çift/gereksizdi. Telefon/PC'de rAF ile bir frame beklemenin gözle görülür
+// zararı yok, o yüzden davranış orada aynı bırakıldı — sadece TVBox'ta
+// senkron çağrılıp kanal geçiş gecikmesi bir frame azaltıldı.
 (function _wrapPC() {
     if (typeof window.playChannel !== 'function') { setTimeout(_wrapPC, 700); return; }
     if (window._pcUnified) return;
     window._pcUnified = true;
     var _origPC = window.playChannel;
+    var _isTvBoxPC = !!(window._isAndroidTV || (document.body && document.body.classList.contains('tvbox-mode')));
     window.playChannel = function(idx) {
+        document.body.classList.remove('streaming-mode');
+        if (_isTvBoxPC) {
+            // TVBox: resumeChannel zaten tam HLS temizliği yapacak — burada
+            // sadece kaldırılan class'ı uygula ve HEMEN devam et (rAF yok).
+            _origPC.call(window, idx);
+            return;
+        }
         try {
             var st = window.state;
             if (st && st.player && st.player.hls) {
@@ -62280,7 +62311,6 @@ window.showControls = function(duration) {
                 } catch(e2) {}
             }
         } catch(e) {}
-        document.body.classList.remove('streaming-mode');
         requestAnimationFrame(function(){ _origPC.call(window, idx); });
     };
 })();

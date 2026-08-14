@@ -5655,7 +5655,12 @@ body {
         .player-overlay { 
             position: fixed; 
             inset: 0; 
-            background: none; 
+            /* FIX: beyaz ekran flaşı — bu katman position:fixed ile kendi GPU
+               compositing layer'ını oluşturuyor; TVBox WebView'lerinde layer
+               ilk boyanmadan önce varsayılan beyaz gösterebiliyor (html/body'de
+               zaten uygulanan aynı fix burada da gerekli). background:none
+               yerine kalıcı siyah. */
+            background: #000; 
             z-index: 2000; 
             display: none; 
             width: 100vw; 
@@ -15584,7 +15589,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
 }
 </style>
 
-    <div class="player-overlay" id="playerView" style="background: none !important;">
+    <div class="player-overlay" id="playerView" style="background: #000 !important;">
 
     
     <div class="modern-seeking-overlay" id="modernSeekingOverlay" style="display:none;">
@@ -15644,14 +15649,13 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
         </div>
     </div>
 
-<div class="player-container" id="playerContainer" style="background: none !important;">
+<div class="player-container" id="playerContainer" style="background: #000 !important;">
     
     <video id="videoPlayer" 
            preload="auto"
            autoplay 
            muted
-           style="background-color: #000 !important; width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); backface-visibility: hidden; will-change: auto;"
-           poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+           style="background-color: #000 !important; width: 100%; height: 100%; object-fit: contain; transform: translateZ(0); backface-visibility: hidden; will-change: auto;">
     </video>
 
     
@@ -62105,7 +62109,11 @@ var _nativeGEBI = document.getElementById.bind(document);
     s.textContent =
         ':root{--transition-fast:0s !important}' +
         '.channel-card{contain:layout style paint !important}' +
-        '.channel-card.remote-focused{box-shadow:0 0 0 3px var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important}' +
+        /* FIX: kumanda odağı belli olmuyor — üstteki satır contain:paint
+           uyguluyor, bu da odaklı karttaki box-shadow halkasının kartın
+           kenarında kırpılmasına (görünmemesine) sebep oluyordu. Odaklı
+           kartta paint containment'ı kaldırıyoruz ki glow dışa taşabilsin. */
+        '.channel-card.remote-focused,.channel-card.focused{contain:layout style !important;overflow:visible !important;box-shadow:0 0 0 3px var(--accent-primary,#FFD700),0 0 16px rgba(var(--accent-primary-rgb,255,215,0),0.6) !important;border:2px solid var(--accent-primary,#FFD700) !important;transition:none !important;will-change:auto !important;z-index:5 !important}' +
         'body.streaming-mode #channelsGrid{pointer-events:none !important}' +
         'body.streaming-mode #__UMD_TVX_DOCK{display:none !important}' +
         '#mainHeader{contain:layout style paint !important}' +
@@ -63660,16 +63668,24 @@ document.readyState === 'loading'
     box-shadow: none !important;
 }
 
-/* Seçili kart — box-shadow dışa, overflow:hidden'dan bağımsız */
+/* Seçili kart — belirgin kumanda odağı halkası.
+   FIX: "kanal listesinde kumanda odağı belli olmuyor" — bu kural sadece
+   ince (1px) border rengini değiştiriyordu ve `contain: paint !important`
+   ekleyerek 3874. satırdaki overflow:visible/contain düzeltmesini eziyordu,
+   bu da olası box-shadow glow'unun kırpılmasına sebep oluyordu. Artık
+   overflow kırpılmıyor ve kalın+parlak bir box-shadow halkası ekleniyor,
+   büyük TV ekranlarında da net görünür. */
 .channel-card.remote-focused,
 .channel-card.focused,
 .channel-card:focus-visible {
     outline: none !important;
-    border-color: var(--accent-primary) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.6) !important;
     transform: translateZ(0) !important;
     transition: none !important;
-    contain: layout style paint !important;
-    z-index: 2 !important;
+    contain: layout style !important;
+    overflow: visible !important;
+    z-index: 5 !important;
 }
 
 /* VOD kartı seçili — aynı */
@@ -63678,7 +63694,8 @@ document.readyState === 'loading'
 .channel-card[data-is-series="true"].remote-focused,
 .channel-card[data-is-series="true"].focused {
     outline: none !important;
-    border-color: var(--accent-primary) !important;
+    border: 2px solid var(--accent-primary, #FFD700) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb,255,215,0), 0.85), 0 0 16px rgba(var(--accent-primary-rgb,255,215,0), 0.6) !important;
 }
 
 /* ══════════════════════════════════════

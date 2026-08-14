@@ -1905,12 +1905,30 @@ document.addEventListener('keydown', function(e) {
     // "TV/Box/STB" gibi anahtar kelimeler YOK, bu yüzden okhttp varlığı tek
     // başına TVBox/APK ortamı sinyali sayılır (aşağıda HLS_CONFIG'de de
     // _isApp24WebView aynı mantıkla kullanılıyor).
+    // GÜÇLENDİRİLDİ: eski regex sadece bilinen marka/kasa isimlerine
+    // bakıyordu (BRAVIA, MiBox, X96 vb.) — isimsiz/jenerik kutular (ör.
+    // Hiremco Matrix Pro gibi Allwinner/Amlogic tabanlı, UA'da hiçbir marka
+    // imzası taşımayan cihazlar) bu listeye hiç girmiyordu ve TV box olarak
+    // algılanmıyordu. Artık aşağıdaki ek sezgiler de var:
+    //  - Android UA'da "Mobile" GEÇMİYORSA neredeyse her zaman TV box/tablet/
+    //    kutudur (telefonlarda "Mobile" neredeyse her zaman bulunur).
+    //  - okhttp + geniş ekran (960px+) kombinasyonu.
+    //  - Dokunmatik yok + geniş ekran + sıfır touch point.
+    //  - CSS matchMedia: coarse pointer + hover yok + geniş ekran (dokunmatik
+    //    emülasyonu yapan TVBox kabuklarını da yakalar).
     var _uaLower = (navigator.userAgent || '').toLowerCase();
+    var _uaRaw = navigator.userAgent || '';
     var isTvBox = _uaLower.indexOf('okhttp') !== -1 ||
-                  (/Android/.test(navigator.userAgent) &&
-                  (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast/i.test(navigator.userAgent) ||
+                  (/Android/.test(_uaRaw) &&
+                  (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast|GoogleTV|Tizen|WebOS|VIDAA|Hisense|MiBOX|MiTV|SHIELD|X96|H96|A95X|MXQ|TX3|T95|Q96|Matrix|Hiremco|BOX|OTT|IPTV/i.test(_uaRaw) ||
                    window.screen.width >= 1280 ||          /* Android TV dokunmatik olsa da büyük ekran */
-                   /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(navigator.userAgent)));
+                   !/Mobile/i.test(_uaRaw) ||               /* Android'de "Mobile" yoksa neredeyse hep TV/kutu/tablet */
+                   /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_uaRaw))) ||
+                  (/okhttp/i.test(_uaRaw) && window.screen.width >= 960) ||
+                  (!('ontouchstart' in window) && window.screen.width >= 1000 && (navigator.maxTouchPoints || 0) === 0) ||
+                  (typeof matchMedia === 'function' && window.screen.width >= 960 &&
+                      matchMedia('(hover: none) and (pointer: coarse)').matches &&
+                      !matchMedia('(max-width: 820px)').matches);
     /* Android TV: BRAVIA, Philips, TCL vb. — dokunmatik katman olsa da kumandayla çalışır */
     window._isAndroidTV = isTvBox; /* setupRemote'ta touchstart kontrolü için global */
 
@@ -11030,8 +11048,10 @@ a, button, [role="button"] { touch-action: manipulation; }
 <script>
 /* TVBox Auto Fast-Mode Patch */
 (function(){
-  var ua = navigator.userAgent || '';
-  var isTVBox = /TV|Android.*Box|AOSP|FireTV|Chromecast|SmartTV|WebTV|HbbTV|Tizen|webOS|BRAVIA|NetRange|NETTV/i.test(ua)
+  // Merkezi tespit: window._isAndroidTV (sayfa başında, güçlendirilmiş
+  // regex + Mobile-yokluğu + dokunmatik-yokluğu + coarse-pointer sezgileriyle
+  // hesaplanır) kullanılıyor — burada ayrı, daha zayıf bir regex tutmuyoruz.
+  var isTVBox = !!window._isAndroidTV
     || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
     || (navigator.deviceMemory && navigator.deviceMemory <= 2);
   if (isTVBox || window.innerWidth >= 1280) {
@@ -11407,11 +11427,8 @@ body.tvbox-mode .channel-vod-badge {
 (function() {
 'use strict';
 
-/* ── 1. TVBox tespiti (geliştirilmiş) ── */
-var ua = navigator.userAgent || '';
-var isTVBox = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
-    || (/Android/i.test(ua) && (window.screen.width >= 1280 || navigator.maxTouchPoints === 0))
-    || (!('ontouchstart' in window) && navigator.maxTouchPoints === 0 && window.screen.width >= 1280);
+/* ── 1. TVBox tespiti — merkezi window._isAndroidTV kullanılıyor ── */
+var isTVBox = !!window._isAndroidTV;
 
 if (!isTVBox) return; /* PC/telefon ise bu patch çalışmaz */
 
@@ -23409,8 +23426,7 @@ function applyiOSOptimizations() {
 // katkı yapıyordu. Burada, state objesi hazır olunca (ve sadece TV box /
 // düşük performans modunda) bir kez güvenle çağrılıyor.
 (function _wireApplyTVBoxOptimizations() {
-    var ua = navigator.userAgent || '';
-    var _isTVBoxNow = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
+    var _isTVBoxNow = !!window._isAndroidTV
         || (document.body && document.body.classList.contains('tvbox-mode'));
     if (!_isTVBoxNow) return; /* Telefon/PC'de bu ek katman gereksiz — dokunma */
 
@@ -29370,7 +29386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     (function autoPerformanceCheck() {
         try {
             const ua = navigator.userAgent;
-            const isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(ua)
+            const isTVBox = !!window._isAndroidTV
                 || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
             const isLowMem = (navigator.deviceMemory || 99) < 3;
             const isSlowCPU = (navigator.hardwareConcurrency || 99) <= 2;
@@ -29391,7 +29407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // tespit edildiğinde çağrılır. state henüz hazır olmayabileceği için
             // (state tanımı bu noktadan sonra gelebiliyor) küçük bir güvenli
             // gecikmeyle, state var olduğunda çalıştırılır.
-            const isMiboxFamily = /MiBox|Xiaomi|MECOOL|Amlogic|H96|X96|TX[0-9]|Mi TV/i.test(ua);
+            const isMiboxFamily = !!window._isAndroidTV;
             if (isMiboxFamily) {
                 (function waitStateAndApply(tries) {
                     if (window.state && typeof applyMiboxOptimizations === 'function') {
@@ -38442,7 +38458,7 @@ setTimeout(_vhsInit, 1200);
         try { recent = JSON.parse(localStorage.getItem('umittv_recent') || '[]'); } catch(e) {}
         if (!recent.length) { container.innerHTML = ''; return; }
 
-        const _isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
+        const _isTVBox = !!window._isAndroidTV
             || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 
         const cardW = _isTVBox ? '130px' : '100px';
@@ -38806,9 +38822,8 @@ setTimeout(_vhsInit, 1200);
         return; 
     }
 
-    // TVBox tespiti — küçük kompakt görünüm için
-    const _ua = navigator.userAgent;
-    const _isTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(_ua)
+    // TVBox tespiti — küçük kompakt görünüm için (merkezi window._isAndroidTV)
+    const _isTVBox = !!window._isAndroidTV
         || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0)
         || (window.screen && window.screen.width >= 1280 && window.innerWidth >= 1280);
 
@@ -41831,8 +41846,7 @@ function renderChannels() {
     // DEVAM ET KATEGORISI - DIKEY POSTER GRID (performans-oncelikli)
     if (state.activeCat === 'cont') {
         // TVBox tespiti - dusuk cihazda DOM/efekt maliyetini azaltmak icin
-        const _cwUa = navigator.userAgent;
-        const _cwIsTVBox = /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(_cwUa)
+        const _cwIsTVBox = !!window._isAndroidTV
             || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 
         // Grid'i dikey poster moduna al - kendi sinif adiyla, ana channels-grid
@@ -43148,8 +43162,7 @@ function resumeChannel(startTime) {
     // TVBox + 4K: çok uzun manifest+segment indirme, geniş tolerans
     // NOT: _isTV artık video reset stratejisini de belirlediği için SES BOZULMASI
     // bloğundan ÖNCE hesaplanıyor (önceden aşağıdaydı, sıra değişti).
-    const _isTV = window._isAndroidTV === true
-        || /Android TV|MiBox|Xiaomi|SHIELD|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Matricom|Google TV|Fire TV|SmartTV|BRAVIA/i.test(navigator.userAgent)
+    const _isTV = !!window._isAndroidTV
         || (window.screen && window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 
     // SES BOZULMASI DÜZELTMESİ: video elementini sıfırla
@@ -71170,14 +71183,7 @@ body.tvbox-mode #customSubText {
 'use strict';
 
 /* TV Uygulaması başlat — sadece TVBox'ta */
-var _isTVBox = !!(document.body && document.body.classList.contains('tvbox-mode'));
-if (!_isTVBox) {
-    /* TVBox tespiti yeniden dene: UA bazlı */
-    var ua = navigator.userAgent || '';
-    _isTVBox = /Android TV|MiBox|MECOOL|Amlogic|Rockchip|Allwinner|H96|X96|TX[0-9]|HiSilicon|Zidoo|UGOOS|WeTek|BuzzTV|Minix|Google TV|Fire TV|SmartTV|BRAVIA|SHIELD|AFTB|AFTN|AFTS|AFTA|AFTKA/i.test(ua)
-        || (/Android/i.test(ua) && (window.screen.width >= 1280 || navigator.maxTouchPoints === 0))
-        || (!('ontouchstart' in window) && navigator.maxTouchPoints === 0 && window.screen.width >= 1280);
-}
+var _isTVBox = !!(document.body && document.body.classList.contains('tvbox-mode')) || !!window._isAndroidTV;
 
 /* ── 1. Logo glow TVBox'ta başlat ── */
 /* Mevcut startLogoGlow'u override etmeden; sayfa hazır olunca çağır */

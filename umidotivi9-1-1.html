@@ -50231,13 +50231,26 @@ function cleanupDeleteContinueModalRemote() {
     const activeCont = state.activeCat === 'cont';
     
     // Doğru kart seçicisini kullan
+    // PERF FIX: Eskiden her tek ok/OK/ChannelUp basışında (zone ne olursa olsun,
+    // hatta channels zone'unda olunmasa bile) querySelectorAll ile TÜM DOM
+    // taranıp binlerce .channel-card elemanı yeniden toplanıyordu. Büyük
+    // kanal listelerinde (1000+ kanal) bu sorgu tek başına birkaç ms sürüyor
+    // ve kumandada hızlı ok tuşu tekrarında (auto-repeat) üst üste binip
+    // görünür kasılmaya/gecikmeli tepkiye yol açıyordu. updateRemoteFocus()
+    // içindeki window._tvBoxCardMap cache'i burada da kullanılıp, sadece
+    // cache boşsa veya kopmuşsa (isConnected=false) yeniden sorgulanıyor.
     let cards;
     if (activeCont) {
         // Devam Et kategorisinde hem continue-card-in-grid hem de clear-card elementlerini al
         cards = document.querySelectorAll('.continue-card-in-grid, .channel-card.clear-card');
     } else {
-        // Normal kategorilerde sadece channel-card'ları al
-        cards = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+        if (window._tvBoxCardMap && window._tvBoxCardMap.length > 0 && !window._tvBoxCardMap[0].isConnected) {
+            window._tvBoxCardMap = null;
+        }
+        if (!window._tvBoxCardMap || window._tvBoxCardMap.length === 0) {
+            window._tvBoxCardMap = document.querySelectorAll('.channel-card:not(.continue-card-in-grid)');
+        }
+        cards = window._tvBoxCardMap;
     }
     
     /* ── realCols: direkt currentGridCols kullan — DOM ölçümü yok ── */

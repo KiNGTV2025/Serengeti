@@ -61193,14 +61193,37 @@ function _renderWindow() {
     }
     vs.container.innerHTML = html;
 
-    /* İlk render'dan sonra gerçek item yüksekliğini ölç */
-    if (vs.itemH === 72) {
-        var first = vs.container.querySelector('.channel-list-item');
-        if (first) {
-            var h = first.getBoundingClientRect().height;
+    /* ODAK-FIX: "3. 4. 5. kanalda odak kayboluyor" — kök neden.
+       Liste karışık yükseklikte (EPG'li satır min-height:76px, EPG'siz
+       satır min-height:58px). Eskiden itemH SADECE ilk render'daki İLK
+       öğeye bakılarak bir kere ölçülüp sabitleniyordu (örn. o an EPG'siz
+       58px görüldüyse itemH=58 kalıcı oluyordu). Liste ilerledikçe EPG'li
+       (76px) satırlar araya girince spacer/scrollTop hesapları gerçek DOM
+       yüksekliğinden sapıyor (drift) — index N artık scrollTop'un işaret
+       ettiği yerde DOM'da olmuyor, updateSidebarFocus bu yüzden "boşta"
+       kalıyor ve odak görsel olarak kayboluyor. Çözüm: itemH'i sadece bir
+       kez değil, her pencerede en az 2 öğe varsa ARALARINDAKİ GERÇEK
+       offsetTop farkına göre sürekli günceliyoruz — bu, karışık yükseklik
+       durumunda tek-öğe ölçümünden çok daha kararlı bir ortalama verir. */
+    (function _remeasureItemH() {
+        var items = vs.container.querySelectorAll('.channel-list-item');
+        if (items.length >= 2) {
+            var a = items[0].getBoundingClientRect();
+            var b = items[items.length - 1].getBoundingClientRect();
+            var avg = (b.top + b.height - a.top) / items.length;
+            if (avg > 30 && Math.abs(avg - vs.itemH) > 1) {
+                vs.itemH = Math.ceil(avg);
+                // itemH değiştiği için spacer'lar da güncel ortalamaya göre
+                // yeniden hizalanmalı, aksi halde alttaki/üstteki listede
+                // kayma birikir.
+                vs.spacerTop.style.height = (newStart * vs.itemH) + 'px';
+                vs.spacerBot.style.height = Math.max(0, (vs.channels.length - newEnd) * vs.itemH) + 'px';
+            }
+        } else if (items.length === 1 && vs.itemH === 72) {
+            var h = items[0].getBoundingClientRect().height;
             if (h > 30) vs.itemH = Math.ceil(h) + 1;
         }
-    }
+    })();
 }
 
 /* ── Scroll event handler ── */
@@ -61336,6 +61359,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             _origUSF();
+            // ODAK-FIX GÜVENLİK AĞI: itemH karışık satır yükseklikleri (EPG'li/
+            // EPG'siz) yüzünden hâlâ hafif sapmış olabilir — bu durumda yukarıdaki
+            // tek geçişlik scrollTop hesabı hedef index'i pencereye tam
+            // getirmeyebilir (_origUSF çağrıldığında öğe hâlâ DOM'da yoktur, odak
+            // hiçbir elemente uygulanmaz). Burada gerçekten uygulanıp
+            // uygulanmadığını kontrol edip, uygulanmadıysa scrollTop'u ölçülmüş
+            // (artık doğru) itemH ile TEKRAR hesaplayıp ikinci bir deneme yapıyoruz.
+            if (vs && vs.channels && vs.channels.length > 0 && vs.scroller && state.remote.zone === 'sidebar' && state.remote.sidebarZone === 2) {
+                var _idxCheck = (window.state && window.state.sidebar && window.state.sidebar.selectedIndex) || 0;
+                var _focusedNow = document.querySelector('#sidebarChannelsList .channel-list-item.remote-focused');
+                if (!_focusedNow) {
+                    vs.scroller.scrollTop = Math.max(0, (_idxCheck - 4) * vs.itemH);
+                    if (typeof window._sidebarRenderWindow === 'function') window._sidebarRenderWindow();
+                    _origUSF();
+                }
+            }
         };
     }, 500);
 });

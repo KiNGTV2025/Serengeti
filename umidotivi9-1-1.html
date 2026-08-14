@@ -1918,6 +1918,7 @@ document.addEventListener('keydown', function(e) {
         if (isTvBox) {
             b.classList.add('fast-mode');
             b.classList.add('tvbox-mode');
+            b.classList.add('mouse-hidden');
         }
 
         // KASMA FIX: requestAnimationFrame throttle burada KALDIRILDI.
@@ -1948,11 +1949,41 @@ document.addEventListener('keydown', function(e) {
                     if (isTvBox) {
                         b.classList.add('fast-mode');
                         b.classList.add('tvbox-mode');
+                        if (!window._mouseActiveNow) b.classList.add('mouse-hidden');
                     }
                 }
             }
         });
     });
+
+    // FIX: Mouse odağı gözükmüyor sorunu — fare hareket edince imleci göster,
+    // kumanda tuşuna basılınca (remote navigasyon) tekrar gizle.
+    if (isTvBox) {
+        window._mouseActiveNow = false;
+        var _mouseShowTimer = null;
+        document.addEventListener('mousemove', function() {
+            window._mouseActiveNow = true;
+            var b = document.body;
+            if (b && b.classList.contains('mouse-hidden')) {
+                b.classList.remove('mouse-hidden');
+            }
+            // Fare bir süre hareketsiz kalırsa tekrar gizle (opsiyonel, kumandaya dönmeyi kolaylaştırır)
+            clearTimeout(_mouseShowTimer);
+            _mouseShowTimer = setTimeout(function() {
+                window._mouseActiveNow = false;
+            }, 4000);
+        }, { passive: true });
+        // Kumanda tuşuna basılınca imleci tekrar gizle
+        document.addEventListener('keydown', function(e) {
+            var navKeys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','OK','Backspace','Escape','GoBack','Back'];
+            if (navKeys.indexOf(e.key) === -1) return;
+            window._mouseActiveNow = false;
+            var b = document.body;
+            if (b && !b.classList.contains('mouse-hidden')) {
+                b.classList.add('mouse-hidden');
+            }
+        }, { passive: true });
+    }
     if (document.body) {
         _patchObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
     } else {
@@ -27466,7 +27497,20 @@ function handleStartupSettingsModalRemote(e) {
         case 'Enter':
         case 'OK':
             e.preventDefault();
-            if (activeEl && activeEl.tagName === 'BUTTON') activeEl.click();
+            // FIX: "kumanda liste tümüne basınca işlevsiz oluyor, kategori
+            // seçemiyoruz" — OK tuşu sadece BUTTON elemanlarında .click()
+            // çağırıyordu; aktif eleman kategori SELECT'i olduğunda hiçbir
+            // şey olmuyordu. Artık SELECT üzerindeyken OK, native açılır
+            // listeyi açıyor (showPicker varsa) ya da en azından select'e
+            // focus verip klavye/kumanda ile seçime izin veriyor.
+            if (activeEl && activeEl.tagName === 'BUTTON') {
+                activeEl.click();
+            } else if (isSelect) {
+                activeEl.focus();
+                if (typeof activeEl.showPicker === 'function') {
+                    try { activeEl.showPicker(); } catch (_) { /* bazı TV WebView'lerinde desteklenmez */ }
+                }
+            }
             break;
         case 'Backspace':
         case 'Escape':
@@ -70698,9 +70742,16 @@ body .player-action-btn.focused {
 <style id="tvbox-tv-app-v3">
 
 /* ── TV Uygulaması Temel Ayarlar ── */
-/* Fare imleci gizle — TV remote kontrolde gereksiz */
-body.tvbox-mode,
-body.tvbox-mode * {
+/* Fare imleci gizle — TV remote kontrolde gereksiz.
+   FIX: "mouse kullanmak istediğimde mouse odağı gözükmüyor" — bu kural
+   sabitti ve fare hareket etse dahi asla geri açılmıyordu (TVBox'larda
+   USB/Bluetooth mouse takılı kullanımı da var). Artık sadece body'de
+   ayrıca eklenen .mouse-hidden class'ı varken cursor gizleniyor; bu
+   class fare hareketinde JS ile kaldırılıp kumanda tuşunda geri
+   ekleniyor (bkz. aşağıdaki "mouse-hidden toggle" script bloğu).
+*/
+body.tvbox-mode.mouse-hidden,
+body.tvbox-mode.mouse-hidden * {
     cursor: none !important;
 }
 /* Kullanıcı metin seçimi engelle — kumanda navigasyonunda yanlış seçim */

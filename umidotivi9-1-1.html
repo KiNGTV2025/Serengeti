@@ -8415,10 +8415,12 @@ select.sort-dpad-focused {
 }
 
  
-.ultra-performance-mode video {
-    image-rendering: optimizeSpeed !important;
-}
-
+/* FIX: image-rendering: optimizeSpeed video elementine uygulandığında
+   tarayıcının yumuşak (bilinear) ölçeklemesini kapatıp kaba/pikselli
+   görüntü veriyordu — CPU'dan neredeyse hiç tasarruf sağlamazken
+   görsel kaliteyi kaynaktan bağımsız olarak düşürüyordu (Cloudstream
+   gibi başka player'larda aynı yayın daha net görünmesinin sebebi
+   buydu). Kaldırıldı — video kendi doğal render kalitesinde kalır. */
 .ultra-performance-mode .player-action-btn {
     transition: none !important;
 }
@@ -10030,9 +10032,20 @@ body.sidebar-open {
         }
         
          
+        /* FIX: .fast-mode { image-rendering: pixelated } TÜM body'ye
+           uygulanıyordu ve video elementi bunu miras alıyordu — TV box'ta
+           fast-mode otomatik açık olduğu için yayınlar sürekli pikselli
+           görünüyordu (Cloudstream gibi başka playerlarda aynı yayının
+           daha net görünmesinin sebebi buydu). Video artık bu kuraldan
+           muaf; sadece statik görseller (logo/thumbnail) için crisp-edges
+           kalır, video kendi doğal render kalitesinde oynar. */
         .fast-mode {
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
+        }
+        .fast-mode video,
+        .fast-mode #videoPlayer {
+            image-rendering: auto !important;
         }
         
         .fast-mode .channel-card {
@@ -30159,9 +30172,9 @@ function applyLowEndOptimizations() {
             box-shadow: none !important;
         }
         
-        .low-end-mode video {
-            image-rendering: pixelated;
-        }
+        /* FIX: image-rendering: pixelated video elementine uygulanınca
+           yayının görüntü kalitesi kaynaktan bağımsız olarak bozuluyordu
+           — kaldırıldı, bkz. detectLowEndDevice() içindeki aynı fix. */
         
         /* Görsel efektleri azalt */
         .low-end-mode .vod-gradient-overlay,
@@ -30188,11 +30201,11 @@ function applyLowEndOptimizations() {
         state.player.hls.config.lowLatencyMode = false;
     }
     
-    // Görsel kalitesini düşür
-    const video = document.getElementById('videoPlayer');
-    if (video) {
-        video.style.imageRendering = 'pixelated';
-    }
+    // FIX: video.style.imageRendering = 'pixelated' KALDIRILDI — bu satır
+    // görüntü kalitesini yayının kendi çözünürlüğünden bağımsız olarak
+    // bozuyordu (tarayıcının video ölçeklemesini kaba/bloklu hale getirir).
+    // Asıl performans kazancı buffer/retry ayarlarından geliyor, video
+    // render'ını bozmaya gerek yok.
     
 }
 
@@ -45483,11 +45496,8 @@ class PerformanceMonitor {
         // CSS efektlerini azalt
         document.body.classList.add('performance-mode');
         
-        // Video kalitesini düşür
-        const video = document.getElementById('videoPlayer');
-        if (video) {
-            video.style.imageRendering = 'optimizeSpeed';
-        }
+        // FIX: video.style.imageRendering = 'optimizeSpeed' KALDIRILDI —
+        // görüntü kalitesini kaynaktan bağımsız olarak bozuyordu.
         
         // HLS ayarlarını optimize et
         if (state.player.hls) {

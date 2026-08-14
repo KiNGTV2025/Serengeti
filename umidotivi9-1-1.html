@@ -7374,9 +7374,20 @@ body {
     color: var(--accent-primary);
 }
 
-.channel-fav-btn.active:hover {
-    color: #000;
-    background: var(--accent-primary);
+/* FAVORİ-FIX: "basınca yıldız yerine düz sarı daire kalıyor" —
+   :hover kuralı yıldız rengini arka planla aynı (#000, arka plan da sarı)
+   yapıp görünmez kılıyordu. Mouse'lu cihazda parmak/dokunma yok, hover
+   normal şekilde açılıp kapanır. Ama dokunmatik/TVBox'ta dokunma sonrası
+   tarayıcı hover state'ini "yapışık" bırakabiliyor — buton tıklandıktan
+   sonra sürekli hover halinde kalıp yıldız yerine düz daire gösteriyordu.
+   @media (hover: hover) bu kuralı SADECE gerçek imleç (mouse) olan
+   cihazlarda etkinleştirir; dokunmatik/TVBox'ta hiç uygulanmaz, yıldız her
+   zaman görünür kalır. */
+@media (hover: hover) and (pointer: fine) {
+    .channel-fav-btn.active:hover {
+        color: #000;
+        background: var(--accent-primary);
+    }
 }
 
 .channel-fav-btn.remote-focused {

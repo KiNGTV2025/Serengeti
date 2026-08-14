@@ -11269,6 +11269,119 @@ body.tvbox-mode.low-performance-mode *:not(.loading-overlay):not(.loading-overla
     filter: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   TVBox: PLAYER İÇİ KANAL LİSTESİ (sidebar) — KOMPAKT GÖRÜNÜM
+   Şikayet: sidebar çok geniş açılıyor, satırlar çok büyük — ekranda
+   sadece 2-3 kanal sığıyor, kaydırma yükü fazla. Aşağıdaki kurallar
+   SADECE TVBox'ta (body.tvbox-mode) devreye girer; telefon/PC/tablet
+   düzeni (769-1920px media query'sindeki width:360px / min-height:64px
+   ve mobildeki 320px / min-height:56px) AYNEN korunur, çünkü TV
+   ekranları o media query aralığına girse bile dokunmuyoruz — burada
+   body.tvbox-mode ile daha spesifik/yüksek öncelikli kural veriyoruz. */
+
+/* Panel genişliği: TV'de ekranın çoğunu kaplamasın, dar ve kompakt */
+body.tvbox-mode .sidebar {
+    width: 300px !important;
+    max-width: 300px !important;
+}
+
+/* Kategori sekmeleri: biraz daha ince, satır listesine daha fazla yer bıraksın */
+body.tvbox-mode .sidebar-header {
+    padding: 8px 12px !important;
+}
+body.tvbox-mode .sidebar-title {
+    font-size: 14px !important;
+}
+body.tvbox-mode .category-tab {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+}
+
+/* Kanal satırları: min-height 64-76px → 44-52px. Tek bakışta 5-6+ kanal görünür. */
+body.tvbox-mode .channel-list-item {
+    min-height: 44px !important;
+    padding: 6px 10px !important;
+    gap: 2px !important;
+    margin: 1px 4px !important;
+}
+body.tvbox-mode .channel-list-item.has-epg {
+    min-height: 52px !important;
+    padding: 6px 10px !important;
+}
+
+/* Logo: 40-44px → 28px — satır yüksekliğiyle orantılı küçült */
+body.tvbox-mode .channel-logo-small {
+    width: 28px !important;
+    height: 28px !important;
+    margin-right: 6px !important;
+}
+body.tvbox-mode .channel-list-item.has-epg .channel-logo-small {
+    margin-top: 2px !important;
+}
+
+/* Kanal numarası rozeti küçült */
+body.tvbox-mode .channel-number {
+    min-width: 20px !important;
+    font-size: 10px !important;
+    margin-right: 4px !important;
+}
+
+/* Kanal adı / grup metni — tek satıra sığdır, taşma olmasın */
+body.tvbox-mode .channel-list-item .channel-name {
+    font-size: 13px !important;
+    -webkit-line-clamp: 1 !important;
+    line-height: 1.2 !important;
+}
+body.tvbox-mode .channel-list-item .channel-group {
+    font-size: 10px !important;
+}
+
+/* EPG satırı (şimdi/sonra bilgisi): TVBox'ta ekstra yer kaplamasın —
+   tek satıra indirip ilerleme çubuğunu inceltiyoruz */
+body.tvbox-mode .sidebar-epg-row {
+    margin-top: 2px !important;
+    gap: 3px !important;
+}
+body.tvbox-mode .sidebar-epg-now {
+    font-size: 11px !important;
+}
+body.tvbox-mode .sidebar-epg-time {
+    font-size: 9px !important;
+}
+body.tvbox-mode .sidebar-epg-bar-wrap {
+    margin-top: 2px !important;
+}
+body.tvbox-mode .sidebar-epg-bar {
+    height: 3px !important;
+}
+body.tvbox-mode .sidebar-epg-bar-pct {
+    font-size: 9px !important;
+}
+body.tvbox-mode .sidebar-epg-next-row {
+    display: none !important; /* "sıradaki" satırı TVBox'ta gizle — yer kazan */
+}
+
+/* Favori (yıldız) butonu — küçük ekranda gereksiz büyük durmasın */
+body.tvbox-mode .channel-fav-btn {
+    width: 24px !important;
+    height: 24px !important;
+}
+body.tvbox-mode .channel-fav-btn .material-symbols-outlined {
+    font-size: 16px !important;
+}
+
+/* VOD rozeti küçült */
+body.tvbox-mode .channel-vod-badge {
+    font-size: 8px !important;
+    padding: 1px 4px !important;
+}
+
+/* ODAK-FIX UYUMU: TVBox'ta satır yüksekliği artık sabit (has-epg hariç
+   normal satırlar 44px). Sanal liste (VS) itemH ölçümünü zaten kendi
+   içinde otomatik güncelliyor (bkz. _renderWindow > _remeasureItemH),
+   bu yüzden burada ek bir JS değişikliği gerekmiyor — CSS boyutu
+   küçülünce itemH ölçümü otomatik yeni (küçük) değere oturur. */
+
 </style>
 
 <script id="tvbox-ultra-js-v3">

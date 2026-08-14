@@ -23476,67 +23476,18 @@ function applyMiboxOptimizations() {
         state.controlSettings.touchSensitivity = 40; // Daha az hassas
     }
 
-    // ── KARE ATLAMASI FIX (decoder starvation) ──────────────────────
-    // Sorun: PerformanceMonitor, düşük FPS'te "state.player.hls.config.
-    // abrMaxQuality = 720" atayarak kaliteyi düşürmeye çalışıyordu, ama
-    // hls.js bu ismi (abrMaxQuality) TANIMIYOR — sessizce yok sayılıyor,
-    // yani kalite hiç düşmüyordu. Üstüne üstlük TVBox'larda CPU tasarrufu
-    // için FPS izleyici baştan kapatıldığından bu düşürme mekanizması
-    // zaten hiç tetiklenmiyordu. Sonuç: MiBox gibi zayıf çipli kutularda
-    // akış, decoder'ın kaldıramayacağı çözünürlükte oynatılmaya devam
-    // ediyor → görüntü akıyor ama düzenli aralıklarla kare atlıyor.
-    // Çözüm: hls.js'in GERÇEK API'si olan autoLevelCapping ile, her yeni
-    // Hls() oluşturulduğunda MiBox'ı üst çözünürlük sınırına sabitle.
-    try {
-        if (typeof window.Hls === 'function' && !window.Hls._umMiboxCapWrapped) {
-            var _OrigHls = window.Hls;
-            var _memGB = navigator.deviceMemory || 2;
-            var _cores = navigator.hardwareConcurrency || 2;
-            // Çok zayıf donanımda (≤2GB RAM veya ≤2 çekirdek) 480p, diğer
-            // MiBox ailesinde 720p tavanı — ikisi de orijinal kaynaktan
-            // daha zorlu olmayan, çoğu Amlogic/MTK TV çipinin rahatça
-            // decode edebildiği seviyeler.
-            var _capHeight = (_memGB <= 2 || _cores <= 2) ? 480 : 720;
-            var _applyCap = function (inst) {
-                try {
-                    var levels = inst.levels || [];
-                    if (!levels.length) return;
-                    var bestIdx = -1;
-                    for (var i = 0; i < levels.length; i++) {
-                        var h = levels[i].height || 0;
-                        if (h && h <= _capHeight && (bestIdx === -1 || h > levels[bestIdx].height)) {
-                            bestIdx = i;
-                        }
-                    }
-                    if (bestIdx === -1) {
-                        // Hiç uygun seviye yoksa en düşük seviyeyi kullan —
-                        // yine de decode yükünü mümkün olduğunca azaltır.
-                        bestIdx = 0;
-                        for (var j = 1; j < levels.length; j++) {
-                            if ((levels[j].height || 9999) < (levels[bestIdx].height || 9999)) bestIdx = j;
-                        }
-                    }
-                    inst.autoLevelCapping = bestIdx;
-                } catch (e) {}
-            };
-            var WrappedHls = function (cfg) {
-                var inst = new _OrigHls(cfg);
-                try {
-                    inst.on(_OrigHls.Events.MANIFEST_PARSED, function () { _applyCap(inst); });
-                    // Canlı yayında seviye listesi güncellenirse (ör. yeni
-                    // kalite eklendi) sınırı yeniden uygula.
-                    inst.on(_OrigHls.Events.LEVELS_UPDATED, function () { _applyCap(inst); });
-                } catch (e) {}
-                return inst;
-            };
-            WrappedHls.prototype = _OrigHls.prototype;
-            for (var _k in _OrigHls) { if (_OrigHls.hasOwnProperty(_k)) WrappedHls[_k] = _OrigHls[_k]; }
-            WrappedHls._umMiboxCapWrapped = true;
-            window.Hls = WrappedHls;
-            console.info('[MiBox-Fix] Kare atlamasını önlemek için kalite tavanı: ' + _capHeight + 'p');
-        }
-    } catch (e) { console.warn('MiBox kalite sınırlama hatası:', e); }
+    // ── KARE ATLAMASI FIX (decoder starvation) — KALDIRILDI ──────────
+    // ESKİ DAVRANIŞ: Her MiBox/Xiaomi/Amlogic/H96/X96 ailesi cihazda,
+    // veya sadece ≤2GB RAM/≤2 çekirdek tespit edilince, autoLevelCapping
+    // ile kalite koşulsuz 480p veya 720p'ye SABİTLENİYORDU — cihaz aslında
+    // 1080p'yi rahat oynatabilse bile, kullanıcı manuel yüksek kalite
+    // seçse bile. "Yayınların görüntü kalitesi hep bozuluyor" şikayetinin
+    // asıl kaynağı buydu. Kare atlaması varsa bunu hls.js'in kendi ABR
+    // mekanizması (startLevel: -1, autoLevelCapping devre dışı) zaten
+    // bant genişliğine göre yönetir — burada kaliteyi zorla düşürmeye
+    // gerek yok. Fonksiyon artık kalite tavanı koymadan çıkıyor.
 }
+
 
 // YENİ: PERFORMANS MONİTÖRÜ
 function initPerformanceMonitor() {
@@ -64087,9 +64038,14 @@ _ready(function() {
 
         // ABR: startLevel=-1 (ABR otomatik) — 0 her seferinde kalite değişimi yapıyor = donma
         window.HLS_CONFIG.startLevel             = -1;  // ABR otomatik seçsin
-        window.HLS_CONFIG.abrEwmaDefaultEstimate = 3000000; // 3Mbps: gerçekçi TVBox tahmini
-        window.HLS_CONFIG.abrBandWidthFactor     = 0.80; // güvenli bant kullanımı
-        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.65; // kalite artışına temkinli geç
+        // FIX: TVBox'ta 3Mbps'lik düşük başlangıç tahmini, her kanal
+        // açılışında düşük kaliteden başlayıp sonra yükselmeye (pikselleşme
+        // hissi + görünür kalite dalgalanması) sebep oluyordu. Ana
+        // HLS_CONFIG'teki 5Mbps (HD'den başla) değeri korunuyor — TVBox'ın
+        // asıl ihtiyacı düşük başlangıç tahmini değil, sağlam buffer/retry.
+        // window.HLS_CONFIG.abrEwmaDefaultEstimate — dokunulmuyor, 5Mbps kalır
+        window.HLS_CONFIG.abrBandWidthFactor     = 0.85; // ana config ile aynı — gereksiz kısıtlama kaldırıldı
+        window.HLS_CONFIG.abrBandWidthUpFactor   = 0.70; // ana config ile aynı — kaliteye çıkışı yavaşlatmasın
 
         // Stall recovery — TVBox'ta daha agresif
         window.HLS_CONFIG.nudgeOffset            = 0.3; // 0.2→0.3: daha güçlü nudge

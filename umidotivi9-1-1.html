@@ -51706,19 +51706,16 @@ function handleFavoriteChannelSelect(key) {
         }
     });
     
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'ChannelUp' || e.key === 'PageUp') {
-            e.preventDefault();
-            if (document.getElementById('playerView').style.display === 'flex') {
-                nextCh();
-            }
-        } else if (e.key === 'ChannelDown' || e.key === 'PageDown') {
-            e.preventDefault();
-            if (document.getElementById('playerView').style.display === 'flex') {
-                prevCh();
-            }
-        }
-    });
+    // FIX: "ch+ / ch- ile kanal değişince 2şer 2şer atlıyor (1'den 3'e geçiyor)"
+    // — Burada eskiden AYRI bir document 'keydown' dinleyicisi vardı ve
+    // playerView açıkken ChannelUp/ChannelDown'a basılınca nextCh()/prevCh()'i
+    // TEKRAR çağırıyordu. Aynı tuş basışı zaten yukarıdaki ana dispatcher
+    // (handlePlayerBoxRemote / handlePlayerRemote, zone='player'/'progressBar'
+    // içinde) tarafından işlenip nextCh()/prevCh() bir kez çalıştırılıyordu.
+    // İki ayrı listener aynı fiziksel tuş basışında fonksiyonu 2 KEZ tetikleyip
+    // kanalı 2 adım ilerletiyordu (1 → 3, 2 atlanıyordu). Yinelenen listener
+    // tamamen kaldırıldı — ChannelUp/ChannelDown artık sadece ana dispatcher
+    // üzerinden, tek seferde işleniyor.
 }
 
         // ── EMBED MODAL REMOTE HANDLER ──

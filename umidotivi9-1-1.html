@@ -45592,6 +45592,12 @@ function closePlayer() {
                 var _cat = window.state && window.state.activeCat;
                 if (typeof renderContinueWatching === 'function' && (_cat === 'all' || _cat === 'Tümü')) { try { renderContinueWatching(); } catch(e) {} }
                 if (typeof renderRecentChannels === 'function') { try { renderRecentChannels(); } catch(e) {} }
+                // ODAK-FIX: grid gerçek DOM'a yazıldıktan SONRA odağı tekrar uygula.
+                // Yukarıdaki erken updateRemoteFocus() çağrısı grid henüz boşken/frozen
+                // render'dayken çalıştığı için hedef kart DOM'da bulunamıyor ve odak
+                // (remote-focused) hiç görünmüyordu — TVBox'ta "kumanda odağı kayboluyor"
+                // şikayetinin sebebi buydu.
+                if (typeof updateRemoteFocus === 'function') { try { updateRemoteFocus(); } catch(e) {} }
             } catch(e) {}
             // Güvenlik: grid hâlâ boşsa 400ms sonra tekrar dene
             setTimeout(function() {
@@ -45601,6 +45607,7 @@ function closePlayer() {
                         if (window.state.highPerf) { window.state.highPerf.isFiltering = false; window.state.highPerf.lastRenderTime = 0; }
                         if (typeof window.filterChannels === 'function') { try { window.filterChannels(); } catch(e) {} }
                         else if (typeof renderChannels === 'function') { try { renderChannels(); } catch(e) {} }
+                        if (typeof updateRemoteFocus === 'function') { try { updateRemoteFocus(); } catch(e) {} }
                     }
                 } catch(e) {}
             }, 400);
@@ -50008,11 +50015,31 @@ function cleanupDeleteContinueModalRemote() {
                 /* Gerçek sütun sayısını cache'den al */
                 var _realColsUp = realCols;
                 if(state.remote.index < _realColsUp) {
-                    /* İlk satırdayken ↑ → Slider varsa slider'a, sonra Başa Dön/categories */
+                    /* İlk satırdayken ↑ → önce Son İzlenenler / Devam Et şeritleri,
+                       sonra Slider, sonra Başa Dön/categories.
+                       (FIX: bu şeritler eskiden burada hiç kontrol edilmiyordu,
+                       kanal grid'inden yukarı çıkınca direkt categories'e
+                       atlanıyordu — "Tümünü Sil" butonuna kumandayla hiç
+                       ulaşılamıyordu.) */
+                    const _recentCardsUp = document.querySelectorAll('.recent-card');
+                    const _continueCardsUp = document.querySelectorAll('.continue-card');
                     const _heroSlUp = document.getElementById('vodHeroSlider');
                     const _sliderVisible = _heroSlUp && _heroSlUp.style.display !== 'none' && _heroSlUp.offsetParent !== null;
                     var _goTopBtn = document.getElementById('umkGoTop');
-                    if (_goTopBtn && _goTopBtn.classList.contains('umk-show')) {
+                    if (_continueCardsUp.length > 0 && state.activeCat === 'all') {
+                        state.remote.zone = 'continueCards';
+                        if (!state.remote.continueCards) state.remote.continueCards = { selectedCardIndex: 0, selectedButtonIndex: 0, cards: [] };
+                        state.remote.continueCards.cards = Array.from(_continueCardsUp);
+                        state.remote.continueCards.selectedCardIndex = 0;
+                        state.remote.continueCards.selectedButtonIndex = 0;
+                        if (typeof updateContinueCardsFocus === 'function') updateContinueCardsFocus();
+                    } else if (_recentCardsUp.length > 0 && state.activeCat === 'all') {
+                        state.remote.zone = 'recentCards';
+                        if (!state.remote.recentCards) state.remote.recentCards = { selectedIndex: 0, cards: [] };
+                        state.remote.recentCards.cards = Array.from(_recentCardsUp);
+                        state.remote.recentCards.selectedIndex = 0;
+                        if (typeof updateRecentCardsFocus === 'function') updateRecentCardsFocus();
+                    } else if (_goTopBtn && _goTopBtn.classList.contains('umk-show')) {
                         state.remote.zone = 'umkGoTop';
                         _goTopBtn.classList.add('umk-focused');
                         _goTopBtn.setAttribute('tabindex', '0');

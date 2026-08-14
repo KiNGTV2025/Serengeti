@@ -37415,6 +37415,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             if (!response) {
                 showToast('Liste indirilemedi');
                 hideInlineLoading();
+                window._isLoadingM3U = false;
                 return;
             }
 
@@ -37468,6 +37469,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     if (_finalChannels.length === 0) {
                         showToast('📡 Liste okunamadı, tekrar deneyin');
                         hideInlineLoading();
+                        window._isLoadingM3U = false;
                         return;
                     }
 
@@ -37509,6 +37511,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
                     }
                     hideInlineLoading();
                 }
+                window._isLoadingM3U = false;
                 return;
             }
 
@@ -37518,6 +37521,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             } catch(e) {
                 showToast('Liste okunamadı');
                 hideInlineLoading();
+                window._isLoadingM3U = false;
                 return;
             }
 
@@ -37539,6 +37543,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
         if (!m3uContent) {
             showToast('Liste boş');
             hideInlineLoading();
+            window._isLoadingM3U = false;
             return;
         }
 
@@ -37578,6 +37583,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             } else {
                 showToast(`${m3u.name}: Liste okunamadı`);
                 hideInlineLoading();
+                window._isLoadingM3U = false;
                 return;
             }
         }
@@ -37597,6 +37603,7 @@ async function loadSingleM3U(idx, m3u, forceRefresh = false) {
             state.filtered = [];
             renderChannels();
             hideInlineLoading();
+            window._isLoadingM3U = false;
             return;
         }
 
@@ -45598,6 +45605,23 @@ function closePlayer() {
                         if (window.state.filtered.length === 0) window.state.filtered = window.state.channels.slice();
                     }
                 }
+                // FIX: Seçili M3U'nun (selectedM3U) o an listede HİÇ kanalı yoksa
+                // (yükleme sırasında ağ hatası/timeout nedeniyle liste hiç
+                // dolmamış olabilir — bkz. loadSingleM3U içindeki erken return'ler)
+                // ve şu an aktif bir yükleme de yoksa, o listeyi otomatik olarak
+                // yeniden yüklemeyi dene — kullanıcı "0 Kanal / bulunamadı"
+                // ekranında sıkışıp kalmasın.
+                try {
+                    var _selIdx = window.state.selectedM3U;
+                    if (_selIdx !== 'all' && !window._isLoadingM3U) {
+                        var _hasAny = window.state.channels && window.state.channels.some(function(c) { return c.listIdx == _selIdx; });
+                        if (!_hasAny && window.state.m3uList && window.state.m3uList[_selIdx]) {
+                            if (typeof loadSingleM3U === 'function') {
+                                loadSingleM3U(_selIdx, window.state.m3uList[_selIdx]);
+                            }
+                        }
+                    }
+                } catch(e) {}
                 // highPerf debounce kilidini aç
                 if (window.state.highPerf) {
                     window.state.highPerf.isFiltering = false;

@@ -64128,8 +64128,14 @@ document.readyState === 'loading'
 }
 #channelsGrid,
 .channels-grid,
-.channel-card {
-    touch-action: pan-y !important; /* global manipulation kuralını ez, kart üstünde scroll kilitlenmesin */
+.channel-card,
+.channel-card * {
+    touch-action: pan-y !important; /* global manipulation kuralını ez — kart İÇİNDEKİ logo/başlık/img de dahil, yoksa parmak oraya değince scroll kilitleniyor */
+}
+/* Kart üstündeki gerçek tıklanabilir mini butonlar (favori vb.) yine de tap alsın */
+.channel-card .fav-toggle,
+.channel-card button {
+    touch-action: manipulation !important;
 }
 
 /* ══════════════════════════════════════

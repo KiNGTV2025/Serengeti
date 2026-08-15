@@ -78916,7 +78916,31 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         var startY = 0, startX = 0, startScrollTop = 0;
         var lastY = 0, lastT = 0, velocity = 0;
         var dragging = false, isVerticalDrag = false, decided = false;
+        var maxScroll = 0;          // touchstart'ta bir kez ölçülür — her touchmove'da
+                                     // scrollHeight okumak zorlamalı reflow'a (jank) yol açıyordu
         var momentumRAF = null;
+
+        // touchmove'lar çok sık gelebilir (>60/sn); scrollTop'u her seferinde
+        // senkron yazmak yerine, sadece bir sonraki animasyon karesinde TEK
+        // seferde uyguluyoruz (rAF batching) — kaydırma pürüzsüzleşir.
+        var pendingScrollTop = null;
+        var rafScheduled = false;
+        function scheduleApply() {
+            if (rafScheduled) return;
+            rafScheduled = true;
+            requestAnimationFrame(applyPending);
+        }
+        function applyPending() {
+            rafScheduled = false;
+            if (pendingScrollTop !== null) {
+                vp.scrollTop = pendingScrollTop;
+                pendingScrollTop = null;
+            }
+        }
+
+        function measureMax() {
+            return Math.max(0, vp.scrollHeight - vp.clientHeight);
+        }
 
         function stopMomentum() {
             if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = null; }
@@ -78925,10 +78949,9 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         function runMomentum() {
             velocity *= 0.94;
             if (Math.abs(velocity) < 0.05) { momentumRAF = null; return; }
-            var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
             var next = vp.scrollTop - velocity;
             if (next <= 0) { vp.scrollTop = 0; momentumRAF = null; return; }
-            if (next >= max) { vp.scrollTop = max; momentumRAF = null; return; }
+            if (next >= maxScroll) { vp.scrollTop = maxScroll; momentumRAF = null; return; }
             vp.scrollTop = next;
             momentumRAF = requestAnimationFrame(runMomentum);
         }
@@ -78936,10 +78959,12 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         vp.addEventListener('touchstart', function (e) {
             if (e.touches.length !== 1) return;
             stopMomentum();
+            pendingScrollTop = null;
             var t = e.touches[0];
             startY = lastY = t.clientY;
             startX = t.clientX;
             startScrollTop = vp.scrollTop;
+            maxScroll = measureMax();   // tek ölçüm — sürükleme boyunca yeniden okunmaz
             lastT = Date.now();
             velocity = 0;
             dragging = true;
@@ -78976,20 +79001,24 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             lastY = t.clientY;
             lastT = now;
 
-            var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
             var next = startScrollTop - dy;
             if (next < 0) next = next * RUBBER;
-            else if (next > max) next = max + (next - max) * RUBBER;
-            vp.scrollTop = next;
+            else if (next > maxScroll) next = maxScroll + (next - maxScroll) * RUBBER;
+            pendingScrollTop = next;
+            scheduleApply();
 
             if (e.cancelable) e.preventDefault();
         }, { passive: false, capture: true });
 
         function endDrag() {
             if (isVerticalDrag) {
-                var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
+                // Sürükleme sırasında biriken son değeri hemen uygula (rAF'ı bekleme)
+                if (pendingScrollTop !== null) {
+                    vp.scrollTop = pendingScrollTop;
+                    pendingScrollTop = null;
+                }
                 if (vp.scrollTop < 0) vp.scrollTop = 0;
-                else if (vp.scrollTop > max) vp.scrollTop = max;
+                else if (vp.scrollTop > maxScroll) vp.scrollTop = maxScroll;
                 else if (Math.abs(velocity) > 0.3) momentumRAF = requestAnimationFrame(runMomentum);
                 setTimeout(function () {
                     if (window.state && window.state.remote) window.state.remote.preventClick = false;

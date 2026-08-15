@@ -52217,7 +52217,7 @@ function tryIframeRedirect(action) {
   async function fetchWithTimeout(url, timeout = 8000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
         const response = await fetch(url, {
             signal: controller.signal,
@@ -52227,14 +52227,44 @@ function tryIframeRedirect(action) {
             }
         });
         clearTimeout(id);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
-        return await response.text();
+
+        // DÜZELTME: önceden burada response.text() dönüyordu — bu, çağıran
+        // kodun (loadFreshChannelsQuick vb.) beklediği Response nesnesi
+        // (.ok / .body.getReader) değil, düz metindi. Sonuç: "resp && resp.ok"
+        // her zaman falsy oluyordu, stream-parse yolu HİÇ tetiklenmiyordu —
+        // 12bin+ kanallı Xtream listelerinde ilk batch'i erken ekrana basan
+        // parseM3UStream yolu sessizce devre dışı kalıp, arka plan yüklemesi
+        // (loadFreshChannelsInBackground) devreye girene kadar ekran boş
+        // kalıyordu. Artık Response nesnesinin kendisi döndürülüyor; çağıran
+        // kod .text() veya .body.getReader() ile ihtiyacına göre okuyor.
+        return response;
     } catch (error) {
         clearTimeout(id);
+
+        // ── Xtream get.php listesi mi? (host:port/get.php?username=...) ──
+        // Çoğu Xtream paneli http:// üzerinde çalışır ve CORS header dönmez;
+        // direkt fetch mixed-content/CORS ile timeout'a kadar bekleyip
+        // başarısız olabilir (90-120sn). Bu durumda anında proxy ile bir
+        // kez daha dene — 12bin+ kanallı listelerde "kanallar hazır"
+        // ekranına geçişi büyük ölçüde hızlandırır.
+        const isXtreamListUrl = /\/get\.php\?/i.test(url) && !url.includes('turk.sadecenjoy.workers.dev');
+        if (isXtreamListUrl && typeof STREAM_PROXY2 !== 'undefined') {
+            try {
+                const controller2 = new AbortController();
+                const id2 = setTimeout(() => controller2.abort(), timeout);
+                const proxied = await fetch(STREAM_PROXY2 + encodeURIComponent(url), {
+                    signal: controller2.signal,
+                    headers: { 'Accept': 'text/plain,*/*' }
+                });
+                clearTimeout(id2);
+                if (proxied.ok) return proxied;
+            } catch (e2) { /* proxy da başarısız — orijinal hatayı fırlat */ }
+        }
+
         if (error.name === 'AbortError') {
             throw new Error(`Timeout: ${url} yüklenemedi (${timeout}ms)`);
         }
@@ -78504,7 +78534,9 @@ body.tvbox-mode.fast-mode .neon-logo-img {
                     _writeSigStore(sigStore);
                     if (!prevSig) return;
 
-                    var freshTxt = await fetchWithTimeout(m3u.url, 45000).catch(function() { return null; });
+                    var freshResp = await fetchWithTimeout(m3u.url, 45000).catch(function() { return null; });
+                    if (!freshResp) return;
+                    var freshTxt = await freshResp.text().catch(function() { return null; });
                     if (!freshTxt) return;
                     await _applyPillUpdate(idx, m3u, freshTxt);
 

@@ -62823,19 +62823,37 @@ setInterval(function() {
     var lines = [];
     function log(msg) {
         lines.push(msg);
-        if (lines.length > 40) lines.shift();
+        if (lines.length > 30) lines.shift();
         logEl.textContent = lines.join('\n');
     }
     function elInfo(el) {
         if (!el) return 'null';
         var cs = getComputedStyle(el);
-        return (el.id ? '#'+el.id : '') + (el.className && el.className.toString ? '.'+el.className.toString().replace(/\s+/g,'.').slice(0,40) : '') +
-               ' [touch-action:' + cs.touchAction + ' pointer-events:' + cs.pointerEvents + ']';
+        return (el.id ? '#'+el.id : '') + (el.className && el.className.toString ? '.'+el.className.toString().replace(/\s+/g,'.').slice(0,30) : '') +
+               ' [ta:' + cs.touchAction + ' pe:' + cs.pointerEvents + ' ov-y:' + cs.overflowY + ']';
     }
-    var vp = null;
     function getVp() {
         return document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
     }
+    // Dump every scrollable ancestor's scrollHeight/clientHeight/scrollTop
+    function dumpAllScrollers() {
+        var vp = getVp();
+        var out = ['[SCROLLERS] body.st=' + document.body.scrollTop + ' html.st=' + document.documentElement.scrollTop];
+        var el = vp;
+        var depth = 0;
+        while (el && depth < 8) {
+            var cs = getComputedStyle(el);
+            out.push('  ' + (el.id||el.className||el.tagName).toString().slice(0,30) +
+                ' sh=' + el.scrollHeight + ' ch=' + el.clientHeight + ' st=' + el.scrollTop +
+                ' ov-y=' + cs.overflowY + ' pos=' + cs.position);
+            el = el.parentElement;
+            depth++;
+        }
+        log(out.join('\n'));
+    }
+    dumpAllScrollers();
+
+    var vp = null;
     var startY = 0, startScrollTop = 0;
     document.addEventListener('touchstart', function(e) {
         vp = getVp();
@@ -62843,31 +62861,19 @@ setInterval(function() {
         startY = t ? t.clientY : 0;
         startScrollTop = vp ? vp.scrollTop : -1;
         var target = document.elementFromPoint(t.clientX, t.clientY);
-        log('[touchstart] target=' + elInfo(target) + ' defaultPrevented=' + e.defaultPrevented + ' vp.scrollTop=' + startScrollTop);
-    }, {capture:true, passive:true});
-
-    document.addEventListener('touchmove', function(e) {
-        var t = e.touches[0];
-        var curScrollTop = vp ? vp.scrollTop : -1;
-        log('[touchmove] dY=' + (t ? (startY - t.clientY) : '?') + ' defaultPrevented=' + e.defaultPrevented + ' vp.scrollTop=' + curScrollTop + ' cancelable=' + e.cancelable);
+        log('[touchstart] target=' + elInfo(target));
+        dumpAllScrollers();
     }, {capture:true, passive:true});
 
     document.addEventListener('touchend', function(e) {
         var endScrollTop = vp ? vp.scrollTop : -1;
-        log('[touchend] scrollTop ' + startScrollTop + ' -> ' + endScrollTop + (startScrollTop === endScrollTop ? '  ❌ SCROLL OLMADI' : '  ✅ SCROLL OLDU'));
+        log('[touchend] vp.scrollTop ' + startScrollTop + ' -> ' + endScrollTop);
+        dumpAllScrollers();
+        log('body.st=' + document.body.scrollTop + ' html.st=' + document.documentElement.scrollTop + ' window.scrollY=' + window.scrollY);
         log('---');
     }, {capture:true, passive:true});
 
-    // Also catch preventDefault calls globally
-    var origPD = Event.prototype.preventDefault;
-    Event.prototype.preventDefault = function() {
-        if (this.type.indexOf('touch') === 0) {
-            log('  ⚠️ preventDefault() called on ' + this.type + ' by code');
-        }
-        return origPD.apply(this, arguments);
-    };
-
-    log('Debug panel hazır. vp bulundu mu: ' + (getVp() ? 'EVET' : 'HAYIR'));
+    log('Debug panel hazır. vp: ' + (getVp() ? 'bulundu' : 'YOK'));
 })();
 </script>
 

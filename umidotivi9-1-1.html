@@ -60825,7 +60825,32 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
                     };
                     
                     btn.addEventListener('click', (e) => selectCityAction(e, true));
-                    btn.addEventListener('touchstart', (e) => selectCityAction(e, true), { passive: false });
+
+                    /* Dokunmatikte listeyi kaydırmak isteyen parmak, eskiden
+                       touchstart anında şehri seçip preventDefault çağırdığı
+                       için scroll hiç başlamıyordu. Artık touchstart'ta hiçbir
+                       şeye dokunmuyoruz (native scroll serbest); parmak
+                       DRAG_THRESHOLD'dan fazla hareket ederse bu bir kaydırma
+                       sayılır ve seçim yapılmaz, hareket etmezse (gerçek tap)
+                       touchend'de şehir seçilir. */
+                    (function () {
+                        var _tsY = 0, _tsX = 0, _dragged = false;
+                        var DRAG_THRESHOLD = 10;
+                        btn.addEventListener('touchstart', function (e) {
+                            var t = e.touches[0]; if (!t) return;
+                            _tsY = t.clientY; _tsX = t.clientX; _dragged = false;
+                        }, { passive: true });
+                        btn.addEventListener('touchmove', function (e) {
+                            var t = e.touches[0]; if (!t) return;
+                            if (Math.abs(t.clientY - _tsY) > DRAG_THRESHOLD || Math.abs(t.clientX - _tsX) > DRAG_THRESHOLD) {
+                                _dragged = true;
+                            }
+                        }, { passive: true });
+                        btn.addEventListener('touchend', function (e) {
+                            if (_dragged) return; // kaydırma yapıldı, seçim yok
+                            selectCityAction(e, true);
+                        }, { passive: false });
+                    })();
                     
                     btn.addEventListener('keydown', (e) => {
                         if(e.key === 'Enter' || e.key === ' ') {

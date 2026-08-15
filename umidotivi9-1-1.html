@@ -16680,32 +16680,59 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="modal-bg" id="addM3UModal" onclick="if(event.target.id==='addM3UModal') closeAddM3UModal()">
         <div class="modal-content">
             <div class="m3u-modal-header">
-                <h3 class="m3u-modal-title" id="m3uModalTitle">M3U Listesi Ekle</h3>
+                <h3 class="m3u-modal-title" id="m3uModalTitle">Liste Ekle</h3>
                 <button class="icon-btn" onclick="closeAddM3UModal()" style="width:32px; height:32px;">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            
+
+            <div class="input-group" id="sourceTypeGroup">
+                <label class="input-label">Kaynak Türü</label>
+                <div class="source-type-toggle" id="sourceTypeToggle" style="display:flex; gap:8px;">
+                    <button type="button" class="source-type-btn active" id="btnSourceTypeM3U" onclick="setM3UModalSourceType('m3u')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #444; background:#2a2a2a; color:#fff; cursor:pointer;">M3U URL</button>
+                    <button type="button" class="source-type-btn" id="btnSourceTypeXtream" onclick="setM3UModalSourceType('xtream')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #444; background:#1a1a1a; color:#aaa; cursor:pointer;">Xtream Codes</button>
+                </div>
+            </div>
+
             <div class="input-group">
                 <label class="input-label">Liste Adı</label>
                 <input type="text" id="m3uNameInput" class="password-input" placeholder="Örn: Premium Listem" autocomplete="off">
             </div>
-            
-            <div class="input-group">
-                <label class="input-label">M3U URL'si</label>
-                <input type="text" id="m3uUrlInput" class="password-input" placeholder="https://example.com/list.m3u" autocomplete="off">
+
+            <!-- M3U URL modu -->
+            <div id="m3uUrlFields">
+                <div class="input-group">
+                    <label class="input-label">M3U URL'si</label>
+                    <input type="text" id="m3uUrlInput" class="password-input" placeholder="https://example.com/list.m3u" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Şifre (isteğe bağlı)</label>
+                    <input type="password" id="m3uPasswordInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
+                </div>
             </div>
-            
-            <div class="input-group">
-                <label class="input-label">Şifre (isteğe bağlı)</label>
-                <input type="password" id="m3uPasswordInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
+
+            <!-- Xtream Codes modu -->
+            <div id="xtreamFields" style="display:none;">
+                <div class="input-group">
+                    <label class="input-label">Panel Adresi (host)</label>
+                    <input type="text" id="xtreamHostInput" class="password-input" placeholder="http://ornek-panel.com:8080" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Kullanıcı Adı</label>
+                    <input type="text" id="xtreamUserInput" class="password-input" placeholder="kullanici_adi" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Şifre</label>
+                    <input type="password" id="xtreamPassInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
+                </div>
             </div>
-            
+
             <div class="remember-password">
                 <input type="checkbox" id="rememberM3UPassword">
                 <label for="rememberM3UPassword" style="font-size:14px;">Şifreyi hatırla</label>
             </div>
-            
+
             <div class="modal-btns" style="margin-top: 20px; justify-content: space-between;">
                  <button class="continue-modal-btn delete" id="btnDeleteM3U" onclick="deleteM3UList()" style="display:none;">Sil</button>
                  <div style="display:flex; gap:10px; margin-left:auto;">
@@ -32472,6 +32499,40 @@ function playDirectChannel(channel) {
             playKeySound('back');
         }
 
+        // ── Xtream Codes desteği ──
+        // Xtream panel bilgilerini (host/kullanıcı/şifre) standart Xtream "get.php"
+        // M3U endpoint'ine çevirir. Böylece mevcut M3U parse/cache/player pipeline'ı
+        // hiç değişmeden Xtream kaynaklarını da işleyebilir.
+        function buildXtreamM3UUrl(host, username, password) {
+            let h = (host || '').trim();
+            if (!/^https?:\/\//i.test(h)) h = 'http://' + h;
+            h = h.replace(/\/+$/, '');
+            const u = encodeURIComponent((username || '').trim());
+            const p = encodeURIComponent((password || '').trim());
+            return h + '/get.php?username=' + u + '&password=' + p + '&type=m3u_plus&output=ts';
+        }
+
+        function setM3UModalSourceType(type) {
+            state._m3uModalSourceType = type;
+            const isXtream = (type === 'xtream');
+            var _m3uFields = document.getElementById('m3uUrlFields');
+            var _xtFields = document.getElementById('xtreamFields');
+            if (_m3uFields) _m3uFields.style.display = isXtream ? 'none' : '';
+            if (_xtFields) _xtFields.style.display = isXtream ? '' : 'none';
+            var _btnM3U = document.getElementById('btnSourceTypeM3U');
+            var _btnXt = document.getElementById('btnSourceTypeXtream');
+            if (_btnM3U) {
+                _btnM3U.classList.toggle('active', !isXtream);
+                _btnM3U.style.background = isXtream ? '#1a1a1a' : '#2a2a2a';
+                _btnM3U.style.color = isXtream ? '#aaa' : '#fff';
+            }
+            if (_btnXt) {
+                _btnXt.classList.toggle('active', isXtream);
+                _btnXt.style.background = isXtream ? '#2a2a2a' : '#1a1a1a';
+                _btnXt.style.color = isXtream ? '#fff' : '#aaa';
+            }
+        }
+
         function openAddM3UModal(isEdit = false, index = null) {
             if (isEdit && index !== null) {
                 const m3u = state.m3uList[index];
@@ -32491,7 +32552,7 @@ function playDirectChannel(channel) {
 
             if (isEdit && index !== null) {
                 const m3u = state.m3uList[index];
-                document.getElementById('m3uModalTitle').innerText = "M3U Listesi Düzenle";
+                document.getElementById('m3uModalTitle').innerText = "Liste Düzenle";
                 document.getElementById('m3uNameInput').value = m3u.name;
                 document.getElementById('m3uUrlInput').value = m3u.url;
                 if (m3u.password && state.passwordManager.rememberedPasswords[m3u.url]) {
@@ -32501,12 +32562,30 @@ function playDirectChannel(channel) {
                 }
                 document.getElementById('rememberM3UPassword').checked = m3u.rememberPassword || false;
                 var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='block';
+
+                // Xtream kaynağından türetilmiş bir liste mi? (xtream meta bilgisi kaydedilmişse
+                // orijinal host/kullanıcı/şifreyi geri doldur, aksi halde ham M3U URL göster)
+                if (m3u.xtream && m3u.xtream.host) {
+                    setM3UModalSourceType('xtream');
+                    document.getElementById('xtreamHostInput').value = m3u.xtream.host || '';
+                    document.getElementById('xtreamUserInput').value = m3u.xtream.username || '';
+                    document.getElementById('xtreamPassInput').value = m3u.xtream.password || '';
+                } else {
+                    setM3UModalSourceType('m3u');
+                    document.getElementById('xtreamHostInput').value = '';
+                    document.getElementById('xtreamUserInput').value = '';
+                    document.getElementById('xtreamPassInput').value = '';
+                }
             } else {
-                document.getElementById('m3uModalTitle').innerText = "M3U Listesi Ekle";
+                document.getElementById('m3uModalTitle').innerText = "Liste Ekle";
                 document.getElementById('m3uNameInput').value = '';
                 document.getElementById('m3uUrlInput').value = '';
                 document.getElementById('m3uPasswordInput').value = '';
+                document.getElementById('xtreamHostInput').value = '';
+                document.getElementById('xtreamUserInput').value = '';
+                document.getElementById('xtreamPassInput').value = '';
                 document.getElementById('rememberM3UPassword').checked = false;
+                setM3UModalSourceType('m3u');
                 var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='none';
             }
             
@@ -32579,9 +32658,22 @@ function playDirectChannel(channel) {
         }
 
         async function saveM3UList() {
+            const isXtreamMode = (state._m3uModalSourceType === 'xtream');
             const name = document.getElementById('m3uNameInput').value.trim();
-            let url = document.getElementById('m3uUrlInput').value.trim();
-            const password = document.getElementById('m3uPasswordInput').value;
+
+            let url, password, xtreamMeta = null;
+            if (isXtreamMode) {
+                const xHost = document.getElementById('xtreamHostInput').value.trim();
+                const xUser = document.getElementById('xtreamUserInput').value.trim();
+                const xPass = document.getElementById('xtreamPassInput').value;
+                if (!name || !xHost || !xUser || !xPass) { showToast("Panel adresi, kullanıcı adı ve şifre gereklidir"); return; }
+                url = buildXtreamM3UUrl(xHost, xUser, xPass);
+                password = null;
+                xtreamMeta = { host: xHost, username: xUser, password: xPass, encryptedPassword: xPass ? btoa(xPass) : null };
+            } else {
+                url = document.getElementById('m3uUrlInput').value.trim();
+                password = document.getElementById('m3uPasswordInput').value;
+            }
             const rememberPassword = document.getElementById('rememberM3UPassword').checked;
             
             if (!name || !url) { showToast("Liste adı ve URL gereklidir"); return; }
@@ -32593,7 +32685,8 @@ function playDirectChannel(channel) {
                     password: password || null,
                     encryptedPassword: password ? btoa(password) : null,
                     rememberPassword: rememberPassword,
-                    isLocal: false
+                    isLocal: false,
+                    xtream: xtreamMeta
                 };
                 
                 
@@ -44304,7 +44397,14 @@ function resumeChannel(startTime) {
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
         // 'umitmod-farki.onrender.com' → kapalı
     ];
-    const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
+
+    // ── Xtream Codes stream deseni (host:port/live|movie|series/user/pass/id[.ext]) ──
+    // Çoğu Xtream paneli http:// üzerinde çalışır ve CORS header dönmez —
+    // tarayıcıdan doğrudan bağlanınca mixed-content veya CORS hatasına düşer.
+    // Bu yüzden desen eşleşirse proxy zorunlu kılınır (DIRECT_DOMAINS'a girmez).
+    const isXtreamStreamUrl = /^https?:\/\/[^\/]+\/(live|movie|series)\/[^\/]+\/[^\/]+\/\d+/i.test(rawUrl);
+
+    const needsDirect = !isXtreamStreamUrl && DIRECT_DOMAINS.some(d => rawUrl.includes(d));
 
     // ── YENİ: Referer/Origin korumalı mı? ──
     const needsStreamProxy = !needsDirect &&
@@ -44861,8 +44961,14 @@ function resumeChannel(startTime) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);
         } else {
-            // Normal HLS → önce direkt, başarısız olursa eski proxy
-            startHls(rawUrl);
+            // Normal HLS → Xtream stream'ler CORS/mixed-content sorununa çok
+            // takıldığı için direkt yerine baştan proxy ile aç; diğer
+            // bilinmeyen kaynaklar önce direkt, hata alırsa proxy'ye düşer.
+            if (isXtreamStreamUrl) {
+                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
+            } else {
+                startHls(rawUrl);
+            }
         }
     } else {
         // MP4 / MKV / diğer direkt medya

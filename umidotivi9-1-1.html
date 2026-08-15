@@ -43443,7 +43443,7 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
+                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:(?:vavoo|kool|oha|huhu)-iptv\/)?play\/([a-zA-Z0-9]+)/) : null;
                     const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
                     if (_vavooRawFbMatch) {
                         // vavoo.to ham URL → Vavoo Worker ile yeniden dene
@@ -44530,7 +44530,7 @@ function resumeChannel(startTime) {
     // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
     // olduğu gibi (rawUrl) kullanılıyor.
     const _isAlreadyProxied = rawUrl.includes('workers.dev');
-    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
+    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:(?:vavoo|kool|oha|huhu)-iptv\/)?play\/([a-zA-Z0-9]+)/);
     const isVavooRaw = !!_vavooRawMatch;
     if (isVavooRaw) {
         // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner

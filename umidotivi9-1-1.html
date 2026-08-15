@@ -19991,20 +19991,22 @@ window.VAVOO_DIRECT = (function () {
                 const res = await fetch(pingUrl, {
                     method: 'POST',
                     headers: {
-                        'User-Agent': PING_UA,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json; charset=utf-8'
                     },
                     body: JSON.stringify(body)
                 });
-                if (!res.ok) continue;
+                if (!res.ok) { console.warn('[VAVOO_DIRECT] ping HTTP', res.status, pingUrl); continue; }
                 const parsed = await res.json();
                 const sig = parsed && (parsed.addonSig || parsed.mhub);
-                if (sig) return sig;
+                if (sig) { console.log('[VAVOO_DIRECT] addonSig alındı:', pingUrl); return sig; }
+                console.warn('[VAVOO_DIRECT] ping OK ama sig yok', pingUrl, parsed);
             } catch (e) {
+                console.warn('[VAVOO_DIRECT] ping başarısız (CORS/network olabilir):', pingUrl, e.message);
                 // sıradaki ping URL'ini dene (CORS engeli de burada yakalanır)
             }
         }
+        console.warn('[VAVOO_DIRECT] addonSig alınamadı, tüm ping URL\'leri başarısız');
         return null;
     }
 
@@ -20018,9 +20020,6 @@ window.VAVOO_DIRECT = (function () {
             if (!sig) sig = await fetchAddonSig();
             try {
                 const headers = {
-                    'Origin': 'https://vavoo.to',
-                    'Referer': 'https://vavoo.to/',
-                    'User-Agent': RESOLVE_UA,
                     'Accept': '*/*',
                     'Content-Type': 'application/json; charset=utf-8',
                     'Accept-Language': LANGUAGE
@@ -20037,7 +20036,7 @@ window.VAVOO_DIRECT = (function () {
                         clientVersion: '3.0.2'
                     })
                 });
-                if (!res.ok) continue;
+                if (!res.ok) { console.warn('[VAVOO_DIRECT] resolve HTTP', res.status, baseSite); continue; }
 
                 const text = await res.text();
                 let items;
@@ -20051,14 +20050,18 @@ window.VAVOO_DIRECT = (function () {
                     || (items[0] && items[0].url);
 
                 if (streamUrl && streamUrl.includes('.m3u8')) {
+                    console.log('[VAVOO_DIRECT] doğrudan resolve BAŞARILI:', baseSite);
                     return streamUrl;
                 }
+                console.warn('[VAVOO_DIRECT] resolve OK ama geçerli m3u8 yok', baseSite, text.slice(0, 200));
                 // Geçersiz/boş yanıt → imzayı tazele ve sıradaki base site'ı dene
                 sig = await fetchAddonSig();
             } catch (e) {
+                console.warn('[VAVOO_DIRECT] resolve başarısız (CORS/network olabilir):', baseSite, e.message);
                 // sıradaki base site'ı dene (CORS engeli dahil)
             }
         }
+        console.warn('[VAVOO_DIRECT] doğrudan resolve tamamen başarısız, Worker\'a düşülecek');
         return null;
     }
 
@@ -44172,9 +44175,11 @@ function resumeChannel(startTime) {
                         if (typeof isVavooRaw !== 'undefined' && isVavooRaw &&
                             window.VAVOO_DIRECT && typeof window.VAVOO_DIRECT.resolveDirect === 'function' &&
                             typeof rawUrl !== 'undefined') {
+                            // Worker ile hemen başlat, paralelde doğrudan resolve'u dene
+                            startHls(_freshCallUrl);
                             window.VAVOO_DIRECT.resolveDirect(rawUrl).then(direct => {
-                                startHls(direct || _freshCallUrl);
-                            }).catch(() => startHls(_freshCallUrl));
+                                if (direct) startHls(direct);
+                            }).catch(() => {});
                         } else {
                             startHls(_freshCallUrl);
                         }
@@ -45034,13 +45039,23 @@ function resumeChannel(startTime) {
 
             function _startVavoo(useDirect) {
                 if (useDirect && window.VAVOO_DIRECT && typeof window.VAVOO_DIRECT.resolveDirect === 'function') {
+                    // ÖNCE Worker ile hemen başlat — yayın asla beklemez/gecikmez.
+                    // Paralelde doğrudan (worker'sız) addonSig resolve'u dener; sadece
+                    // Worker gerçekten başarısız olduysa (video hâlâ oynamıyorsa) daha
+                    // taze/doğrudan linke geçer. Zaten oynayan bir yayını gereksiz yere
+                    // kesip yeniden başlatmaz.
+                    startHls(effectiveUrl);
                     window.VAVOO_DIRECT.resolveDirect(rawUrl).then(direct => {
                         if (_vavooPlayToken !== window._vavooPlayToken) return; // kanal değişti, iptal
-                        startHls(direct || effectiveUrl); // direkt çözüldüyse onu, olmazsa Worker'a düş
-                    }).catch(() => {
-                        if (_vavooPlayToken !== window._vavooPlayToken) return;
-                        startHls(effectiveUrl);
-                    });
+                        if (!direct) return;
+                        const _alreadyPlaying = video && !video.paused && !video.ended && video.readyState >= 2 && video.currentTime > 0;
+                        if (_alreadyPlaying) {
+                            console.log('[VAVOO_DIRECT] doğrudan link hazır ama yayın zaten akıyor, dokunulmadı');
+                            return;
+                        }
+                        console.log('[VAVOO_DIRECT] Worker başarısız/yavaş, doğrudan linke geçiliyor');
+                        startHls(direct);
+                    }).catch(() => {});
                 } else {
                     startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
                 }

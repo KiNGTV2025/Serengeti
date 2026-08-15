@@ -2933,10 +2933,10 @@ body {
         }
 
         .header-btn img.svg-icon {
-            width: 18px;
-            height: 18px;
-            max-width: 18px;
-            max-height: 18px;
+            width: 24px;
+            height: 24px;
+            max-width: 24px;
+            max-height: 24px;
             object-fit: contain;
             display: block;
         }
@@ -19017,9 +19017,27 @@ UmitSecurityManager.init({
     },
 });
 
+// ── Admin muafiyeti: bu Telegram ID(ler) için VPN/proxy tespiti ve
+// cihaz-sınırı uyarıları frontend tarafında da devre dışı bırakılır.
+// (Cihaz sınırı asıl olarak Worker'da kontrol edilir; bu sadece istemci
+// tarafındaki VPN izleme/güvenlik akışını admin için susturur.)
+function isAdminTelegramId() {
+    try {
+        var ADMIN_IDS = ['965297115'];
+        var raw = localStorage.getItem('umittv_auth');
+        if (!raw) return false;
+        var auth = JSON.parse(raw);
+        return !!(auth && auth.telegram_id && ADMIN_IDS.indexOf(String(auth.telegram_id)) !== -1);
+    } catch(e) { return false; }
+}
+window.isAdminTelegramId = isAdminTelegramId;
+
 // ── Login sonrası periyodik izleme + parmak izi doğrulama ────────────────
 document.addEventListener('umittv_login_ok', function _secWatch() {
     document.removeEventListener('umittv_login_ok', _secWatch);
+
+    // Admin hesabı: VPN/güvenlik izlemeyi hiç başlatma
+    if (isAdminTelegramId()) return;
 
     // Parmak izini kaydet (ilk login)
     UmitSecurityManager.getFingerprint().then(fp => {
@@ -19169,8 +19187,9 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
         _vpnWatchTimer = setInterval(_tick, 5000);
     }
 
-    // Login başarılı olunca izlemeyi başlat
+    // Login başarılı olunca izlemeyi başlat (admin hariç)
     document.addEventListener('umittv_login_ok', function() {
+        if (window.isAdminTelegramId && window.isAdminTelegramId()) return;
         setTimeout(_startVpnWatch, 2000);
     });
 

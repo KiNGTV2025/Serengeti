@@ -3062,6 +3062,7 @@ body {
          
         .content-area { 
             flex: 1; 
+            min-height: 0 !important; /* flex zincirinde taşma engelini kaldır */
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
@@ -3069,6 +3070,7 @@ body {
         
         .channels-viewport { 
             flex: 1; 
+            min-height: 0 !important; /* flex item taşma engelliyordu, scroll hiç tetiklenmiyordu */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 16px 12px 12px 12px;

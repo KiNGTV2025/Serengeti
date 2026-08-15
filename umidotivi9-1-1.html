@@ -41793,10 +41793,29 @@ function addContinueCardStyles() {
             return true;
         });
         
-        // currentLoadedCards sıfırla (yeni kategori/filtre)
-        // PERF-FIX: 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
-        // 50 kart DOM'a aynı anda yazılırken TVBox donuyordu; 24 = 2 satır × 3 sütun yeterli.
-        state.currentLoadedCards = 24;
+        // FIX (KÖK NEDEN — "200. kanaldayken listeye dönünce 1. karta sıçrama"):
+        // Eskiden currentLoadedCards HER filterChannels() çağrısında (kategori/M3U
+        // gerçekten değişmese bile) koşulsuz 24'e resetleniyordu. filterChannels()
+        // yalnızca kullanıcı kategori değiştirdiğinde değil, arka plan senkronu,
+        // player kapanışı, EPG/izleyici-sayısı yenilemesi, cihaz eşitleme gibi
+        // sessiz olaylarda da tetikleniyor. Kullanıcı scroll ederek 200. karta
+        // ulaşmış (currentLoadedCards >= 200) olsa bile, bu sessiz tetiklemelerden
+        // biri devreye girince liste 24 karta düşürülüp grid'in TAMAMI (append
+        // değil, tam reset) yeniden kuruluyor, scrollTop 0'a dönüyor ve kullanıcı
+        // "listem başa sardı" hissi yaşıyordu. Aynı zamanda bu koşulsuz tam-reset
+        // dokunmatik scroll sırasında da (her arka plan tetiklemesinde grid.innerHTML
+        // yeniden yazıldığı için) ağır/takılmalı bir his yaratıyordu.
+        // ÇÖZÜM: kategori+M3U imzası GERÇEKTEN değiştiyse 24'e sıfırla; aynı
+        // filtrede kalınıyorsa halihazırda yüklenmiş kart sayısını KORU.
+        const _filterSig = state.activeCat + '|' + state.selectedM3U;
+        if (state._utvFilterSig !== _filterSig) {
+            state._utvFilterSig = _filterSig;
+            // PERF-FIX: 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
+            // 50 kart DOM'a aynı anda yazılırken TVBox donuyordu; 24 = 2 satır × 3 sütun yeterli.
+            state.currentLoadedCards = 24;
+        } else if (!state.currentLoadedCards) {
+            state.currentLoadedCards = 24;
+        }
         
         // 3. UI güncelle
         // FIX: state.filtered içindeki özel "Tümünü Temizle" kartı (isSpecial:true)
@@ -45924,6 +45943,23 @@ function closePlayer() {
     }
     updateRemoteFocus();
     // Scroll pozisyonunu restore et — player öncesi konuma dön
+    // FIX ("200. kanaldayken 1e dönüyor"): oynatılan kanal grid'de henüz DOM'a
+    // basılmamış kartlar arasındaysa (örn. currentLoadedCards=24 ama oynanan
+    // kanal 200. sıradaysa — arama/uzak kategoriden direkt açılmış olabilir),
+    // scrollTop set edilse bile grid.scrollHeight yetersiz kaldığından tarayıcı
+    // scrollTop'u pratikte 0'a yakın bir yere clamp'liyor ve kart bulunamadığı
+    // için scrollIntoView de çalışmıyordu — kullanıcıya "listem başa sardı"
+    // gibi görünüyordu. Önce hedef indexe kadar kart sayısını garanti altına al.
+    try {
+        if (typeof state.remote.index === 'number' && state.remote.index >= 0) {
+            var _needCount = state.remote.index + 8; // biraz tampon
+            if (_needCount > (state.currentLoadedCards || 24)) {
+                state.currentLoadedCards = Math.min(_needCount, (state.filtered || []).length);
+                window._utvAppendRender = false; // tam render — eksik aralığı da doldursun
+                if (typeof renderChannels === 'function') renderChannels();
+            }
+        }
+    } catch(e) {}
     setTimeout(function() {
         try {
             var _vp = document.getElementById('channelsViewport');

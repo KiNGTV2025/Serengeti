@@ -78886,21 +78886,29 @@ body.tvbox-mode.fast-mode .neon-logo-img {
    MANUEL DOKUNMATİK SCROLL — channelsViewport (grid) parmakla
    kaydırılamıyor sorunu için son çare / kesin çözüm.
 
-   Neden gerekli: touch-action, overflow-y, -webkit-overflow-scrolling
-   gibi CSS düzeltmeleri zaten mevcut (bkz. dosyanın üst kısımları),
-   ancak tarayıcının/WebView'in native dokunmatik kaydırma jestini
-   bir yerlerde (muhtemelen native WebView katmanı ya da başka bir
-   olay dinleyicisi) engellemesi ihtimaline karşı, kaydırmayı native
-   davranışa bel bağlamadan DOĞRUDAN JS ile (parmağın deltaY'sine göre
-   scrollTop atayarak) gerçekleştiriyoruz. Bu şekilde native scroll
-   çalışsa da çalışmasa da kaydırma HER ZAMAN çalışır.
+   v2 — TRANSFORM tabanlı (GPU/compositor), reflow'suz:
+   İlk sürümde sürükleme sırasında doğrudan `scrollTop` yazılıyordu.
+   scrollTop'a her yazım, tarayıcıyı ana thread'de zorla yeniden
+   düzen hesaplamaya (synchronous reflow) sokar — bu da grid gibi
+   çok elemanlı bir alanda "ağır/kasıntılı" hissettiriyordu, çünkü
+   native touch-scroll compositor thread'de (ana JS thread'inden
+   bağımsız) çalışırken, scrollTop-tabanlı JS scroll her zaman ana
+   thread'e muhtaç kalıyor.
+
+   Çözüm: channelsViewport'un TÜM içeriğini tek bir "wrapper" div'e
+   sarıyoruz. Sürükleme sırasında gerçek scrollTop'u DEĞİŞTİRMEDEN,
+   sadece bu wrapper'a `transform: translate3d(...)` uyguluyoruz —
+   bu tamamen GPU'da/compositor'da işlenir, reflow tetiklemez, çok
+   daha akıcıdır. Parmak kalktığında (ya da momentum bitince) bu
+   görsel offset'i TEK SEFERDE gerçek scrollTop'a "commit" ediyoruz
+   ve transform'u sıfırlıyoruz — aynı görsel konuma denk geldiği
+   için gözle fark edilir bir sıçrama olmaz.
 
    Kart tıklamaları bozulmasın diye: parmak DRAG_THRESHOLD px'ten az
-   hareket ederse bu bir "tap" sayılır ve hiçbir şeye müdahale
-   edilmez (preventDefault çağrılmaz) — kartın kendi click/touchend
-   mantığı normal şekilde çalışmaya devam eder. Yatay hareket dikey
-   hareketten baskınsa (örn. VOD hero slider'da yatay kaydırma) yine
-   müdahale edilmez, olay elemente normal şekilde ulaşır.
+   hareket ederse "tap" sayılır, hiçbir şeye müdahale edilmez —
+   kartın kendi click/touchend mantığı normal çalışır. Yatay hareket
+   dikey hareketten baskınsa (örn. VOD hero slider) yine müdahale
+   edilmez, olay elemente normal şekilde ulaşır.
    ═══════════════════════════════════════════════════════════════ */
 (function () {
     'use strict';
@@ -78910,32 +78918,37 @@ body.tvbox-mode.fast-mode .neon-logo-img {
         if (!vp || vp._umtManualScrollAttached) return;
         vp._umtManualScrollAttached = true;
 
-        var DRAG_THRESHOLD = 6;    // px — bu kadar hareketten önce tap sayılır
-        var RUBBER = 0.3;          // uç noktalarda lastik-bandı direnci
+        // ── Tek seferlik: mevcut tüm çocukları transform-wrapper'a taşı ──
+        var wrapper = document.getElementById('__umtScrollInner');
+        if (!wrapper) {
+            wrapper = document.createElement('div');
+            wrapper.id = '__umtScrollInner';
+            wrapper.style.willChange = 'transform';
+            while (vp.firstChild) wrapper.appendChild(vp.firstChild);
+            vp.appendChild(wrapper);
+        }
 
-        var startY = 0, startX = 0, startScrollTop = 0;
+        var DRAG_THRESHOLD = 6;    // px — bu kadar hareketten önce tap sayılır
+        var RUBBER = 0.35;         // uç noktalarda lastik-bandı direnci
+
+        var startY = 0, startX = 0, baseScrollTop = 0;
         var lastY = 0, lastT = 0, velocity = 0;
         var dragging = false, isVerticalDrag = false, decided = false;
-        var maxScroll = 0;          // touchstart'ta bir kez ölçülür — her touchmove'da
-                                     // scrollHeight okumak zorlamalı reflow'a (jank) yol açıyordu
+        var maxScroll = 0;         // touchstart'ta bir kez ölçülür
+        var virtualTop = 0;        // sürükleme sırasındaki "sanal" scrollTop
         var momentumRAF = null;
 
-        // touchmove'lar çok sık gelebilir (>60/sn); scrollTop'u her seferinde
-        // senkron yazmak yerine, sadece bir sonraki animasyon karesinde TEK
-        // seferde uyguluyoruz (rAF batching) — kaydırma pürüzsüzleşir.
-        var pendingScrollTop = null;
-        var rafScheduled = false;
-        function scheduleApply() {
-            if (rafScheduled) return;
-            rafScheduled = true;
-            requestAnimationFrame(applyPending);
+        function setVisualOffset(offsetFromBase) {
+            wrapper.style.transform = offsetFromBase
+                ? ('translate3d(0,' + offsetFromBase + 'px,0)')
+                : '';
         }
-        function applyPending() {
-            rafScheduled = false;
-            if (pendingScrollTop !== null) {
-                vp.scrollTop = pendingScrollTop;
-                pendingScrollTop = null;
-            }
+
+        // Sanal konumu gerçek scrollTop'a yaz ve transform'u sıfırla —
+        // reflow'a burada, sürükleme BİTTİĞİNDE (tek seferlik) katlanıyoruz.
+        function commit(scrollTopValue) {
+            wrapper.style.transform = '';
+            vp.scrollTop = scrollTopValue;
         }
 
         function measureMax() {
@@ -78948,23 +78961,30 @@ body.tvbox-mode.fast-mode .neon-logo-img {
 
         function runMomentum() {
             velocity *= 0.94;
-            if (Math.abs(velocity) < 0.05) { momentumRAF = null; return; }
-            var next = vp.scrollTop - velocity;
-            if (next <= 0) { vp.scrollTop = 0; momentumRAF = null; return; }
-            if (next >= maxScroll) { vp.scrollTop = maxScroll; momentumRAF = null; return; }
-            vp.scrollTop = next;
+            var next = virtualTop - velocity;
+            if (Math.abs(velocity) < 0.05) { commit(clampFinal(virtualTop)); momentumRAF = null; return; }
+            if (next <= 0) { commit(0); momentumRAF = null; return; }
+            if (next >= maxScroll) { commit(maxScroll); momentumRAF = null; return; }
+            virtualTop = next;
+            setVisualOffset(baseScrollTop - virtualTop);
             momentumRAF = requestAnimationFrame(runMomentum);
+        }
+
+        function clampFinal(v) {
+            if (v < 0) return 0;
+            if (v > maxScroll) return maxScroll;
+            return v;
         }
 
         vp.addEventListener('touchstart', function (e) {
             if (e.touches.length !== 1) return;
             stopMomentum();
-            pendingScrollTop = null;
             var t = e.touches[0];
             startY = lastY = t.clientY;
             startX = t.clientX;
-            startScrollTop = vp.scrollTop;
-            maxScroll = measureMax();   // tek ölçüm — sürükleme boyunca yeniden okunmaz
+            baseScrollTop = vp.scrollTop;   // transform=0 anındaki gerçek konum
+            virtualTop = baseScrollTop;
+            maxScroll = measureMax();       // tek ölçüm — sürükleme boyunca yeniden okunmaz
             lastT = Date.now();
             velocity = 0;
             dragging = true;
@@ -78983,13 +79003,10 @@ body.tvbox-mode.fast-mode .neon-logo-img {
                 decided = true;
                 if (Math.abs(dy) <= Math.abs(dx)) {
                     // Yatay hareket baskın — bu bize ait değil (örn. hero slider).
-                    // Hiçbir şeye dokunma, olay normal şekilde ilerlesin.
                     dragging = false;
                     return;
                 }
                 isVerticalDrag = true;
-                // Kart click'lerinin tetiklenmesini engelle — mevcut uzun-basma
-                // mekanizmasıyla aynı bayrağı kullanıyoruz.
                 if (window.state && window.state.remote) window.state.remote.preventClick = true;
             }
 
@@ -79001,25 +79018,23 @@ body.tvbox-mode.fast-mode .neon-logo-img {
             lastY = t.clientY;
             lastT = now;
 
-            var next = startScrollTop - dy;
+            var next = baseScrollTop - dy;
             if (next < 0) next = next * RUBBER;
             else if (next > maxScroll) next = maxScroll + (next - maxScroll) * RUBBER;
-            pendingScrollTop = next;
-            scheduleApply();
+            virtualTop = next;
+
+            // SADECE transform — scrollTop'a dokunmuyoruz, reflow yok.
+            setVisualOffset(baseScrollTop - virtualTop);
 
             if (e.cancelable) e.preventDefault();
         }, { passive: false, capture: true });
 
         function endDrag() {
             if (isVerticalDrag) {
-                // Sürükleme sırasında biriken son değeri hemen uygula (rAF'ı bekleme)
-                if (pendingScrollTop !== null) {
-                    vp.scrollTop = pendingScrollTop;
-                    pendingScrollTop = null;
-                }
-                if (vp.scrollTop < 0) vp.scrollTop = 0;
-                else if (vp.scrollTop > maxScroll) vp.scrollTop = maxScroll;
-                else if (Math.abs(velocity) > 0.3) momentumRAF = requestAnimationFrame(runMomentum);
+                if (virtualTop < 0) { commit(0); }
+                else if (virtualTop > maxScroll) { commit(maxScroll); }
+                else if (Math.abs(velocity) > 0.3) { momentumRAF = requestAnimationFrame(runMomentum); }
+                else { commit(virtualTop); }
                 setTimeout(function () {
                     if (window.state && window.state.remote) window.state.remote.preventClick = false;
                 }, 60);

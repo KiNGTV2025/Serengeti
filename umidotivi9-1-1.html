@@ -16716,7 +16716,7 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
             <div id="xtreamFields" style="display:none;">
                 <div class="input-group">
                     <label class="input-label">Panel Adresi (host)</label>
-                    <input type="text" id="xtreamHostInput" class="password-input" placeholder="http://ornek-panel.com:8080" autocomplete="off">
+                    <input type="text" id="xtreamHostInput" class="password-input" placeholder="http://panel.com:8080  veya hazır get.php linki" autocomplete="off">
                 </div>
                 <div class="input-group">
                     <label class="input-label">Kullanıcı Adı</label>
@@ -32524,10 +32524,19 @@ function playDirectChannel(channel) {
         // hiç değişmeden Xtream kaynaklarını da işleyebilir.
         function buildXtreamM3UUrl(host, username, password) {
             let h = (host || '').trim();
+            // Kullanıcı host alanına hazır bir get.php linkini (query string dahil)
+            // yapıştırmış olabilir — bu durumda olduğu gibi kullan, tekrar ekleme yapma.
+            if (/get\.php\?/i.test(h)) {
+                if (!/^https?:\/\//i.test(h)) h = 'http://' + h;
+                return h;
+            }
             if (!/^https?:\/\//i.test(h)) h = 'http://' + h;
             h = h.replace(/\/+$/, '');
             const u = encodeURIComponent((username || '').trim());
             const p = encodeURIComponent((password || '').trim());
+            // type=m3u_plus&output=ts: EPG/kategori bilgisiyle en uyumlu Xtream çıktısı.
+            // Bazı paneller sade type=m3u da destekler; sorun çıkarsa manuel host
+            // alanına tam get.php linkini (type=m3u dahil) yapıştırmak yeterli.
             return h + '/get.php?username=' + u + '&password=' + p + '&type=m3u_plus&output=ts';
         }
 
@@ -32685,10 +32694,28 @@ function playDirectChannel(channel) {
                 const xHost = document.getElementById('xtreamHostInput').value.trim();
                 const xUser = document.getElementById('xtreamUserInput').value.trim();
                 const xPass = document.getElementById('xtreamPassInput').value;
-                if (!name || !xHost || !xUser || !xPass) { showToast("Panel adresi, kullanıcı adı ve şifre gereklidir"); return; }
+                const isReadyLink = /get\.php\?/i.test(xHost);
+
+                if (!name || !xHost || (!isReadyLink && (!xUser || !xPass))) {
+                    showToast("Panel adresi, kullanıcı adı ve şifre gereklidir");
+                    return;
+                }
                 url = buildXtreamM3UUrl(xHost, xUser, xPass);
+
+                if (isReadyLink) {
+                    // Hazır link yapıştırıldı — kullanıcı/şifreyi linkten çıkar (düzenleme
+                    // ekranında geri doldurabilmek için), yoksa boş bırak.
+                    let parsedUser = xUser, parsedPass = xPass;
+                    try {
+                        const qs = new URL(url).searchParams;
+                        parsedUser = qs.get('username') || xUser;
+                        parsedPass = qs.get('password') || xPass;
+                    } catch(e) {}
+                    xtreamMeta = { host: xHost, username: parsedUser, password: parsedPass, encryptedPassword: parsedPass ? btoa(parsedPass) : null };
+                } else {
+                    xtreamMeta = { host: xHost, username: xUser, password: xPass, encryptedPassword: xPass ? btoa(xPass) : null };
+                }
                 password = null;
-                xtreamMeta = { host: xHost, username: xUser, password: xPass, encryptedPassword: xPass ? btoa(xPass) : null };
             } else {
                 url = document.getElementById('m3uUrlInput').value.trim();
                 password = document.getElementById('m3uPasswordInput').value;

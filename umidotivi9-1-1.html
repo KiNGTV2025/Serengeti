@@ -78855,3 +78855,138 @@ body.tvbox-mode.fast-mode .neon-logo-img {
 })();
 </script>
 
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MANUEL DOKUNMATİK SCROLL — channelsViewport (grid) parmakla
+   kaydırılamıyor sorunu için son çare / kesin çözüm.
+
+   Neden gerekli: touch-action, overflow-y, -webkit-overflow-scrolling
+   gibi CSS düzeltmeleri zaten mevcut (bkz. dosyanın üst kısımları),
+   ancak tarayıcının/WebView'in native dokunmatik kaydırma jestini
+   bir yerlerde (muhtemelen native WebView katmanı ya da başka bir
+   olay dinleyicisi) engellemesi ihtimaline karşı, kaydırmayı native
+   davranışa bel bağlamadan DOĞRUDAN JS ile (parmağın deltaY'sine göre
+   scrollTop atayarak) gerçekleştiriyoruz. Bu şekilde native scroll
+   çalışsa da çalışmasa da kaydırma HER ZAMAN çalışır.
+
+   Kart tıklamaları bozulmasın diye: parmak DRAG_THRESHOLD px'ten az
+   hareket ederse bu bir "tap" sayılır ve hiçbir şeye müdahale
+   edilmez (preventDefault çağrılmaz) — kartın kendi click/touchend
+   mantığı normal şekilde çalışmaya devam eder. Yatay hareket dikey
+   hareketten baskınsa (örn. VOD hero slider'da yatay kaydırma) yine
+   müdahale edilmez, olay elemente normal şekilde ulaşır.
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+
+    function initManualTouchScroll() {
+        var vp = document.getElementById('channelsViewport');
+        if (!vp || vp._umtManualScrollAttached) return;
+        vp._umtManualScrollAttached = true;
+
+        var DRAG_THRESHOLD = 6;    // px — bu kadar hareketten önce tap sayılır
+        var RUBBER = 0.3;          // uç noktalarda lastik-bandı direnci
+
+        var startY = 0, startX = 0, startScrollTop = 0;
+        var lastY = 0, lastT = 0, velocity = 0;
+        var dragging = false, isVerticalDrag = false, decided = false;
+        var momentumRAF = null;
+
+        function stopMomentum() {
+            if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = null; }
+        }
+
+        function runMomentum() {
+            velocity *= 0.94;
+            if (Math.abs(velocity) < 0.05) { momentumRAF = null; return; }
+            var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
+            var next = vp.scrollTop - velocity;
+            if (next <= 0) { vp.scrollTop = 0; momentumRAF = null; return; }
+            if (next >= max) { vp.scrollTop = max; momentumRAF = null; return; }
+            vp.scrollTop = next;
+            momentumRAF = requestAnimationFrame(runMomentum);
+        }
+
+        vp.addEventListener('touchstart', function (e) {
+            if (e.touches.length !== 1) return;
+            stopMomentum();
+            var t = e.touches[0];
+            startY = lastY = t.clientY;
+            startX = t.clientX;
+            startScrollTop = vp.scrollTop;
+            lastT = Date.now();
+            velocity = 0;
+            dragging = true;
+            isVerticalDrag = false;
+            decided = false;
+        }, { passive: true, capture: true });
+
+        vp.addEventListener('touchmove', function (e) {
+            if (!dragging || e.touches.length !== 1) return;
+            var t = e.touches[0];
+            var dy = t.clientY - startY;
+            var dx = t.clientX - startX;
+
+            if (!decided) {
+                if (Math.abs(dy) < DRAG_THRESHOLD && Math.abs(dx) < DRAG_THRESHOLD) return;
+                decided = true;
+                if (Math.abs(dy) <= Math.abs(dx)) {
+                    // Yatay hareket baskın — bu bize ait değil (örn. hero slider).
+                    // Hiçbir şeye dokunma, olay normal şekilde ilerlesin.
+                    dragging = false;
+                    return;
+                }
+                isVerticalDrag = true;
+                // Kart click'lerinin tetiklenmesini engelle — mevcut uzun-basma
+                // mekanizmasıyla aynı bayrağı kullanıyoruz.
+                if (window.state && window.state.remote) window.state.remote.preventClick = true;
+            }
+
+            if (!isVerticalDrag) return;
+
+            var now = Date.now();
+            var dt = now - lastT;
+            if (dt > 0) velocity = (t.clientY - lastY) / dt * 16.7;
+            lastY = t.clientY;
+            lastT = now;
+
+            var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
+            var next = startScrollTop - dy;
+            if (next < 0) next = next * RUBBER;
+            else if (next > max) next = max + (next - max) * RUBBER;
+            vp.scrollTop = next;
+
+            if (e.cancelable) e.preventDefault();
+        }, { passive: false, capture: true });
+
+        function endDrag() {
+            if (isVerticalDrag) {
+                var max = Math.max(0, vp.scrollHeight - vp.clientHeight);
+                if (vp.scrollTop < 0) vp.scrollTop = 0;
+                else if (vp.scrollTop > max) vp.scrollTop = max;
+                else if (Math.abs(velocity) > 0.3) momentumRAF = requestAnimationFrame(runMomentum);
+                setTimeout(function () {
+                    if (window.state && window.state.remote) window.state.remote.preventClick = false;
+                }, 60);
+            }
+            dragging = false;
+            isVerticalDrag = false;
+            decided = false;
+        }
+
+        vp.addEventListener('touchend', endDrag, { passive: true, capture: true });
+        vp.addEventListener('touchcancel', endDrag, { passive: true, capture: true });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initManualTouchScroll);
+    } else {
+        initManualTouchScroll();
+    }
+    // Güvenlik ağı: element geç bağlanırsa / DOM geç kurulursa diye tekrar dene
+    setTimeout(initManualTouchScroll, 800);
+    setTimeout(initManualTouchScroll, 2000);
+    setTimeout(initManualTouchScroll, 5000);
+})();
+</script>

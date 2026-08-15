@@ -62812,6 +62812,65 @@ setInterval(function() {
     </div>
 </div>
 
+<div id="__umd_debug_panel" style="position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,0.92);color:#0f0;font-family:monospace;font-size:11px;padding:8px;max-height:38vh;overflow-y:auto;border-top:2px solid #0f0;white-space:pre-wrap;line-height:1.4;">
+    <div style="color:#ff0;font-weight:bold;">SCROLL DEBUG — parmağını kanal kartları üzerinde kaydır</div>
+    <div id="__umd_debug_log"></div>
+    <button onclick="document.getElementById('__umd_debug_panel').style.display='none'" style="position:absolute;top:4px;right:4px;background:#900;color:#fff;border:none;padding:4px 8px;">Kapat</button>
+</div>
+<script>
+(function(){
+    var logEl = document.getElementById('__umd_debug_log');
+    var lines = [];
+    function log(msg) {
+        lines.push(msg);
+        if (lines.length > 40) lines.shift();
+        logEl.textContent = lines.join('\n');
+    }
+    function elInfo(el) {
+        if (!el) return 'null';
+        var cs = getComputedStyle(el);
+        return (el.id ? '#'+el.id : '') + (el.className && el.className.toString ? '.'+el.className.toString().replace(/\s+/g,'.').slice(0,40) : '') +
+               ' [touch-action:' + cs.touchAction + ' pointer-events:' + cs.pointerEvents + ']';
+    }
+    var vp = null;
+    function getVp() {
+        return document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+    }
+    var startY = 0, startScrollTop = 0;
+    document.addEventListener('touchstart', function(e) {
+        vp = getVp();
+        var t = e.touches[0];
+        startY = t ? t.clientY : 0;
+        startScrollTop = vp ? vp.scrollTop : -1;
+        var target = document.elementFromPoint(t.clientX, t.clientY);
+        log('[touchstart] target=' + elInfo(target) + ' defaultPrevented=' + e.defaultPrevented + ' vp.scrollTop=' + startScrollTop);
+    }, {capture:true, passive:true});
+
+    document.addEventListener('touchmove', function(e) {
+        var t = e.touches[0];
+        var curScrollTop = vp ? vp.scrollTop : -1;
+        log('[touchmove] dY=' + (t ? (startY - t.clientY) : '?') + ' defaultPrevented=' + e.defaultPrevented + ' vp.scrollTop=' + curScrollTop + ' cancelable=' + e.cancelable);
+    }, {capture:true, passive:true});
+
+    document.addEventListener('touchend', function(e) {
+        var endScrollTop = vp ? vp.scrollTop : -1;
+        log('[touchend] scrollTop ' + startScrollTop + ' -> ' + endScrollTop + (startScrollTop === endScrollTop ? '  ❌ SCROLL OLMADI' : '  ✅ SCROLL OLDU'));
+        log('---');
+    }, {capture:true, passive:true});
+
+    // Also catch preventDefault calls globally
+    var origPD = Event.prototype.preventDefault;
+    Event.prototype.preventDefault = function() {
+        if (this.type.indexOf('touch') === 0) {
+            log('  ⚠️ preventDefault() called on ' + this.type + ' by code');
+        }
+        return origPD.apply(this, arguments);
+    };
+
+    log('Debug panel hazır. vp bulundu mu: ' + (getVp() ? 'EVET' : 'HAYIR'));
+})();
+</script>
+
 </body>
 </html>
 

@@ -62812,68 +62812,36 @@ setInterval(function() {
     </div>
 </div>
 
-<div id="__umd_debug_panel" style="position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,0.92);color:#0f0;font-family:monospace;font-size:11px;padding:8px;max-height:38vh;overflow-y:auto;border-top:2px solid #0f0;white-space:pre-wrap;line-height:1.4;">
-    <div style="color:#ff0;font-weight:bold;">SCROLL DEBUG — parmağını kanal kartları üzerinde kaydır</div>
-    <div id="__umd_debug_log"></div>
-    <button onclick="document.getElementById('__umd_debug_panel').style.display='none'" style="position:absolute;top:4px;right:4px;background:#900;color:#fff;border:none;padding:4px 8px;">Kapat</button>
-</div>
 <script>
-(function(){
-    var logEl = document.getElementById('__umd_debug_log');
-    var lines = [];
-    function log(msg) {
-        lines.push(msg);
-        if (lines.length > 30) lines.shift();
-        logEl.textContent = lines.join('\n');
+// ── FIX: WebView'da flex:1 + overflow-y:auto kombinasyonu touch-scroll'u
+// tetiklemiyordu (bilinen Chromium WebView bug'ı: flex item içindeki
+// scroll container'da native touch scroll compositor'a gitmiyor).
+// Çözüm: viewport'a flex yerine piksel bazlı sabit height veriyoruz.
+(function() {
+    function fixViewportHeight() {
+        var vp = document.getElementById('channelsViewport');
+        var contentArea = document.querySelector('.content-area');
+        if (!vp || !contentArea) return;
+        var rect = contentArea.getBoundingClientRect();
+        // channelsViewport, content-area içindeki tek/ana child —
+        // content-area'nın gerçek yüksekliğini piksel olarak zorla.
+        vp.style.flex = 'none';
+        vp.style.height = rect.height + 'px';
+        vp.style.maxHeight = rect.height + 'px';
     }
-    function elInfo(el) {
-        if (!el) return 'null';
-        var cs = getComputedStyle(el);
-        return (el.id ? '#'+el.id : '') + (el.className && el.className.toString ? '.'+el.className.toString().replace(/\s+/g,'.').slice(0,30) : '') +
-               ' [ta:' + cs.touchAction + ' pe:' + cs.pointerEvents + ' ov-y:' + cs.overflowY + ']';
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixViewportHeight);
+    } else {
+        fixViewportHeight();
     }
-    function getVp() {
-        return document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
-    }
-    // Dump every scrollable ancestor's scrollHeight/clientHeight/scrollTop
-    function dumpAllScrollers() {
-        var vp = getVp();
-        var out = ['[SCROLLERS] body.st=' + document.body.scrollTop + ' html.st=' + document.documentElement.scrollTop];
-        var el = vp;
-        var depth = 0;
-        while (el && depth < 8) {
-            var cs = getComputedStyle(el);
-            out.push('  ' + (el.id||el.className||el.tagName).toString().slice(0,30) +
-                ' sh=' + el.scrollHeight + ' ch=' + el.clientHeight + ' st=' + el.scrollTop +
-                ' ov-y=' + cs.overflowY + ' pos=' + cs.position);
-            el = el.parentElement;
-            depth++;
-        }
-        log(out.join('\n'));
-    }
-    dumpAllScrollers();
-
-    var vp = null;
-    var startY = 0, startScrollTop = 0;
-    document.addEventListener('touchstart', function(e) {
-        vp = getVp();
-        var t = e.touches[0];
-        startY = t ? t.clientY : 0;
-        startScrollTop = vp ? vp.scrollTop : -1;
-        var target = document.elementFromPoint(t.clientX, t.clientY);
-        log('[touchstart] target=' + elInfo(target));
-        dumpAllScrollers();
-    }, {capture:true, passive:true});
-
-    document.addEventListener('touchend', function(e) {
-        var endScrollTop = vp ? vp.scrollTop : -1;
-        log('[touchend] vp.scrollTop ' + startScrollTop + ' -> ' + endScrollTop);
-        dumpAllScrollers();
-        log('body.st=' + document.body.scrollTop + ' html.st=' + document.documentElement.scrollTop + ' window.scrollY=' + window.scrollY);
-        log('---');
-    }, {capture:true, passive:true});
-
-    log('Debug panel hazır. vp: ' + (getVp() ? 'bulundu' : 'YOK'));
+    window.addEventListener('resize', fixViewportHeight);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(fixViewportHeight, 150);
+    });
+    // Header/kategori barı yüklendikçe boyu değişebilir — kısa aralıklarla tazele
+    setTimeout(fixViewportHeight, 300);
+    setTimeout(fixViewportHeight, 1000);
+    setTimeout(fixViewportHeight, 2500);
 })();
 </script>
 

@@ -859,7 +859,7 @@
     transform: none !important;
     will-change: auto !important;
     -webkit-tap-highlight-color: transparent !important;
-    touch-action: manipulation !important;
+    touch-action: pan-y !important; /* manipulation, grid içinde dikey scroll'u kilitliyordu */
 }
 .channel-card:hover {
     transform: none !important;
@@ -64120,8 +64120,14 @@ document.readyState === 'loading'
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     scroll-behavior: auto !important;
-    contain: layout style paint !important; /* scroll dışına paint yayılmasın */
+    contain: layout style !important; /* paint containment kaldırıldı — mobilde touch scroll'u bozuyordu */
     touch-action: pan-y !important;         /* dikey native scroll — jank yok */
+    overflow-y: scroll !important;
+}
+#channelsGrid,
+.channels-grid,
+.channel-card {
+    touch-action: pan-y !important; /* global manipulation kuralını ez, kart üstünde scroll kilitlenmesin */
 }
 
 /* ══════════════════════════════════════

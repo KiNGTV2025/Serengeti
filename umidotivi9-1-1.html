@@ -19924,6 +19924,147 @@ const HIGH_RES_DIRECT_DOMAINS = [
     'nimble',
 ];
 
+// ── VAVOO DIRECT RESOLVE (CloudStream eklentisindeki addonSig akışının JS'e çevirisi) ──
+// CloudStream (UmitmodProvider.kt) Vavoo linklerini şu şekilde çözer:
+//   1) vavoo.tv veya vypn.net'e bir "ping" POST edilir → addonSig (imza) alınır
+//   2) Bu imza ile vavoo.to/mediahubmx-resolve.json'a POST edilir → gerçek .m3u8 alınır
+// Worker'a (Cloudflare Worker proxy) bağımlı kalmadan bunu doğrudan tarayıcıdan
+// yapmayı deniyoruz. Vavoo'nun ping/resolve endpoint'leri normalde native
+// (OkHttp/CloudStream) istemciler için tasarlandığından CORS başlığı
+// dönmeyebilir — bu durumda fetch reddedilir ve biz de sessizce mevcut
+// Worker tabanlı akışa (VAVOO_WORKER_BASE) düşeriz. Yani bu katman saf bir
+// "önce dene, olmazsa eskisi gibi devam et" katmanıdır; hiçbir mevcut
+// davranışı bozmaz.
+window.VAVOO_DIRECT = (function () {
+    const PING_URLS = [
+        'https://www.vavoo.tv/api/app/ping',
+        'https://www.vypn.net/api/app/ping'
+    ];
+    const BASE_SITES = ['https://vavoo.to', 'https://kool.to'];
+    const LANGUAGE = 'de';
+    const REGION = 'DE';
+    const RESOLVE_UA = 'MediaHubMX/2';
+    const PING_UA = 'okhttp/4.11.0';
+
+    // vavoo.to/watch?live=... veya /play/{id} varyasyonlarını
+    // vavoo.to/vavoo-iptv/play/{id} biçimine normalize eder.
+    function normalizeVavooUrl(rawUrl) {
+        const m = rawUrl.match(/\/play\/([^/?#]+)/);
+        if (m) return 'https://vavoo.to/vavoo-iptv/play/' + m[1];
+        return rawUrl;
+    }
+
+    async function fetchAddonSig() {
+        const ts = Date.now();
+        const body = {
+            token: '',
+            reason: 'app-focus',
+            locale: LANGUAGE,
+            theme: 'dark',
+            metadata: {
+                device: { type: 'phone', uniqueId: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(ts) + Math.random() },
+                os: { name: 'android', version: '14', abis: ['arm64-v8a'], host: 'android' },
+                app: { platform: 'android' },
+                version: { package: 'net.vypn.app', binary: '1.4.1', js: '1.4.1' }
+            },
+            appFocusTime: 0,
+            playerActive: false,
+            playDuration: 0,
+            devMode: false,
+            hasAddon: true,
+            castConnected: false,
+            package: 'net.vypn.app',
+            version: '1.4.1',
+            process: 'app',
+            firstAppStart: ts - 86400000,
+            lastAppStart: ts,
+            ipLocation: null,
+            adblockEnabled: true,
+            migrationApplied: false,
+            migrationTargetInstalled: false,
+            proxy: { supported: ['ss'], engine: 'Mu', ssVersion: '2022', enabled: false, autoServer: true, id: '' },
+            iap: { supported: false, error: '' }
+        };
+
+        for (const pingUrl of PING_URLS) {
+            try {
+                const res = await fetch(pingUrl, {
+                    method: 'POST',
+                    headers: {
+                        'User-Agent': PING_UA,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) continue;
+                const parsed = await res.json();
+                const sig = parsed && (parsed.addonSig || parsed.mhub);
+                if (sig) return sig;
+            } catch (e) {
+                // sıradaki ping URL'ini dene (CORS engeli de burada yakalanır)
+            }
+        }
+        return null;
+    }
+
+    // Ham vavoo linkini addonSig ile çözüp gerçek .m3u8 linkine çevirir.
+    // Başarısız olursa null döner (çağıran taraf Worker'a düşer).
+    async function resolveDirect(rawUrl) {
+        const normalizedUrl = normalizeVavooUrl(rawUrl);
+        let sig = await fetchAddonSig();
+
+        for (const baseSite of BASE_SITES) {
+            if (!sig) sig = await fetchAddonSig();
+            try {
+                const headers = {
+                    'Origin': 'https://vavoo.to',
+                    'Referer': 'https://vavoo.to/',
+                    'User-Agent': RESOLVE_UA,
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Accept-Language': LANGUAGE
+                };
+                if (sig) headers['mediahubmx-signature'] = sig;
+
+                const res = await fetch(baseSite + '/mediahubmx-resolve.json', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        language: LANGUAGE,
+                        region: REGION,
+                        url: normalizedUrl,
+                        clientVersion: '3.0.2'
+                    })
+                });
+                if (!res.ok) continue;
+
+                const text = await res.text();
+                let items;
+                try {
+                    const parsed = JSON.parse(text);
+                    items = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    items = [];
+                }
+                const streamUrl = (items.find(it => it && typeof it.url === 'string' && it.url.startsWith('https://')) || {}).url
+                    || (items[0] && items[0].url);
+
+                if (streamUrl && streamUrl.includes('.m3u8')) {
+                    return streamUrl;
+                }
+                // Geçersiz/boş yanıt → imzayı tazele ve sıradaki base site'ı dene
+                sig = await fetchAddonSig();
+            } catch (e) {
+                // sıradaki base site'ı dene (CORS engeli dahil)
+            }
+        }
+        return null;
+    }
+
+    return { resolveDirect, normalizeVavooUrl };
+})();
+
 // App Creator 24 WebView'da Web Worker desteği yok → enableWorker: false
 const _isApp24WebView = (navigator.userAgent || '').toLowerCase().includes('okhttp');
 // App24 okhttp UA → sunucu/CDN reddedebilir → navigator.userAgent'ı spoof et
@@ -44025,7 +44166,18 @@ function resumeChannel(startTime) {
                         // taze bir /play veya /resolve isteği tetiklenir.
                         var _sep = _vavooFreshUrl.includes('?') ? '&' : '?';
                         var _freshCallUrl = _vavooFreshUrl + _sep + '_rt=' + Date.now();
-                        startHls(_freshCallUrl);
+                        // isVavooRaw ise önce CloudStream tarzı doğrudan addonSig
+                        // resolve'unu tekrar dene (taze imza/token) — CORS/hata olursa
+                        // aynı cache-busting'li Worker URL'sine düş.
+                        if (typeof isVavooRaw !== 'undefined' && isVavooRaw &&
+                            window.VAVOO_DIRECT && typeof window.VAVOO_DIRECT.resolveDirect === 'function' &&
+                            typeof rawUrl !== 'undefined') {
+                            window.VAVOO_DIRECT.resolveDirect(rawUrl).then(direct => {
+                                startHls(direct || _freshCallUrl);
+                            }).catch(() => startHls(_freshCallUrl));
+                        } else {
+                            startHls(_freshCallUrl);
+                        }
                         setTimeout(() => { window._recoveryLock = false; }, 1200);
                     } catch(e) { window._recoveryLock = false; }
                     return;
@@ -44869,10 +45021,32 @@ function resumeChannel(startTime) {
             startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
         } else
         if (isVavooRaw) {
-            // vavoo.to/oha.to/huhu.to ham URL → Vavoo Worker /play/<id> → direkt HLS
-            // UserAgent beklenmez, proxy yok, OkHttp kontrolü yok — Worker halleder
+            // vavoo.to/oha.to/huhu.to ham URL → ÖNCE CloudStream eklentisindeki gibi
+            // doğrudan tarayıcıdan addonSig ile resolve etmeyi dene (Worker'sız).
+            // CORS engellenirse (Vavoo endpoint'leri native istemci için tasarlı
+            // olduğundan bu olası) sessizce Worker akışına (effectiveUrl) düşülür —
+            // görünür davranış hiçbir zaman bozulmaz.
             if (window._koolReconnectTimer) { clearInterval(window._koolReconnectTimer); window._koolReconnectTimer = null; }
-            startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
+
+            // Bu kanal için hâlâ geçerli bir oynatma isteği mi kontrol etmekte kullanılır —
+            // resolve süerken kullanıcı başka kanala geçerse eski sonucu uygulamayız.
+            const _vavooPlayToken = (window._vavooPlayToken = (window._vavooPlayToken || 0) + 1);
+
+            function _startVavoo(useDirect) {
+                if (useDirect && window.VAVOO_DIRECT && typeof window.VAVOO_DIRECT.resolveDirect === 'function') {
+                    window.VAVOO_DIRECT.resolveDirect(rawUrl).then(direct => {
+                        if (_vavooPlayToken !== window._vavooPlayToken) return; // kanal değişti, iptal
+                        startHls(direct || effectiveUrl); // direkt çözüldüyse onu, olmazsa Worker'a düş
+                    }).catch(() => {
+                        if (_vavooPlayToken !== window._vavooPlayToken) return;
+                        startHls(effectiveUrl);
+                    });
+                } else {
+                    startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
+                }
+            }
+            _startVavoo(true);
+
             // Stall dedektörü — SADECE merkezi onStall/recovery sistemi (play/seek/kalite düşürme)
             // 12 kademeyi tüketip başarısız olursa devreye girer. Worker artık segment-level
             // otomatik yeniden-resolve yaptığı için çoğu donma burada bile hiç tetiklenmez.
@@ -44887,7 +45061,8 @@ function resumeChannel(startTime) {
                     if (_vavooStallCount >= 6) {
                         _vavooStallCount = 0;
                         showToast('Vavoo yayını yenileniyor...');
-                        startHls(effectiveUrl);
+                        // Yeniden çözümlerken de önce direkt akışı dene, taze token/imza alsın
+                        _startVavoo(true);
                     }
                 } else {
                     _vavooStallCount = 0;

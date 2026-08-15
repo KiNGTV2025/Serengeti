@@ -1,4 +1,4 @@
-﻿ <!DOCTYPE html>
+﻿  <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta name="referrer" content="no-referrer">
@@ -859,7 +859,7 @@
     transform: none !important;
     will-change: auto !important;
     -webkit-tap-highlight-color: transparent !important;
-    touch-action: pan-y !important; /* manipulation, grid içinde dikey scroll'u kilitliyordu */
+    touch-action: manipulation !important;
 }
 .channel-card:hover {
     transform: none !important;
@@ -2933,10 +2933,10 @@ body {
         }
 
         .header-btn img.svg-icon {
-            width: 24px;
-            height: 24px;
-            max-width: 24px;
-            max-height: 24px;
+            width: 18px;
+            height: 18px;
+            max-width: 18px;
+            max-height: 18px;
             object-fit: contain;
             display: block;
         }
@@ -3062,7 +3062,6 @@ body {
          
         .content-area { 
             flex: 1; 
-            min-height: 0 !important; /* flex zincirinde taşma engelini kaldır */
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
@@ -3070,7 +3069,6 @@ body {
         
         .channels-viewport { 
             flex: 1; 
-            min-height: 0 !important; /* flex item taşma engelliyordu, scroll hiç tetiklenmiyordu */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 16px 12px 12px 12px;
@@ -16682,59 +16680,32 @@ body.wp-panel-open .app-shell { margin-right: 320px; transition: margin-right 0.
     <div class="modal-bg" id="addM3UModal" onclick="if(event.target.id==='addM3UModal') closeAddM3UModal()">
         <div class="modal-content">
             <div class="m3u-modal-header">
-                <h3 class="m3u-modal-title" id="m3uModalTitle">Liste Ekle</h3>
+                <h3 class="m3u-modal-title" id="m3uModalTitle">M3U Listesi Ekle</h3>
                 <button class="icon-btn" onclick="closeAddM3UModal()" style="width:32px; height:32px;">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-
-            <div class="input-group" id="sourceTypeGroup">
-                <label class="input-label">Kaynak Türü</label>
-                <div class="source-type-toggle" id="sourceTypeToggle" style="display:flex; gap:8px;">
-                    <button type="button" class="source-type-btn active" id="btnSourceTypeM3U" onclick="setM3UModalSourceType('m3u')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #444; background:#2a2a2a; color:#fff; cursor:pointer;">M3U URL</button>
-                    <button type="button" class="source-type-btn" id="btnSourceTypeXtream" onclick="setM3UModalSourceType('xtream')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #444; background:#1a1a1a; color:#aaa; cursor:pointer;">Xtream Codes</button>
-                </div>
-            </div>
-
+            
             <div class="input-group">
                 <label class="input-label">Liste Adı</label>
                 <input type="text" id="m3uNameInput" class="password-input" placeholder="Örn: Premium Listem" autocomplete="off">
             </div>
-
-            <!-- M3U URL modu -->
-            <div id="m3uUrlFields">
-                <div class="input-group">
-                    <label class="input-label">M3U URL'si</label>
-                    <input type="text" id="m3uUrlInput" class="password-input" placeholder="https://example.com/list.m3u" autocomplete="off">
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Şifre (isteğe bağlı)</label>
-                    <input type="password" id="m3uPasswordInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
-                </div>
+            
+            <div class="input-group">
+                <label class="input-label">M3U URL'si</label>
+                <input type="text" id="m3uUrlInput" class="password-input" placeholder="https://example.com/list.m3u" autocomplete="off">
             </div>
-
-            <!-- Xtream Codes modu -->
-            <div id="xtreamFields" style="display:none;">
-                <div class="input-group">
-                    <label class="input-label">Panel Adresi (host)</label>
-                    <input type="text" id="xtreamHostInput" class="password-input" placeholder="http://panel.com:8080  veya hazır get.php linki" autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Kullanıcı Adı</label>
-                    <input type="text" id="xtreamUserInput" class="password-input" placeholder="kullanici_adi" autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Şifre</label>
-                    <input type="password" id="xtreamPassInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
-                </div>
+            
+            <div class="input-group">
+                <label class="input-label">Şifre (isteğe bağlı)</label>
+                <input type="password" id="m3uPasswordInput" class="password-input" placeholder="Şifre girin..." autocomplete="new-password" onclick="this.focus();" ontouchstart="this.focus();">
             </div>
-
+            
             <div class="remember-password">
                 <input type="checkbox" id="rememberM3UPassword">
                 <label for="rememberM3UPassword" style="font-size:14px;">Şifreyi hatırla</label>
             </div>
-
+            
             <div class="modal-btns" style="margin-top: 20px; justify-content: space-between;">
                  <button class="continue-modal-btn delete" id="btnDeleteM3U" onclick="deleteM3UList()" style="display:none;">Sil</button>
                  <div style="display:flex; gap:10px; margin-left:auto;">
@@ -19019,27 +18990,9 @@ UmitSecurityManager.init({
     },
 });
 
-// ── Admin muafiyeti: bu Telegram ID(ler) için VPN/proxy tespiti ve
-// cihaz-sınırı uyarıları frontend tarafında da devre dışı bırakılır.
-// (Cihaz sınırı asıl olarak Worker'da kontrol edilir; bu sadece istemci
-// tarafındaki VPN izleme/güvenlik akışını admin için susturur.)
-function isAdminTelegramId() {
-    try {
-        var ADMIN_IDS = ['965297115'];
-        var raw = localStorage.getItem('umittv_auth');
-        if (!raw) return false;
-        var auth = JSON.parse(raw);
-        return !!(auth && auth.telegram_id && ADMIN_IDS.indexOf(String(auth.telegram_id)) !== -1);
-    } catch(e) { return false; }
-}
-window.isAdminTelegramId = isAdminTelegramId;
-
 // ── Login sonrası periyodik izleme + parmak izi doğrulama ────────────────
 document.addEventListener('umittv_login_ok', function _secWatch() {
     document.removeEventListener('umittv_login_ok', _secWatch);
-
-    // Admin hesabı: VPN/güvenlik izlemeyi hiç başlatma
-    if (isAdminTelegramId()) return;
 
     // Parmak izini kaydet (ilk login)
     UmitSecurityManager.getFingerprint().then(fp => {
@@ -19189,9 +19142,8 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
         _vpnWatchTimer = setInterval(_tick, 5000);
     }
 
-    // Login başarılı olunca izlemeyi başlat (admin hariç)
+    // Login başarılı olunca izlemeyi başlat
     document.addEventListener('umittv_login_ok', function() {
-        if (window.isAdminTelegramId && window.isAdminTelegramId()) return;
         setTimeout(_startVpnWatch, 2000);
     });
 
@@ -32520,49 +32472,6 @@ function playDirectChannel(channel) {
             playKeySound('back');
         }
 
-        // ── Xtream Codes desteği ──
-        // Xtream panel bilgilerini (host/kullanıcı/şifre) standart Xtream "get.php"
-        // M3U endpoint'ine çevirir. Böylece mevcut M3U parse/cache/player pipeline'ı
-        // hiç değişmeden Xtream kaynaklarını da işleyebilir.
-        function buildXtreamM3UUrl(host, username, password) {
-            let h = (host || '').trim();
-            // Kullanıcı host alanına hazır bir get.php linkini (query string dahil)
-            // yapıştırmış olabilir — bu durumda olduğu gibi kullan, tekrar ekleme yapma.
-            if (/get\.php\?/i.test(h)) {
-                if (!/^https?:\/\//i.test(h)) h = 'http://' + h;
-                return h;
-            }
-            if (!/^https?:\/\//i.test(h)) h = 'http://' + h;
-            h = h.replace(/\/+$/, '');
-            const u = encodeURIComponent((username || '').trim());
-            const p = encodeURIComponent((password || '').trim());
-            // type=m3u_plus&output=ts: EPG/kategori bilgisiyle en uyumlu Xtream çıktısı.
-            // Bazı paneller sade type=m3u da destekler; sorun çıkarsa manuel host
-            // alanına tam get.php linkini (type=m3u dahil) yapıştırmak yeterli.
-            return h + '/get.php?username=' + u + '&password=' + p + '&type=m3u_plus&output=ts';
-        }
-
-        function setM3UModalSourceType(type) {
-            state._m3uModalSourceType = type;
-            const isXtream = (type === 'xtream');
-            var _m3uFields = document.getElementById('m3uUrlFields');
-            var _xtFields = document.getElementById('xtreamFields');
-            if (_m3uFields) _m3uFields.style.display = isXtream ? 'none' : '';
-            if (_xtFields) _xtFields.style.display = isXtream ? '' : 'none';
-            var _btnM3U = document.getElementById('btnSourceTypeM3U');
-            var _btnXt = document.getElementById('btnSourceTypeXtream');
-            if (_btnM3U) {
-                _btnM3U.classList.toggle('active', !isXtream);
-                _btnM3U.style.background = isXtream ? '#1a1a1a' : '#2a2a2a';
-                _btnM3U.style.color = isXtream ? '#aaa' : '#fff';
-            }
-            if (_btnXt) {
-                _btnXt.classList.toggle('active', isXtream);
-                _btnXt.style.background = isXtream ? '#2a2a2a' : '#1a1a1a';
-                _btnXt.style.color = isXtream ? '#fff' : '#aaa';
-            }
-        }
-
         function openAddM3UModal(isEdit = false, index = null) {
             if (isEdit && index !== null) {
                 const m3u = state.m3uList[index];
@@ -32582,7 +32491,7 @@ function playDirectChannel(channel) {
 
             if (isEdit && index !== null) {
                 const m3u = state.m3uList[index];
-                document.getElementById('m3uModalTitle').innerText = "Liste Düzenle";
+                document.getElementById('m3uModalTitle').innerText = "M3U Listesi Düzenle";
                 document.getElementById('m3uNameInput').value = m3u.name;
                 document.getElementById('m3uUrlInput').value = m3u.url;
                 if (m3u.password && state.passwordManager.rememberedPasswords[m3u.url]) {
@@ -32592,30 +32501,12 @@ function playDirectChannel(channel) {
                 }
                 document.getElementById('rememberM3UPassword').checked = m3u.rememberPassword || false;
                 var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='block';
-
-                // Xtream kaynağından türetilmiş bir liste mi? (xtream meta bilgisi kaydedilmişse
-                // orijinal host/kullanıcı/şifreyi geri doldur, aksi halde ham M3U URL göster)
-                if (m3u.xtream && m3u.xtream.host) {
-                    setM3UModalSourceType('xtream');
-                    document.getElementById('xtreamHostInput').value = m3u.xtream.host || '';
-                    document.getElementById('xtreamUserInput').value = m3u.xtream.username || '';
-                    document.getElementById('xtreamPassInput').value = m3u.xtream.password || '';
-                } else {
-                    setM3UModalSourceType('m3u');
-                    document.getElementById('xtreamHostInput').value = '';
-                    document.getElementById('xtreamUserInput').value = '';
-                    document.getElementById('xtreamPassInput').value = '';
-                }
             } else {
-                document.getElementById('m3uModalTitle').innerText = "Liste Ekle";
+                document.getElementById('m3uModalTitle').innerText = "M3U Listesi Ekle";
                 document.getElementById('m3uNameInput').value = '';
                 document.getElementById('m3uUrlInput').value = '';
                 document.getElementById('m3uPasswordInput').value = '';
-                document.getElementById('xtreamHostInput').value = '';
-                document.getElementById('xtreamUserInput').value = '';
-                document.getElementById('xtreamPassInput').value = '';
                 document.getElementById('rememberM3UPassword').checked = false;
-                setM3UModalSourceType('m3u');
                 var _bdm=document.getElementById('btnDeleteM3U'); if(_bdm) _bdm.style.display='none';
             }
             
@@ -32688,40 +32579,9 @@ function playDirectChannel(channel) {
         }
 
         async function saveM3UList() {
-            const isXtreamMode = (state._m3uModalSourceType === 'xtream');
             const name = document.getElementById('m3uNameInput').value.trim();
-
-            let url, password, xtreamMeta = null;
-            if (isXtreamMode) {
-                const xHost = document.getElementById('xtreamHostInput').value.trim();
-                const xUser = document.getElementById('xtreamUserInput').value.trim();
-                const xPass = document.getElementById('xtreamPassInput').value;
-                const isReadyLink = /get\.php\?/i.test(xHost);
-
-                if (!name || !xHost || (!isReadyLink && (!xUser || !xPass))) {
-                    showToast("Panel adresi, kullanıcı adı ve şifre gereklidir");
-                    return;
-                }
-                url = buildXtreamM3UUrl(xHost, xUser, xPass);
-
-                if (isReadyLink) {
-                    // Hazır link yapıştırıldı — kullanıcı/şifreyi linkten çıkar (düzenleme
-                    // ekranında geri doldurabilmek için), yoksa boş bırak.
-                    let parsedUser = xUser, parsedPass = xPass;
-                    try {
-                        const qs = new URL(url).searchParams;
-                        parsedUser = qs.get('username') || xUser;
-                        parsedPass = qs.get('password') || xPass;
-                    } catch(e) {}
-                    xtreamMeta = { host: xHost, username: parsedUser, password: parsedPass, encryptedPassword: parsedPass ? btoa(parsedPass) : null };
-                } else {
-                    xtreamMeta = { host: xHost, username: xUser, password: xPass, encryptedPassword: xPass ? btoa(xPass) : null };
-                }
-                password = null;
-            } else {
-                url = document.getElementById('m3uUrlInput').value.trim();
-                password = document.getElementById('m3uPasswordInput').value;
-            }
+            let url = document.getElementById('m3uUrlInput').value.trim();
+            const password = document.getElementById('m3uPasswordInput').value;
             const rememberPassword = document.getElementById('rememberM3UPassword').checked;
             
             if (!name || !url) { showToast("Liste adı ve URL gereklidir"); return; }
@@ -32733,8 +32593,7 @@ function playDirectChannel(channel) {
                     password: password || null,
                     encryptedPassword: password ? btoa(password) : null,
                     rememberPassword: rememberPassword,
-                    isLocal: false,
-                    xtream: xtreamMeta
+                    isLocal: false
                 };
                 
                 
@@ -41793,29 +41652,10 @@ function addContinueCardStyles() {
             return true;
         });
         
-        // FIX (KÖK NEDEN — "200. kanaldayken listeye dönünce 1. karta sıçrama"):
-        // Eskiden currentLoadedCards HER filterChannels() çağrısında (kategori/M3U
-        // gerçekten değişmese bile) koşulsuz 24'e resetleniyordu. filterChannels()
-        // yalnızca kullanıcı kategori değiştirdiğinde değil, arka plan senkronu,
-        // player kapanışı, EPG/izleyici-sayısı yenilemesi, cihaz eşitleme gibi
-        // sessiz olaylarda da tetikleniyor. Kullanıcı scroll ederek 200. karta
-        // ulaşmış (currentLoadedCards >= 200) olsa bile, bu sessiz tetiklemelerden
-        // biri devreye girince liste 24 karta düşürülüp grid'in TAMAMI (append
-        // değil, tam reset) yeniden kuruluyor, scrollTop 0'a dönüyor ve kullanıcı
-        // "listem başa sardı" hissi yaşıyordu. Aynı zamanda bu koşulsuz tam-reset
-        // dokunmatik scroll sırasında da (her arka plan tetiklemesinde grid.innerHTML
-        // yeniden yazıldığı için) ağır/takılmalı bir his yaratıyordu.
-        // ÇÖZÜM: kategori+M3U imzası GERÇEKTEN değiştiyse 24'e sıfırla; aynı
-        // filtrede kalınıyorsa halihazırda yüklenmiş kart sayısını KORU.
-        const _filterSig = state.activeCat + '|' + state.selectedM3U;
-        if (state._utvFilterSig !== _filterSig) {
-            state._utvFilterSig = _filterSig;
-            // PERF-FIX: 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
-            // 50 kart DOM'a aynı anda yazılırken TVBox donuyordu; 24 = 2 satır × 3 sütun yeterli.
-            state.currentLoadedCards = 24;
-        } else if (!state.currentLoadedCards) {
-            state.currentLoadedCards = 24;
-        }
+        // currentLoadedCards sıfırla (yeni kategori/filtre)
+        // PERF-FIX: 50→24 — renderChannels içindeki INITIAL_LOAD ile tutarlı.
+        // 50 kart DOM'a aynı anda yazılırken TVBox donuyordu; 24 = 2 satır × 3 sütun yeterli.
+        state.currentLoadedCards = 24;
         
         // 3. UI güncelle
         // FIX: state.filtered içindeki özel "Tümünü Temizle" kartı (isSpecial:true)
@@ -43443,7 +43283,7 @@ function resumeChannel(startTime) {
                     showToast('Proxy ile yeniden deneniyor...');
                     const _fb = ch.url;
                     const _fbLower = (_fb || '').toLowerCase();
-                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:(?:vavoo|kool|oha|huhu)-iptv\/)?play\/([a-zA-Z0-9]+)/) : null;
+                    const _vavooRawFbMatch = (_fb && !_fb.includes('workers.dev')) ? _fb.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/) : null;
                     const _isKool = _fb && !_vavooRawFbMatch && (_fb.includes('kool.to') || _fb.includes('oha.to') || _fb.includes('huhu.to'));
                     if (_vavooRawFbMatch) {
                         // vavoo.to ham URL → Vavoo Worker ile yeniden dene
@@ -44464,14 +44304,7 @@ function resumeChannel(startTime) {
         'workers.dev',                 // Tüm Cloudflare Workers → direkt aç
         // 'umitmod-farki.onrender.com' → kapalı
     ];
-
-    // ── Xtream Codes stream deseni (host:port/live|movie|series/user/pass/id[.ext]) ──
-    // Çoğu Xtream paneli http:// üzerinde çalışır ve CORS header dönmez —
-    // tarayıcıdan doğrudan bağlanınca mixed-content veya CORS hatasına düşer.
-    // Bu yüzden desen eşleşirse proxy zorunlu kılınır (DIRECT_DOMAINS'a girmez).
-    const isXtreamStreamUrl = /^https?:\/\/[^\/]+\/(live|movie|series)\/[^\/]+\/[^\/]+\/\d+/i.test(rawUrl);
-
-    const needsDirect = !isXtreamStreamUrl && DIRECT_DOMAINS.some(d => rawUrl.includes(d));
+    const needsDirect = DIRECT_DOMAINS.some(d => rawUrl.includes(d));
 
     // ── YENİ: Referer/Origin korumalı mı? ──
     const needsStreamProxy = !needsDirect &&
@@ -44530,7 +44363,7 @@ function resumeChannel(startTime) {
     // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
     // olduğu gibi (rawUrl) kullanılıyor.
     const _isAlreadyProxied = rawUrl.includes('workers.dev');
-    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:(?:vavoo|kool|oha|huhu)-iptv\/)?play\/([a-zA-Z0-9]+)/);
+    const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
     const isVavooRaw = !!_vavooRawMatch;
     if (isVavooRaw) {
         // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
@@ -45028,14 +44861,8 @@ function resumeChannel(startTime) {
             // CDN yayını (daioncdn, TRT vb.) → direkt, proxy olmadan
             startHls(rawUrl);
         } else {
-            // Normal HLS → Xtream stream'ler CORS/mixed-content sorununa çok
-            // takıldığı için direkt yerine baştan proxy ile aç; diğer
-            // bilinmeyen kaynaklar önce direkt, hata alırsa proxy'ye düşer.
-            if (isXtreamStreamUrl) {
-                startHls(STREAM_PROXY2 + encodeURIComponent(rawUrl));
-            } else {
-                startHls(rawUrl);
-            }
+            // Normal HLS → önce direkt, başarısız olursa eski proxy
+            startHls(rawUrl);
         }
     } else {
         // MP4 / MKV / diğer direkt medya
@@ -45943,23 +45770,6 @@ function closePlayer() {
     }
     updateRemoteFocus();
     // Scroll pozisyonunu restore et — player öncesi konuma dön
-    // FIX ("200. kanaldayken 1e dönüyor"): oynatılan kanal grid'de henüz DOM'a
-    // basılmamış kartlar arasındaysa (örn. currentLoadedCards=24 ama oynanan
-    // kanal 200. sıradaysa — arama/uzak kategoriden direkt açılmış olabilir),
-    // scrollTop set edilse bile grid.scrollHeight yetersiz kaldığından tarayıcı
-    // scrollTop'u pratikte 0'a yakın bir yere clamp'liyor ve kart bulunamadığı
-    // için scrollIntoView de çalışmıyordu — kullanıcıya "listem başa sardı"
-    // gibi görünüyordu. Önce hedef indexe kadar kart sayısını garanti altına al.
-    try {
-        if (typeof state.remote.index === 'number' && state.remote.index >= 0) {
-            var _needCount = state.remote.index + 8; // biraz tampon
-            if (_needCount > (state.currentLoadedCards || 24)) {
-                state.currentLoadedCards = Math.min(_needCount, (state.filtered || []).length);
-                window._utvAppendRender = false; // tam render — eksik aralığı da doldursun
-                if (typeof renderChannels === 'function') renderChannels();
-            }
-        }
-    } catch(e) {}
     setTimeout(function() {
         try {
             var _vp = document.getElementById('channelsViewport');
@@ -52255,7 +52065,7 @@ function tryIframeRedirect(action) {
   async function fetchWithTimeout(url, timeout = 8000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-
+    
     try {
         const response = await fetch(url, {
             signal: controller.signal,
@@ -52265,44 +52075,14 @@ function tryIframeRedirect(action) {
             }
         });
         clearTimeout(id);
-
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-
-        // DÜZELTME: önceden burada response.text() dönüyordu — bu, çağıran
-        // kodun (loadFreshChannelsQuick vb.) beklediği Response nesnesi
-        // (.ok / .body.getReader) değil, düz metindi. Sonuç: "resp && resp.ok"
-        // her zaman falsy oluyordu, stream-parse yolu HİÇ tetiklenmiyordu —
-        // 12bin+ kanallı Xtream listelerinde ilk batch'i erken ekrana basan
-        // parseM3UStream yolu sessizce devre dışı kalıp, arka plan yüklemesi
-        // (loadFreshChannelsInBackground) devreye girene kadar ekran boş
-        // kalıyordu. Artık Response nesnesinin kendisi döndürülüyor; çağıran
-        // kod .text() veya .body.getReader() ile ihtiyacına göre okuyor.
-        return response;
+        
+        return await response.text();
     } catch (error) {
         clearTimeout(id);
-
-        // ── Xtream get.php listesi mi? (host:port/get.php?username=...) ──
-        // Çoğu Xtream paneli http:// üzerinde çalışır ve CORS header dönmez;
-        // direkt fetch mixed-content/CORS ile timeout'a kadar bekleyip
-        // başarısız olabilir (90-120sn). Bu durumda anında proxy ile bir
-        // kez daha dene — 12bin+ kanallı listelerde "kanallar hazır"
-        // ekranına geçişi büyük ölçüde hızlandırır.
-        const isXtreamListUrl = /\/get\.php\?/i.test(url) && !url.includes('turk.sadecenjoy.workers.dev');
-        if (isXtreamListUrl && typeof STREAM_PROXY2 !== 'undefined') {
-            try {
-                const controller2 = new AbortController();
-                const id2 = setTimeout(() => controller2.abort(), timeout);
-                const proxied = await fetch(STREAM_PROXY2 + encodeURIComponent(url), {
-                    signal: controller2.signal,
-                    headers: { 'Accept': 'text/plain,*/*' }
-                });
-                clearTimeout(id2);
-                if (proxied.ok) return proxied;
-            } catch (e2) { /* proxy da başarısız — orijinal hatayı fırlat */ }
-        }
-
         if (error.name === 'AbortError') {
             throw new Error(`Timeout: ${url} yüklenemedi (${timeout}ms)`);
         }
@@ -60861,32 +60641,7 @@ text = text.replace(/\[web\]/gi, '<img loading="lazy" src="https://raw.githubuse
                     };
                     
                     btn.addEventListener('click', (e) => selectCityAction(e, true));
-
-                    /* Dokunmatikte listeyi kaydırmak isteyen parmak, eskiden
-                       touchstart anında şehri seçip preventDefault çağırdığı
-                       için scroll hiç başlamıyordu. Artık touchstart'ta hiçbir
-                       şeye dokunmuyoruz (native scroll serbest); parmak
-                       DRAG_THRESHOLD'dan fazla hareket ederse bu bir kaydırma
-                       sayılır ve seçim yapılmaz, hareket etmezse (gerçek tap)
-                       touchend'de şehir seçilir. */
-                    (function () {
-                        var _tsY = 0, _tsX = 0, _dragged = false;
-                        var DRAG_THRESHOLD = 10;
-                        btn.addEventListener('touchstart', function (e) {
-                            var t = e.touches[0]; if (!t) return;
-                            _tsY = t.clientY; _tsX = t.clientX; _dragged = false;
-                        }, { passive: true });
-                        btn.addEventListener('touchmove', function (e) {
-                            var t = e.touches[0]; if (!t) return;
-                            if (Math.abs(t.clientY - _tsY) > DRAG_THRESHOLD || Math.abs(t.clientX - _tsX) > DRAG_THRESHOLD) {
-                                _dragged = true;
-                            }
-                        }, { passive: true });
-                        btn.addEventListener('touchend', function (e) {
-                            if (_dragged) return; // kaydırma yapıldı, seçim yok
-                            selectCityAction(e, true);
-                        }, { passive: false });
-                    })();
+                    btn.addEventListener('touchstart', (e) => selectCityAction(e, true), { passive: false });
                     
                     btn.addEventListener('keydown', (e) => {
                         if(e.key === 'Enter' || e.key === ' ') {
@@ -62873,39 +62628,6 @@ setInterval(function() {
     </div>
 </div>
 
-<script>
-// ── FIX: WebView'da flex:1 + overflow-y:auto kombinasyonu touch-scroll'u
-// tetiklemiyordu (bilinen Chromium WebView bug'ı: flex item içindeki
-// scroll container'da native touch scroll compositor'a gitmiyor).
-// Çözüm: viewport'a flex yerine piksel bazlı sabit height veriyoruz.
-(function() {
-    function fixViewportHeight() {
-        var vp = document.getElementById('channelsViewport');
-        var contentArea = document.querySelector('.content-area');
-        if (!vp || !contentArea) return;
-        var rect = contentArea.getBoundingClientRect();
-        // channelsViewport, content-area içindeki tek/ana child —
-        // content-area'nın gerçek yüksekliğini piksel olarak zorla.
-        vp.style.flex = 'none';
-        vp.style.height = rect.height + 'px';
-        vp.style.maxHeight = rect.height + 'px';
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fixViewportHeight);
-    } else {
-        fixViewportHeight();
-    }
-    window.addEventListener('resize', fixViewportHeight);
-    window.addEventListener('orientationchange', function() {
-        setTimeout(fixViewportHeight, 150);
-    });
-    // Header/kategori barı yüklendikçe boyu değişebilir — kısa aralıklarla tazele
-    setTimeout(fixViewportHeight, 300);
-    setTimeout(fixViewportHeight, 1000);
-    setTimeout(fixViewportHeight, 2500);
-})();
-</script>
-
 </body>
 </html>
 
@@ -64216,20 +63938,8 @@ document.readyState === 'loading'
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     scroll-behavior: auto !important;
-    contain: layout style !important; /* paint containment kaldırıldı — mobilde touch scroll'u bozuyordu */
+    contain: layout style paint !important; /* scroll dışına paint yayılmasın */
     touch-action: pan-y !important;         /* dikey native scroll — jank yok */
-    overflow-y: scroll !important;
-}
-#channelsGrid,
-.channels-grid,
-.channel-card,
-.channel-card * {
-    touch-action: pan-y !important; /* global manipulation kuralını ez — kart İÇİNDEKİ logo/başlık/img de dahil, yoksa parmak oraya değince scroll kilitleniyor */
-}
-/* Kart üstündeki gerçek tıklanabilir mini butonlar (favori vb.) yine de tap alsın */
-.channel-card .fav-toggle,
-.channel-card button {
-    touch-action: manipulation !important;
 }
 
 /* ══════════════════════════════════════
@@ -78642,9 +78352,7 @@ body.tvbox-mode.fast-mode .neon-logo-img {
                     _writeSigStore(sigStore);
                     if (!prevSig) return;
 
-                    var freshResp = await fetchWithTimeout(m3u.url, 45000).catch(function() { return null; });
-                    if (!freshResp) return;
-                    var freshTxt = await freshResp.text().catch(function() { return null; });
+                    var freshTxt = await fetchWithTimeout(m3u.url, 45000).catch(function() { return null; });
                     if (!freshTxt) return;
                     await _applyPillUpdate(idx, m3u, freshTxt);
 
@@ -78916,182 +78624,3 @@ body.tvbox-mode.fast-mode .neon-logo-img {
 })();
 </script>
 
-
-<script>
-/* ═══════════════════════════════════════════════════════════════
-   MANUEL DOKUNMATİK SCROLL — channelsViewport (grid) parmakla
-   kaydırılamıyor sorunu için son çare / kesin çözüm.
-
-   v2 — TRANSFORM tabanlı (GPU/compositor), reflow'suz:
-   İlk sürümde sürükleme sırasında doğrudan `scrollTop` yazılıyordu.
-   scrollTop'a her yazım, tarayıcıyı ana thread'de zorla yeniden
-   düzen hesaplamaya (synchronous reflow) sokar — bu da grid gibi
-   çok elemanlı bir alanda "ağır/kasıntılı" hissettiriyordu, çünkü
-   native touch-scroll compositor thread'de (ana JS thread'inden
-   bağımsız) çalışırken, scrollTop-tabanlı JS scroll her zaman ana
-   thread'e muhtaç kalıyor.
-
-   Çözüm: channelsViewport'un TÜM içeriğini tek bir "wrapper" div'e
-   sarıyoruz. Sürükleme sırasında gerçek scrollTop'u DEĞİŞTİRMEDEN,
-   sadece bu wrapper'a `transform: translate3d(...)` uyguluyoruz —
-   bu tamamen GPU'da/compositor'da işlenir, reflow tetiklemez, çok
-   daha akıcıdır. Parmak kalktığında (ya da momentum bitince) bu
-   görsel offset'i TEK SEFERDE gerçek scrollTop'a "commit" ediyoruz
-   ve transform'u sıfırlıyoruz — aynı görsel konuma denk geldiği
-   için gözle fark edilir bir sıçrama olmaz.
-
-   Kart tıklamaları bozulmasın diye: parmak DRAG_THRESHOLD px'ten az
-   hareket ederse "tap" sayılır, hiçbir şeye müdahale edilmez —
-   kartın kendi click/touchend mantığı normal çalışır. Yatay hareket
-   dikey hareketten baskınsa (örn. VOD hero slider) yine müdahale
-   edilmez, olay elemente normal şekilde ulaşır.
-   ═══════════════════════════════════════════════════════════════ */
-(function () {
-    'use strict';
-
-    function initManualTouchScroll() {
-        var vp = document.getElementById('channelsViewport');
-        if (!vp || vp._umtManualScrollAttached) return;
-        vp._umtManualScrollAttached = true;
-
-        // ── Tek seferlik: mevcut tüm çocukları transform-wrapper'a taşı ──
-        var wrapper = document.getElementById('__umtScrollInner');
-        if (!wrapper) {
-            wrapper = document.createElement('div');
-            wrapper.id = '__umtScrollInner';
-            wrapper.style.willChange = 'transform';
-            while (vp.firstChild) wrapper.appendChild(vp.firstChild);
-            vp.appendChild(wrapper);
-        }
-
-        var DRAG_THRESHOLD = 6;    // px — bu kadar hareketten önce tap sayılır
-        var RUBBER = 0.35;         // uç noktalarda lastik-bandı direnci
-
-        var startY = 0, startX = 0, baseScrollTop = 0;
-        var lastY = 0, lastT = 0, velocity = 0;
-        var dragging = false, isVerticalDrag = false, decided = false;
-        var maxScroll = 0;         // touchstart'ta bir kez ölçülür
-        var virtualTop = 0;        // sürükleme sırasındaki "sanal" scrollTop
-        var momentumRAF = null;
-
-        function setVisualOffset(offsetFromBase) {
-            wrapper.style.transform = offsetFromBase
-                ? ('translate3d(0,' + offsetFromBase + 'px,0)')
-                : '';
-        }
-
-        // Sanal konumu gerçek scrollTop'a yaz ve transform'u sıfırla —
-        // reflow'a burada, sürükleme BİTTİĞİNDE (tek seferlik) katlanıyoruz.
-        function commit(scrollTopValue) {
-            wrapper.style.transform = '';
-            vp.scrollTop = scrollTopValue;
-        }
-
-        function measureMax() {
-            return Math.max(0, vp.scrollHeight - vp.clientHeight);
-        }
-
-        function stopMomentum() {
-            if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = null; }
-        }
-
-        function runMomentum() {
-            velocity *= 0.94;
-            var next = virtualTop - velocity;
-            if (Math.abs(velocity) < 0.05) { commit(clampFinal(virtualTop)); momentumRAF = null; return; }
-            if (next <= 0) { commit(0); momentumRAF = null; return; }
-            if (next >= maxScroll) { commit(maxScroll); momentumRAF = null; return; }
-            virtualTop = next;
-            setVisualOffset(baseScrollTop - virtualTop);
-            momentumRAF = requestAnimationFrame(runMomentum);
-        }
-
-        function clampFinal(v) {
-            if (v < 0) return 0;
-            if (v > maxScroll) return maxScroll;
-            return v;
-        }
-
-        vp.addEventListener('touchstart', function (e) {
-            if (e.touches.length !== 1) return;
-            stopMomentum();
-            var t = e.touches[0];
-            startY = lastY = t.clientY;
-            startX = t.clientX;
-            baseScrollTop = vp.scrollTop;   // transform=0 anındaki gerçek konum
-            virtualTop = baseScrollTop;
-            maxScroll = measureMax();       // tek ölçüm — sürükleme boyunca yeniden okunmaz
-            lastT = Date.now();
-            velocity = 0;
-            dragging = true;
-            isVerticalDrag = false;
-            decided = false;
-        }, { passive: true, capture: true });
-
-        vp.addEventListener('touchmove', function (e) {
-            if (!dragging || e.touches.length !== 1) return;
-            var t = e.touches[0];
-            var dy = t.clientY - startY;
-            var dx = t.clientX - startX;
-
-            if (!decided) {
-                if (Math.abs(dy) < DRAG_THRESHOLD && Math.abs(dx) < DRAG_THRESHOLD) return;
-                decided = true;
-                if (Math.abs(dy) <= Math.abs(dx)) {
-                    // Yatay hareket baskın — bu bize ait değil (örn. hero slider).
-                    dragging = false;
-                    return;
-                }
-                isVerticalDrag = true;
-                if (window.state && window.state.remote) window.state.remote.preventClick = true;
-            }
-
-            if (!isVerticalDrag) return;
-
-            var now = Date.now();
-            var dt = now - lastT;
-            if (dt > 0) velocity = (t.clientY - lastY) / dt * 16.7;
-            lastY = t.clientY;
-            lastT = now;
-
-            var next = baseScrollTop - dy;
-            if (next < 0) next = next * RUBBER;
-            else if (next > maxScroll) next = maxScroll + (next - maxScroll) * RUBBER;
-            virtualTop = next;
-
-            // SADECE transform — scrollTop'a dokunmuyoruz, reflow yok.
-            setVisualOffset(baseScrollTop - virtualTop);
-
-            if (e.cancelable) e.preventDefault();
-        }, { passive: false, capture: true });
-
-        function endDrag() {
-            if (isVerticalDrag) {
-                if (virtualTop < 0) { commit(0); }
-                else if (virtualTop > maxScroll) { commit(maxScroll); }
-                else if (Math.abs(velocity) > 0.3) { momentumRAF = requestAnimationFrame(runMomentum); }
-                else { commit(virtualTop); }
-                setTimeout(function () {
-                    if (window.state && window.state.remote) window.state.remote.preventClick = false;
-                }, 60);
-            }
-            dragging = false;
-            isVerticalDrag = false;
-            decided = false;
-        }
-
-        vp.addEventListener('touchend', endDrag, { passive: true, capture: true });
-        vp.addEventListener('touchcancel', endDrag, { passive: true, capture: true });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initManualTouchScroll);
-    } else {
-        initManualTouchScroll();
-    }
-    // Güvenlik ağı: element geç bağlanırsa / DOM geç kurulursa diye tekrar dene
-    setTimeout(initManualTouchScroll, 800);
-    setTimeout(initManualTouchScroll, 2000);
-    setTimeout(initManualTouchScroll, 5000);
-})();
-</script>

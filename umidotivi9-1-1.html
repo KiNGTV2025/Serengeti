@@ -859,7 +859,7 @@
     transform: none !important;
     will-change: auto !important;
     -webkit-tap-highlight-color: transparent !important;
-    touch-action: pan-y !important; /* manipulation, grid içinde dikey scroll'u kilitliyordu */
+    touch-action: manipulation !important;
 }
 .channel-card:hover {
     transform: none !important;
@@ -3062,7 +3062,6 @@ body {
          
         .content-area { 
             flex: 1; 
-            min-height: 0 !important; /* flex zincirinde taşma engelini kaldır */
             display: flex; 
             flex-direction: column; 
             overflow: hidden; 
@@ -3070,7 +3069,6 @@ body {
         
         .channels-viewport { 
             flex: 1; 
-            min-height: 0 !important; /* flex item taşma engelliyordu, scroll hiç tetiklenmiyordu */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 16px 12px 12px 12px;
@@ -64122,14 +64120,8 @@ document.readyState === 'loading'
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     scroll-behavior: auto !important;
-    contain: layout style !important; /* paint containment kaldırıldı — mobilde touch scroll'u bozuyordu */
+    contain: layout style paint !important; /* scroll dışına paint yayılmasın */
     touch-action: pan-y !important;         /* dikey native scroll — jank yok */
-    overflow-y: scroll !important;
-}
-#channelsGrid,
-.channels-grid,
-.channel-card {
-    touch-action: pan-y !important; /* global manipulation kuralını ez, kart üstünde scroll kilitlenmesin */
 }
 
 /* ══════════════════════════════════════

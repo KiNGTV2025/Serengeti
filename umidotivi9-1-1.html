@@ -44694,15 +44694,17 @@ function resumeChannel(startTime) {
     const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev') || rawUrl.includes('kanks.umitm0d2.workers.dev');
 
     // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
-    const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
+    const VAVOO_WORKER_BASE = 'https://vavo1923.umitmodpremiumtr.workers.dev';
 
-    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
+    // vavoo.to/vavoo-iptv/play/<id> → Worker /stream?url=<encoded_vavoo_url> endpoint'ine yönlendir
+    // (UserAgent beklemez, proxy yok). Bu worker addonSig/mediahubmx-resolve akışını
+    // kendi içinde hallediyor ve doğrudan .m3u8 döndürüyor (bkz. VpnsizUmitmodProvider.kt).
     // BUG FIX: regex çapasız olduğu için "vavoo.to/vavoo-iptv/play/ID" deseni
     // BAŞKA bir worker'ın zaten ürettiği tam URL'nin (ör.
     // vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=https://vavoo.to/...)
     // İÇİNDE geçtiğinde de yanlışlıkla eşleşiyordu — gerçek (ve çalışan) URL
-    // atılıp sabit kodlu ESKİ bir worker'a (umittv.sadecenjoy.workers.dev/play/ID)
-    // yönlendiriliyordu, o worker'da bu endpoint çalışmadığı için yayın açılmıyordu.
+    // atılıp sabit kodlu ESKİ bir worker'a yönlendiriliyordu, o worker'da bu
+    // endpoint çalışmadığı için yayın açılmıyordu.
     // Artık URL zaten bir "workers.dev" proxy'sinden geliyorsa (yani zaten
     // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
     // olduğu gibi (rawUrl) kullanılıyor.
@@ -44710,8 +44712,9 @@ function resumeChannel(startTime) {
     const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
     const isVavooRaw = !!_vavooRawMatch;
     if (isVavooRaw) {
-        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
-        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
+        // /stream?url=<encoded_full_vavoo_url> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
+        const _vavooFullUrl = 'https://vavoo.to/vavoo-iptv/play/' + _vavooRawMatch[1];
+        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/stream?url=' + encodeURIComponent(_vavooFullUrl);
         Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
     }
 
@@ -45081,7 +45084,7 @@ function resumeChannel(startTime) {
                         startHls(direct);
                     }).catch(() => {});
                 } else {
-                    startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
+                    startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/stream?url=<encoded>'
                 }
             }
             _startVavoo(true);

@@ -18443,10 +18443,15 @@ const UmitSecurityManager = (function () {
         const ips = Array.from(_localIPs);
         if (window._umDebugLog) window._umDebugLog('KATMAN5 _isProxySuspect: _localIPs=[' + ips.join(', ') + ']');
         return ips.some(ip => {
-            if (ip.startsWith('10.')) {
-                var n = parseInt(ip.split('.')[1]);
-                return n >= 6 && n <= 9; // Tipik tun0/OpenVPN aralığı
-            }
+            // GENİŞLETME: 10.x.x.x aralığının TAMAMI şüpheli sayılır.
+            // Ev/mobil operatör Wi-Fi ağları neredeyse hiç 10.x kullanmaz
+            // (tipik olarak 192.168.x.x); 10.x kurumsal ağ VEYA VPN/DPI-bypass
+            // araçlarının (OpenVPN, WireGuard, ByeByeDPI/ÜmitDPI'nin sanal tun
+            // arayüzü — örn. 10.10.10.10) sanal arayüzlerinde görülür.
+            // Eskiden sadece 10.6-10.9 aralığı kontrol ediliyordu, bu da
+            // 10.10.10.10 gibi çok yaygın VPN client varsayılan IP'lerini
+            // kaçırıyordu.
+            if (ip.startsWith('10.')) return true;
             if (ip.startsWith('172.')) {
                 var n2 = parseInt(ip.split('.')[1]);
                 return n2 >= 16 && n2 <= 31;
@@ -19079,10 +19084,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
                 if (!e || !e.candidate || !e.candidate.candidate) return;
                 const m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g);
                 if (m) m.forEach(function(ip) {
-                    // VPN IP aralıkları
+                    // VPN IP aralıkları — 10.x.x.x TAMAMI şüpheli (bkz. VPN_RANGES'teki gerekçe)
                     var _ipParts = ip.split('.');
                     var _isVpn = false;
-                    if (ip.startsWith('10.')) { var _n = parseInt(_ipParts[1]); _isVpn = _n >= 6 && _n <= 9; }
+                    if (ip.startsWith('10.')) { _isVpn = true; }
                     else if (ip.startsWith('172.')) { var _n2 = parseInt(_ipParts[1]); _isVpn = _n2 >= 16 && _n2 <= 31; }
                     else if (ip.startsWith('100.')) { _isVpn = true; }
                     if (_isVpn) {
@@ -19123,10 +19128,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
 
     var VPN_RANGES = [
         function(ip) {
-            // Sadece tipik VPN subnet'leri — 10.0.x, 10.1.x, 10.2.x normal LAN
-            if (!ip.startsWith('10.')) return false;
-            var n = parseInt(ip.split('.')[1]);
-            return n >= 6 && n <= 9; // 10.6-10.9 tipik OpenVPN/tun aralığı
+            // GENİŞLETME: 10.x.x.x aralığının TAMAMI şüpheli (bkz. KATMAN5
+            // _isProxySuspect'teki aynı gerekçe — ByeByeDPI/ÜmitDPI gibi
+            // araçlar 10.10.10.10 gibi eski aralığın dışındaki IP'leri kullanır).
+            return ip.startsWith('10.');
         },
         function(ip) {
             if (!ip.startsWith('172.')) return false;

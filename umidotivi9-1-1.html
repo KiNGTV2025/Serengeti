@@ -14510,14 +14510,12 @@ function doLogin() {
                 } catch(e) {}
             }).catch(() => {});
         }
-        // ── Katman 8: AES-GCM ile şifreli kaydet ──
-        if (window.UmitSecurityManager && UmitSecurityManager.saveSecureAuth) {
-            UmitSecurityManager.saveSecureAuth(authData).catch(() => {
-                try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
-            });
-        } else {
-            try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
-        }
+        // NOT: umittv_auth artık düz JSON olarak yazılır. AES-GCM şifreli
+        // (saveSecureAuth) yazımı KALDIRILDI çünkü otomatik-login akışı
+        // localStorage'ı düz JSON.parse ile okuyor; şifreli blob orada
+        // parse hatası verip sessizce yutuluyor ve kullanıcı "tanınmıyor"
+        // gibi görünüp her çıkışta yeniden login isteniyordu.
+        try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
         
 
         _saveAuthToIDB(authData);

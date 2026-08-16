@@ -68188,6 +68188,13 @@ async function _checkIpApiIs(ip) {
         var tid  = setTimeout(function() { ctrl.abort(); }, 5000);
         var r    = await fetch('https://api.ipapi.is/?q=' + ip, { signal: ctrl.signal, cache: 'no-store' });
         clearTimeout(tid);
+        if (r.status === 429) {
+            // Rate limit — 5 dakika boyunca bu servisi tekrar deneme,
+            // aksi halde her tick'te 429 alıp kotayı sıfırlanmadan tüketiriz.
+            _ipapiCooldownUntil = Date.now() + 5 * 60 * 1000;
+            if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is HTTP 429 → 5dk soğumaya geçildi');
+            return false;
+        }
         if (!r.ok) { if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is HTTP ' + r.status); return false; }
         var d = await r.json();
         if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is: is_vpn=' + d.is_vpn + ' is_proxy=' + d.is_proxy + ' is_tor=' + d.is_tor + ' is_datacenter=' + d.is_datacenter);
@@ -68212,6 +68219,10 @@ function _triggerBlock(reason) {
     }
 }
 
+// ipapi.is rate-limit koruması: 429 alırsak bir süre bu kontrolü atla,
+// her seferinde tekrar 429 alıp kotayı tüketmeyelim.
+var _ipapiCooldownUntil = 0;
+
 async function _doCheck() {
     if (_blocked) return;
     var currentIP = await _getPublicIP();
@@ -68224,7 +68235,8 @@ async function _doCheck() {
         return;
     }
 
-    // ipapi.is ile VPN flag kontrolü
+    // ipapi.is ile VPN flag kontrolü — rate-limit'e takılmamak için seyrek çağır
+    if (Date.now() < _ipapiCooldownUntil) return;
     var isVpn = await _checkIpApiIs(currentIP);
     if (isVpn) {
         _triggerBlock('VPN/Proxy flag: ' + currentIP);
@@ -68234,11 +68246,15 @@ async function _doCheck() {
 function _startWatch() {
     if (_watching) return;
     _watching = true;
-    if (window._umDebugLog) window._umDebugLog('REALCHECK: izleme başladı (2sn periyot)');
+    if (window._umDebugLog) window._umDebugLog('REALCHECK: izleme başladı (30sn periyot)');
     // Hemen kontrol
     _doCheck();
-    // Her 8 saniyede tekrar
-    _watchTimer = setInterval(_doCheck, 2000);
+    // NOT: Eskiden 2sn'de bir çağrılıyordu — bu ipapi.is'i çok hızlı
+    // tüketip sürekli HTTP 429 (rate limit) almasına yol açıyordu; 429
+    // alındığında kontrol sessizce hiç yapılamıyordu (VPN açık olsa bile
+    // tespit edilemiyordu). 30sn'ye çıkarıldı, ayrıca 429 durumunda ek
+    // soğuma süresi uygulanıyor (bkz. _checkIpApiIs).
+    _watchTimer = setInterval(_doCheck, 30000);
 }
 
 // Login anında public IP'yi kaydet

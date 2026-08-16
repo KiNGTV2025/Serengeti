@@ -1916,15 +1916,21 @@ document.addEventListener('keydown', function(e) {
     //  - Dokunmatik yok + geniş ekran + sıfır touch point.
     //  - CSS matchMedia: coarse pointer + hover yok + geniş ekran (dokunmatik
     //    emülasyonu yapan TVBox kabuklarını da yakalar).
+    // NOT: "okhttp" tek başına artık TVBox sayılmıyor. AppCreator24 APK'si
+    // hem TV kutularında hem de normal telefonlarda okhttp UA'sı ile
+    // çalışıyor; bu yüzden okhttp varlığı tek başına telefonları da TVBox
+    // sanıp tuş sesi/titreşimi kalıcı olarak kapatıyordu (playKeySound
+    // no-op'a düşüyordu). Artık okhttp yalnızca geniş ekran / dokunmatik
+    // yokluğu gibi gerçek TV sinyalleriyle BİRLİKTE TVBox sayılıyor.
     var _uaLower = (navigator.userAgent || '').toLowerCase();
     var _uaRaw = navigator.userAgent || '';
-    var isTvBox = _uaLower.indexOf('okhttp') !== -1 ||
-                  (/Android/.test(_uaRaw) &&
+    var _isOkHttp = _uaLower.indexOf('okhttp') !== -1;
+    var isTvBox = (/Android/.test(_uaRaw) &&
                   (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast|GoogleTV|Tizen|WebOS|VIDAA|Hisense|MiBOX|MiTV|SHIELD|X96|H96|A95X|MXQ|TX3|T95|Q96|Matrix|Hiremco|BOX|OTT|IPTV/i.test(_uaRaw) ||
                    window.screen.width >= 1280 ||          /* Android TV dokunmatik olsa da büyük ekran */
                    !/Mobile/i.test(_uaRaw) ||               /* Android'de "Mobile" yoksa neredeyse hep TV/kutu/tablet */
                    /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_uaRaw))) ||
-                  (/okhttp/i.test(_uaRaw) && window.screen.width >= 960) ||
+                  (_isOkHttp && window.screen.width >= 960) ||
                   (!('ontouchstart' in window) && window.screen.width >= 1000 && (navigator.maxTouchPoints || 0) === 0) ||
                   (typeof matchMedia === 'function' && window.screen.width >= 960 &&
                       matchMedia('(hover: none) and (pointer: coarse)').matches &&

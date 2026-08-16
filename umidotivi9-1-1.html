@@ -1,4 +1,4 @@
-﻿ <!DOCTYPE html>
+﻿  <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta name="referrer" content="no-referrer">
@@ -42557,6 +42557,19 @@ function renderChannels() {
         `;
     }
     
+    // KÖK NEDEN (kaydırma "başa sarma"): arka plan senkronu/EPG/izleyici-sayısı
+    // yenilemesi gibi sessiz tetiklemeler _utvAppendRender bayrağını hiç set
+    // etmez (o bayrak sadece kullanıcı scroll/loadMore yaptığında set edilir).
+    // Bu yüzden içerik GERÇEKTE değişmemiş olsa bile (_renderSig aynı) tam
+    // reset (grid.innerHTML = html) yapılıyor ve scrollTop 0'a dönüyordu —
+    // kullanıcı 200. kartı izlerken listenin başına sıçrıyordu. Aynı zamanda
+    // tam reset döngüsel olarak sık tetiklenince kaydırma da "ağır" hissediliyordu.
+    // ÇÖZÜM: tam reset öncesi viewport'un scrollTop'unu sakla; imza (kategori+
+    // toplam kart sayısı) değişmediyse reset sonrası aynı pozisyona geri dön.
+    var _viewportForScroll = document.getElementById('channelsViewport') || document.querySelector('.channels-viewport');
+    var _prevScrollTop = (!_appendMode && _viewportForScroll && state._utvRenderSig === _renderSig)
+        ? _viewportForScroll.scrollTop : null;
+
     // DOM'a yaz: append modunda SONA ekle (eskiler dokunulmaz), aksi halde tam kurulum
     if (_appendMode) {
         const _oldLoadMore = document.getElementById('loadMoreBtn');
@@ -42564,6 +42577,9 @@ function renderChannels() {
         grid.insertAdjacentHTML('beforeend', html);
     } else {
         grid.innerHTML = html;
+        if (_prevScrollTop !== null && _viewportForScroll) {
+            _viewportForScroll.scrollTop = _prevScrollTop;
+        }
     }
     // ODAK-FIX: insertAdjacentHTML, innerHTML setter override'ını TETİKLEMEZ,
     // bu yüzden append modunda _tvBoxCardMap cache'i eskimiş (stale) kalıp

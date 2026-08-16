@@ -1916,15 +1916,21 @@ document.addEventListener('keydown', function(e) {
     //  - Dokunmatik yok + geniş ekran + sıfır touch point.
     //  - CSS matchMedia: coarse pointer + hover yok + geniş ekran (dokunmatik
     //    emülasyonu yapan TVBox kabuklarını da yakalar).
+    // NOT: "okhttp" tek başına artık TVBox sayılmıyor. AppCreator24 APK'si
+    // hem TV kutularında hem de normal telefonlarda okhttp UA'sı ile
+    // çalışıyor; bu yüzden okhttp varlığı tek başına telefonları da TVBox
+    // sanıp tuş sesi/titreşimi kalıcı olarak kapatıyordu (playKeySound
+    // no-op'a düşüyordu). Artık okhttp yalnızca geniş ekran / dokunmatik
+    // yokluğu gibi gerçek TV sinyalleriyle BİRLİKTE TVBox sayılıyor.
     var _uaLower = (navigator.userAgent || '').toLowerCase();
     var _uaRaw = navigator.userAgent || '';
-    var isTvBox = _uaLower.indexOf('okhttp') !== -1 ||
-                  (/Android/.test(_uaRaw) &&
+    var _isOkHttp = _uaLower.indexOf('okhttp') !== -1;
+    var isTvBox = (/Android/.test(_uaRaw) &&
                   (/TV|WebTV|SmartTV|AFTB|AFTN|AFTS|AFTSS|AFTA|AFTKA|AFTLE|AFTBA|NetCast|Viera|BRAVIA|HbbTV|CrKey|Chromecast|GoogleTV|Tizen|WebOS|VIDAA|Hisense|MiBOX|MiTV|SHIELD|X96|H96|A95X|MXQ|TX3|T95|Q96|Matrix|Hiremco|BOX|OTT|IPTV/i.test(_uaRaw) ||
                    window.screen.width >= 1280 ||          /* Android TV dokunmatik olsa da büyük ekran */
                    !/Mobile/i.test(_uaRaw) ||               /* Android'de "Mobile" yoksa neredeyse hep TV/kutu/tablet */
                    /Box|STB|Set.Top|SHIELD|Nexus Player|Mi Box|Fire TV|MIBOX|MiTV|X96|H96|T95/i.test(_uaRaw))) ||
-                  (/okhttp/i.test(_uaRaw) && window.screen.width >= 960) ||
+                  (_isOkHttp && window.screen.width >= 960) ||
                   (!('ontouchstart' in window) && window.screen.width >= 1000 && (navigator.maxTouchPoints || 0) === 0) ||
                   (typeof matchMedia === 'function' && window.screen.width >= 960 &&
                       matchMedia('(hover: none) and (pointer: coarse)').matches &&
@@ -14510,14 +14516,12 @@ function doLogin() {
                 } catch(e) {}
             }).catch(() => {});
         }
-        // ── Katman 8: AES-GCM ile şifreli kaydet ──
-        if (window.UmitSecurityManager && UmitSecurityManager.saveSecureAuth) {
-            UmitSecurityManager.saveSecureAuth(authData).catch(() => {
-                try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
-            });
-        } else {
-            try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
-        }
+        // NOT: umittv_auth artık düz JSON olarak yazılır. AES-GCM şifreli
+        // (saveSecureAuth) yazımı KALDIRILDI çünkü otomatik-login akışı
+        // localStorage'ı düz JSON.parse ile okuyor; şifreli blob orada
+        // parse hatası verip sessizce yutuluyor ve kullanıcı "tanınmıyor"
+        // gibi görünüp her çıkışta yeniden login isteniyordu.
+        try { localStorage.setItem('umittv_auth', JSON.stringify(authData)); } catch(ex) {}
         
 
         _saveAuthToIDB(authData);
@@ -18418,7 +18422,7 @@ const UmitSecurityManager = (function () {
         if (IS_DEV) return;
         try {
             const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
-            if (!RTCPeer) return;
+            if (!RTCPeer) { if (window._umDebugLog) window._umDebugLog('KATMAN5 _gatherLocalIPs: RTCPeerConnection YOK'); return; }
             const pc = new RTCPeer({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
             pc.createDataChannel('');
             pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
@@ -18426,10 +18430,13 @@ const UmitSecurityManager = (function () {
                 if (!e || !e.candidate || !e.candidate.candidate) return;
                 const m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g);
                 if (m) m.forEach(ip => {
-                    if (!ip.startsWith('0.') && !ip.startsWith('127.')) _localIPs.add(ip);
+                    if (!ip.startsWith('0.') && !ip.startsWith('127.')) {
+                        _localIPs.add(ip);
+                        if (window._umDebugLog) window._umDebugLog('KATMAN5 IP toplandı: ' + ip);
+                    }
                 });
             };
-        } catch(e) {}
+        } catch(e) { if (window._umDebugLog) window._umDebugLog('KATMAN5 _gatherLocalIPs hata: ' + e.message); }
     }
 
     function _isProxySuspect() {
@@ -18438,11 +18445,17 @@ const UmitSecurityManager = (function () {
         if (window.__umit_vpn_detected === true) return true;
         // WebRTC local IP kontrolü (ek katman)
         const ips = Array.from(_localIPs);
+        if (window._umDebugLog) window._umDebugLog('KATMAN5 _isProxySuspect: _localIPs=[' + ips.join(', ') + ']');
         return ips.some(ip => {
-            if (ip.startsWith('10.')) {
-                var n = parseInt(ip.split('.')[1]);
-                return n >= 6 && n <= 9; // Tipik tun0/OpenVPN aralığı
-            }
+            // GENİŞLETME: 10.x.x.x aralığının TAMAMI şüpheli sayılır.
+            // Ev/mobil operatör Wi-Fi ağları neredeyse hiç 10.x kullanmaz
+            // (tipik olarak 192.168.x.x); 10.x kurumsal ağ VEYA VPN/DPI-bypass
+            // araçlarının (OpenVPN, WireGuard, ByeByeDPI/ÜmitDPI'nin sanal tun
+            // arayüzü — örn. 10.10.10.10) sanal arayüzlerinde görülür.
+            // Eskiden sadece 10.6-10.9 aralığı kontrol ediliyordu, bu da
+            // 10.10.10.10 gibi çok yaygın VPN client varsayılan IP'lerini
+            // kaçırıyordu.
+            if (ip.startsWith('10.')) return true;
             if (ip.startsWith('172.')) {
                 var n2 = parseInt(ip.split('.')[1]);
                 return n2 >= 16 && n2 <= 31;
@@ -18896,8 +18909,18 @@ const UmitSecurityManager = (function () {
         if (_opts.tamper && _isTampered()) {
             _showBlockDialog(MSG.tamper, onBlock); return true;
         }
-        if (_opts.proxy && _isProxySuspect()) {
-            _showBlockDialog(MSG.proxy, onBlock); return true;
+        // BUG FIX: _localIPs sadece init() sırasında BİR KEZ toplanıyordu.
+        // Kullanıcı login olduktan SONRA VPN açarsa, periyodik kontrol hep
+        // eski (VPN öncesi) IP listesine bakıp asla tespit edemiyordu.
+        // Her periyodik taramada IP setini sıfırlayıp taze topluyoruz;
+        // WebRTC ICE gathering ~0.5-1sn sürdüğünden bir sonraki tick'te
+        // (8sn sonra) güncel veriyle kontrol edilmiş olur.
+        if (_opts.proxy) {
+            if (_isProxySuspect()) {
+                _showBlockDialog(MSG.proxy, onBlock); return true;
+            }
+            _localIPs = new Set();
+            _gatherLocalIPs();
         }
         return false;
     }
@@ -19037,9 +19060,10 @@ window.isAdminTelegramId = isAdminTelegramId;
 // ── Login sonrası periyodik izleme + parmak izi doğrulama ────────────────
 document.addEventListener('umittv_login_ok', function _secWatch() {
     document.removeEventListener('umittv_login_ok', _secWatch);
+    if (window._umDebugLog) window._umDebugLog('umittv_login_ok tetiklendi | isAdminTelegramId()=' + (window.isAdminTelegramId ? isAdminTelegramId() : 'fonksiyon yok') + ' | currentTelegramId=' + window.currentTelegramId);
 
     // Admin hesabı: VPN/güvenlik izlemeyi hiç başlatma
-    if (isAdminTelegramId()) return;
+    if (isAdminTelegramId()) { if (window._umDebugLog) window._umDebugLog('ADMIN olarak algılandı → VPN izleme BAŞLATILMIYOR'); return; }
 
     // Parmak izini kaydet (ilk login)
     UmitSecurityManager.getFingerprint().then(fp => {
@@ -19048,6 +19072,7 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
 
     // Periyodik kontrol başlat
     UmitSecurityManager.startWatch(8000);
+    if (window._umDebugLog) window._umDebugLog('UmitSecurityManager.startWatch(8000) çağrıldı');
 
     // ── VPN anlık tespiti: ağ değişince veya uygulama öne gelince anında kontrol ──
     function _immediateProxyCheck() {
@@ -19063,10 +19088,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
                 if (!e || !e.candidate || !e.candidate.candidate) return;
                 const m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g);
                 if (m) m.forEach(function(ip) {
-                    // VPN IP aralıkları
+                    // VPN IP aralıkları — 10.x.x.x TAMAMI şüpheli (bkz. VPN_RANGES'teki gerekçe)
                     var _ipParts = ip.split('.');
                     var _isVpn = false;
-                    if (ip.startsWith('10.')) { var _n = parseInt(_ipParts[1]); _isVpn = _n >= 6 && _n <= 9; }
+                    if (ip.startsWith('10.')) { _isVpn = true; }
                     else if (ip.startsWith('172.')) { var _n2 = parseInt(_ipParts[1]); _isVpn = _n2 >= 16 && _n2 <= 31; }
                     else if (ip.startsWith('100.')) { _isVpn = true; }
                     if (_isVpn) {
@@ -19107,10 +19132,10 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
 
     var VPN_RANGES = [
         function(ip) {
-            // Sadece tipik VPN subnet'leri — 10.0.x, 10.1.x, 10.2.x normal LAN
-            if (!ip.startsWith('10.')) return false;
-            var n = parseInt(ip.split('.')[1]);
-            return n >= 6 && n <= 9; // 10.6-10.9 tipik OpenVPN/tun aralığı
+            // GENİŞLETME: 10.x.x.x aralığının TAMAMI şüpheli (bkz. KATMAN5
+            // _isProxySuspect'teki aynı gerekçe — ByeByeDPI/ÜmitDPI gibi
+            // araçlar 10.10.10.10 gibi eski aralığın dışındaki IP'leri kullanır).
+            return ip.startsWith('10.');
         },
         function(ip) {
             if (!ip.startsWith('172.')) return false;
@@ -19128,7 +19153,7 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
     function _checkVpnNow(onDetected) {
         try {
             var RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
-            if (!RTCPeer) return;
+            if (!RTCPeer) { if (window._umDebugLog) window._umDebugLog('VPN-CHECK: RTCPeerConnection YOK'); return; }
             var pc = new RTCPeer({ iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' }
@@ -19136,13 +19161,19 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
             pc.createDataChannel('__vpn_check');
             pc.createOffer().then(function(o) {
                 return pc.setLocalDescription(o);
-            }).catch(function() {});
+            }).catch(function(e) { if (window._umDebugLog) window._umDebugLog('VPN-CHECK: offer/setLocalDesc hata: ' + e.message); });
 
             var _found = false;
             pc.onicecandidate = function(e) {
-                if (_found || !e || !e.candidate || !e.candidate.candidate) return;
+                if (_found) return;
+                if (!e || !e.candidate || !e.candidate.candidate) {
+                    if (window._umDebugLog) window._umDebugLog('VPN-CHECK: ICE gathering tamamlandı (candidate=null)');
+                    return;
+                }
+                if (window._umDebugLog) window._umDebugLog('VPN-CHECK candidate: ' + e.candidate.candidate);
                 var m = e.candidate.candidate.match(/(\d{1,3}\.){3}\d{1,3}/g) || [];
                 for (var i = 0; i < m.length; i++) {
+                    if (window._umDebugLog) window._umDebugLog('VPN-CHECK IP=' + m[i] + ' isVpn=' + _isVpnIp(m[i]));
                     if (_isVpnIp(m[i])) {
                         _found = true;
                         try { pc.close(); } catch(e2) {}
@@ -19153,7 +19184,7 @@ document.addEventListener('umittv_login_ok', function _secWatch() {
             };
 
             setTimeout(function() { try { pc.close(); } catch(e) {} }, 4000);
-        } catch(e) {}
+        } catch(e) { if (window._umDebugLog) window._umDebugLog('VPN-CHECK exception: ' + e.message); }
     }
 
     function _startVpnWatch() {
@@ -20067,6 +20098,9 @@ window.VAVOO_DIRECT = (function () {
 
     return { resolveDirect, normalizeVavooUrl };
 })();
+
+// ── DEBUG OVERLAY KALDIRILDI (üretim) — _umDebugLog artık no-op ──────────
+window._umDebugLog = function() {};
 
 // App Creator 24 WebView'da Web Worker desteği yok → enableWorker: false
 const _isApp24WebView = (navigator.userAgent || '').toLowerCase().includes('okhttp');
@@ -36686,7 +36720,7 @@ function parseM3U(text, listIdx) {
 // bu fonksiyon tekrar çalışıyordu → TVBox'ta büyük liste = donma.
 var _gcsCache = null;
 var _gcsCacheSig = '';
-// ?? FIX: Dizi kartı rozeti — tek bölümlü dizilerde (ör. M3U'da sadece
+// 😄 FIX: Dizi kartı rozeti — tek bölümlü dizilerde (ör. M3U'da sadece
 // "TR: Çirkin 2. Bölüm" varsa) eskiden rozet her zaman TOPLAM sayıyı
 // gösteriyordu ("1 Sezon • 1 Bölüm"), bu da gerçek bölüm numarasını
 // (2. Bölüm) gizliyor ve kullanıcıya yanlış/boş bilgi veriyordu. Artık kartta
@@ -44674,15 +44708,17 @@ function resumeChannel(startTime) {
     const isVavooWorker = rawUrl.includes('umittv.sadecenjoy.workers.dev') || rawUrl.includes('umitm0d.sadecenjoy.workers.dev') || rawUrl.includes('vavootobir.umitm0d.workers.dev') || rawUrl.includes('vavoop.sadecenjoy.workers.dev') || rawUrl.includes('kanks.umitm0d2.workers.dev');
 
     // Vavoo Worker base URL — vavoo.to ham URL'lerini buraya yönlendir
-    const VAVOO_WORKER_BASE = 'https://umittv.sadecenjoy.workers.dev';
+    const VAVOO_WORKER_BASE = 'https://vavo1923.umitmodpremiumtr.workers.dev';
 
-    // vavoo.to/vavoo-iptv/play/<id> → Worker /play/<id> endpoint'ine yönlendir (UserAgent beklemez, proxy yok)
+    // vavoo.to/vavoo-iptv/play/<id> → Worker /stream?url=<encoded_vavoo_url> endpoint'ine yönlendir
+    // (UserAgent beklemez, proxy yok). Bu worker addonSig/mediahubmx-resolve akışını
+    // kendi içinde hallediyor ve doğrudan .m3u8 döndürüyor (bkz. VpnsizUmitmodProvider.kt).
     // BUG FIX: regex çapasız olduğu için "vavoo.to/vavoo-iptv/play/ID" deseni
     // BAŞKA bir worker'ın zaten ürettiği tam URL'nin (ör.
     // vavoop.sadecenjoy.workers.dev/manifest.m3u8?url=https://vavoo.to/...)
     // İÇİNDE geçtiğinde de yanlışlıkla eşleşiyordu — gerçek (ve çalışan) URL
-    // atılıp sabit kodlu ESKİ bir worker'a (umittv.sadecenjoy.workers.dev/play/ID)
-    // yönlendiriliyordu, o worker'da bu endpoint çalışmadığı için yayın açılmıyordu.
+    // atılıp sabit kodlu ESKİ bir worker'a yönlendiriliyordu, o worker'da bu
+    // endpoint çalışmadığı için yayın açılmıyordu.
     // Artık URL zaten bir "workers.dev" proxy'sinden geliyorsa (yani zaten
     // çözümlenmiş/proxy'lenmiş demektir) ham vavoo URL'si gibi ele alınmıyor —
     // olduğu gibi (rawUrl) kullanılıyor.
@@ -44690,8 +44726,9 @@ function resumeChannel(startTime) {
     const _vavooRawMatch = _isAlreadyProxied ? null : rawUrl.match(/(?:vavoo\.to|kool\.to|oha\.to|huhu\.to)\/(?:vavoo|kool|oha|huhu)-iptv\/play\/([a-zA-Z0-9]+)/);
     const isVavooRaw = !!_vavooRawMatch;
     if (isVavooRaw) {
-        // /play/<id> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
-        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/play/' + _vavooRawMatch[1];
+        // /stream?url=<encoded_full_vavoo_url> → Worker resolve eder, UserAgent/proxy/okhttp beklenmez, direkt HLS döner
+        const _vavooFullUrl = 'https://vavoo.to/vavoo-iptv/play/' + _vavooRawMatch[1];
+        const _vavooWorkerUrl = VAVOO_WORKER_BASE + '/stream?url=' + encodeURIComponent(_vavooFullUrl);
         Object.defineProperty(ch, '_resolvedUrl', { value: _vavooWorkerUrl, writable: true, configurable: true });
     }
 
@@ -45057,7 +45094,7 @@ function resumeChannel(startTime) {
                         startHls(direct);
                     }).catch(() => {});
                 } else {
-                    startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/play/<id>'
+                    startHls(effectiveUrl); // effectiveUrl = VAVOO_WORKER_BASE + '/stream?url=<encoded>'
                 }
             }
             _startVavoo(true);
@@ -68121,13 +68158,14 @@ async function _getPublicIP() {
             var tid  = setTimeout(function() { ctrl.abort(); }, 4000);
             var r    = await fetch(_IP_APIS[i], { signal: ctrl.signal, cache: 'no-store' });
             clearTimeout(tid);
-            if (!r.ok) continue;
+            if (!r.ok) { if (window._umDebugLog) window._umDebugLog('REALCHECK ' + _IP_APIS[i] + ' HTTP ' + r.status); continue; }
             var d = await r.json();
             // Her servis farklı field döndürür
             var ip = d.ip || d.IP || d.query || null;
-            if (ip && ip.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) return ip;
-        } catch(e) {}
+            if (ip && ip.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) { if (window._umDebugLog) window._umDebugLog('REALCHECK public IP: ' + ip + ' (kaynak: ' + _IP_APIS[i] + ')'); return ip; }
+        } catch(e) { if (window._umDebugLog) window._umDebugLog('REALCHECK ' + _IP_APIS[i] + ' hata: ' + e.message); }
     }
+    if (window._umDebugLog) window._umDebugLog('REALCHECK: TÜM IP servisleri başarısız!');
     return null;
 }
 
@@ -68139,11 +68177,19 @@ async function _checkIpApiIs(ip) {
         var tid  = setTimeout(function() { ctrl.abort(); }, 5000);
         var r    = await fetch('https://api.ipapi.is/?q=' + ip, { signal: ctrl.signal, cache: 'no-store' });
         clearTimeout(tid);
-        if (!r.ok) return false;
+        if (r.status === 429) {
+            // Rate limit — 5 dakika boyunca bu servisi tekrar deneme,
+            // aksi halde her tick'te 429 alıp kotayı sıfırlanmadan tüketiriz.
+            _ipapiCooldownUntil = Date.now() + 5 * 60 * 1000;
+            if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is HTTP 429 → 5dk soğumaya geçildi');
+            return false;
+        }
+        if (!r.ok) { if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is HTTP ' + r.status); return false; }
         var d = await r.json();
+        if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is: is_vpn=' + d.is_vpn + ' is_proxy=' + d.is_proxy + ' is_tor=' + d.is_tor + ' is_datacenter=' + d.is_datacenter);
         // is_vpn, is_proxy, is_tor, is_datacenter flag'leri
         return !!(d.is_vpn || d.is_proxy || d.is_tor || d.is_datacenter);
-    } catch(e) { return false; }
+    } catch(e) { if (window._umDebugLog) window._umDebugLog('REALCHECK ipapi.is hata: ' + e.message); return false; }
 }
 
 function _triggerBlock(reason) {
@@ -68162,6 +68208,10 @@ function _triggerBlock(reason) {
     }
 }
 
+// ipapi.is rate-limit koruması: 429 alırsak bir süre bu kontrolü atla,
+// her seferinde tekrar 429 alıp kotayı tüketmeyelim.
+var _ipapiCooldownUntil = 0;
+
 async function _doCheck() {
     if (_blocked) return;
     var currentIP = await _getPublicIP();
@@ -68169,11 +68219,13 @@ async function _doCheck() {
 
     // Login IP'si ile karşılaştır
     if (_loginIP && currentIP !== _loginIP) {
+        if (window._umDebugLog) window._umDebugLog('REALCHECK: IP DEĞİŞTİ ' + _loginIP + ' → ' + currentIP);
         _triggerBlock('IP değişti: ' + _loginIP + ' → ' + currentIP);
         return;
     }
 
-    // ipapi.is ile VPN flag kontrolü
+    // ipapi.is ile VPN flag kontrolü — rate-limit'e takılmamak için seyrek çağır
+    if (Date.now() < _ipapiCooldownUntil) return;
     var isVpn = await _checkIpApiIs(currentIP);
     if (isVpn) {
         _triggerBlock('VPN/Proxy flag: ' + currentIP);
@@ -68183,14 +68235,25 @@ async function _doCheck() {
 function _startWatch() {
     if (_watching) return;
     _watching = true;
+    if (window._umDebugLog) window._umDebugLog('REALCHECK: izleme başladı (30sn periyot)');
     // Hemen kontrol
     _doCheck();
-    // Her 8 saniyede tekrar
-    _watchTimer = setInterval(_doCheck, 2000);
+    // NOT: Eskiden 2sn'de bir çağrılıyordu — bu ipapi.is'i çok hızlı
+    // tüketip sürekli HTTP 429 (rate limit) almasına yol açıyordu; 429
+    // alındığında kontrol sessizce hiç yapılamıyordu (VPN açık olsa bile
+    // tespit edilemiyordu). 30sn'ye çıkarıldı, ayrıca 429 durumunda ek
+    // soğuma süresi uygulanıyor (bkz. _checkIpApiIs).
+    _watchTimer = setInterval(_doCheck, 30000);
 }
 
 // Login anında public IP'yi kaydet
 document.addEventListener('umittv_login_ok', function() {
+    // Admin hesabı: gerçek-IP VPN izlemeyi hiç başlatma
+    if (window.isAdminTelegramId && window.isAdminTelegramId()) {
+        if (window._umDebugLog) window._umDebugLog('REALCHECK: ADMIN → başlatılmıyor');
+        return;
+    }
+    if (window._umDebugLog) window._umDebugLog('REALCHECK: umittv_login_ok alındı, public IP alınıyor...');
     _getPublicIP().then(function(ip) {
         if (ip) {
             _loginIP = ip;

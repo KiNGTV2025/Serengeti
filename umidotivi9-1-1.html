@@ -63980,14 +63980,16 @@ window.channelNumbering = {
         border-bottom: 2px solid var(--accent-primary, #FFD700) !important;
     }
     /* Butonlar poster altında */
-    #vodPosterContainer .vod-buttons-group {
-        flex-direction: column !important;
+    #vodModalBody .vod-buttons-group {
+        display: flex !important;
+        flex-direction: row !important;
         padding: 10px 12px !important;
         gap: 8px !important;
     }
-    #vodPosterContainer .vod-play-btn,
-    #vodPosterContainer .vod-continue-btn {
-        width: 100% !important;
+    #vodModalBody .vod-play-btn,
+    #vodModalBody .vod-continue-btn {
+        flex: 1 !important;
+        width: auto !important;
         padding: 13px !important;
         font-size: 15px !important;
     }
@@ -64090,14 +64092,15 @@ window.channelNumbering = {
         background: #000 !important;
     }
     /* Butonlar: küçük, yan yana */
-    #vodPosterContainer .vod-buttons-group {
+    #vodModalBody .vod-buttons-group {
+        display: flex !important;
         flex-direction: row !important;
         padding: 6px 10px !important;
         gap: 6px !important;
         background: var(--bg-panel, #1a1a1a) !important;
     }
-    #vodPosterContainer .vod-play-btn,
-    #vodPosterContainer .vod-continue-btn {
+    #vodModalBody .vod-play-btn,
+    #vodModalBody .vod-continue-btn {
         flex: 1 !important;
         padding: 8px 6px !important;
         font-size: 12px !important;

@@ -14469,7 +14469,7 @@ window.handleChangePassword = async function() {
     }
 };
 
-function doLogin() {
+async function doLogin() {
     
 
     
@@ -14498,23 +14498,18 @@ function doLogin() {
             authData.key_id = window._lastLoginKeyId;
             window._lastLoginKeyId = null;
         }
+        // ── ÖNEMLİ: password_hash, authData localStorage'a yazılmadan ÖNCE
+        // hesaplanır (await ile beklenir). Eskiden sha256() asenkron
+        // Promise içinde ayrı yazılıyordu; authData'nın senkron yazımı
+        // (aşağıdaki satır) bazı cihazlarda bu Promise'ten ÖNCE tamamlanıp
+        // password_hash'siz hali kalıcı bırakıyordu. Sonraki açılışta
+        // otomatik-login boş şifre hash'i gönderip sunucu tarafından
+        // reddediliyor, kullanıcı her çıkışta yeniden login ekranına
+        // düşüyordu. Artık hash burada bekleniyor, tek seferde yazılıyor.
         if (rawPass) {
-            
-
-            sha256(rawPass).then(h => {
-                try {
-                    const d = JSON.parse(localStorage.getItem('umittv_auth') || '{}');
-                    d.password_hash = h;
-                    const authStr = JSON.stringify(d);
-                    localStorage.setItem('umittv_auth', authStr);
-                    
-
-                    _saveAuthToIDB(d);
-                    
-
-                    _saveAuthToCookie(d);
-                } catch(e) {}
-            }).catch(() => {});
+            try {
+                authData.password_hash = await sha256(rawPass);
+            } catch(e) {}
         }
         // NOT: umittv_auth artık düz JSON olarak yazılır. AES-GCM şifreli
         // (saveSecureAuth) yazımı KALDIRILDI çünkü otomatik-login akışı

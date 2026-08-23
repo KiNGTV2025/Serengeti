@@ -1,62 +1,148 @@
 [
-    {
-        "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/UmitmodProvider.cs3",
-        "status": 1,
-        "version": 29,
-        "name": "UmitmodProvider",
-        "internalName": "UmitmodProvider",
-        "authors": [
-            "Umitmod"
-        ],
-        "description": "Umitmod TV kanallar\u0131 - \ud83d\udf32\u00dc\u2c98\ud835\udd8e\u0163 \u2c980\u010e\ud83d\udf32 fark\u0131yla\ud83c\uddf9\ud83c\uddf7",
-        "fileSize": 61587,
-        "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
-        "language": "tr",
-        "tvTypes": [
-            "TvSeries"
-        ],
-        "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
-        "apiVersion": 1,
-        "fileHash": "sha256-48c4f1e9dc0637243cf28d1fc5588e19dd71c84ab53bca8d82cbccab44ce2536"
-    },
-    {
-        "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/UmitTvProvider.cs3",
-        "status": 1,
-        "version": 8,
-        "name": "UmitTvProvider",
-        "internalName": "UmitTvProvider",
-        "authors": [
-            "Umitmod"
-        ],
-        "description": "\u00dcmitTV \u2014 kendi M3U/M3U8 listelerinizi ekleyip izleyin \ud83d\udf32\u00dc\u2c98\ud835\udd8e\u0163 \u2c980\u010e\ud83d\udf32",
-        "fileSize": 54232,
-        "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
-        "language": "tr",
-        "tvTypes": [
-            "TvSeries"
-        ],
-        "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
-        "apiVersion": 1,
-        "fileHash": "sha256-5e945b85e23293ee57168178889db979f99ba1ecd459f9ffca5ad6f249cca6b7"
-    },
-    {
-        "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/VpnsizUmitmodProvider.cs3",
-        "status": 1,
-        "version": 15,
-        "name": "VpnsizUmitmodProvider",
-        "internalName": "VpnsizUmitmodProvider",
-        "authors": [
-            "Umitmod"
-        ],
-        "description": "VpnsizUmitmod - VPN gerektirmeden do\u011frudan oynayan TR kanallar\u0131",
-        "fileSize": 51828,
-        "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
-        "language": "tr",
-        "tvTypes": [
-            "TvSeries"
-        ],
-        "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
-        "apiVersion": 1,
-        "fileHash": "sha256-47b39f0fea28ba5d2a23750260625353f7db7d5f98e2457c9c1919fdf36c64d4"
-    }
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/UmitmodProvider.cs3",
+    "status": 1,
+    "version": 29,
+    "name": "UmitmodProvider",
+    "internalName": "UmitmodProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Umitmod TV kanalları - 🜲ÜⲘ𝖎ţ Ⲙ0Ď🜲 farkıyla🇹🇷",
+    "fileSize": 61587,
+    "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-48c4f1e9dc0637243cf28d1fc5588e19dd71c84ab53bca8d82cbccab44ce2536"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/UmitTvProvider.cs3",
+    "status": 1,
+    "version": 8,
+    "name": "UmitTvProvider",
+    "internalName": "UmitTvProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "ÜmitTV — kendi M3U/M3U8 listelerinizi ekleyip izleyin 🜲ÜⲘ𝖎ţ Ⲙ0Ď🜲",
+    "fileSize": 54232,
+    "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-5e945b85e23293ee57168178889db979f99ba1ecd459f9ffca5ad6f249cca6b7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/VpnsizUmitmodProvider.cs3",
+    "status": 1,
+    "version": 15,
+    "name": "VpnsizUmitmodProvider",
+    "internalName": "VpnsizUmitmodProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "VpnsizUmitmod - VPN gerektirmeden doğrudan oynayan TR kanalları",
+    "fileSize": 51828,
+    "repositoryUrl": "https://github.com/KiNGTV2025/Serengeti",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/umitm0d/Alakart/refs/heads/main/umitm0d.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-47b39f0fea28ba5d2a23750260625353f7db7d5f98e2457c9c1919fdf36c64d4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
+    "status": 1,
+    "version": 10,
+    "name": "Ümitmod-ozel1",
+    "internalName": "EnglishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "One search result (EnglishW); opening a title fans out to every English source and collects all links. Auto-subtitles included.",
+    "fileSize": 155080,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-480a0d00f6aab93b56f5b16af239e7ebdfe9dfb77e3ecdb0686f7adf8340de88"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Filmmirasım.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-ozel2",
+    "internalName": "Filmmirasım",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Kültür ve Turizm Bakanlığı, kültürel mirasımızın görsel belleğini oluşturan filmlerin muhafazası ve gelecek kuşaklara aktarılması amacıyla Sinema Genel Müdürlüğü bünyesinde oluşturduğu arşivdeki filmleri dijital ortama aktarmakta ve restore etmektedir. ",
+    "fileSize": 15199,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Documentary"
+    ],
+    "iconUrl": "https://filmmirasim.ktb.gov.tr/favicon-r.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-68abdea39a7739549d4e8432946f07c7b9e3943554a8228476b8c2928108ea46"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Test.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-ozel3",
+    "internalName": "Test",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Test Provider (VHPlayer / FlexTV IPTV: Movies, Series, Live Channels)",
+    "fileSize": 57155,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "un",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-eeb906e77f5c432578f308cfc0f9102f1aa9f417004ffd9445f330c2b7deee19"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/TurkishW.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-ozel4",
+    "internalName": "TurkishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tek arama sonucu (TurkishW); bir içeriğe girince tüm kaynaklardan linkleri toplar. Film, Dizi, Anime + Canlı TV.",
+    "fileSize": 314195,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Live"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-e34f0b6b4212279098f08c615a264788ee95f7b8d4a3181fbd6682d59687b381"
+  }
 ]

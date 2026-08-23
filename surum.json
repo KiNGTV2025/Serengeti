@@ -1,6 +1,15 @@
 {
-  "version": 24,
+  "version": 25,
   "changelog": [
+    {
+      "version": 25,
+      "lines": [
+        "M3U URL alanı tam genişliğe alındı, Klavye/Yapıştır butonları altına taşındı.",
+        "Sanal klavye Shift tuşu düzeltildi — büyük/küçük harf artık çalışıyor.",
+        "Türkçe karakter desteği eklendi (ş, ğ, ü, ç, ı).",
+        "Sanal klavye tasarımı modernleştirildi, ekran altına hizalandı."
+      ]
+    },
     {
       "version": 24,
       "lines": [

@@ -19904,6 +19904,7 @@ const MKV_PROXY_NEW = 'https://mkv.sadecenjoy.workers.dev/?url=';
 const REDIRECT_RESOLVE_DOMAINS = [
     'uzunmuhalefet.com',
     'streams.uzunmuhalefet',
+    'raw.githubusercontent.com',   // GitHub'daki .m3u8 wrapper'lar → içindeki gerçek (googlevideo vb.) linki çözer
 ];
 
 const REFERER_PROTECTED_DOMAINS = [
@@ -45221,15 +45222,12 @@ function resumeChannel(startTime) {
 
                     const text = await resp.text();
 
-                    // İçerik gerçek bir m3u8 manifest mi? → HLS.js'e direkt ver
-                    if (text.trim().startsWith('#EXTM3U') && 
-                        (text.includes('#EXT-X-STREAM-INF') || text.includes('#EXTINF') || text.includes('#EXT-X-TARGETDURATION'))) {
-                        // Gerçek manifest — proxy URL'yi direkt ver (içeriği zaten proxy'den geliyor)
-                        startHls(proxyFetch);
-                        return;
-                    }
-
-                    // İçerik tek bir URL mi? (redirect m3u8 → gerçek stream URL)
+                    // ── ÖNCE: içerikte harici (http/https ile başlayan) bir satır var mı? ──
+                    // Bu, dosyanın kendisinin gerçek segmentleri değil, başka bir sunucuya
+                    // (örn. googlevideo.com) işaret eden bir "wrapper/redirect" manifest
+                    // olduğu anlamına gelir (tam olarak GitHub'daki YouTube-live m3u8'leri
+                    // gibi: #EXT-X-STREAM-INF + tek satır tam URL). Böyle bir satır varsa
+                    // "gerçek manifest" sanıp olduğu gibi vermeden önce onu çözmemiz gerekir.
                     const lines = text.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
                     let resolvedUrl = null;
                     for (const line of lines) {
@@ -45247,13 +45245,26 @@ function resumeChannel(startTime) {
                             // daioncdn.net vb. → direkt aç (CORS izni var)
                             startHls(resolvedUrl);
                         } else {
-                            // Bilinmeyen CDN → STREAM_PROXY üzerinden aç
+                            // Bilinmeyen CDN (googlevideo.com dahil) → STREAM_PROXY üzerinden aç.
+                            // googlevideo CORS header dönmediği için tarayıcıdan direkt
+                            // istek reddedilir (bu yüzden Wuffy gibi native player'da
+                            // açılıp tarayıcı tabanlı player'da açılmıyordu) — proxy şart.
                             startHls(STREAM_PROXY + encodeURIComponent(resolvedUrl));
                         }
-                    } else {
-                        // İçerik parse edilemedi → proxy ile direkt ver
-                        startHls(STREAM_PROXY + encodeURIComponent(origUrl));
+                        return;
                     }
+
+                    // Harici URL yoksa ve gerçek bir m3u8 manifest gövdesiyse
+                    // (göreli segmentler / #EXT-X-STREAM-INF ile göreli alt-playlist)
+                    // → proxy üzerinden gelen içeriği olduğu gibi HLS.js'e ver.
+                    if (text.trim().startsWith('#EXTM3U') &&
+                        (text.includes('#EXT-X-STREAM-INF') || text.includes('#EXTINF') || text.includes('#EXT-X-TARGETDURATION'))) {
+                        startHls(proxyFetch);
+                        return;
+                    }
+
+                    // İçerik parse edilemedi → proxy ile direkt ver
+                    startHls(STREAM_PROXY + encodeURIComponent(origUrl));
                 } catch(err) {
                     // Genel hata → STREAM_PROXY ile aç
                     startHls(STREAM_PROXY + encodeURIComponent(origUrl));

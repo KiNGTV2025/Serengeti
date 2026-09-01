@@ -60,88 +60,6 @@
     "fileHash": "sha256-e501d7b8830178c0260ac252a93e78afca704eb2fc2fb1f205de8acc7cc490a4"
   },
   {
-    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
-    "fileHash": "sha256-364a71a7b9bbe38ee1c2c08288dd95d1722b45dc517b43dffff855d7eafa6bd0",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 119293,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 15,
-    "internalName": "Cloud-Sync",
-    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
-    "name": "Ümitmod-plt1"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
-    "fileHash": "sha256-925ce634693ec21a3fd5be166fdc41da9d3cbe76890bd525175ea617f4bc1079",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 77317,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 7,
-    "internalName": "plt-party",
-    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
-    "name": "Ümitmod-plt2"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
-    "fileHash": "sha256-58f73f0216486eabf62f3ad51ae1700c60586c94368142a1b113fbb03f310cc8",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 508130,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Documentary"
-    ],
-    "version": 52,
-    "internalName": "plt-stream",
-    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
-    "name": "Ümitmod-plt3"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
-    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 45596,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Live"
-    ],
-    "version": 5,
-    "internalName": "plt-tv",
-    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
-    "name": "Ümitmod-plt4"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/18EU.cs3",
     "status": 1,
     "version": 3,
@@ -2555,5 +2473,87 @@
     "apiVersion": 1,
     "language": "tr",
     "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
+  },
+  {
+    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
+    "fileHash": "sha256-4028d8f35d1825f88b578bc7ed0d9b43799013af07d6d69a6f24809d71fe5cc2",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 118481,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 16,
+    "internalName": "Cloud-Sync",
+    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
+    "name": "Ümitmod-plt1"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
+    "fileHash": "sha256-925ce634693ec21a3fd5be166fdc41da9d3cbe76890bd525175ea617f4bc1079",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 77317,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 7,
+    "internalName": "plt-party",
+    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
+    "name": "Ümitmod-plt2"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
+    "fileHash": "sha256-58f73f0216486eabf62f3ad51ae1700c60586c94368142a1b113fbb03f310cc8",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 508130,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Documentary"
+    ],
+    "version": 52,
+    "internalName": "plt-stream",
+    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
+    "name": "Ümitmod-plt3"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
+    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 45596,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Live"
+    ],
+    "version": 5,
+    "internalName": "plt-tv",
+    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
+    "name": "Ümitmod-plt4"
   }
 ]

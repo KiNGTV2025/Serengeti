@@ -228,6 +228,152 @@
     "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
   },
   {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
+    "status": 1,
+    "version": 10,
+    "name": "Ümitmod-ozel1",
+    "internalName": "EnglishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "One search result (EnglishW); opening a title fans out to every English source and collects all links. Auto-subtitles included.",
+    "fileSize": 155080,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-480a0d00f6aab93b56f5b16af239e7ebdfe9dfb77e3ecdb0686f7adf8340de88"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Filmmirasım.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-ozel2",
+    "internalName": "Filmmirasım",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Kültür ve Turizm Bakanlığı, kültürel mirasımızın görsel belleğini oluşturan filmlerin muhafazası ve gelecek kuşaklara aktarılması amacıyla Sinema Genel Müdürlüğü bünyesinde oluşturduğu arşivdeki filmleri dijital ortama aktarmakta ve restore etmektedir. ",
+    "fileSize": 15199,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Documentary"
+    ],
+    "iconUrl": "https://filmmirasim.ktb.gov.tr/favicon-r.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-68abdea39a7739549d4e8432946f07c7b9e3943554a8228476b8c2928108ea46"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/TurkishW.cs3",
+    "status": 1,
+    "version": 9,
+    "name": "Ümitmod-ozel3",
+    "internalName": "TurkishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tek arama sonucu (TurkishW); bir içeriğe girince tüm kaynaklardan linkleri toplar. Film, Dizi, Anime + Canlı TV.",
+    "fileSize": 345680,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Live"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-ab26d8aafc82233a72d5376c88315166390fc2965679e2ae5d49e9726a5fc8c2"
+  },
+  {
+    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
+    "fileHash": "sha256-4028d8f35d1825f88b578bc7ed0d9b43799013af07d6d69a6f24809d71fe5cc2",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 118481,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 16,
+    "internalName": "Cloud-Sync",
+    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
+    "name": "Ümitmod-plt1"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
+    "fileHash": "sha256-e90a8c6ba00760f15308462ed67b5e342e429d6ba6738e12376aadd17951a552",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 77525,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 8,
+    "internalName": "plt-party",
+    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
+    "name": "Ümitmod-plt2"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
+    "fileHash": "sha256-736cbd58bc614483ae22893eca1914d9552aa1e5b7ce045c00f3ec082ad9dae6",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 515481,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Documentary"
+    ],
+    "version": 53,
+    "internalName": "plt-stream",
+    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
+    "name": "Ümitmod-plt3"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
+    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 45596,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Live"
+    ],
+    "version": 5,
+    "internalName": "plt-tv",
+    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
+    "name": "Ümitmod-plt4"
+  },
+  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/18EU.cs3",
     "status": 1,
     "version": 3,
@@ -2409,151 +2555,5 @@
     "iconUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ytboob.com&size=128",
     "apiVersion": 1,
     "fileHash": "sha256-6572bad9e83f59ddc31ac04608b942fee68d19f0ffb7ca296bdb38dfbafcc1c8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
-    "status": 1,
-    "version": 10,
-    "name": "Ümitmod-ozel1",
-    "internalName": "EnglishW",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "One search result (EnglishW); opening a title fans out to every English source and collects all links. Auto-subtitles included.",
-    "fileSize": 155080,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
-    "apiVersion": 1,
-    "fileHash": "sha256-480a0d00f6aab93b56f5b16af239e7ebdfe9dfb77e3ecdb0686f7adf8340de88"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Filmmirasım.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-ozel2",
-    "internalName": "Filmmirasım",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Kültür ve Turizm Bakanlığı, kültürel mirasımızın görsel belleğini oluşturan filmlerin muhafazası ve gelecek kuşaklara aktarılması amacıyla Sinema Genel Müdürlüğü bünyesinde oluşturduğu arşivdeki filmleri dijital ortama aktarmakta ve restore etmektedir. ",
-    "fileSize": 15199,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "tr",
-    "tvTypes": [
-      "Documentary"
-    ],
-    "iconUrl": "https://filmmirasim.ktb.gov.tr/favicon-r.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-68abdea39a7739549d4e8432946f07c7b9e3943554a8228476b8c2928108ea46"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/TurkishW.cs3",
-    "status": 1,
-    "version": 9,
-    "name": "Ümitmod-ozel3",
-    "internalName": "TurkishW",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tek arama sonucu (TurkishW); bir içeriğe girince tüm kaynaklardan linkleri toplar. Film, Dizi, Anime + Canlı TV.",
-    "fileSize": 345680,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Live"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
-    "apiVersion": 1,
-    "fileHash": "sha256-ab26d8aafc82233a72d5376c88315166390fc2965679e2ae5d49e9726a5fc8c2"
-  },
-  {
-    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
-    "fileHash": "sha256-4028d8f35d1825f88b578bc7ed0d9b43799013af07d6d69a6f24809d71fe5cc2",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 118481,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 16,
-    "internalName": "Cloud-Sync",
-    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
-    "name": "Ümitmod-plt1"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
-    "fileHash": "sha256-e90a8c6ba00760f15308462ed67b5e342e429d6ba6738e12376aadd17951a552",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 77525,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 8,
-    "internalName": "plt-party",
-    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
-    "name": "Ümitmod-plt2"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
-    "fileHash": "sha256-736cbd58bc614483ae22893eca1914d9552aa1e5b7ce045c00f3ec082ad9dae6",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 515481,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Documentary"
-    ],
-    "version": 53,
-    "internalName": "plt-stream",
-    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
-    "name": "Ümitmod-plt3"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
-    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 45596,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Live"
-    ],
-    "version": 5,
-    "internalName": "plt-tv",
-    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
-    "name": "Ümitmod-plt4"
   }
 ]

@@ -2407,5 +2407,173 @@
     "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
     "apiVersion": 1,
     "fileHash": "sha256-ab26d8aafc82233a72d5376c88315166390fc2965679e2ae5d49e9726a5fc8c2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Aio.cs3",
+    "status": 1,
+    "version": 260801,
+    "name": "Ümitmod-krea1",
+    "internalName": "Aio",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "AIO - Türk TV Dizi ve Kanalları",
+    "fileSize": 281479,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Live",
+      "Anime",
+      "Documentary",
+      "Cartoon",
+      "Music"
+    ],
+    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-73abb40b3fbcaf555642327ded53f1647e5d1c02df468c6a201c4f500520bcde"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/DiziYou.cs3",
+    "status": 1,
+    "version": 260618,
+    "name": "Ümitmod-krea2",
+    "internalName": "DiziYou",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Diziyou en kaliteli Türkçe dublaj ve altyazılı yabancı dizi izleme sitesidir. Güncel ve efsanevi dizileri 1080p Full HD kalitede izlemek için hemen tıkla!",
+    "fileSize": 17114,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.diziyou.co&sz=%size%",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-cd16c7bd40bfa51a73c6a961a3b54f29cbad3988bf9d18a55c759eb6bfbb3d90"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/IPTV.cs3",
+    "status": 1,
+    "version": 260603,
+    "name": "Ümitmod-krea3",
+    "internalName": "IPTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "General IPTV player. Add a list in the settings and you'll see it in the plugins list in the home",
+    "fileSize": 60859,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://www.shutterstock.com/image-vector/iptv-vector-line-icon-ip-260nw-1841427610.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-b0329d961794f9f884706c0166b35550f510b12a8868645a8a815a7a062a04d0"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaStream.cs3",
+    "status": 1,
+    "version": 260901,
+    "name": "Ümitmod-krea4",
+    "internalName": "KreaStream",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film, Dizi, Canlı TV",
+    "fileSize": 568791,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/main/images/kreastreamLogo1.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-3056aeb605742b83f1cd33073450052c7994764b07dadcd5ab9223178b093731"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaTube.cs3",
+    "status": 1,
+    "version": 260114,
+    "name": "Ümitmod-krea5",
+    "internalName": "KreaTube",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Videos, playlists and channels from YouTube",
+    "fileSize": 51303,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Others"
+    ],
+    "iconUrl": "https://www.youtube.com/s/desktop/711fd789/img/logos/favicon_144x144.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-71cffc570a35dd59f4d30ba793b6350a069ad8969d794e4cf4e7118752df9e7b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Tabii.cs3",
+    "status": 1,
+    "version": 260328,
+    "name": "Ümitmod-krea6",
+    "internalName": "Tabii",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tabii TV, Radyo, Diziler ve Programlar - TRT içerikleri için en iyi çözüm. Tüm TRT kanallarını ve programlarını tek bir uygulamada izleyin.",
+    "fileSize": 52320,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://cms-tabii-public-image.tabii.com/int/webp/26087.jpeg",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-55d0672a919cbc99e87d07c01cb6978c0278d24dd569b3f79921d04723e5de0f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TrtDinle.cs3",
+    "status": 1,
+    "version": 260701,
+    "name": "Ümitmod-krea7",
+    "internalName": "TrtDinle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TRT Dinle: Müzik, Radyo ve Sesli Kitap.",
+    "fileSize": 29248,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://www.trtdinle.com/icon-192x192.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-a52f03953fef2f1041b28978c02a49baf0f15f981cc51a0f76d22c93643e9812"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TurkTV.cs3",
+    "status": 1,
+    "version": 260329,
+    "name": "Ümitmod-krea8",
+    "internalName": "TurkTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Türk Tv Dizi ve Canlı TV Radyo Yayınları",
+    "fileSize": 146562,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
   }
 ]

@@ -60,6 +60,340 @@
     "fileHash": "sha256-e501d7b8830178c0260ac252a93e78afca704eb2fc2fb1f205de8acc7cc490a4"
   },
   {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
+    "status": 1,
+    "version": 10,
+    "name": "Ümitmod-ozel1",
+    "internalName": "EnglishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "One search result (EnglishW); opening a title fans out to every English source and collects all links. Auto-subtitles included.",
+    "fileSize": 155080,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-480a0d00f6aab93b56f5b16af239e7ebdfe9dfb77e3ecdb0686f7adf8340de88"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Filmmirasım.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-ozel2",
+    "internalName": "Filmmirasım",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Kültür ve Turizm Bakanlığı, kültürel mirasımızın görsel belleğini oluşturan filmlerin muhafazası ve gelecek kuşaklara aktarılması amacıyla Sinema Genel Müdürlüğü bünyesinde oluşturduğu arşivdeki filmleri dijital ortama aktarmakta ve restore etmektedir. ",
+    "fileSize": 15199,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Documentary"
+    ],
+    "iconUrl": "https://filmmirasim.ktb.gov.tr/favicon-r.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-68abdea39a7739549d4e8432946f07c7b9e3943554a8228476b8c2928108ea46"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/TurkishW.cs3",
+    "status": 1,
+    "version": 9,
+    "name": "Ümitmod-ozel3",
+    "internalName": "TurkishW",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tek arama sonucu (TurkishW); bir içeriğe girince tüm kaynaklardan linkleri toplar. Film, Dizi, Anime + Canlı TV.",
+    "fileSize": 345680,
+    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Live"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
+    "apiVersion": 1,
+    "fileHash": "sha256-ab26d8aafc82233a72d5376c88315166390fc2965679e2ae5d49e9726a5fc8c2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Aio.cs3",
+    "status": 1,
+    "version": 260801,
+    "name": "Ümitmod-krea1",
+    "internalName": "Aio",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "AIO - Türk TV Dizi ve Kanalları",
+    "fileSize": 281479,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Live",
+      "Anime",
+      "Documentary",
+      "Cartoon",
+      "Music"
+    ],
+    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-73abb40b3fbcaf555642327ded53f1647e5d1c02df468c6a201c4f500520bcde"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/DiziYou.cs3",
+    "status": 1,
+    "version": 260618,
+    "name": "Ümitmod-krea2",
+    "internalName": "DiziYou",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Diziyou en kaliteli Türkçe dublaj ve altyazılı yabancı dizi izleme sitesidir. Güncel ve efsanevi dizileri 1080p Full HD kalitede izlemek için hemen tıkla!",
+    "fileSize": 17114,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.diziyou.co&sz=%size%",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-cd16c7bd40bfa51a73c6a961a3b54f29cbad3988bf9d18a55c759eb6bfbb3d90"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/IPTV.cs3",
+    "status": 1,
+    "version": 260603,
+    "name": "Ümitmod-krea3",
+    "internalName": "IPTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "General IPTV player. Add a list in the settings and you'll see it in the plugins list in the home",
+    "fileSize": 60859,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://www.shutterstock.com/image-vector/iptv-vector-line-icon-ip-260nw-1841427610.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-b0329d961794f9f884706c0166b35550f510b12a8868645a8a815a7a062a04d0"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaStream.cs3",
+    "status": 1,
+    "version": 260901,
+    "name": "Ümitmod-krea4",
+    "internalName": "KreaStream",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film, Dizi, Canlı TV",
+    "fileSize": 568791,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/main/images/kreastreamLogo1.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-3056aeb605742b83f1cd33073450052c7994764b07dadcd5ab9223178b093731"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaTube.cs3",
+    "status": 1,
+    "version": 260114,
+    "name": "Ümitmod-krea5",
+    "internalName": "KreaTube",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Videos, playlists and channels from YouTube",
+    "fileSize": 51303,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Others"
+    ],
+    "iconUrl": "https://www.youtube.com/s/desktop/711fd789/img/logos/favicon_144x144.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-71cffc570a35dd59f4d30ba793b6350a069ad8969d794e4cf4e7118752df9e7b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Tabii.cs3",
+    "status": 1,
+    "version": 260328,
+    "name": "Ümitmod-krea6",
+    "internalName": "Tabii",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tabii TV, Radyo, Diziler ve Programlar - TRT içerikleri için en iyi çözüm. Tüm TRT kanallarını ve programlarını tek bir uygulamada izleyin.",
+    "fileSize": 52320,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://cms-tabii-public-image.tabii.com/int/webp/26087.jpeg",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-55d0672a919cbc99e87d07c01cb6978c0278d24dd569b3f79921d04723e5de0f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TrtDinle.cs3",
+    "status": 1,
+    "version": 260701,
+    "name": "Ümitmod-krea7",
+    "internalName": "TrtDinle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TRT Dinle: Müzik, Radyo ve Sesli Kitap.",
+    "fileSize": 29248,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://www.trtdinle.com/icon-192x192.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-a52f03953fef2f1041b28978c02a49baf0f15f981cc51a0f76d22c93643e9812"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TurkTV.cs3",
+    "status": 1,
+    "version": 260329,
+    "name": "Ümitmod-krea8",
+    "internalName": "TurkTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Türk Tv Dizi ve Canlı TV Radyo Yayınları",
+    "fileSize": 146562,
+    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
+    "tvTypes": [
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
+    "apiVersion": 1,
+    "language": "tr",
+    "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
+  },
+  {
+    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
+    "fileHash": "sha256-4028d8f35d1825f88b578bc7ed0d9b43799013af07d6d69a6f24809d71fe5cc2",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 118481,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 16,
+    "internalName": "Cloud-Sync",
+    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
+    "name": "Ümitmod-plt1"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
+    "fileHash": "sha256-e90a8c6ba00760f15308462ed67b5e342e429d6ba6738e12376aadd17951a552",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 77525,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 8,
+    "internalName": "plt-party",
+    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
+    "name": "Ümitmod-plt2"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
+    "fileHash": "sha256-8ea11d5478e217810dffff1b813cca032774caed3edbb2fbbeb37d924d5c6a08",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 483892,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Documentary"
+    ],
+    "version": 55,
+    "internalName": "plt-stream",
+    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
+    "name": "Ümitmod-plt3"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
+    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 45596,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Live"
+    ],
+    "version": 5,
+    "internalName": "plt-tv",
+    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
+    "name": "Ümitmod-plt4"
+  },
+  {
+    "iconUrl": "https://trakt.tv/assets/logos/header@2x-d9961f6e076615b3c2b87d90d3d5f992.png",
+    "fileHash": "sha256-ede302067ca1b0eac39b27b4a5b65c4908d35529ef9fac47e5daa8f64b8f53db",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
+    "fileSize": 99287,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "All"
+    ],
+    "version": 2,
+    "internalName": "trakt-sync",
+    "description": "İzlenen içerikleri otomatik izlendi olarak işaretler ve izleme listesini senkronize eder.",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/trakt-sync.cs3",
+    "name": "Ümitmod-plt5"
+  },
+  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/18EU.cs3",
     "status": 1,
     "version": 3,
@@ -82,14 +416,14 @@
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/3XChina.cs3",
     "status": 1,
-    "version": 1,
+    "version": 2,
     "name": "Ümitmod-gizli2",
     "internalName": "3XChina",
     "authors": [
       "Umitmod"
     ],
     "description": "Watch free chinese av, china av, MD series. Jelly Media. Jingdong Pictures. Tianmei Media. Taiwan SWAG, stream online amateur sex, 91porn",
-    "fileSize": 19210,
+    "fileSize": 22113,
     "repositoryUrl": "https://github.com/Kraptor123/Cs-GizliKeyif",
     "language": "zh",
     "tvTypes": [
@@ -97,7 +431,7 @@
     ],
     "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://3xchina.net/szl-036/&size=128",
     "apiVersion": 1,
-    "fileHash": "sha256-c85dcb6a5a36c0c773134dc10cffe377f5936d644b44c9db8f4a96a7f4d73634"
+    "fileHash": "sha256-fce3e5c751f0a238706f9d8fa9e5f286f63a3aac1618c1d6b5415358247140fc"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/AdultDeepFakes.cs3",
@@ -640,10 +974,30 @@
     "fileHash": "sha256-7a169df01445aef230f41da32e0ba509eacc78e393e340f122d8cfab7e602592"
   },
   {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/FapGoat.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-gizli30",
+    "internalName": "FapGoat",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Free HD porn on FapGoat,  no sign-up, no paywall. Thousands of hand-picked scenes across every category and your favourite pornstars. Hit play and fap like a GOAT.",
+    "fileSize": 15535,
+    "repositoryUrl": "https://github.com/Kraptor123/Cs-GizliKeyif",
+    "language": "en",
+    "tvTypes": [
+      "NSFW"
+    ],
+    "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://fapgoat.com/&size=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-089bf3c535eebb4df2f1b3ee222311e091a144ae472f3dc8a2418afcf2f8e839"
+  },
+  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Fapix.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli30",
+    "name": "Ümitmod-gizli31",
     "internalName": "Fapix",
     "authors": [
       "Umitmod"
@@ -663,7 +1017,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/FitNakedGirls.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli31",
+    "name": "Ümitmod-gizli32",
     "internalName": "FitNakedGirls",
     "authors": [
       "Umitmod"
@@ -683,7 +1037,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/FreePornVideos.cs3",
     "status": 1,
     "version": 5,
-    "name": "Ümitmod-gizli32",
+    "name": "Ümitmod-gizli33",
     "internalName": "FreePornVideos",
     "authors": [
       "Umitmod"
@@ -703,7 +1057,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/FreeUsePorn.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli33",
+    "name": "Ümitmod-gizli34",
     "internalName": "FreeUsePorn",
     "authors": [
       "Umitmod"
@@ -723,7 +1077,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/FullPorner.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli34",
+    "name": "Ümitmod-gizli35",
     "internalName": "FullPorner",
     "authors": [
       "Umitmod"
@@ -743,7 +1097,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Fyptt.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli35",
+    "name": "Ümitmod-gizli36",
     "internalName": "Fyptt",
     "authors": [
       "Umitmod"
@@ -763,7 +1117,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Girlsswallowed.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli36",
+    "name": "Ümitmod-gizli37",
     "internalName": "Girlsswallowed",
     "authors": [
       "Umitmod"
@@ -783,7 +1137,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HanimeTV.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli37",
+    "name": "Ümitmod-gizli38",
     "internalName": "HanimeTV",
     "authors": [
       "Umitmod"
@@ -803,7 +1157,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HdAbla.cs3",
     "status": 1,
     "version": 5,
-    "name": "Ümitmod-gizli38",
+    "name": "Ümitmod-gizli39",
     "internalName": "HdAbla",
     "authors": [
       "Umitmod"
@@ -823,7 +1177,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HeavyR.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli39",
+    "name": "Ümitmod-gizli40",
     "internalName": "HeavyR",
     "authors": [
       "Umitmod"
@@ -843,7 +1197,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HentaiCity.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli40",
+    "name": "Ümitmod-gizli41",
     "internalName": "HentaiCity",
     "authors": [
       "Umitmod"
@@ -863,7 +1217,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Hentaila.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli41",
+    "name": "Ümitmod-gizli42",
     "internalName": "Hentaila",
     "authors": [
       "Umitmod"
@@ -880,10 +1234,30 @@
     "fileHash": "sha256-dd13575d2b7c62756a4ba7499caee5329e794796d5a070874b8f1ff9dc3a49b4"
   },
   {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Horny69.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-gizli43",
+    "internalName": "Horny69",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Watch free HD & 4K XXX on Horny69 - premium porn from Brazzers, Blacked, Tushy & top studios. New full videos every day. Stream instantly, no sign-up.",
+    "fileSize": 12282,
+    "repositoryUrl": "https://github.com/Kraptor123/Cs-GizliKeyif",
+    "language": "en",
+    "tvTypes": [
+      "NSFW"
+    ],
+    "iconUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.horny69.com/&size=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-e5369815dea6f0819fd4a272d03f634e3c31f5200f5da399bd604e5b20edfa17"
+  },
+  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HotLeak.cs3",
     "status": 1,
     "version": 5,
-    "name": "Ümitmod-gizli42",
+    "name": "Ümitmod-gizli44",
     "internalName": "HotLeak",
     "authors": [
       "Umitmod"
@@ -903,7 +1277,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HQCollect.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli43",
+    "name": "Ümitmod-gizli45",
     "internalName": "HQCollect",
     "authors": [
       "Umitmod"
@@ -923,7 +1297,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/HQPorner.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli44",
+    "name": "Ümitmod-gizli46",
     "internalName": "HQPorner",
     "authors": [
       "Umitmod"
@@ -943,7 +1317,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/İnfluencerChicks.cs3",
     "status": 1,
     "version": 6,
-    "name": "Ümitmod-gizli45",
+    "name": "Ümitmod-gizli47",
     "internalName": "İnfluencerChicks",
     "authors": [
       "Umitmod"
@@ -963,7 +1337,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/JavGuru.cs3",
     "status": 1,
     "version": 17,
-    "name": "Ümitmod-gizli46",
+    "name": "Ümitmod-gizli48",
     "internalName": "JavGuru",
     "authors": [
       "Umitmod"
@@ -983,7 +1357,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Javseen.cs3",
     "status": 1,
     "version": 8,
-    "name": "Ümitmod-gizli47",
+    "name": "Ümitmod-gizli49",
     "internalName": "Javseen",
     "authors": [
       "Umitmod"
@@ -1003,7 +1377,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Javtiful.cs3",
     "status": 1,
     "version": 5,
-    "name": "Ümitmod-gizli48",
+    "name": "Ümitmod-gizli50",
     "internalName": "Javtiful",
     "authors": [
       "Umitmod"
@@ -1023,7 +1397,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Kalite18.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli49",
+    "name": "Ümitmod-gizli51",
     "internalName": "Kalite18",
     "authors": [
       "Umitmod"
@@ -1043,7 +1417,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Kopeda.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli50",
+    "name": "Ümitmod-gizli52",
     "internalName": "Kopeda",
     "authors": [
       "Umitmod"
@@ -1063,7 +1437,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Koreanpornmovie.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli51",
+    "name": "Ümitmod-gizli53",
     "internalName": "Koreanpornmovie",
     "authors": [
       "Umitmod"
@@ -1083,7 +1457,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Koreaye.cs3",
     "status": 1,
     "version": 9,
-    "name": "Ümitmod-gizli52",
+    "name": "Ümitmod-gizli54",
     "internalName": "Koreaye",
     "authors": [
       "Umitmod"
@@ -1103,7 +1477,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/LiveCamRips.cs3",
     "status": 1,
     "version": 17,
-    "name": "Ümitmod-gizli53",
+    "name": "Ümitmod-gizli55",
     "internalName": "LiveCamRips",
     "authors": [
       "Umitmod"
@@ -1123,7 +1497,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Maheir.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli54",
+    "name": "Ümitmod-gizli56",
     "internalName": "Maheir",
     "authors": [
       "Umitmod"
@@ -1143,7 +1517,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Mangoporn.cs3",
     "status": 1,
     "version": 26,
-    "name": "Ümitmod-gizli55",
+    "name": "Ümitmod-gizli57",
     "internalName": "Mangoporn",
     "authors": [
       "Umitmod"
@@ -1163,7 +1537,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Max.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli56",
+    "name": "Ümitmod-gizli58",
     "internalName": "Max",
     "authors": [
       "Umitmod"
@@ -1183,7 +1557,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/MilfNut.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli57",
+    "name": "Ümitmod-gizli59",
     "internalName": "MilfNut",
     "authors": [
       "Umitmod"
@@ -1203,7 +1577,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/MissAV.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli58",
+    "name": "Ümitmod-gizli60",
     "internalName": "MissAV",
     "authors": [
       "Umitmod"
@@ -1223,7 +1597,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/NetFapX.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli59",
+    "name": "Ümitmod-gizli61",
     "internalName": "NetFapX",
     "authors": [
       "Umitmod"
@@ -1243,7 +1617,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/NoodleMagazine.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli60",
+    "name": "Ümitmod-gizli62",
     "internalName": "NoodleMagazine",
     "authors": [
       "Umitmod"
@@ -1263,7 +1637,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Notmik.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli61",
+    "name": "Ümitmod-gizli63",
     "internalName": "Notmik",
     "authors": [
       "Umitmod"
@@ -1283,7 +1657,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/OnScreens.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli62",
+    "name": "Ümitmod-gizli64",
     "internalName": "OnScreens",
     "authors": [
       "Umitmod"
@@ -1303,7 +1677,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/OppaiStream.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli63",
+    "name": "Ümitmod-gizli65",
     "internalName": "OppaiStream",
     "authors": [
       "Umitmod"
@@ -1323,7 +1697,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PerfectGirls.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli64",
+    "name": "Ümitmod-gizli66",
     "internalName": "PerfectGirls",
     "authors": [
       "Umitmod"
@@ -1343,7 +1717,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PerverZija.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli65",
+    "name": "Ümitmod-gizli67",
     "internalName": "PerverZija",
     "authors": [
       "Umitmod"
@@ -1363,7 +1737,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Pimpbunny.cs3",
     "status": 1,
     "version": 10,
-    "name": "Ümitmod-gizli66",
+    "name": "Ümitmod-gizli68",
     "internalName": "Pimpbunny",
     "authors": [
       "Umitmod"
@@ -1383,7 +1757,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Pinkueiga.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli67",
+    "name": "Ümitmod-gizli69",
     "internalName": "Pinkueiga",
     "authors": [
       "Umitmod"
@@ -1403,7 +1777,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PMVHaven.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli68",
+    "name": "Ümitmod-gizli70",
     "internalName": "PMVHaven",
     "authors": [
       "Umitmod"
@@ -1423,7 +1797,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Porn00.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli69",
+    "name": "Ümitmod-gizli71",
     "internalName": "Porn00",
     "authors": [
       "Umitmod"
@@ -1443,7 +1817,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Porn36.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli70",
+    "name": "Ümitmod-gizli72",
     "internalName": "Porn36",
     "authors": [
       "Umitmod"
@@ -1463,7 +1837,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PornHat.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli71",
+    "name": "Ümitmod-gizli73",
     "internalName": "PornHat",
     "authors": [
       "Umitmod"
@@ -1483,7 +1857,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PornHub.cs3",
     "status": 1,
     "version": 6,
-    "name": "Ümitmod-gizli72",
+    "name": "Ümitmod-gizli74",
     "internalName": "PornHub",
     "authors": [
       "Umitmod"
@@ -1503,7 +1877,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Pornocarioca.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli73",
+    "name": "Ümitmod-gizli75",
     "internalName": "Pornocarioca",
     "authors": [
       "Umitmod"
@@ -1523,7 +1897,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Pornslash.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli74",
+    "name": "Ümitmod-gizli76",
     "internalName": "Pornslash",
     "authors": [
       "Umitmod"
@@ -1543,7 +1917,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Porntrex.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli75",
+    "name": "Ümitmod-gizli77",
     "internalName": "Porntrex",
     "authors": [
       "Umitmod"
@@ -1563,7 +1937,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/PornWatch.cs3",
     "status": 1,
     "version": 16,
-    "name": "Ümitmod-gizli76",
+    "name": "Ümitmod-gizli78",
     "internalName": "PornWatch",
     "authors": [
       "Umitmod"
@@ -1583,7 +1957,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Pvip.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli77",
+    "name": "Ümitmod-gizli79",
     "internalName": "Pvip",
     "authors": [
       "Umitmod"
@@ -1603,7 +1977,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Redgifs.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli78",
+    "name": "Ümitmod-gizli80",
     "internalName": "Redgifs",
     "authors": [
       "Umitmod"
@@ -1623,7 +1997,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/RoshyTv.cs3",
     "status": 1,
     "version": 8,
-    "name": "Ümitmod-gizli79",
+    "name": "Ümitmod-gizli81",
     "internalName": "RoshyTv",
     "authors": [
       "Umitmod"
@@ -1643,7 +2017,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/RouVideo.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli80",
+    "name": "Ümitmod-gizli82",
     "internalName": "RouVideo",
     "authors": [
       "Umitmod"
@@ -1663,7 +2037,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Rule34video.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli81",
+    "name": "Ümitmod-gizli83",
     "internalName": "Rule34video",
     "authors": [
       "Umitmod"
@@ -1683,7 +2057,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Rusporn.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli82",
+    "name": "Ümitmod-gizli84",
     "internalName": "Rusporn",
     "authors": [
       "Umitmod"
@@ -1703,7 +2077,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Sexfilm.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli83",
+    "name": "Ümitmod-gizli85",
     "internalName": "Sexfilm",
     "authors": [
       "Umitmod"
@@ -1723,7 +2097,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/SexTB.cs3",
     "status": 1,
     "version": 13,
-    "name": "Ümitmod-gizli84",
+    "name": "Ümitmod-gizli86",
     "internalName": "SexTB",
     "authors": [
       "Umitmod"
@@ -1743,7 +2117,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/SimpCity.cs3",
     "status": 1,
     "version": 9,
-    "name": "Ümitmod-gizli85",
+    "name": "Ümitmod-gizli87",
     "internalName": "SimpCity",
     "authors": [
       "Umitmod"
@@ -1763,7 +2137,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Sxyprn.cs3",
     "status": 1,
     "version": 8,
-    "name": "Ümitmod-gizli86",
+    "name": "Ümitmod-gizli88",
     "internalName": "Sxyprn",
     "authors": [
       "Umitmod"
@@ -1783,7 +2157,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/ThaiPorn.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli87",
+    "name": "Ümitmod-gizli89",
     "internalName": "ThaiPorn",
     "authors": [
       "Umitmod"
@@ -1803,7 +2177,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/ThotDeep.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli88",
+    "name": "Ümitmod-gizli90",
     "internalName": "ThotDeep",
     "authors": [
       "Umitmod"
@@ -1823,7 +2197,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Tubepornclassic.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli89",
+    "name": "Ümitmod-gizli91",
     "internalName": "Tubepornclassic",
     "authors": [
       "Umitmod"
@@ -1843,7 +2217,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/TurkHub.cs3",
     "status": 1,
     "version": 79,
-    "name": "Ümitmod-gizli90",
+    "name": "Ümitmod-gizli92",
     "internalName": "TurkHub",
     "authors": [
       "Umitmod"
@@ -1863,7 +2237,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/TurkIfsalar.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli91",
+    "name": "Ümitmod-gizli93",
     "internalName": "TurkIfsalar",
     "authors": [
       "Umitmod"
@@ -1883,7 +2257,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/TurkPorno.cs3",
     "status": 1,
     "version": 133,
-    "name": "Ümitmod-gizli92",
+    "name": "Ümitmod-gizli94",
     "internalName": "TurkPorno",
     "authors": [
       "Umitmod"
@@ -1903,7 +2277,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/UnusualPornX.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli93",
+    "name": "Ümitmod-gizli95",
     "internalName": "UnusualPornX",
     "authors": [
       "Umitmod"
@@ -1923,7 +2297,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/VideoCelebs.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli94",
+    "name": "Ümitmod-gizli96",
     "internalName": "VideoCelebs",
     "authors": [
       "Umitmod"
@@ -1943,7 +2317,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Vsex.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli95",
+    "name": "Ümitmod-gizli97",
     "internalName": "Vsex",
     "authors": [
       "Umitmod"
@@ -1963,7 +2337,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/WatchHentai.cs3",
     "status": 1,
     "version": 1,
-    "name": "Ümitmod-gizli96",
+    "name": "Ümitmod-gizli98",
     "internalName": "WatchHentai",
     "authors": [
       "Umitmod"
@@ -1983,7 +2357,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/WatchPorn.cs3",
     "status": 1,
     "version": 5,
-    "name": "Ümitmod-gizli97",
+    "name": "Ümitmod-gizli99",
     "internalName": "WatchPorn",
     "authors": [
       "Umitmod"
@@ -2003,7 +2377,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Wumaobi.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli98",
+    "name": "Ümitmod-gizli100",
     "internalName": "Wumaobi",
     "authors": [
       "Umitmod"
@@ -2023,7 +2397,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/XChina.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli99",
+    "name": "Ümitmod-gizli101",
     "internalName": "XChina",
     "authors": [
       "Umitmod"
@@ -2043,7 +2417,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Xhamster.cs3",
     "status": 1,
     "version": 11,
-    "name": "Ümitmod-gizli100",
+    "name": "Ümitmod-gizli102",
     "internalName": "Xhamster",
     "authors": [
       "Umitmod"
@@ -2063,7 +2437,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/XMoviesForYou.cs3",
     "status": 1,
     "version": 10,
-    "name": "Ümitmod-gizli101",
+    "name": "Ümitmod-gizli103",
     "internalName": "XMoviesForYou",
     "authors": [
       "Umitmod"
@@ -2083,7 +2457,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/XNalgas.cs3",
     "status": 1,
     "version": 4,
-    "name": "Ümitmod-gizli102",
+    "name": "Ümitmod-gizli104",
     "internalName": "XNalgas",
     "authors": [
       "Umitmod"
@@ -2103,7 +2477,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Xpaja.cs3",
     "status": 1,
     "version": 9,
-    "name": "Ümitmod-gizli103",
+    "name": "Ümitmod-gizli105",
     "internalName": "Xpaja",
     "authors": [
       "Umitmod"
@@ -2123,7 +2497,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/XRares.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli104",
+    "name": "Ümitmod-gizli106",
     "internalName": "XRares",
     "authors": [
       "Umitmod"
@@ -2143,7 +2517,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/xVideos.cs3",
     "status": 1,
     "version": 7,
-    "name": "Ümitmod-gizli105",
+    "name": "Ümitmod-gizli107",
     "internalName": "xVideos",
     "authors": [
       "Umitmod"
@@ -2166,7 +2540,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/XXXParodyHD.cs3",
     "status": 1,
     "version": 9,
-    "name": "Ümitmod-gizli106",
+    "name": "Ümitmod-gizli108",
     "internalName": "XXXParodyHD",
     "authors": [
       "Umitmod"
@@ -2186,7 +2560,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/YouJizz.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli107",
+    "name": "Ümitmod-gizli109",
     "internalName": "YouJizz",
     "authors": [
       "Umitmod"
@@ -2206,7 +2580,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/Youperv.cs3",
     "status": 1,
     "version": 3,
-    "name": "Ümitmod-gizli108",
+    "name": "Ümitmod-gizli110",
     "internalName": "Youperv",
     "authors": [
       "Umitmod"
@@ -2226,7 +2600,7 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/gizlikeyif-mirror/YTBoob.cs3",
     "status": 1,
     "version": 2,
-    "name": "Ümitmod-gizli109",
+    "name": "Ümitmod-gizli111",
     "internalName": "YTBoob",
     "authors": [
       "Umitmod"
@@ -2241,339 +2615,5 @@
     "iconUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ytboob.com&size=128",
     "apiVersion": 1,
     "fileHash": "sha256-6572bad9e83f59ddc31ac04608b942fee68d19f0ffb7ca296bdb38dfbafcc1c8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
-    "status": 1,
-    "version": 10,
-    "name": "Ümitmod-ozel1",
-    "internalName": "EnglishW",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "One search result (EnglishW); opening a title fans out to every English source and collects all links. Auto-subtitles included.",
-    "fileSize": 155080,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
-    "apiVersion": 1,
-    "fileHash": "sha256-480a0d00f6aab93b56f5b16af239e7ebdfe9dfb77e3ecdb0686f7adf8340de88"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/Filmmirasım.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-ozel2",
-    "internalName": "Filmmirasım",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Kültür ve Turizm Bakanlığı, kültürel mirasımızın görsel belleğini oluşturan filmlerin muhafazası ve gelecek kuşaklara aktarılması amacıyla Sinema Genel Müdürlüğü bünyesinde oluşturduğu arşivdeki filmleri dijital ortama aktarmakta ve restore etmektedir. ",
-    "fileSize": 15199,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "tr",
-    "tvTypes": [
-      "Documentary"
-    ],
-    "iconUrl": "https://filmmirasim.ktb.gov.tr/favicon-r.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-68abdea39a7739549d4e8432946f07c7b9e3943554a8228476b8c2928108ea46"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/TurkishW.cs3",
-    "status": 1,
-    "version": 9,
-    "name": "Ümitmod-ozel3",
-    "internalName": "TurkishW",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tek arama sonucu (TurkishW); bir içeriğe girince tüm kaynaklardan linkleri toplar. Film, Dizi, Anime + Canlı TV.",
-    "fileSize": 345680,
-    "repositoryUrl": "https://github.com/ctnkyaumt/cstest",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Live"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
-    "apiVersion": 1,
-    "fileHash": "sha256-ab26d8aafc82233a72d5376c88315166390fc2965679e2ae5d49e9726a5fc8c2"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Aio.cs3",
-    "status": 1,
-    "version": 260801,
-    "name": "Ümitmod-krea1",
-    "internalName": "Aio",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "AIO - Türk TV Dizi ve Kanalları",
-    "fileSize": 281479,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Live",
-      "Anime",
-      "Documentary",
-      "Cartoon",
-      "Music"
-    ],
-    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-73abb40b3fbcaf555642327ded53f1647e5d1c02df468c6a201c4f500520bcde"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/DiziYou.cs3",
-    "status": 1,
-    "version": 260618,
-    "name": "Ümitmod-krea2",
-    "internalName": "DiziYou",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Diziyou en kaliteli Türkçe dublaj ve altyazılı yabancı dizi izleme sitesidir. Güncel ve efsanevi dizileri 1080p Full HD kalitede izlemek için hemen tıkla!",
-    "fileSize": 17114,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.diziyou.co&sz=%size%",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-cd16c7bd40bfa51a73c6a961a3b54f29cbad3988bf9d18a55c759eb6bfbb3d90"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/IPTV.cs3",
-    "status": 1,
-    "version": 260603,
-    "name": "Ümitmod-krea3",
-    "internalName": "IPTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "General IPTV player. Add a list in the settings and you'll see it in the plugins list in the home",
-    "fileSize": 60859,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://www.shutterstock.com/image-vector/iptv-vector-line-icon-ip-260nw-1841427610.jpg",
-    "apiVersion": 1,
-    "fileHash": "sha256-b0329d961794f9f884706c0166b35550f510b12a8868645a8a815a7a062a04d0"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaStream.cs3",
-    "status": 1,
-    "version": 260901,
-    "name": "Ümitmod-krea4",
-    "internalName": "KreaStream",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film, Dizi, Canlı TV",
-    "fileSize": 568791,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/main/images/kreastreamLogo1.png",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-3056aeb605742b83f1cd33073450052c7994764b07dadcd5ab9223178b093731"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/KreaTube.cs3",
-    "status": 1,
-    "version": 260114,
-    "name": "Ümitmod-krea5",
-    "internalName": "KreaTube",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Videos, playlists and channels from YouTube",
-    "fileSize": 51303,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "Others"
-    ],
-    "iconUrl": "https://www.youtube.com/s/desktop/711fd789/img/logos/favicon_144x144.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-71cffc570a35dd59f4d30ba793b6350a069ad8969d794e4cf4e7118752df9e7b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/Tabii.cs3",
-    "status": 1,
-    "version": 260328,
-    "name": "Ümitmod-krea6",
-    "internalName": "Tabii",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tabii TV, Radyo, Diziler ve Programlar - TRT içerikleri için en iyi çözüm. Tüm TRT kanallarını ve programlarını tek bir uygulamada izleyin.",
-    "fileSize": 52320,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://cms-tabii-public-image.tabii.com/int/webp/26087.jpeg",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-55d0672a919cbc99e87d07c01cb6978c0278d24dd569b3f79921d04723e5de0f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TrtDinle.cs3",
-    "status": 1,
-    "version": 260701,
-    "name": "Ümitmod-krea7",
-    "internalName": "TrtDinle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TRT Dinle: Müzik, Radyo ve Sesli Kitap.",
-    "fileSize": 29248,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://www.trtdinle.com/icon-192x192.png",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-a52f03953fef2f1041b28978c02a49baf0f15f981cc51a0f76d22c93643e9812"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/kreastream-mirror/TurkTV.cs3",
-    "status": 1,
-    "version": 260329,
-    "name": "Ümitmod-krea8",
-    "internalName": "TurkTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Türk Tv Dizi ve Canlı TV Radyo Yayınları",
-    "fileSize": 146562,
-    "repositoryUrl": "https://raw.githubusercontent.com/kreadir/kreaStream/",
-    "tvTypes": [
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://m.media-amazon.com/images/I/41fJO1NxFxL.png",
-    "apiVersion": 1,
-    "language": "tr",
-    "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
-  },
-  {
-    "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
-    "fileHash": "sha256-4028d8f35d1825f88b578bc7ed0d9b43799013af07d6d69a6f24809d71fe5cc2",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 118481,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 16,
-    "internalName": "Cloud-Sync",
-    "description": "Cloud sync plugin for Cloudstream - syncs bookmarks, settings, extensions, watch history across devices",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/Cloud-Sync.cs3",
-    "name": "Ümitmod-plt1"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_party.png",
-    "fileHash": "sha256-e90a8c6ba00760f15308462ed67b5e342e429d6ba6738e12376aadd17951a552",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 77525,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 8,
-    "internalName": "plt-party",
-    "description": "plt-party - Sevdiklerinizle senkronize bir şekilde izlemenizi sağlar.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-party.cs3",
-    "name": "Ümitmod-plt2"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon.png",
-    "fileHash": "sha256-8ea11d5478e217810dffff1b813cca032774caed3edbb2fbbeb37d924d5c6a08",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 483892,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Documentary"
-    ],
-    "version": 55,
-    "internalName": "plt-stream",
-    "description": "plt-stream - Birden fazla siteden içerik sağlayan bir eklenti",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-stream.cs3",
-    "name": "Ümitmod-plt3"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/pltmustafa/plt-stream/master/icon_tv.png",
-    "fileHash": "sha256-46ecee43bb0017102d8412ec861e2eda2a0d7aaa5595b031e36a990dba441c35",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 45596,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Live"
-    ],
-    "version": 5,
-    "internalName": "plt-tv",
-    "description": "plt-tv - M3U/M3U8 çalma listeleri ve canlı TV yayınlarını oynatıcı eklentisi",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/plt-tv.cs3",
-    "name": "Ümitmod-plt4"
-  },
-  {
-    "iconUrl": "https://trakt.tv/assets/logos/header@2x-d9961f6e076615b3c2b87d90d3d5f992.png",
-    "fileHash": "sha256-ede302067ca1b0eac39b27b4a5b65c4908d35529ef9fac47e5daa8f64b8f53db",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/pltmustafa/plt-stream",
-    "fileSize": 99287,
-    "status": 1,
-    "language": "tr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "All"
-    ],
-    "version": 2,
-    "internalName": "trakt-sync",
-    "description": "İzlenen içerikleri otomatik izlendi olarak işaretler ve izleme listesini senkronize eder.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/pltstream-mirror/trakt-sync.cs3",
-    "name": "Ümitmod-plt5"
   }
 ]

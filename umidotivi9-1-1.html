@@ -19581,32 +19581,6 @@ const EPG_MULTI_SOURCES = [
 const STREAM_PROXY = 'https://proxy.umitmodpremiumtr.workers.dev/?stream='; // primary
 const STREAM_PROXY2 = 'https://turk.sadecenjoy.workers.dev/proxy?url=';
 const STREAM_PROXY3 = 'https://proxy.umittv.workers.dev/?url=';
-// [özellik: "Xtream redirect zincirini takip edemiyor" — tv-izle
-// projesinde eklenen worker buraya da taşındı] Bazı Xtream/IPTV
-// panelleri .../USER/PASS/STREAM_ID (ya da live/movie/series önekli)
-// linkine istek atıldığında sunucu tarafında 302 ile başka bir
-// domain+token'a yönlendiriyor. Aşağıdaki REDIRECT_RESOLVE_DOMAINS +
-// _resolveRedirectM3u8 mekanizması bunu STREAM_PROXY'nin metin
-// içeriğini fetch edip elle parse ederek çözmeye çalışıyordu; bu yeni
-// worker aynı işi SUNUCU TARAFINDA (redirect:'follow' ile) yapıp,
-// ayrıca m3u8 içindeki segment/anahtar linklerini de kendi üzerinden
-// geçecek şekilde yeniden yazıyor — segment'ler de aynı redirect
-// zincirine tabi olabildiğinden bu, sadece ana manifest'i çözmekten
-// daha güvenilir. Kaynak: xtream-proxy-worker.js
-const XTREAM_RESOLVE_PROXY = 'https://x-real-ip.umitm0d.workers.dev/resolve?url=';
-// Xtream canlı/VOD/dizi linklerinin tipik şekilleri:
-//   .../USERNAME/PASSWORD/STREAM_ID              (canlı, kısa form)
-//   .../live/USERNAME/PASSWORD/STREAM_ID(.ts)     (canlı, uzun form)
-//   .../movie/USERNAME/PASSWORD/STREAM_ID.ext     (VOD/film)
-//   .../series/USERNAME/PASSWORD/STREAM_ID.ext    (dizi bölümü)
-// user/pass segmentlerinde nokta OLMAMASI şartı var — aksi halde
-// "/movie/kullanici/15.08.2022/113.mp4" gibi tarih-klasörlü, Xtream
-// olmayan linkler de (ikinci segment nokta içerdiği için) yanlışlıkla
-// eşleşebiliyordu.
-const XTREAM_STREAMID_PATTERN = /^https?:\/\/[^/]+\/(?:(?:live|movie|series)\/)?[^./]+\/[^./]+\/\d+(?:\.\w+)?(\?.*)?$/i;
-function isXtreamRedirectUrl(u){
-    return XTREAM_STREAMID_PATTERN.test(u);
-}
 
 // ── REDIRECT-RESOLVE DOMAINS: fetch ile gerçek URL'yi bul, sonra HLS.js'e ver ──
 // Bu domainler 302 redirect yapıyor; HLS.js redirect'i takip edemez veya CORS patlar.
@@ -44005,14 +43979,6 @@ function resumeChannel(startTime) {
         typeof REDIRECT_RESOLVE_DOMAINS !== 'undefined' &&
         REDIRECT_RESOLVE_DOMAINS.some(d => rawUrl.includes(d));
 
-    // [özellik: "Xtream redirect zincirini takip edemiyor"] Domain listesi
-    // yerine URL ŞEKLİNE bakan ayrı bir tespit — Xtream panellerinin
-    // .../USER/PASS/STREAM_ID linkleri sabit bir domain listesine
-    // sığmıyor (her panelin kendi domaini var), bu yüzden desen bazlı
-    // ayrı bir bayrakla yakalanıp XTREAM_RESOLVE_PROXY worker'ına
-    // yönlendiriliyor.
-    const needsXtreamResolve = !needsDirect && isXtreamRedirectUrl(rawUrl);
-
     // ── Yüksek çözünürlüklü CDN yayın mı? (daioncdn, TRT vb.) ──
     const isHighResDirect = !needsDirect &&
         typeof HIGH_RES_DIRECT_DOMAINS !== 'undefined' &&
@@ -44036,7 +44002,6 @@ function resumeChannel(startTime) {
                      _urlLower.includes('umido.umitm0d.workers.dev') ||
                      _urlLower.includes('vavootobir.umitm0d.workers.dev') ||  // vavootobir Worker → HLS döner
                      _urlLower.includes('kanks.umitm0d2.workers.dev') ||     // kanks Worker (Vavoo proxy) → HLS döner
-                     needsXtreamResolve ||                        // .../USER/PASS/ID (uzantısız/kısa form Xtream) → HLS olarak ele al
                      (ch.isLive === true && !_urlLower.includes('.mp4') &&
                       !_urlLower.includes('.mkv') && !_urlLower.includes('.avi'));
 
@@ -44321,10 +44286,6 @@ function resumeChannel(startTime) {
             } else if (isKoolTo) {
                 showToast('Direkt bağlantı deneniyor...');
                 video.src = rawUrl; video.load(); video.play().catch(()=>{});
-            } else if (needsXtreamResolve && streamUrl.includes('x-real-ip.umitm0d')) {
-                // XTREAM_RESOLVE_PROXY hata verdi → eski STREAM_PROXY zincirine düş
-                showToast('Yedek bağlantı deneniyor...');
-                startHls(STREAM_PROXY + encodeURIComponent(rawUrl));
             } else if (needsStreamProxy && !streamUrl.includes('proxy.umitmodpremiumtr') && !streamUrl.includes('turk.sadecenjoy')) {
                 // Referer korumalı — proxy ile zaten açtık ama hata aldı → yedek proxy dene
                 showToast('Yedek bağlantı deneniyor...');
@@ -44496,17 +44457,6 @@ function resumeChannel(startTime) {
         } else if (needsDirect) {
             // Cloudflare Tunnel, ngrok vb. → direkt
             startHls(rawUrl);
-        } else if (needsXtreamResolve) {
-            // [özellik: "Xtream redirect zincirini takip edemiyor"]
-            // .../USER/PASS/STREAM_ID linkleri sunucu taraflı 302 ile
-            // başka domain+token'a yönlenebiliyor; XTREAM_RESOLVE_PROXY
-            // worker'ı bunu SUNUCU TARAFINDA (redirect:'follow') çözüp,
-            // m3u8 ise segment linklerini de kendi üzerinden geçecek
-            // şekilde yeniden yazarak döndürüyor. Worker hata/timeout
-            // verirse eski needsRedirectResolve mantığındaki gibi
-            // STREAM_PROXY zincirine düşülüyor (aşağıdaki ERROR
-            // handler'daki genel fallback zaten bunu yapıyor).
-            startHls(XTREAM_RESOLVE_PROXY + encodeURIComponent(rawUrl));
         } else if (needsRedirectResolve) {
             // Proxy/redirect m3u8 → fetch ile içeriği al, içindeki gerçek URL'yi parse et
             (async function _resolveRedirectM3u8(origUrl) {

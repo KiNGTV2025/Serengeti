@@ -1557,30 +1557,6 @@
     "fileHash": "sha256-1a2ac7df3316f0ea097fd30c0ffff28d5176c41c2853042d78180e0f55dd4e1a"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TMDB v3 Türkçe katalog (23 ayrıştırılmış kategori), Ultra HD afişler, ClipBox/CineStream direkt TMDB motoru ve 68 sağlayıcıyı (Anizium & Deokwave 4K dahil) tek çatı altında toplayan birleşik sinema ve dizi eklentisi.",
-    "fileSize": 1715150,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Cartoon",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-ebd65f4f4e2819134ffa5900d0c485afddfa9d2af1b6585701580f6931237193"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 14,
@@ -4842,5 +4818,29 @@
     "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ZbahisTV.png",
     "apiVersion": 1,
     "fileHash": "sha256-90c6400f9f4af32049df67103058bfcf2f4fd92519958d560299eb9616d56422"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "status": 3,
+    "version": 6,
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TMDB v3 Türkçe katalog (23 ayrıştırılmış kategori), Ultra HD afişler, ClipBox/CineStream direkt TMDB motoru ve 68 sağlayıcıyı (Anizium & Deokwave 4K dahil) tek çatı altında toplayan birleşik sinema ve dizi eklentisi.",
+    "fileSize": 1792219,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Cartoon",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-06f87f53ab67e58e54502ab716f44b92c897cdd65c800a41e766a3f020de6375"
   }
 ]

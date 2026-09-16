@@ -879,26 +879,6 @@
     "fileHash": "sha256-617b3f6f3aceee40f73faefa50bab66e29eddc11460b46955a705fd921f178de"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
-    "status": 3,
-    "version": 12,
-    "name": "Ümitmod-wiospor1",
-    "internalName": "WioSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
-    "fileSize": 475634,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
-    "apiVersion": 1,
-    "fileHash": "sha256-4c4295d552e574cafaa75fccc665ba672e2c1f6856eaac6b6dcae1f2d604ab98"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/TurkSporDestek.cs3",
     "status": 1,
     "version": 3,
@@ -5292,5 +5272,45 @@
     "description": "YoTurkish - is the most favorite website for watching turkish series with english subtitles for free online, only at yoturkish.to",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/mrc-mirror/YoTurkish.cs3",
     "name": "Ümitmod-mrc57"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
+    "status": 3,
+    "version": 13,
+    "name": "Ümitmod-wiospor1",
+    "internalName": "WioSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
+    "fileSize": 523766,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
+    "apiVersion": 1,
+    "fileHash": "sha256-07e355d77b305a334c452a98fff9a1158712d3859a6fe64e6cf177c26011ea29"
+  },
+  {
+    "name": "Ümitmod-wiospor2",
+    "internalName": "BirdirbirIPTV",
+    "version": 1,
+    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BirdirbirIPTV.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/test/builds/icon.png",
+    "tvTypes": [
+      "Live"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 68841,
+    "fileHash": "sha256-0546e199b22f28a305aea257e0780f687d47c4f77ccd00040f495f78536b11c8",
+    "apiVersion": 1
   }
 ]

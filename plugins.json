@@ -297,26 +297,6 @@
     "fileHash": "sha256-f2d6ad40275481b1e304f60467c9e12f224178845abe55578a36062e6f00bcfb"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
-    "status": 3,
-    "version": 14,
-    "name": "Ümitmod-wiospor1",
-    "internalName": "WioSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
-    "fileSize": 545301,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
-    "apiVersion": 1,
-    "fileHash": "sha256-9fd333674d7bd233f77231a6d828e39f11174ebf6ff8e38ae02023573653c0a3"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/ArdaSpor.cs3",
     "status": 3,
     "version": 11,
@@ -919,26 +899,6 @@
     "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ZbahisTV.png",
     "apiVersion": 1,
     "fileHash": "sha256-90c6400f9f4af32049df67103058bfcf2f4fd92519958d560299eb9616d56422"
-  },
-  {
-    "name": "Ümitmod-turkspor32",
-    "internalName": "BirdirbirIPTV",
-    "version": 1,
-    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BirdirbirIPTV.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/test/builds/icon.png",
-    "tvTypes": [
-      "Live"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 68841,
-    "fileHash": "sha256-0546e199b22f28a305aea257e0780f687d47c4f77ccd00040f495f78536b11c8",
-    "apiVersion": 1
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/AltiYuzAltmisAltiFilmIzle.cs3",
@@ -5715,5 +5675,45 @@
     "description": "YoTurkish - is the most favorite website for watching turkish series with english subtitles for free online, only at yoturkish.to",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/mrc-mirror/YoTurkish.cs3",
     "name": "Ümitmod-mrc70"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
+    "status": 3,
+    "version": 14,
+    "name": "Ümitmod-wiospor1",
+    "internalName": "WioSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
+    "fileSize": 547345,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
+    "apiVersion": 1,
+    "fileHash": "sha256-1b5cece2c7a87720d239035c2f72e8dab7c758e5ec93aa9c6a9d71ffd5cf2db7"
+  },
+  {
+    "name": "Ümitmod-wiospor2",
+    "internalName": "BirdirbirIPTV",
+    "version": 2,
+    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BirdirbirIPTV.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/test/builds/icon.png",
+    "tvTypes": [
+      "Live"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 72273,
+    "fileHash": "sha256-8dfda7be31f3c5bf6ad97b990e96ac59621ffc9d1fed0be7e6f95f82c3426c5f",
+    "apiVersion": 1
   }
 ]

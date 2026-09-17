@@ -297,30 +297,6 @@
     "fileHash": "sha256-f2d6ad40275481b1e304f60467c9e12f224178845abe55578a36062e6f00bcfb"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "status": 3,
-    "version": 13,
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TMDB v3 Türkçe katalog (23 ayrıştırılmış kategori), Ultra HD afişler, ClipBox/CineStream direkt TMDB motoru ve 68 sağlayıcıyı tek çatı altında toplayan birleşik sinema ve dizi eklentisi.",
-    "fileSize": 1917367,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Cartoon",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-a381d011ba370943ee6f2ecadeb295325f58927c66959267cf2c31505405cb4a"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 14,
@@ -5829,16 +5805,38 @@
     "apiVersion": 1
   },
   {
-    "name": "Ümitmod-turksinema64",
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "version": 17,
+    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 1919310,
+    "fileHash": "sha256-717dbdf324a603c77bd9481f73b9b82d8c42a0612620a3ccdb98a9241770b8b0",
+    "apiVersion": 1
+  },
+  {
+    "name": "Ümitmod-wiosinema2",
     "internalName": "DramaDizilerim",
     "version": 1,
     "description": "DramaDizilerim · Asya ve Kore dizileri",
     "authors": [
       "Umitmod"
     ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DramaDizilerim.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/dramadizilerim.png",
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DramaDizilerim.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/dramadizilerim.png",
     "tvTypes": [
       "TvSeries",
       "Movie",
@@ -5851,16 +5849,16 @@
     "apiVersion": 1
   },
   {
-    "name": "Ümitmod-turksinema65",
+    "name": "Ümitmod-wiosinema3",
     "internalName": "NetShort",
     "version": 1,
     "description": "NetShort · Kısa dikey diziler",
     "authors": [
       "Umitmod"
     ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/NetShort.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/netshort.png",
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/NetShort.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/netshort.png",
     "tvTypes": [
       "TvSeries",
       "AsianDrama"

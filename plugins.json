@@ -237,30 +237,6 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/TurkSinema.cs3"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "status": 3,
-    "version": 14,
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TMDB v3 Türkçe katalog (23 ayrıştırılmış kategori), Ultra HD afişler, ClipBox/CineStream direkt TMDB motoru ve 68 sağlayıcıyı (Anizium & Deokwave 4K dahil) tek çatı altında toplayan birleşik sinema ve dizi eklentisi.",
-    "fileSize": 1884928,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Cartoon",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-98208f10b82c22c16aa9a1d74d1ab8245b18f009595905103356f9ff1f1f67ac"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 14,
@@ -5765,25 +5741,49 @@
     "fileHash": "sha256-80b2b4803e880fc5f3b28185b3be25c6d5128bb814b72d967212c0e75dc51ff0"
   },
   {
-    "name": "Ümitmod-turksinema64",
-    "internalName": "TurkAnime",
-    "version": 8,
-    "description": "TurkAnime · Türkçe Altyazılı & Dublajlı Anime Portalı (Film ve Dizi Destekli)",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "status": 3,
+    "version": 12,
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
     "authors": [
       "Umitmod"
     ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/TurkAnime.cs3",
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.turkanime.tv&sz=128",
+    "description": "TMDB v3 Türkçe katalog (23 ayrıştırılmış kategori), Ultra HD afişler, ClipBox/CineStream direkt TMDB motoru ve 68 sağlayıcıyı tek çatı altında toplayan birleşik sinema ve dizi eklentisi.",
+    "fileSize": 1917913,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Cartoon",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-b1bb04127e4b84dfd7d8d85cc72411354018ac3c5d386ee6cf74a9b30cf343a1"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/TurkAnime.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema2",
+    "internalName": "TurkAnime",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TurkAnime · Türkçe Altyazılı & Dublajlı Anime Portalı (Film ve Dizi Destekli)",
+    "fileSize": 58926,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
     "tvTypes": [
       "Anime",
       "Movie",
       "TvSeries"
     ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 58926,
-    "fileHash": "sha256-7c2d987f4df87e064114d3f2afc4878839bed6dd58ea1d72507dd62a38cae2fe",
-    "apiVersion": 1
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.turkanime.tv&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-7c2d987f4df87e064114d3f2afc4878839bed6dd58ea1d72507dd62a38cae2fe"
   }
 ]

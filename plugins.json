@@ -297,29 +297,6 @@
     "fileHash": "sha256-f2d6ad40275481b1e304f60467c9e12f224178845abe55578a36062e6f00bcfb"
   },
   {
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "version": 24,
-    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 2007599,
-    "fileHash": "sha256-5c6f32e4c5e5995de2de3105d7b4b11d240e35852a505d0c80c8c6657c2b1b9e",
-    "apiVersion": 1,
-    "hash": "5c6f32e4c5e5995de2de3105d7b4b11d240e35852a505d0c80c8c6657c2b1b9e"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 14,
@@ -5934,5 +5911,28 @@
     "fileSize": 73502,
     "fileHash": "sha256-dd6bbc72a37ff6301339dd7e4822490631ca58efa61a22ac1dc8198d394ab809",
     "apiVersion": 1
+  },
+  {
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "version": 25,
+    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 2007393,
+    "fileHash": "sha256-9411fa7031d307194cac4d04e26a45c7fab064bc88f3f6bc8e9cf2a7db32661f",
+    "apiVersion": 1,
+    "hash": "9411fa7031d307194cac4d04e26a45c7fab064bc88f3f6bc8e9cf2a7db32661f"
   }
 ]

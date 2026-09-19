@@ -445,29 +445,6 @@
     "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
   },
   {
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "version": 25,
-    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 2007393,
-    "fileHash": "sha256-9411fa7031d307194cac4d04e26a45c7fab064bc88f3f6bc8e9cf2a7db32661f",
-    "apiVersion": 1,
-    "hash": "9411fa7031d307194cac4d04e26a45c7fab064bc88f3f6bc8e9cf2a7db32661f"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 14,
@@ -5934,5 +5911,28 @@
     "iconUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3vCp6N1K4bECoYRQD-cisJF2_6V_Hk01ZhDmoPR2JuM8O5qr4MqrPO1munM9cRlleBBSK6odYhLtDBWv4E3vhPhynlmS5hVVtJZShHoGA5REQ8_3v8SIlccTEqzVQu2UJyNYQdJNrKIfWy66RQeT0D-CcmFCbHPz5023H6p2v5fv4NVloZ5Rqo_yGrIY/s320/iNat-Box-App.png",
     "apiVersion": 1,
     "fileHash": "sha256-9838f0436b5195c4d8961da15eba3049491b8a673015ffe815e2c0b592b79795"
+  },
+  {
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "version": 26,
+    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 2007599,
+    "fileHash": "sha256-9e51b193f1711012c53a5fd8aa403cf9a2370ff72502fbee6ad2598aa6bbc36c",
+    "apiVersion": 1,
+    "hash": "9e51b193f1711012c53a5fd8aa403cf9a2370ff72502fbee6ad2598aa6bbc36c"
   }
 ]

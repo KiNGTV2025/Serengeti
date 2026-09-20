@@ -447,29 +447,6 @@
     "name": "Ümitmod-mrc67"
   },
   {
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "version": 27,
-    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 2007612,
-    "fileHash": "sha256-8b68a652cc6903b1e60040f21d40f833fa3fe26e9c1ab5e68334101126a3714d",
-    "apiVersion": 1,
-    "hash": "8b68a652cc6903b1e60040f21d40f833fa3fe26e9c1ab5e68334101126a3714d"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 16,
@@ -5994,5 +5971,28 @@
     "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/logo.png",
     "apiVersion": 1,
     "fileHash": "sha256-fa8593b937babd80221641b0da253bfa91b45c663abd7ad71fa3f7a8fc89bbeb"
+  },
+  {
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "version": 27,
+    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 2024929,
+    "fileHash": "sha256-86183abd4784cd6cbef5007dec468a49783ff57abe6bb610d5c6b96f4c9a8ed3",
+    "apiVersion": 1,
+    "hash": "86183abd4784cd6cbef5007dec468a49783ff57abe6bb610d5c6b96f4c9a8ed3"
   }
 ]

@@ -570,29 +570,6 @@
     "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
   },
   {
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "version": 31,
-    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 2025165,
-    "fileHash": "sha256-e2c9dccf031eb3f3d920c828f8a6aad7bdcfceeda4bad59216d49912a23966ea",
-    "apiVersion": 1,
-    "hash": "e2c9dccf031eb3f3d920c828f8a6aad7bdcfceeda4bad59216d49912a23966ea"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 16,
@@ -6017,5 +5994,28 @@
     "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/logo.png",
     "apiVersion": 1,
     "fileHash": "sha256-fa8593b937babd80221641b0da253bfa91b45c663abd7ad71fa3f7a8fc89bbeb"
+  },
+  {
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "version": 32,
+    "description": "Tüm Türkçe film ve dizi sağlayıcıları tek eklentide. TMDB katalog ve çoklu kaynak akışı.",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 2028294,
+    "fileHash": "sha256-ffea44c54c8e3bdc5956a9ef3269ec6fb9f5d5c34cc3806d0c0a3d7717843dcf",
+    "apiVersion": 1,
+    "hash": "ffea44c54c8e3bdc5956a9ef3269ec6fb9f5d5c34cc3806d0c0a3d7717843dcf"
   }
 ]

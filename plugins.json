@@ -527,27 +527,6 @@
     "fileHash": "sha256-80c145dd719c7c797b120c2147fd2adf935972b314a8d33993bc85d4fced1e85"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
-    "status": 3,
-    "version": 23,
-    "name": "Ümitmod-wiospor1",
-    "internalName": "WioSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
-    "fileSize": 245954,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
-    "apiVersion": 1,
-    "fileHash": "sha256-bd7889e00236415b41e5de75ca18f6dd494b64bfcc2e6f53d1471432b5d17038",
-    "hash": "bd7889e00236415b41e5de75ca18f6dd494b64bfcc2e6f53d1471432b5d17038"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/ArdaSpor.cs3",
     "status": 3,
     "version": 11,
@@ -1257,26 +1236,6 @@
     "iconUrl": "https://bingebang.tv/icon-512.png",
     "apiVersion": 1,
     "fileHash": "sha256-7341e06faf8a606d2f6a040c6e2bf3eb50dd3c9ecff842be6b8ef36e15234105"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/BirdirbirIPTV.cs3",
-    "status": 3,
-    "version": 21,
-    "name": "Ümitmod-turksinema7",
-    "internalName": "BirdirbirIPTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "v10 IPTV - Türk Spor (beIN, S Sport, Tivibu), Türk Ulusal, Haber, Belgesel & Çocuk ve Dünya Spor Kanalları (Sky, TNT, ESPN, Canal+, DAZN, Polsat, Ziggo)",
-    "fileSize": 219912,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/test/builds/icon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-6cd53630f987790721ca59ff5a12cba260d9819668126c45190a1d92b5b20c2a"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CineCat.cs3",
@@ -5986,5 +5945,47 @@
     "description": "YoTurkish - is the most favorite website for watching turkish series with english subtitles for free online, only at yoturkish.to",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/mrc-mirror/YoTurkish.cs3",
     "name": "Ümitmod-mrc66"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
+    "status": 3,
+    "version": 23,
+    "name": "Ümitmod-wiospor1",
+    "internalName": "WioSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
+    "fileSize": 245954,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
+    "apiVersion": 1,
+    "fileHash": "sha256-bd7889e00236415b41e5de75ca18f6dd494b64bfcc2e6f53d1471432b5d17038",
+    "hash": "bd7889e00236415b41e5de75ca18f6dd494b64bfcc2e6f53d1471432b5d17038"
+  },
+  {
+    "name": "Ümitmod-wiospor2",
+    "internalName": "BirdirbirIPTV",
+    "version": 21,
+    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BirdirbirIPTV.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png",
+    "tvTypes": [
+      "Live"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 162704,
+    "fileHash": "sha256-89415b915a111dd893f8ed635b72dde873a1b5c2f5249437d941c684550959d7",
+    "apiVersion": 1,
+    "hash": "89415b915a111dd893f8ed635b72dde873a1b5c2f5249437d941c684550959d7"
   }
 ]

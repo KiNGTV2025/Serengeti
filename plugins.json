@@ -828,714 +828,6 @@
     "fileHash": "sha256-aa2da2374532ed5388d754fd01b74d928aa79edf3322eb5ffa7270d8f625f4ec"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
-    "status": 3,
-    "version": 24,
-    "name": "Ümitmod-wiospor1",
-    "internalName": "WioSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
-    "fileSize": 599384,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
-    "apiVersion": 1,
-    "fileHash": "sha256-f511b0bd06059df0c3272aaaed1b650cfb6ecba7578983508a85191baac7bd8f",
-    "hash": "f511b0bd06059df0c3272aaaed1b650cfb6ecba7578983508a85191baac7bd8f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/ArdaSpor.cs3",
-    "status": 3,
-    "version": 11,
-    "name": "Ümitmod-turkspor1",
-    "internalName": "ArdaSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: ArdaSpor · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 137499,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ArdaSpor.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-b431787f65119866286f936a13b050e5e066e27057ba5cc81a796da07898be15"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/AslanTV.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor2",
-    "internalName": "AslanTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: Aslan TV · Derleme izni ve emeği için yapımcısına teşekkürler ♥ · @wiojelt · WARP gerekebilir.",
-    "fileSize": 212112,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/AslanTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-ef7c6f2b7d372c3f8ba8cbc784deff26112035095f59524bcc5da7e1c86c9cd8"
-  },
-  {
-    "name": "Ümitmod-turkspor3",
-    "internalName": "BasketballReplays",
-    "version": 2,
-    "description": "BasketballReplays · Full game replays (NBA, EuroLeague)",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BasketballReplays.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BasketballReplays.png",
-    "tvTypes": [
-      "Movie",
-      "Others"
-    ],
-    "language": "en",
-    "status": 3,
-    "fileSize": 118640,
-    "fileHash": "sha256-0d698aad07eef2db7757b12fe5bcbb31da0b446a494fc63b421344e5f280d1e3",
-    "apiVersion": 1
-  },
-  {
-    "name": "Ümitmod-turkspor4",
-    "internalName": "BasketballVideo",
-    "version": 2,
-    "description": "BasketballVideo · Game replays & highlights (Afiş destekli)",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BasketballVideo.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BasketballVideo.png",
-    "tvTypes": [
-      "Movie",
-      "Others"
-    ],
-    "language": "en",
-    "status": 3,
-    "fileSize": 121480,
-    "fileHash": "sha256-c8eaa24d85a22648516ef75ed74301949bd9951c8e11365b00a42d07cc0b7847",
-    "apiVersion": 1
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BetmatikTV.cs3",
-    "status": 3,
-    "version": 2,
-    "name": "Ümitmod-turkspor5",
-    "internalName": "BetmatikTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Betmatik TV canlı spor kanalları · otomatik alan güncelleme",
-    "fileSize": 161214,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BetmatikTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-d460e9d5bdf67a38c48d1342c1003ea86791a082839a70fadb0f10d17c94d7e8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BeyazElma.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor6",
-    "internalName": "BeyazElma",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: BeyazElma · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 161255,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BeyazElma.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-3ac11800f50ed2bf6180cee2d36f7bdd4446eb330dc231173c39265ce36a7636"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/Crex.cs3",
-    "status": 3,
-    "version": 9,
-    "name": "Ümitmod-turkspor7",
-    "internalName": "Crex",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: Crex · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 138791,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Crex.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-9ca1a52fd96c9ac747b13b7da7be832b150623b43a34cef1cca72e4082fd0fad"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/CricifyProvider.cs3",
-    "status": 1,
-    "version": 65,
-    "name": "Ümitmod-turkspor8",
-    "internalName": "CricifyProvider",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "CNCVerse kaynaklı CricifyProvider canlı yayın paketi · izinli harici derleme",
-    "fileSize": 103016,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "en",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-1f223766f7ab77a22b249efe4b2d039e680c2b6b8524931e92b7fa4a6987232d",
-    "externalPath": "external/CNCVerse/CricifyProvider.cs3"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/DaddyLive.cs3",
-    "status": 1,
-    "version": 5,
-    "name": "Ümitmod-turkspor9",
-    "internalName": "DaddyLive",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DaddyLive 7/24 spor kanalları, çoklu alan adı ve tokenlı oynatıcı desteği.",
-    "fileSize": 109464,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DaddyLive.jpg",
-    "apiVersion": 1,
-    "fileHash": "sha256-e861100f8752b6837d2ca10405f8569183aedcdaa0faa80b8cc03275ec1c9daf"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/DomatesTV.cs3",
-    "status": 3,
-    "version": 4,
-    "name": "Ümitmod-turkspor10",
-    "internalName": "DomatesTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Domates TV dinamik spor kanalları",
-    "fileSize": 125349,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DomatesTV.webp",
-    "apiVersion": 1,
-    "fileHash": "sha256-13b4c159bdecfef9ed1fa72b7f1c2375a72ec330543a9e37654fcc89ebfd8501"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/DominoTV.cs3",
-    "status": 3,
-    "version": 4,
-    "name": "Ümitmod-turkspor11",
-    "internalName": "DominoTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Domino TV 4.0 dinamik spor kanalları",
-    "fileSize": 124708,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DominoTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-0c0edad2ebb03bfd4b29eaf31209d634b214a6b9484c1e4c63bb29e5c3081f57"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/GolgeTV.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-turkspor12",
-    "internalName": "GolgeTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "GölgeTV spor kanalları ve alternatif yayınlar",
-    "fileSize": 179056,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://golgetv.com/favicon.ico",
-    "apiVersion": 1,
-    "fileHash": "sha256-621bc0a3e1606b751f4f4faaa76eefdb58ec987a7ccc17a4bf7dcb22eec778af"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/Hesgoal.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-turkspor13",
-    "internalName": "Hesgoal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Hesgoal canlı maç listesi, yenilenen oynatıcı adresleri ve güncelleme ekranı.",
-    "fileSize": 79340,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Hesgoal.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-b2b2ea838d2f3e236d71ef74ee0c89429cd3d53a50e8900201b004500d042626"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/InatTV.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor14",
-    "internalName": "InatTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: İnat TV · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 134854,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/InatTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-5d546abd8ad98e8bdd841e1023de7157ea88c0ebb7979c10148409000956269b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/InterSporTV.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor15",
-    "internalName": "InterSporTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🔴 Kaynak: InterSporTV · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 161183,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/InterSporTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-2be513542b5a3a25bdb95f77f0a08af12b9e834de2d035d6fe2f2d42019e9782"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/JestYayin.cs3",
-    "status": 3,
-    "version": 3,
-    "name": "Ümitmod-turkspor16",
-    "internalName": "JestYayin",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "JestYayin canlı maçlar ve spor kanalları",
-    "fileSize": 177677,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://www.jestyayin970.com/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-068d4a4b9686410b26512a2dd9e89da15d80897d1e5ebf4222a83a5016cccf5c"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/KralSporHD.cs3",
-    "status": 3,
-    "version": 4,
-    "name": "Ümitmod-turkspor17",
-    "internalName": "KralSporHD",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "👑 Kaynak: KralSporHD · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 135396,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/KralSporHD.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-8dd3da8c1e4874217973349dd787c985e6993c060a90463631895d86f85bd64f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/LiveXTV.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-turkspor18",
-    "internalName": "LiveXTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "LiveXTV canlı spor API'si, yedek uç nokta ve çoklu yayın kaynakları.",
-    "fileSize": 79324,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/LiveXTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-36196b16cd415dbfa514c7e6044fccec2641a3b004629824fa044254fd66d487"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/LivXowProvider.cs3",
-    "status": 1,
-    "version": 14,
-    "name": "Ümitmod-turkspor19",
-    "internalName": "LivXowProvider",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "CNCVerse kaynaklı LivXowProvider canlı yayın paketi · izinli harici derleme",
-    "fileSize": 112856,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "en",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-f2a0c1991155f28efc2fe3ef255d3d76752818cc633cd762bd0b46636e530dc6",
-    "externalPath": "external/CNCVerse/LivXowProvider.cs3"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/MacKeyfi.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor20",
-    "internalName": "MacKeyfi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🔴 Kaynak: MaçKeyfi / Canlımaçlar · Emeği için teşekkürler ♥ · @wiojelt · WARP gerekebilir.",
-    "fileSize": 161215,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/MacKeyfi.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-6e07ffb161c2bb4ce602df54a00dd4268a6ef107d00ece3afa34f5fdd9c4627b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/MahsunSports.cs3",
-    "status": 3,
-    "version": 9,
-    "name": "Ümitmod-turkspor21",
-    "internalName": "MahsunSports",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: MahsunSports · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 137726,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/MahsunSports.jpg",
-    "apiVersion": 1,
-    "fileHash": "sha256-064712994686842a39ae1de96459a7b08ab803fb007674a86f3d0a0a7c8d4c99"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/NetVGold.cs3",
-    "status": 3,
-    "version": 3,
-    "name": "Ümitmod-turkspor22",
-    "internalName": "NetVGold",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "NETV Gold uygulamasının doğrulanmış spor kanalları",
-    "fileSize": 173304,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/NetVGold.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-27f39deadaf5a2295341f68a97f3f47ad8c01e48a3053cb16bf058cc50ce5a12"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/Ntvs.cs3",
-    "status": 1,
-    "version": 5,
-    "name": "Ümitmod-turkspor23",
-    "internalName": "Ntvs",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "NTVStream spor kanalları, arama tabanlı canlı katalog ve güncelleme ekranı.",
-    "fileSize": 109433,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Ntvs.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-16606cd31cec1319f6b013afe4cd2ae42ba0810c07b3e1c2fbf965e84b3223af"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/PapazSports.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-turkspor24",
-    "internalName": "PapazSports",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "PapazSports canlı kanal ve maç listesi, artan alan adı keşfi ve güncelleme ekranı.",
-    "fileSize": 132420,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/PapazSports.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-21948fbed5bfd3005a92acf83c5195b4f2e2082d8462addc464fbba389b9183f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/PlayZTVProvider.cs3",
-    "status": 1,
-    "version": 35,
-    "name": "Ümitmod-turkspor25",
-    "internalName": "PlayZTVProvider",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "CNCVerse kaynaklı PlayZTVProvider canlı yayın paketi · izinli harici derleme",
-    "fileSize": 97677,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "en",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-80e4656cdab5f70f4384adef3a46f9cd1f0e37755c577faa348dd5cba6ad8c90",
-    "externalPath": "external/CNCVerse/PlayZTVProvider.cs3"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/SelcukSports.cs3",
-    "status": 3,
-    "version": 12,
-    "name": "Ümitmod-turkspor26",
-    "internalName": "SelcukSports",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🟢 Kaynak: SelçukSports · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 133437,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/SelcukSports.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-03e45df1c0eeea17ab91313acb71672af000231d7b94a486d1f37caee3d111d5"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/SportzxProvider.cs3",
-    "status": 1,
-    "version": 19,
-    "name": "Ümitmod-turkspor27",
-    "internalName": "SportzxProvider",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "CNCVerse kaynaklı SportzxProvider canlı yayın paketi · izinli harici derleme",
-    "fileSize": 110106,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "en",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-094a5af60e39a0c837856e92e3e1c9c74dd968cdc9bc995b853f5f588d5ab834",
-    "externalPath": "external/CNCVerse/SportzxProvider.cs3"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/StreamEast.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-turkspor28",
-    "internalName": "StreamEast",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "StreamEast canlı ve yaklaşan spor etkinlikleri, çoklu oynatıcı ve güncelleme ekranı.",
-    "fileSize": 109016,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/StreamEast.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-09845abf1b9d498805dd1a907e05b36daea0009a2f1b654b3b02a65042f185cf"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/Taraftarium24.cs3",
-    "status": 3,
-    "version": 13,
-    "name": "Ümitmod-turkspor30",
-    "internalName": "Taraftarium24",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🔴 Kaynak: Taraftarium24 · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 135077,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Taraftarium24.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-a00143104280e7bbc63d50170b55476cd7f3dea8597c2c8773c80b66c7c6035f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/TRGoals.cs3",
-    "status": 3,
-    "version": 2,
-    "name": "Ümitmod-turkspor31",
-    "internalName": "TRGoals",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TRGoals dinamik spor kanalları ve alan güncelleme ekranı",
-    "fileSize": 173457,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/TRGoals.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-9f700876c9fac4845230538149fcd4c06be8a2fc3c1253fb91ff54f80b1b62d2"
-  },
-  {
-    "name": "Ümitmod-turkspor32",
-    "internalName": "BirdirbirIPTV",
-    "version": 21,
-    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/BirdirbirIPTV.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/test/builds/icon.png",
-    "tvTypes": [
-      "Live"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 162704,
-    "fileHash": "sha256-89415b915a111dd893f8ed635b72dde873a1b5c2f5249437d941c684550959d7",
-    "apiVersion": 1
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/VivoXSpor.cs3",
-    "status": 3,
-    "version": 4,
-    "name": "Ümitmod-turkspor33",
-    "internalName": "VivoXSpor",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "VivoX uyumlu dinamik spor listesi",
-    "fileSize": 119179,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/VivoXSpor.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-ee6d34c3d02eaab71b5b86454482348bc4c926d6b9662dfae01973aa6ed45b17"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/ZbahisTV.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turkspor34",
-    "internalName": "ZbahisTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "🔴 Kaynak: Zbahis / Baywin TV · Emeği için teşekkürler ♥ · @wiojelt",
-    "fileSize": 161205,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ZbahisTV.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-d3a97efa21084ce14c520aa86a968684952b93fb9d554f725886e2d292226cd3"
-  },
-  {
-    "name": "Ümitmod-turkspor36",
-    "internalName": "PatronHD",
-    "version": 15,
-    "description": "🔴 Kaynak: PatronHD / Patronspor · Emeği için teşekkürler ♥ · @wiojelt",
-    "authors": [
-      "Umitmod"
-    ],
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSpor",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turkspor-mirror/PatronHD.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/PatronHD.png",
-    "tvTypes": [
-      "Live"
-    ],
-    "language": "tr",
-    "status": 3,
-    "fileSize": 103070,
-    "fileHash": "sha256-cdb93f866389d85463c34bcfcf7e6a5e7a195efcb4596de638dc46b811f34bd6",
-    "apiVersion": 1,
-    "hash": "cdb93f866389d85463c34bcfcf7e6a5e7a195efcb4596de638dc46b811f34bd6"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/BingeBang.cs3",
     "status": 3,
     "version": 1,
@@ -2076,28 +1368,6 @@
     "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmizle.vip&sz=128",
     "apiVersion": 1,
     "fileHash": "sha256-a81ee893de37db9159d1f8c44da4ba6dd7f1b477c14a9990eb1f789f9e3c3ecc"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/InatBox.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-wiosinema31",
-    "internalName": "InatBox",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "İnatBox · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 110510,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/builds/assets/inatbox.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-799e19c84a89c249201fc9a717b4059d3862d2f654c3f6f970abba5bc85d814b"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/LiderFilmIzle.cs3",
@@ -5826,26 +5096,6 @@
     "name": "Ümitmod-mrc51"
   },
   {
-    "iconUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://streamed.pk/&size=128",
-    "fileHash": "sha256-2d3a4762b939ddd7929a4a40139d4be455d182ee989121d55966c3250da7eb98",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/lepotane/MRC-builds",
-    "fileSize": 33686,
-    "status": 1,
-    "language": "en",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Live"
-    ],
-    "version": 3,
-    "internalName": "Streamed",
-    "description": "Streamed ile Canlı Spor Yayınlarını İzleyebilirsiniz.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/mrc-mirror/Streamed.cs3",
-    "name": "Ümitmod-mrc52"
-  },
-  {
     "iconUrl": "https://i.imgur.com/LBfX2k3.png",
     "fileHash": "sha256-deedfee516a544e5f634dac850c6f97dcc881ab85a19fa4974c10d712f5a7af9",
     "apiVersion": 1,
@@ -6071,5 +5321,755 @@
     "description": "YoTurkish - is the most favorite website for watching turkish series with english subtitles for free online, only at yoturkish.to",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/mrc-mirror/YoTurkish.cs3",
     "name": "Ümitmod-mrc63"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/WioSpor.cs3",
+    "status": 3,
+    "version": 24,
+    "name": "Ümitmod-wiospor1",
+    "internalName": "WioSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tüm canlı TV ve spor kanalları tek eklentide. Renk grupları ve alternatif yayın kaynakları.",
+    "fileSize": 599384,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSpor/main/assets/logo.png?v=3",
+    "apiVersion": 1,
+    "fileHash": "sha256-f511b0bd06059df0c3272aaaed1b650cfb6ecba7578983508a85191baac7bd8f",
+    "hash": "f511b0bd06059df0c3272aaaed1b650cfb6ecba7578983508a85191baac7bd8f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/ArdaSpor.cs3",
+    "status": 3,
+    "version": 11,
+    "name": "Ümitmod-wiospor2",
+    "internalName": "ArdaSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: ArdaSpor · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 137339,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ArdaSpor.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-d4a7204d4a3ffe75fe3384dd39f07941809a70e494267f9bcc6f45d365f7b666"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/AslanTV.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor3",
+    "internalName": "AslanTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: Aslan TV · Derleme izni ve emeği için yapımcısına teşekkürler ♥ · @wiojelt · WARP gerekebilir.",
+    "fileSize": 212112,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/AslanTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-ef7c6f2b7d372c3f8ba8cbc784deff26112035095f59524bcc5da7e1c86c9cd8"
+  },
+  {
+    "name": "Ümitmod-wiospor4",
+    "internalName": "BasketballReplays",
+    "version": 2,
+    "description": "BasketballReplays · Full game replays (NBA, EuroLeague)",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BasketballReplays.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BasketballReplays.png",
+    "tvTypes": [
+      "Movie",
+      "Others"
+    ],
+    "language": "en",
+    "status": 3,
+    "fileSize": 118640,
+    "fileHash": "sha256-0d698aad07eef2db7757b12fe5bcbb31da0b446a494fc63b421344e5f280d1e3",
+    "apiVersion": 1
+  },
+  {
+    "name": "Ümitmod-wiospor5",
+    "internalName": "BasketballVideo",
+    "version": 2,
+    "description": "BasketballVideo · Game replays & highlights (Afiş destekli)",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BasketballVideo.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BasketballVideo.png",
+    "tvTypes": [
+      "Movie",
+      "Others"
+    ],
+    "language": "en",
+    "status": 3,
+    "fileSize": 121480,
+    "fileHash": "sha256-c8eaa24d85a22648516ef75ed74301949bd9951c8e11365b00a42d07cc0b7847",
+    "apiVersion": 1
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BetmatikTV.cs3",
+    "status": 3,
+    "version": 2,
+    "name": "Ümitmod-wiospor6",
+    "internalName": "BetmatikTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Betmatik TV canlı spor kanalları · otomatik alan güncelleme",
+    "fileSize": 161214,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BetmatikTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-d460e9d5bdf67a38c48d1342c1003ea86791a082839a70fadb0f10d17c94d7e8"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BeyazElma.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor7",
+    "internalName": "BeyazElma",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: BeyazElma · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 161255,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/BeyazElma.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-3ac11800f50ed2bf6180cee2d36f7bdd4446eb330dc231173c39265ce36a7636"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/Crex.cs3",
+    "status": 3,
+    "version": 9,
+    "name": "Ümitmod-wiospor8",
+    "internalName": "Crex",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: Crex · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 138791,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Crex.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-9ca1a52fd96c9ac747b13b7da7be832b150623b43a34cef1cca72e4082fd0fad"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/CricifyProvider.cs3",
+    "status": 1,
+    "version": 65,
+    "name": "Ümitmod-wiospor9",
+    "internalName": "CricifyProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "CNCVerse kaynaklı CricifyProvider canlı yayın paketi · izinli harici derleme",
+    "fileSize": 103016,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "en",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-1f223766f7ab77a22b249efe4b2d039e680c2b6b8524931e92b7fa4a6987232d",
+    "externalPath": "external/CNCVerse/CricifyProvider.cs3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/DaddyLive.cs3",
+    "status": 1,
+    "version": 5,
+    "name": "Ümitmod-wiospor10",
+    "internalName": "DaddyLive",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DaddyLive 7/24 spor kanalları, çoklu alan adı ve tokenlı oynatıcı desteği.",
+    "fileSize": 109464,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DaddyLive.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-e861100f8752b6837d2ca10405f8569183aedcdaa0faa80b8cc03275ec1c9daf"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/DomatesTV.cs3",
+    "status": 3,
+    "version": 4,
+    "name": "Ümitmod-wiospor11",
+    "internalName": "DomatesTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Domates TV dinamik spor kanalları",
+    "fileSize": 125349,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DomatesTV.webp",
+    "apiVersion": 1,
+    "fileHash": "sha256-13b4c159bdecfef9ed1fa72b7f1c2375a72ec330543a9e37654fcc89ebfd8501"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/DominoTV.cs3",
+    "status": 3,
+    "version": 4,
+    "name": "Ümitmod-wiospor12",
+    "internalName": "DominoTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Domino TV 4.0 dinamik spor kanalları",
+    "fileSize": 124708,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/DominoTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-0c0edad2ebb03bfd4b29eaf31209d634b214a6b9484c1e4c63bb29e5c3081f57"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/GolgeTV.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-wiospor13",
+    "internalName": "GolgeTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "GölgeTV spor kanalları ve alternatif yayınlar",
+    "fileSize": 179056,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://golgetv.com/favicon.ico",
+    "apiVersion": 1,
+    "fileHash": "sha256-621bc0a3e1606b751f4f4faaa76eefdb58ec987a7ccc17a4bf7dcb22eec778af"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/Hesgoal.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-wiospor14",
+    "internalName": "Hesgoal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Hesgoal canlı maç listesi, yenilenen oynatıcı adresleri ve güncelleme ekranı.",
+    "fileSize": 79340,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Hesgoal.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-b2b2ea838d2f3e236d71ef74ee0c89429cd3d53a50e8900201b004500d042626"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/InatTV.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor15",
+    "internalName": "InatTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: İnat TV · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 134854,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/InatTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-5d546abd8ad98e8bdd841e1023de7157ea88c0ebb7979c10148409000956269b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/InterSporTV.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor16",
+    "internalName": "InterSporTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🔴 Kaynak: InterSporTV · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 161183,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/InterSporTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-2be513542b5a3a25bdb95f77f0a08af12b9e834de2d035d6fe2f2d42019e9782"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/JestYayin.cs3",
+    "status": 3,
+    "version": 3,
+    "name": "Ümitmod-wiospor17",
+    "internalName": "JestYayin",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "JestYayin canlı maçlar ve spor kanalları",
+    "fileSize": 177677,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://www.jestyayin970.com/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-068d4a4b9686410b26512a2dd9e89da15d80897d1e5ebf4222a83a5016cccf5c"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/KralSporHD.cs3",
+    "status": 3,
+    "version": 4,
+    "name": "Ümitmod-wiospor18",
+    "internalName": "KralSporHD",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "👑 Kaynak: KralSporHD · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 135396,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/KralSporHD.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-8dd3da8c1e4874217973349dd787c985e6993c060a90463631895d86f85bd64f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/LiveXTV.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-wiospor19",
+    "internalName": "LiveXTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "LiveXTV canlı spor API'si, yedek uç nokta ve çoklu yayın kaynakları.",
+    "fileSize": 79324,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/LiveXTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-36196b16cd415dbfa514c7e6044fccec2641a3b004629824fa044254fd66d487"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/LivXowProvider.cs3",
+    "status": 1,
+    "version": 14,
+    "name": "Ümitmod-wiospor20",
+    "internalName": "LivXowProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "CNCVerse kaynaklı LivXowProvider canlı yayın paketi · izinli harici derleme",
+    "fileSize": 112856,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "en",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-f2a0c1991155f28efc2fe3ef255d3d76752818cc633cd762bd0b46636e530dc6",
+    "externalPath": "external/CNCVerse/LivXowProvider.cs3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/MacKeyfi.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor21",
+    "internalName": "MacKeyfi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🔴 Kaynak: MaçKeyfi / Canlımaçlar · Emeği için teşekkürler ♥ · @wiojelt · WARP gerekebilir.",
+    "fileSize": 161215,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/MacKeyfi.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-6e07ffb161c2bb4ce602df54a00dd4268a6ef107d00ece3afa34f5fdd9c4627b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/MahsunSports.cs3",
+    "status": 3,
+    "version": 9,
+    "name": "Ümitmod-wiospor22",
+    "internalName": "MahsunSports",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: MahsunSports · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 137726,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/MahsunSports.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-064712994686842a39ae1de96459a7b08ab803fb007674a86f3d0a0a7c8d4c99"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/NetVGold.cs3",
+    "status": 3,
+    "version": 3,
+    "name": "Ümitmod-wiospor23",
+    "internalName": "NetVGold",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "NETV Gold uygulamasının doğrulanmış spor kanalları",
+    "fileSize": 173304,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/NetVGold.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-27f39deadaf5a2295341f68a97f3f47ad8c01e48a3053cb16bf058cc50ce5a12"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/Ntvs.cs3",
+    "status": 1,
+    "version": 5,
+    "name": "Ümitmod-wiospor24",
+    "internalName": "Ntvs",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "NTVStream spor kanalları, arama tabanlı canlı katalog ve güncelleme ekranı.",
+    "fileSize": 109433,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Ntvs.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-16606cd31cec1319f6b013afe4cd2ae42ba0810c07b3e1c2fbf965e84b3223af"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/PapazSports.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-wiospor25",
+    "internalName": "PapazSports",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "PapazSports canlı kanal ve maç listesi, artan alan adı keşfi ve güncelleme ekranı.",
+    "fileSize": 132420,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/PapazSports.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-21948fbed5bfd3005a92acf83c5195b4f2e2082d8462addc464fbba389b9183f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/PlayZTVProvider.cs3",
+    "status": 1,
+    "version": 35,
+    "name": "Ümitmod-wiospor26",
+    "internalName": "PlayZTVProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "CNCVerse kaynaklı PlayZTVProvider canlı yayın paketi · izinli harici derleme",
+    "fileSize": 97677,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "en",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-80e4656cdab5f70f4384adef3a46f9cd1f0e37755c577faa348dd5cba6ad8c90",
+    "externalPath": "external/CNCVerse/PlayZTVProvider.cs3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/SelcukSports.cs3",
+    "status": 3,
+    "version": 12,
+    "name": "Ümitmod-wiospor27",
+    "internalName": "SelcukSports",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: SelçukSports · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 133437,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/SelcukSports.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-03e45df1c0eeea17ab91313acb71672af000231d7b94a486d1f37caee3d111d5"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/SportzxProvider.cs3",
+    "status": 1,
+    "version": 19,
+    "name": "Ümitmod-wiospor28",
+    "internalName": "SportzxProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "CNCVerse kaynaklı SportzxProvider canlı yayın paketi · izinli harici derleme",
+    "fileSize": 110106,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "en",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-094a5af60e39a0c837856e92e3e1c9c74dd968cdc9bc995b853f5f588d5ab834",
+    "externalPath": "external/CNCVerse/SportzxProvider.cs3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/StreamEast.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-wiospor29",
+    "internalName": "StreamEast",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "StreamEast canlı ve yaklaşan spor etkinlikleri, çoklu oynatıcı ve güncelleme ekranı.",
+    "fileSize": 109016,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/StreamEast.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-09845abf1b9d498805dd1a907e05b36daea0009a2f1b654b3b02a65042f185cf"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/Streamed.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-wiospor30",
+    "internalName": "Streamed",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: Streamed • @Kraptor123 | @kekikanime · Futbol, Basketbol, Tenis, Kriket, Dövüş ve daha fazlası.",
+    "fileSize": 127154,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Streamed.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-b0d904ad5b9ed0fe8a9692d2752b7bd98841ad8f333703342254cf27fcf0af78"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/Taraftarium24.cs3",
+    "status": 3,
+    "version": 13,
+    "name": "Ümitmod-wiospor31",
+    "internalName": "Taraftarium24",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🔴 Kaynak: Taraftarium24 · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 135077,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/Taraftarium24.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-a00143104280e7bbc63d50170b55476cd7f3dea8597c2c8773c80b66c7c6035f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/TRGoals.cs3",
+    "status": 3,
+    "version": 2,
+    "name": "Ümitmod-wiospor32",
+    "internalName": "TRGoals",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TRGoals dinamik spor kanalları ve alan güncelleme ekranı",
+    "fileSize": 173457,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/TRGoals.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-9f700876c9fac4845230538149fcd4c06be8a2fc3c1253fb91ff54f80b1b62d2"
+  },
+  {
+    "name": "Ümitmod-wiospor33",
+    "internalName": "BirdirbirIPTV",
+    "version": 21,
+    "description": "v10 Spor / IPTV - Türk Spor (beIN, S Sport, Tivibu), Ulusal, Haber ve Dünya Spor Kanalları",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/BirdirbirIPTV.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/logo.png",
+    "tvTypes": [
+      "Live"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 162704,
+    "fileHash": "sha256-89415b915a111dd893f8ed635b72dde873a1b5c2f5249437d941c684550959d7",
+    "apiVersion": 1
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/VivoXSpor.cs3",
+    "status": 3,
+    "version": 4,
+    "name": "Ümitmod-wiospor34",
+    "internalName": "VivoXSpor",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "VivoX uyumlu dinamik spor listesi",
+    "fileSize": 119179,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/VivoXSpor.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-ee6d34c3d02eaab71b5b86454482348bc4c926d6b9662dfae01973aa6ed45b17"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/ZbahisTV.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiospor35",
+    "internalName": "ZbahisTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🔴 Kaynak: Zbahis / Baywin TV · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 161205,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/ZbahisTV.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-d3a97efa21084ce14c520aa86a968684952b93fb9d554f725886e2d292226cd3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/InatBox.cs3",
+    "status": 3,
+    "version": 16,
+    "name": "Ümitmod-wiospor36",
+    "internalName": "InatBox",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "🟢 Kaynak: İnat Box · Emeği için teşekkürler ♥ · @wiojelt",
+    "fileSize": 62062,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/InatBox.webp",
+    "apiVersion": 1,
+    "fileHash": "sha256-cb6f6e232977ea568610e128213dd45136c9f845a6ee7b175ddfb0d844a952e9"
+  },
+  {
+    "name": "Ümitmod-wiospor37",
+    "internalName": "PatronHD",
+    "version": 15,
+    "description": "🔴 Kaynak: PatronHD / Patronspor · Emeği için teşekkürler ♥ · @wiojelt",
+    "authors": [
+      "Umitmod"
+    ],
+    "repositoryUrl": "https://github.com/Wiojelt/WioSpor",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiospor-mirror/PatronHD.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSpor/main/assets/providers/PatronHD.png",
+    "tvTypes": [
+      "Live"
+    ],
+    "language": "tr",
+    "status": 3,
+    "fileSize": 103070,
+    "fileHash": "sha256-cdb93f866389d85463c34bcfcf7e6a5e7a195efcb4596de638dc46b811f34bd6",
+    "apiVersion": 1,
+    "hash": "cdb93f866389d85463c34bcfcf7e6a5e7a195efcb4596de638dc46b811f34bd6"
   }
 ]

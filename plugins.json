@@ -1075,51 +1075,6 @@
     "fileHash": "sha256-ec1a167ff05ef76e403876791e64c19fb5e91040a845b600af128c71e239552f"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
-    "status": 3,
-    "version": 43,
-    "name": "Ümitmod-wiosinema1",
-    "internalName": "WioSinema",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tum Turkce film ve dizi saglayicilari tek eklentide. TMDB katalog ve coklu kaynak akisi.",
-    "fileSize": 2061263,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-d2642b0c58c909d5ab2f548d92f7cc78acfd05cb7c69ba258a3419a16a69a6fb",
-    "hash": "d2642b0c58c909d5ab2f548d92f7cc78acfd05cb7c69ba258a3419a16a69a6fb"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CNCVerseHotstar.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-wiosinema6",
-    "internalName": "CNCVerseHotstar",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Hotstar Mirror · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 118237,
-    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-7d551e3b48ba8ade7ec9b393c6f569d5a5bb9138106bbadb3eff52fa7352a025"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/cstest-mirror/EnglishW.cs3",
     "status": 1,
     "version": 16,
@@ -4915,29 +4870,6 @@
     "apiVersion": 1
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/AltiYuzAltmisAltiFilmIzle.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema1",
-    "internalName": "AltiYuzAltmisAltiFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Alti Yuz Altmis Alti Film Izle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 102957,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/AltiYuzAltmisAltiFilmIzle.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-6682615b691168da63674340421104b74e5a118862fdb0272f5ef3d109e4e4ee"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/AniArsiv.cs3",
     "status": 1,
     "version": 1,
@@ -4958,29 +4890,6 @@
     "iconUrl": "https://aniarsiv.com/favicon.ico",
     "apiVersion": 1,
     "fileHash": "sha256-61264ace6ef6d1974813edc9fa6411635a1e2a58eede2ec67bdbed86243fcc09"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/BelgeselX.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema3",
-    "internalName": "BelgeselX",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Belgesel X · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 118489,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=belgeselx.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-5be8003658d3a6570ce4245cd4718b05b98bd85fc7f45fa84e311b2dcc5f97a4"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/BingeBang.cs3",
@@ -5114,29 +5023,6 @@
     "fileHash": "sha256-381c22ab29f8d590bff2a9f53ae4cee9bd30f9e242652cce92bd97896a63b2ba"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CizgiMax.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema10",
-    "internalName": "CizgiMax",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Cizgi Max · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 132146,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=cizgimax.online&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-cd4845943dbefddd63c47735d226ffa0ca35ea73668fc340327566688c7f2eca"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CizgiPortal.cs3",
     "status": 1,
     "version": 2,
@@ -5226,419 +5112,6 @@
     "fileHash": "sha256-a241290da8c5fd82191ef059f0d7a20868eb10f9af95cb85f35eadb5382f8205"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CNCVerseDisneyPlus.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema15",
-    "internalName": "CNCVerseDisneyPlus",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Disney Plus · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 146596,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-23a08d1326848aff2d733036e0ddc7e90353fafdd016da6422cf73594e094d43"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CNCVerseNetflix.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema16",
-    "internalName": "CNCVerseNetflix",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Netflix Mirror · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 146641,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-4b6a1a71fca5806993f4ef2e5f65fef118ba9adaef7889db73d0629b35ec140d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/CNCVersePrimeVideo.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema17",
-    "internalName": "CNCVersePrimeVideo",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Prime Video Mirror · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 146617,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-62f1a9aef251651e4614fd6248955d55902eb74ec09bcb42535e41ded55166f8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DDizi.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema18",
-    "internalName": "DDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "D Dizi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 110186,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.ddizi.im&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-23dce8c19d836f61c707d47d2493df9a3c2bb1fcae3cd45fd9917bdd9f65dcac"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziBal.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema19",
-    "internalName": "DiziBal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziBal · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130576,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-7857f9516001982f89a0ef05e942e475e770d1ca8057f2be5f53c284a24c717d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziBol.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema20",
-    "internalName": "DiziBol",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziBol · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130614,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibol.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-f1613312398a300f0542e44f75c5b9c3ed6c13601e535cd38595616333916a31"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziBox.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema21",
-    "internalName": "DiziBox",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi Box · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 112527,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizibox.live&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-0098c4185963931a6f8ac6bb4246f0c3e8a5218f98517bda586723b8fbd19f6b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziFilmIzle.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema22",
-    "internalName": "DiziFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziFilmİzle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130665,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziFilmIzle.jpg",
-    "apiVersion": 1,
-    "fileHash": "sha256-7e9a266fd8570046b15dd6b4da6e3a4b81e43971d5d41e044bbbd172ded23949"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Dizilla.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema23",
-    "internalName": "Dizilla",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizilla · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 124533,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizilla.club&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-b2829db30c80b0d1ce9102e019002392441c9171b42e768441eff3285a727700"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziMom.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema24",
-    "internalName": "DiziMom",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi Mom · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 123308,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziMom.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-b9535a550e89e55eb633ac92a07f7091b52695e593dd54804157879a760c1707"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziPal.cs3",
-    "status": 3,
-    "version": 10,
-    "name": "Ümitmod-turksinema25",
-    "internalName": "DiziPal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi Pal · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 126021,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziPal.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-e91c918e1de92100c710a8a729f08d8f78074d5244e8624fac263c0af5ee7c92"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziPalOriginal.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema26",
-    "internalName": "DiziPalOriginal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi Pal Original · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 118727,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizipal2123.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-cb5731f682543b25d4404d23f9aad42191307186f49fa90e0d42edb2c90b36ac"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziRella.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema27",
-    "internalName": "DiziRella",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziRella · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130639,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizirella.net&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-cd1fdbc0205c6353dfd4e280129539e9730d97c470d175778c52f324acdcd7f7"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/DiziYou.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema28",
-    "internalName": "DiziYou",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi You · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 107309,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.diziyou.one&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-33ff345f4d3256d9e777f639146ed74974b871103861b24985b082003cb0e464"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Dmax.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema29",
-    "internalName": "Dmax",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DMAX · Belgesel, Macera, Canlı TV & Popüler Programlar (dmax.com.tr)",
-    "fileSize": 110688,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Documentary",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://img-dmax.mncdn.com/dmaxcomtr_logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-dc69a03c93be5c0554df48360cd00a192864d083aa3431acf556f686c289aea4"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FilmIzzle.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema30",
-    "internalName": "FilmIzzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FilmIzzle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130625,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmizzle.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-e1b68a3e63a8993bcdbe8378adbfeeca32d080569dca761a22269473cddd6f7b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FilmMakinesi.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema31",
-    "internalName": "FilmMakinesi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film Makinesi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 110496,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmmakinesi.to&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-5430d22d806d2c1bd9cbac5b15978b7a46ba1e6f5239e54e04b3cb36afee1164"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FilmModu.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema32",
-    "internalName": "FilmModu",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film Modu · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 108221,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/FilmModu.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-9e26673b6c0405e21ca8a8d154d7c246fb98c040ca7ce4db4d20a178ae89b15b"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FlixNetwork.cs3",
     "status": 3,
     "version": 7,
@@ -5662,189 +5135,6 @@
     "fileHash": "sha256-ab23a7324deb62b081ce165c38b39c23b8457aae40607d50bab6eaa215d86f35"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FullHDFilm.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema34",
-    "internalName": "FullHDFilm",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Full H D Film · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 116982,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilm.us&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-557ab2dae5d1edc9656357db2fb055917ff083f0d5cd973b75c2da3c69226800"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/FullHDFilmizlesene.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema35",
-    "internalName": "FullHDFilmizlesene",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Full H D Filmizlesene · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 127136,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.fullhdfilmizlesene.now&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-1629dd13bc037e1d1f71049e9bbcf2ebe7c3bb411de29c72abf50be253d0e6c5"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/HDFilmCehennemi.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema36",
-    "internalName": "HDFilmCehennemi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "H D Film Cehennemi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 121064,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmcehennemi.nl&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-7cc5799ba0591a916385f5486cb23d336f4fea8a1ab0a6adc6281e8e5ec8b139"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/HDFilmDelisi.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema37",
-    "internalName": "HDFilmDelisi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "H D Film Delisi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 151660,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmdelisi.one&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-591f3be5751a2b4ac73b8354c31c2fc9bbdcb5cc096e969aea9eb1628c493e5d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/HDFilmizleBest.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema38",
-    "internalName": "HDFilmizleBest",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "H D Filmizle Best · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 112158,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmizle.best&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-f9311a07eff5d21a734b4eb414eebd6e9715c7c30b1eae141ddb88ae740e2227"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/HDFilmIzleInk.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema39",
-    "internalName": "HDFilmIzleInk",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "HDFilmİzle Ink · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 128545,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmizle.ink&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-c0b21a6e33e6ccc41a02569dacb99438124aa1a22514c946003b23874cd7c45d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/HDFilmIzleVip.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema40",
-    "internalName": "HDFilmIzleVip",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "HDFilmİzle Vip · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 128555,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmizle.vip&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-5bd6cda681205e0d924ad9c3b9a91b13c985c82a7f44aff081b191a2456818ad"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/InatBox.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema41",
-    "internalName": "InatBox",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "İnatBox · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 138275,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/builds/assets/inatbox.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-82fa1ad4c61c1e47b58248a77e26c00aa064ccb34830c47d82da23962e989b92"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/IzleOyna.cs3",
     "status": 1,
     "version": 2,
@@ -5865,75 +5155,6 @@
     "iconUrl": "https://www.google.com/s2/favicons?domain=izleoyna.com&sz=128",
     "apiVersion": 1,
     "fileHash": "sha256-62fc3321b95be6abf5e3cbd8eb09c1e43d0fdc0b4077fdac6e8059e4f7e1d3ad"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/JetFilmizle.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema43",
-    "internalName": "JetFilmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Jet Filmizle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 121063,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=jetfilmizle.now&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-511772b3b0fd96e143303b94a15533de460bf9a188115c010906023f1ebbb214"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/KultFilmler.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema44",
-    "internalName": "KultFilmler",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Kult Filmler · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 116098,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=kultfilmler.net&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-348414b7c1aa54c8c52aea5fb1b81ff2448a6c128c2ebc045662f26d34a53102"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/LiderFilmIzle.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema45",
-    "internalName": "LiderFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "LiderFilmİzle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130624,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=liderfilmizle.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-10e06055dfe02f3a7bf0466c3dc148d928f7cab7996c4fbecad6e3f7482df74f"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Mapple.cs3",
@@ -6022,257 +5243,6 @@
     "fileHash": "sha256-21441f03682f4338f037c7bc4b12977e153c9071e9e72362c85c07443244758b"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/NetFilmizle.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema50",
-    "internalName": "NetFilmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Net Filmizle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 120401,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=netfilmizle.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-adb062f4ae8f07495d197604885ace3ed10b7b966f39ba9e939edbd25a2a91e4"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/PowerSinema.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema51",
-    "internalName": "PowerSinema",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Power Sinema · 9.000+ Yerli & Yabancı Sinema, Animasyon ve Seri Filmler",
-    "fileSize": 112519,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "AnimeMovie",
-      "Documentary"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/logo.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-10c4b0092a12f3a3917821b0c182fcfaaa86a43afa4e0ee45b7f989892de905b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/RareFilmm.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema52",
-    "internalName": "RareFilmm",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Rare Filmm · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 106644,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=rarefilmm.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-c98d8d91a654a7e5ca9109c6db11099c041a2fd66cdb44de3ccfd62034a980bd"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/RecTV.cs3",
-    "status": 3,
-    "version": 2,
-    "name": "Ümitmod-turksinema53",
-    "internalName": "RecTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "RecTV · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 139689,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/builds/assets/rectv.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-c6b6976043848084a2f344b0f99e9fadc64dff6ce7a354c78cd256af0de69099"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/SetFilmIzle.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema54",
-    "internalName": "SetFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Set Film Izle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 116584,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.setfilmizle.ltd&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-aa1dd76fa56b44acfcbf3863086c5c20a1e7aabcdf3814641f5e6205cc8ce258"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/SezonlukDizi.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema55",
-    "internalName": "SezonlukDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sezonluk Dizi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 111914,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=sezonlukdizi.cc&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-9c71041b271e99dce1d3bac2ade25aa615d5a7407b44a88ced7292f4792b2358"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/SinemaCX.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema56",
-    "internalName": "SinemaCX",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sinema C X · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 106720,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.sinema.gg&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-2c03259c34744821545c5d090ebc5499b8151238646f42d76ff19f86187075a6"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/SinemaGG.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema57",
-    "internalName": "SinemaGG",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "SinemaGG · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 108120,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=sinema.gg&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-482b7ad6e3a95a48ee9d09406cf471aafb10d7b783396bbb4b2c4a3a49961fdf"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Sinemakolik.cs3",
-    "status": 3,
-    "version": 1,
-    "name": "Ümitmod-turksinema58",
-    "internalName": "Sinemakolik",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sinemakolik · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 119098,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=sinemakolik.com&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-2b9ba4da74ec7f361ca90ce16b34116f5421af32adb72edca93b145b35f32137"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Sinewix.cs3",
-    "status": 3,
-    "version": 8,
-    "name": "Ümitmod-turksinema59",
-    "internalName": "Sinewix",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sinewix · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 116567,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX=w240-h480",
-    "apiVersion": 1,
-    "fileHash": "sha256-2a9c6efa6cafb1ee655a8facd1cd46ae349fd1ab2211c8b799117e201324634f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Tlctr.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema60",
-    "internalName": "Tlctr",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Tlctr · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 104876,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.tlctv.com.tr&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-8dc4d0915f17e3a4c0ce5c09151d2dc512510bf522964efc118b4b666fdf53d1"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/TrAnimeIzle.cs3",
     "status": 1,
     "version": 2,
@@ -6293,29 +5263,6 @@
     "iconUrl": "https://www.tranimeizle.live/favicon.ico",
     "apiVersion": 1,
     "fileHash": "sha256-a7ead2850a4e683c9fdd7ad1a5017f46b69de98bc07d843c9a59691628527a1a"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/TrDiziIzle.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema62",
-    "internalName": "TrDiziIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TrDiziİzle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 130594,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=trdiziizle.tv&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-4de37616b00f501ea23122135de15a7f30d8511a4b3cd6846a152c111acad712"
   },
   {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/Watch2Movies.cs3",
@@ -6341,29 +5288,6 @@
     "fileHash": "sha256-7d5c445122f2fa63167d91d6b926ccfd3540063b54bd0625383d9ab02d138127"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/WebteIzle.cs3",
-    "status": 3,
-    "version": 7,
-    "name": "Ümitmod-turksinema64",
-    "internalName": "WebteIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Webte Izle · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 113671,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=webteizle3.xyz&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-0fbfe13369ced5b3dc7bab26842b842d5a6d2cd6063bfb5df30e6b65459b1e2e"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/WioCinema.cs3",
     "status": 3,
     "version": 1,
@@ -6385,17 +5309,1093 @@
     "fileHash": "sha256-22e4f514db543d12ad3621b1880703018f99056f22fbe346005e052b1c0c7fea"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/YabanciDizi.cs3",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WioSinema.cs3",
+    "status": 3,
+    "version": 43,
+    "name": "Ümitmod-wiosinema1",
+    "internalName": "WioSinema",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tum Turkce film ve dizi saglayicilari tek eklentide. TMDB katalog ve coklu kaynak akisi.",
+    "fileSize": 2061263,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioSinema/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-d2642b0c58c909d5ab2f548d92f7cc78acfd05cb7c69ba258a3419a16a69a6fb",
+    "hash": "d2642b0c58c909d5ab2f548d92f7cc78acfd05cb7c69ba258a3419a16a69a6fb"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/AltiYuzAltmisAltiFilmIzle.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema2",
+    "internalName": "AltiYuzAltmisAltiFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Alti Yuz Altmis Alti Film Izle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 73813,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/AltiYuzAltmisAltiFilmIzle.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-5d160778529fd3bd3af9f0be97ffcdacb8c58f75a7b5fb8a0b5ed745f2db69ab"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/BelgeselX.cs3",
     "status": 3,
     "version": 7,
-    "name": "Ümitmod-turksinema66",
+    "name": "Ümitmod-wiosinema3",
+    "internalName": "BelgeselX",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Belgesel X · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 90436,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=belgeselx.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-312d97f42254d0ff8e9f0ea7d46caac2b185acf95a806bfae060dd69282cabea"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CizgiMax.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema4",
+    "internalName": "CizgiMax",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Cizgi Max · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 95874,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=cizgimax.online&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-36b514016207bcd4de4cc57a1f8345bd995169af3abf8e2e25c301a271e45148"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CNCVerseDisneyPlus.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema5",
+    "internalName": "CNCVerseDisneyPlus",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Disney Plus · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 118218,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-f55e9e88c506cdc6e2d2696161e00ff9a599f1fba2680d2c02ff10bebc4f80f6"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CNCVerseHotstar.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema6",
+    "internalName": "CNCVerseHotstar",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Hotstar Mirror · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 118237,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-7d551e3b48ba8ade7ec9b393c6f569d5a5bb9138106bbadb3eff52fa7352a025"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CNCVerseNetflix.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema7",
+    "internalName": "CNCVerseNetflix",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Netflix Mirror · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 118219,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-30d70686dabe4cff95399869826c592b3802754142277d95fef984982c99ac7a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/CNCVersePrimeVideo.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema8",
+    "internalName": "CNCVersePrimeVideo",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Prime Video Mirror · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 118207,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/CNCVerse.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-c20e2ef90bab2d24661d8226d72c27f38be451276c0918898c6faf2e58c2834c"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DDizi.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema9",
+    "internalName": "DDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "D Dizi · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 81497,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.ddizi.im&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-5ab6621531e24e1b3ad9af0c15d0eb4f215b5682000d8aa6aa20292e3ceabee4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziBal.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema10",
+    "internalName": "DiziBal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziBal · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102396,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-41c1e4a15a4052c9b70183949ede3a95a11c074c1dd7f4231536633e506d81a5"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziBol.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema11",
+    "internalName": "DiziBol",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziBol · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102402,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibol.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-86071d5e1ae6d95f0fb9ac423b9e5a75fe2062c9fbb70166f3addd7f5ca605ee"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziBox.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema12",
+    "internalName": "DiziBox",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi Box · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 83738,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizibox.live&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-bfbd3fe0579e68e4856c6795d7e8bd0131a8acfc915678daa9e5e7725bfd6263"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziFilmIzle.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema13",
+    "internalName": "DiziFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziFilmİzle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102424,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziFilmIzle.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-051b9ecd29b218d3b448eb30833b8eddfa3d8f46ee13a57c8479fcb7e8135da4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/Dizilla.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema14",
+    "internalName": "Dizilla",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizilla · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 96040,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizilla.club&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-01d7f0c4031ed4383477b79686bb7cf4851d2ee5fd2eacc02f19d81108afecd7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziMom.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema15",
+    "internalName": "DiziMom",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi Mom · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 95150,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziMom.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-00d7100f89b87a2cb7e25280e24ee38c8fc2613d262c468ff76aec4d2d8872c6"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziPal.cs3",
+    "status": 3,
+    "version": 10,
+    "name": "Ümitmod-wiosinema16",
+    "internalName": "DiziPal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi Pal · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 98699,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/DiziPal.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-897f13fbb920e9ad0c57950a8d8ed860e4957d9c278e971c31ebeee562658c5f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziPalOriginal.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema17",
+    "internalName": "DiziPalOriginal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi Pal Original · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 90700,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizipal2123.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-6f8987f454208f5a8a4d70381e6ff7c66f670fd7989d6ba03d29f26de9be0b29"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziRella.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema18",
+    "internalName": "DiziRella",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziRella · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102390,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizirella.net&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-c3cac3d97570dd42230e6e06f305d4712ad879ff6a0b7741f9ee7a871fab88b5"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/DiziYou.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema19",
+    "internalName": "DiziYou",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi You · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 78456,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.diziyou.one&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-37451e9a04fd98a127a0bbcab26da9c12166bbf9aa8cddce677d3679c8e797c3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/Dmax.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema20",
+    "internalName": "Dmax",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DMAX · Belgesel, Macera, Canlı TV & Popüler Programlar (dmax.com.tr)",
+    "fileSize": 82062,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Documentary",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://img-dmax.mncdn.com/dmaxcomtr_logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-84ea04c1bf1e6e4d10de47087f54a8f41e920b772d3954b36963515950e49522"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/FilmIzzle.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema21",
+    "internalName": "FilmIzzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FilmIzzle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102387,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmizzle.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-39d0e1dd7e5836e2e0ad2167b5e5ec731a364a8263226f700c08a209472360e9"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/FilmMakinesi.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema22",
+    "internalName": "FilmMakinesi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film Makinesi · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 81555,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmmakinesi.to&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-78c5684698639a268799ac54a860e72f5da0db3dd228de341fd3c6bc45f08b81"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/FilmModu.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema23",
+    "internalName": "FilmModu",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film Modu · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 78769,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/providers/FilmModu.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-010a18919095b23ed99de07921b33328bb66e573711bf517f4d78cdcc6af0077"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/FullHDFilm.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema24",
+    "internalName": "FullHDFilm",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Full H D Film · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 88864,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilm.us&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-259bd7af50114fb5c22c17e1613e49785be46e31808d1dacaa4ff9a829f723da"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/FullHDFilmizlesene.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema25",
+    "internalName": "FullHDFilmizlesene",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Full H D Filmizlesene · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 99809,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.fullhdfilmizlesene.now&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-029a2a80564f6de9ca57d3578023784f92cd483113f1b274bb8c4363769b7d13"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/HDFilmCehennemi.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema26",
+    "internalName": "HDFilmCehennemi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "H D Film Cehennemi · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 92497,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmcehennemi.nl&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-a8a3ea4b43dde7638f4813dee595fe861bdd009cbb0bf4174607c7938670d92b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/HDFilmDelisi.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema27",
+    "internalName": "HDFilmDelisi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "H D Film Delisi · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 122813,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmdelisi.one&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-f5fc4390c6fc2af65640217f82cc380f2c43383079a6321a0a61e7ba37fa2da3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/HDFilmizleBest.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema28",
+    "internalName": "HDFilmizleBest",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "H D Filmizle Best · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 83712,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmizle.best&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-66d4117139523759a7d5f34ec7af34aea90dab47853336a45a8a44555ae50474"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/HDFilmIzleInk.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema29",
+    "internalName": "HDFilmIzleInk",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "HDFilmİzle Ink · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 100412,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmizle.ink&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-68906b0d55e3d0bb50d88f01accdf4b8ebe2560cbf9c6d494184246b2c37e267"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/HDFilmIzleVip.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema30",
+    "internalName": "HDFilmIzleVip",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "HDFilmİzle Vip · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 100430,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmizle.vip&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-a81ee893de37db9159d1f8c44da4ba6dd7f1b477c14a9990eb1f789f9e3c3ecc"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/InatBox.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema31",
+    "internalName": "InatBox",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "İnatBox · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 110510,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/builds/assets/inatbox.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-799e19c84a89c249201fc9a717b4059d3862d2f654c3f6f970abba5bc85d814b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/JetFilmizle.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema32",
+    "internalName": "JetFilmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Jet Filmizle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 93100,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=jetfilmizle.now&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-26ad9322f108465fd2ef2eafb372530248bfb7a65820b2c58cc5f3f710317bd9"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/KultFilmler.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema33",
+    "internalName": "KultFilmler",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Kult Filmler · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 87966,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=kultfilmler.net&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-b423a2277faeb6a347ba1167f7910da21de7608ffaef91d880b909e1292c1c7c"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/LiderFilmIzle.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema34",
+    "internalName": "LiderFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "LiderFilmİzle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102413,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=liderfilmizle.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-2fd54a9b47e9e01df0eaaa81478b54927f4dc60d4f2df114a9ce1787eb89b69e"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/NetFilmizle.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema35",
+    "internalName": "NetFilmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Net Filmizle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 92592,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=netfilmizle.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-bc3f75cc843f30958f78ab5c313ae68b54d18420fff262eb59e88d52257c43ea"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/PowerSinema.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema36",
+    "internalName": "PowerSinema",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Power Sinema · 9.000+ Yerli & Yabancı Sinema, Animasyon ve Seri Filmler",
+    "fileSize": 83886,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "AnimeMovie",
+      "Documentary"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/main/assets/logo.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-e3bc98608efd836ef09e319fb8d9e5b7c07e35d3a3bbb379abdbafb71ac97ed8"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/RareFilmm.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema37",
+    "internalName": "RareFilmm",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Rare Filmm · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 77736,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=rarefilmm.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-f407a612f981ad12e450f99d5ccd71574e063b878bca04819cfd50bb40b978ec"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/RecTV.cs3",
+    "status": 3,
+    "version": 2,
+    "name": "Ümitmod-wiosinema38",
+    "internalName": "RecTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "RecTV · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 111453,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/TurkSinema/builds/assets/rectv.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-c71a877ff8f8ab86ae62248bc51667b0448fb4b22529b205cfe5e8525828a3c4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/SetFilmIzle.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema39",
+    "internalName": "SetFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Set Film Izle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 88540,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.setfilmizle.ltd&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-80c892922a3936a64e1a0ecafa1449bae5cd0ec799940cbae31eaa908ee547ef"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/SezonlukDizi.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema40",
+    "internalName": "SezonlukDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sezonluk Dizi · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 83003,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=sezonlukdizi.cc&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-0c595f3609b62db02519fd77076e4155dba2f25c99644f11400ec06b815fc228"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/SinemaCX.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema41",
+    "internalName": "SinemaCX",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sinema C X · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 77968,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.sinema.gg&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-373c7c8a2669cec4f0e6577181500e6ebc84f5ca16c59368a0fd1d5b1b9f92b2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/SinemaGG.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema42",
+    "internalName": "SinemaGG",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "SinemaGG · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 79414,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=sinema.gg&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-0ee0b38cc36638dd5807770c8ee03a75dfecb431b6211cd6c0fe3dbb53a5ec93"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/Sinemakolik.cs3",
+    "status": 3,
+    "version": 1,
+    "name": "Ümitmod-wiosinema43",
+    "internalName": "Sinemakolik",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sinemakolik · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 91109,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=sinemakolik.com&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-356178c41fa923d317f673e6581445a049932286d988d1cb51615b6086337ebe"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/Sinewix.cs3",
+    "status": 3,
+    "version": 8,
+    "name": "Ümitmod-wiosinema44",
+    "internalName": "Sinewix",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sinewix · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 87700,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX=w240-h480",
+    "apiVersion": 1,
+    "fileHash": "sha256-cc2c055a03fb84d2cbb48ef4356b6196b75d8976afd38fed1561b40a5003b12a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/Tlctr.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema45",
+    "internalName": "Tlctr",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Tlctr · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 75966,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.tlctv.com.tr&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-dd63a969d483e9ecdd51186ed01748d856c6b724f4789bafb933164910eb88af"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/TrDiziIzle.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema46",
+    "internalName": "TrDiziIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TrDiziİzle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 102367,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=trdiziizle.tv&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-6c397a5ef895f729a3a1dabf9112a36e0d26e14ee357d9b0d0c6ccaa11b65077"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/WebteIzle.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema47",
+    "internalName": "WebteIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Webte Izle · TurkSinema ayrı sağlayıcı paketi",
+    "fileSize": 85028,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=webteizle3.xyz&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-9a3be8fb22844a0b9fa20d2e914ed20649baf322530dfcdf9069c70929bc0fc2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/YabanciDizi.cs3",
+    "status": 3,
+    "version": 7,
+    "name": "Ümitmod-wiosinema48",
     "internalName": "YabanciDizi",
     "authors": [
       "Umitmod"
     ],
     "description": "Yabanci Dizi · TurkSinema ayrı sağlayıcı paketi",
-    "fileSize": 136059,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
+    "fileSize": 107803,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
     "language": "tr",
     "tvTypes": [
       "Movie",
@@ -6405,26 +6405,26 @@
     ],
     "iconUrl": "https://www.google.com/s2/favicons?domain=yabancidizi.news&sz=128",
     "apiVersion": 1,
-    "fileHash": "sha256-6443641ce6cfb2d74b1e0f59f6ebcbb411c02fe064a4ce7781393977d51b08bc"
+    "fileHash": "sha256-0c3e5fdda7e86a9b52ca0d1edebcf37e3a0c06a88b023350b3a7e1ec910065ab"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/turksinema-mirror/YesilCamTv.cs3",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wiosinema-mirror/YesilCamTv.cs3",
     "status": 3,
     "version": 1,
-    "name": "Ümitmod-turksinema67",
+    "name": "Ümitmod-wiosinema49",
     "internalName": "YesilCamTv",
     "authors": [
       "Umitmod"
     ],
     "description": "Yeşilçam TV · Klasik Türk Sineması, Kemal Sunal, Cüneyt Arkın arşivi",
-    "fileSize": 108637,
-    "repositoryUrl": "https://github.com/Wiojelt/TurkSinema",
+    "fileSize": 80003,
+    "repositoryUrl": "https://github.com/Wiojelt/WioSinema",
     "language": "tr",
     "tvTypes": [
       "Movie"
     ],
     "iconUrl": "https://www.google.com/s2/favicons?domain=yesilcamtv.com.tr&sz=128",
     "apiVersion": 1,
-    "fileHash": "sha256-9277ee7cbd877cc17a6981add443c5dc2b423ba3896181646f85c13964cbe68d"
+    "fileHash": "sha256-6449fd6511942a9955a5974e34b1f774563e90bccc6290401e8ee1fafe83b6f6"
   }
 ]

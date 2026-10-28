@@ -60,22 +60,6 @@
     "fileHash": "sha256-150a73fa94b3bd579f0882f4cb6cc1f0cf8a7440961fa1e5dbd7974c49a9ac7c"
   },
   {
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/self-similarity/MegaRepo",
-    "fileSize": 6929,
-    "status": 1,
-    "language": "en",
-    "authors": [
-      "Umitmod"
-    ],
-    "version": 2,
-    "internalName": "MegaProvider",
-    "description": "This plugin adds all repositories each time the app is opened. Uninstall after one run if you do not want all repositories. Does not automatically refresh the repository list.",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/megarepo-mirror/MegaProvider.cs3",
-    "name": "Ümitmod-megarepo1",
-    "fileHash": "sha256-7062fa86531ad8b8c34244c564adcba97176870a186499adbc369189ac848dbe"
-  },
-  {
     "iconUrl": "https://img.icons8.com/color/512/cloud-sync.png",
     "fileHash": "sha256-62e6f731e5aa5e201f0c7fa68219088d4bead34d81b9c33c707dbe1f9f744737",
     "apiVersion": 1,
@@ -15689,5 +15673,21 @@
     "iconUrl": "https://www.google.com/s2/favicons?domain=hintfilmizle.com&sz=%size%",
     "apiVersion": 1,
     "fileHash": "sha256-5bcc850b3e06a4323e5746a0c2730741347001f4785d174405ab867842524957"
+  },
+  {
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/self-similarity/MegaRepo",
+    "fileSize": 6929,
+    "status": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "version": 2,
+    "internalName": "MegaProvider",
+    "description": "This plugin adds all repositories each time the app is opened. Uninstall after one run if you do not want all repositories. Does not automatically refresh the repository list.",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/megarepo-mirror/MegaProvider.cs3",
+    "name": "Ümitmod-megarepo1",
+    "fileHash": "sha256-7062fa86531ad8b8c34244c564adcba97176870a186499adbc369189ac848dbe"
   }
 ]

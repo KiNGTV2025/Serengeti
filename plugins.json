@@ -60,1339 +60,6 @@
     "fileHash": "sha256-198b190db680be500cccb06dff1fb774fbe1d148b65e18c281631df4b9f66d0f"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/AlbaniaLive.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze1",
-    "internalName": "AlbaniaLive",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Bu eklenti İnan Eren için hazırlanmıştır :)",
-    "fileSize": 21406,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "sq",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Flag_of_Albania.svg/512px-Flag_of_Albania.svg.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-00f00ca38a36ff07a3817c5569e03c511c67245649e5e88d52c29c07eb5b5357"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Anizium.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-bronze2",
-    "internalName": "Anizium",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Anizium - Popüler anime serileri ve anime filmleri full HD/4K kalitede izleyin.",
-    "fileSize": 33782,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Anime",
-      "AnimeMovie",
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=anizium.co&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-d69264c025d500e3c980a5721f64f2ce2237306bf6c6ceb775991196a0c9f437"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BCSports.cs3",
-    "status": 1,
-    "version": 49,
-    "name": "Ümitmod-bronze3",
-    "internalName": "BCSports",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "BC Sports IPTV ve canlı maç yayınları.",
-    "fileSize": 170264,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Live"
-    ],
-    "apiVersion": 1,
-    "fileHash": "sha256-0848cc7077364b3476207739864a1c970346430432091104ba2f819039bbce2f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BelgeselX.cs3",
-    "status": 1,
-    "version": 21,
-    "name": "Ümitmod-bronze4",
-    "internalName": "BelgeselX",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "En yeni belgeseller, türkçe altyazılı yada dublaj olarak 1080p kalitesinde HD belgesel izle.",
-    "fileSize": 38784,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Documentary"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=belgeselx.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-1d28b2423b074eb1a1b79d5e7290b9a3eb3ba481d26741c4bad4f947b4499e72"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BOAT.cs3",
-    "status": 1,
-    "version": 74,
-    "name": "Ümitmod-bronze5",
-    "internalName": "BOAT",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "B.O.A.T - Film, dizi ve torrent kaynakları; bilinen düşük kalite elenir, doğrulanamayan kalite belirtilir",
-    "fileSize": 746131,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "AsianDrama",
-      "Anime",
-      "Torrent"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/boat_v2.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-b8995ba5a3d0dbfe43cc0144f6c3b792d6e55c5c1181d1bca53d6d6221962bf8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CineJoy.cs3",
-    "status": 1,
-    "version": 10,
-    "name": "Ümitmod-bronze6",
-    "internalName": "CineJoy",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "4K HDR kaynaklar, Türkçe altyazı desteği ve zengin TMDb içerik detayları ile Film ve Dizi izleme eklentisi.",
-    "fileSize": 96177,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cinejoy.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-c54e435e3f555028b82194b8edb8351fc9f63caa3f9ec9ac552c690d6a4c7068"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CineStream.cs3",
-    "status": 1,
-    "version": 573,
-    "name": "Ümitmod-bronze7",
-    "internalName": "CineStream",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film, Dizi, Asya Dizileri ve Torrentler için hepsi bir arada çözüm",
-    "fileSize": 787763,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "AsianDrama",
-      "Anime",
-      "Torrent"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cinestream.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-56e3395fc8a72d779e91976093f976de50f35f197f833b3a15aeb53e1fb934ce"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CizgiMax.cs3",
-    "status": 1,
-    "version": 20,
-    "name": "Ümitmod-bronze8",
-    "internalName": "CizgiMax",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "ÇizgiMax ile Çizgi Film izlemek artık daha kolay, donmadan full hd ve reklamsız bir sitedir, içerisinde 700 den fazla çizgi film olan, Bu site bu işi profesyonelce yapıyor.",
-    "fileSize": 67453,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Cartoon",
-      "Anime",
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=cizgimax.online&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-f91d5d5b0559d0935be532f5a541f417c248fa2ff8be5bf7aadb7b7bfe024a64"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CizgiVeDizi.cs3",
-    "status": 1,
-    "version": 7,
-    "name": "Ümitmod-bronze9",
-    "internalName": "CizgiVeDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Çizgi ve Dizi (cizgivedizi.net) - Çizgi dizi, anime, TV dizileri ve animasyon filmleri arşivi.",
-    "fileSize": 45062,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Cartoon",
-      "Anime"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cizgivedizi.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-ab3cd1c52ca645ed88ab98f30c12aed87668857b4cc180f0b29475c080efda66"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Ddizi.cs3",
-    "status": 1,
-    "version": 24,
-    "name": "Ümitmod-bronze10",
-    "internalName": "Ddizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DDizi.im için Cloudstream eklentisi",
-    "fileSize": 26372,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.ddizi.im/favicon.ico",
-    "apiVersion": 1,
-    "fileHash": "sha256-90e4d244b0e1fb6bb92aad96b45a67d9db621ff2b8a1da242851679e024eee8d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizi77.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze11",
-    "internalName": "Dizi77",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi77 (dizi77.life) - Yüksek kalitede yabancı dizi ve film izleme platformu.",
-    "fileSize": 40724,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizi77.life&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-f60c039e3a4b80e0e39eb159d05e2815244f9f2aebf99fb7014092a43de430cf"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizibal.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze12",
-    "internalName": "Dizibal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziBal - Yabancı dizi, film ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
-    "fileSize": 39366,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Anime"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.org&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-fafbe14eec48fdb2c3a09f40125b850e33464912a824bedb9ed83d89273cb80b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizibol.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze13",
-    "internalName": "Dizibol",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziBol - Yabancı dizi, film ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
-    "fileSize": 39481,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Anime"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibol.org&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-eb17d13be71c91dd614d8f4ae5b7136c01b3d40db445c61eddd7b1ebeef4f14b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziBox.cs3",
-    "status": 1,
-    "version": 29,
-    "name": "Ümitmod-bronze14",
-    "internalName": "DiziBox",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Yabancı Dizi izle, Tüm yabancı dizilerin yeni ve eski sezonlarını full hd izleyebileceğiniz elit site.",
-    "fileSize": 39820,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizibox.live&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-3751475fbb22b5566a1b2e4f16522970a0c6b49717200823be0ecc4c554ed3f8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizidad.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze15",
-    "internalName": "Dizidad",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizidad (dizidad.com) - Yabancı dizi, yerli dizi, film ve anime izleme platformu.",
-    "fileSize": 36221,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime",
-      "Cartoon",
-      "AsianDrama"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dizidad.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-bfc57d2a5630308dfc65cc69ef02eb0033b7ec140205070a50f6541bce487b20"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziizle.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze16",
-    "internalName": "Diziizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Diziizle (diziizle.wiki) - Güncel dizi ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
-    "fileSize": 39948,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Anime",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=diziizle.wiki&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-a1816311153766a63b3bbcd180d8c81ba1f7a977e409b2f82d4090c28f04d9d5"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziKorea.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze17",
-    "internalName": "DiziKorea",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DiziKorea (dizikorea3.com) - Kore, Çin, Japon ve Asya dizileri ile filmleri.",
-    "fileSize": 36006,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "AsianDrama"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dizikorea.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-2ca926b27a19ae90fe8d02e3fa1103bced9846c2eaae901fd52d49013b83c620"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizilla.cs3",
-    "status": 1,
-    "version": 95,
-    "name": "Ümitmod-bronze18",
-    "internalName": "Dizilla",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizilla tüm yabancı dizileri ücretsiz olarak Türkçe Dublaj ve altyazılı seçenekleri ile 1080P kalite izleyebileceğiniz yeni nesil yabancı dizi izleme siteniz.",
-    "fileSize": 43319,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizilla.club&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-9dc389cc98d254f4079190ccaba7c389807bf10af329cf27556b73c158fec2ce"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziMom.cs3",
-    "status": 1,
-    "version": 64,
-    "name": "Ümitmod-bronze19",
-    "internalName": "DiziMom",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Sadece dizi izle, Dizimom heryerde seninle!",
-    "fileSize": 40539,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizimom.diy&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-6837a55226cbcfe9190664a9ede25f5437efbbf88568ae58ab99eac5bbf38e43"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziPal.cs3",
-    "status": 1,
-    "version": 119,
-    "name": "Ümitmod-bronze20",
-    "internalName": "DiziPal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "en yeni dizileri güvenli ve hızlı şekilde sunar.",
-    "fileSize": 52826,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://dizipal1563.com/assets/favicon/favicon-32x32.png?v=3",
-    "apiVersion": 1,
-    "fileHash": "sha256-3d42e97596190d690b454f8d86f4db9fff70156c4c5b9bb7c593dcdcd78613d6"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziPalOriginal.cs3",
-    "status": 1,
-    "version": 105,
-    "name": "Ümitmod-bronze21",
-    "internalName": "DiziPalOriginal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "en yeni dizileri güvenli ve hızlı şekilde sunar.",
-    "fileSize": 45053,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://chessplyimages.cfd/uploads/site/favicon-32x32.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-4ada8ff7ffe9b13126e85f5e48624cc6f507aa945dae5664483ae8579cdd52e7"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizipod.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-bronze22",
-    "internalName": "Dizipod",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizipod - Orijinal Dilinde Türkçe Altyazılı Yabancı dizi ve filmleri full HD kalitede izleyin.",
-    "fileSize": 35625,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizipod.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-673caa99f916167048ca30d2bd3e2c3dcffda0b5f885f421291f45baa9c9b45b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziroll.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze23",
-    "internalName": "Diziroll",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Diziroll (diziroll.club) - Yabancı diziler, güncel bölümler, Türkçe dublaj ve altyazı seçenekleriyle.",
-    "fileSize": 39497,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/diziroll.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-f29a581a5754f6d99a251245fabfcb11bb2c36a4c5cfcf643f226de67816e83c"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziwatch.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze24",
-    "internalName": "Diziwatch",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "diziwatch (diziwatch.now) - Yabancı dizi ve anime izleme platformu.",
-    "fileSize": 35496,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Anime",
-      "Cartoon",
-      "AsianDrama"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/diziwatch.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-2ada0e9ae3fb43fd63b8fc3e3999307cf8744b8bcbb181c955513f7179af01ff"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziYou.cs3",
-    "status": 1,
-    "version": 28,
-    "name": "Ümitmod-bronze25",
-    "internalName": "DiziYou",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Diziyou en kaliteli Türkçe dublaj ve altyazılı yabancı dizi izleme sitesidir. Güncel ve efsanevi dizileri 1080p Full HD kalitede izlemek için hemen tıkla!",
-    "fileSize": 23728,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://cdn.diziyou.one/wp-content/uploads/2020/04/diziyou-favicon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-6f638346d82c0c1b019a479e536ff95d42979ab2724e464729b4fc6d722ac60a"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DomatesTV.cs3",
-    "status": 1,
-    "version": 11,
-    "name": "Ümitmod-bronze26",
-    "internalName": "DomatesTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DomatesTV - Netflix, Disney+, HBO, Prime yapımı binlerce film ve dizi.",
-    "fileSize": 90272,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/keyiflerolsun/Cloudstream-BronzeCloud/master/logos/domatestv.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-3e8d38dc37a3a68e3d2f436e42a3eee2c45a67fa6c7d723b5e5ac974428145b1"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DominoTV.cs3",
-    "status": 1,
-    "version": 7,
-    "name": "Ümitmod-bronze27",
-    "internalName": "DominoTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "DominoTV / Cine10 - Canlı TV, Spor, Film ve Dizi Eklentisi (Dinamik Domain Desteği ile)",
-    "fileSize": 87734,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Live",
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dominotv.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-da9f2e0fa6be1894f2cef6284028cacafd10132235207bc55aa2a590ac71f4ab"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmciBaba.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze28",
-    "internalName": "FilmciBaba",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Filmci Baba (filmizle.ink) film ve dizi eklentisi. Sonsuz kaydırma, Hotstream ve altyazı desteği içerir.",
-    "fileSize": 39592,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmizle.ink&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-33a59c5a2e09ff2ccd6ef2ebf4727826473098e60bb99e525498650d0f6bd149"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmDozu.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze29",
-    "internalName": "FilmDozu",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FilmDozu film eklentisi. Sonsuz kaydırma, çoklu kaynak, VidMoly ve Ok.Ru desteği içerir.",
-    "fileSize": 38276,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmdozu.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-7add48e4051ce702bb77cbf00e7ae3f93d135224fdf4a10a97a8ccbc4ddfb95f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmEkseni.cs3",
-    "status": 1,
-    "version": 5,
-    "name": "Ümitmod-bronze30",
-    "internalName": "FilmEkseni",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FilmEkseni film ve dizi eklentisi. Sayfalama, çoklu kaynak ve altyazı desteği içerir.",
-    "fileSize": 52110,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmekseni.vip&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-3522898d5d5837724e21defa0b5ce5d5457211572785a662dec3a8e7998d7945"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmGecesi.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze31",
-    "internalName": "FilmGecesi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FilmGecesi (filmgecesi.vip) film eklentisi. Sonsuz kaydırma, Bluray/RapidVid oynatıcı ve altyazı desteği içerir.",
-    "fileSize": 32672,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmgecesi.vip&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-d1ff3e56cd95c2a0097c78f48e3791470da34be7b4e0e8cbf0ca388847f41a7d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmiFullizle.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze32",
-    "internalName": "FilmiFullizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FilmiFullizle (filmifullizle.news) film eklentisi. Sonsuz kaydırma, dublaj/altyazı, Vidmoly ve OkRu oynatıcı desteği içerir.",
-    "fileSize": 42555,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmifullizle.news&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-94b2f4d02e8b119876afb8aac2524248024b7c7571d2706ed160314c923e88c0"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Filmizle.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze33",
-    "internalName": "Filmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Filmizle (filmizle.now) - Türkçe dublaj ve altyazılı Full HD film ve dizi platformu.",
-    "fileSize": 47825,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/filmizle.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-3c296f0ee028812ec7ffbdbe3eeb77618704600c90ca75f7dc74cadfb04c5ae4"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmMakinesi.cs3",
-    "status": 1,
-    "version": 64,
-    "name": "Ümitmod-bronze34",
-    "internalName": "FilmMakinesi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film Makinesi, en yeni ve en güncel filmleri sitemizde full HD kalite farkı ile izleyebilirsiniz. HD film izle denildiğinde akla gelen en kaliteli film izleme sitesi.",
-    "fileSize": 36747,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=filmmakinesi.to&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-fab908c2789d90d38404673e7a01b460f2a9134a43d8aa189338438636260c52"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmModu.cs3",
-    "status": 1,
-    "version": 22,
-    "name": "Ümitmod-bronze35",
-    "internalName": "FilmModu",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film modun geldiyse yüksek kalitede en yeni filmleri izle, 1080p izleyebileceğiniz reklamsiz film sitesi.",
-    "fileSize": 22305,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.filmmodu.one/icon/favicon.ico",
-    "apiVersion": 1,
-    "fileHash": "sha256-a3e4d4aea4ba60a7dc055769ab624bb640faec34c53dea4b32463d79c80d39c6"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FourKDizi.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-bronze36",
-    "internalName": "FourKDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "4KDizi (4kdizi.com) - 4K ve Full HD dizi ve film izleme platformu.",
-    "fileSize": 52726,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=4kdizi.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-d7ae44a60332a6b1c366189b2b1cc4fdf509bfa71910ba0237ed597c50877750"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FrameXTV.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-bronze37",
-    "internalName": "FrameXTV",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "FrameXTV (framextv.xyz) - 4K Film, Dizi ve Anime platformu.",
-    "fileSize": 40790,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/framextv.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-4f7b6c3bebee270444dc2432cc06648adf22a618f6c162e09a599554bb44fc7e"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FullHDFilm.cs3",
-    "status": 1,
-    "version": 38,
-    "name": "Ümitmod-bronze38",
-    "internalName": "FullHDFilm",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Fullhdfilm ile en yeni vizyon filmler Full HD ve kesintisiz film sizlerle. Özgün film arşivimizle en üstün kaliteli film izle keyfini sunuyoruz.",
-    "fileSize": 33820,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilm.us&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-54adf4ec73902181725bf76d9e8358dee3a382c31d71e683bf99843f753f231d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FullHDFilmizlesene.cs3",
-    "status": 1,
-    "version": 37,
-    "name": "Ümitmod-bronze39",
-    "internalName": "FullHDFilmizlesene",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sinema zevkini evinize kadar getirdik. Türkiye'nin lider Film sitesinde, en yeni filmleri Full HD izleyin.",
-    "fileSize": 51723,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.fullhdfilmizlesene.de&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-c5b80c66f6e3051086e1f6d13d417fc774ccc77c12d82032968de8fa59219f60"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmCehennemi.cs3",
-    "status": 1,
-    "version": 57,
-    "name": "Ümitmod-bronze40",
-    "internalName": "HDFilmCehennemi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Türkiye'nin en hızlı hd film izleme sitesi",
-    "fileSize": 36997,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmcehennemi.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-050765bdebbd37f1dd80aea19a62f4f9f8b405bdc4478116adab7db6069284ea"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmcehennemiLand.cs3",
-    "status": 1,
-    "version": 5,
-    "name": "Ümitmod-bronze41",
-    "internalName": "HDFilmcehennemiLand",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "HDFilmcehennemi Land - En yeni film ve dizileri donma olmadan full HD kalitede izleyin.",
-    "fileSize": 56610,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmcehennemi.land&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-d5ae39b1e76852d37ccf84c3912e73240d1d4fba789cec4ee66b0de7c9e9f682"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmDelisi.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-bronze42",
-    "internalName": "HDFilmDelisi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "HD Film Delisi - Türkçe Filmler",
-    "fileSize": 83910,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmdelisi.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-415e6cad4bf694a22fa98d9e47e193af98cb6c3afdb0b58429bb1df962e6e3dd"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/İnatBox%20BC.cs3",
-    "status": 1,
-    "version": 20,
-    "name": "Ümitmod-bronze43",
-    "internalName": "İnatBox BC",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "İnatBox BronzeCloud Edition - Canlı kanallar, spor ve diziler burada.",
-    "fileSize": 68483,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3vCp6N1K4bECoYRQD-cisJF2_6V_Hk01ZhDmoPR2JuM8O5qr4MqrPO1munM9cRlleBBSK6odYhLtDBWv4E3vhPhynlmS5hVVtJZShHoGA5REQ8_3v8SIlccTEqzVQu2UJyNYQdJNrKIfWy66RQeT0D-CcmFCbHPz5023H6p2v5fv4NVloZ5Rqo_yGrIY/s320/iNat-Box-App.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-b661548e667ddb481eb9afdb07493481003d69360ff0804749a656c0831938e7"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/JetFilmizle.cs3",
-    "status": 1,
-    "version": 51,
-    "name": "Ümitmod-bronze44",
-    "internalName": "JetFilmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Binlerce Film İzleme Seçeneğiyle En İyi Film İzleme Sitesi",
-    "fileSize": 27049,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://jetfilmizle.de&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-cfea15b0eb4cb07305a89f97d813506201fc9ac6e8448ff55398e88bde30b7e8"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/KultFilmler.cs3",
-    "status": 1,
-    "version": 19,
-    "name": "Ümitmod-bronze45",
-    "internalName": "KultFilmler",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Kült Filmler özenle en iyi filmleri derler ve iyi bir altyazılı film izleme deneyimi sunmayı amaçlar",
-    "fileSize": 32463,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=kultfilmler.net&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-6133817695e792fb5822ef3bdb1afe043d02fcb81d4d29167f230c11302d7d00"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/LoveFilmizle.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-bronze46",
-    "internalName": "LoveFilmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "LoveFilmizle (lovefilmizle.net) - Film ve yabancı diziler, Türkçe dublaj ve altyazı seçenekleriyle.",
-    "fileSize": 48869,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/lovefilmizle.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-58f6493ff4ff3989e7b94f5bfcdc08cc872939431b2ebc3d777e82fcc097862d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Puhu.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-bronze47",
-    "internalName": "Puhu",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "PuhuTV - En popüler yerli ve yabancı diziler, Puhu orijinal yapımları, canlı TV (Star TV, NTV, Kral Pop), yaşam ve çocuk içerikleri.",
-    "fileSize": 43016,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/puhu.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-1031d2c3fb301ac4017913c250bc264fba1751dc90368472685d0fddce89755b"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/rectv-bc.cs3",
-    "status": 1,
-    "version": 9,
-    "name": "Ümitmod-bronze48",
-    "internalName": "rectv-bc",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "RecTV BronzeCloud Edition v160 - Canlı TV, Spor, Dizi ve Film",
-    "fileSize": 56298,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "Live",
-      "TvSeries"
-    ],
-    "iconUrl": "https://rectv.org.tr/wp-content/uploads/2024/11/rectv-modified.webp",
-    "apiVersion": 1,
-    "fileHash": "sha256-3be1efe1abedf0a23bbe07d9f1ccb82c675aeaf1021d45074a2e7a03157ecdf0"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Reeltu.cs3",
-    "status": 1,
-    "version": 11,
-    "name": "Ümitmod-bronze49",
-    "internalName": "Reeltu",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Reeltu - Trend filmler, güncel dizi bölümleri, popüler animeler ve zengin kategoriler.",
-    "fileSize": 99526,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie",
-      "Anime",
-      "Others"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/keyiflerolsun/Cloudstream-BronzeCloud/master/logos/reeltu.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-678fb32c3eb9e70ebee104336b256b4487e4c17cded38d3f8abe68b69f269073"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SelcukFlix.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-bronze50",
-    "internalName": "SelcukFlix",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "SelcukFlix film ve dizi eklentisi. Şifreli katalog API'si, sayfalama, çoklu kaynak ve altyazı desteği içerir.",
-    "fileSize": 35592,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=selcukflix.app&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-c69fedbbc57e97afdf4aa50b5863b5687740d6cef952aebf0752d60782caee68"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SetFilmIzle.cs3",
-    "status": 1,
-    "version": 38,
-    "name": "Ümitmod-bronze51",
-    "internalName": "SetFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Setfilmizle sitemizde, donma yaşamadan Türkçe dublaj ve altyazılı filmleri ile dizileri muhteşem 1080p full HD kalitesinde izleyebilirsiniz.",
-    "fileSize": 49447,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.setfilmizle.ltd&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-a6c1b6b7bef3c321e9f88b078b0b9198a2dd776f7fd3f6c3da574af6e172f843"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SeyirTURK.cs3",
-    "status": 1,
-    "version": 6,
-    "name": "Ümitmod-bronze52",
-    "internalName": "SeyirTURK",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "SeyirTURK - Film, Dizi, Canlı TV ve Arşiv Eklentisi (Dinamik Backend ve Çoklu Kaynak Desteği)",
-    "fileSize": 90821,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/seyirturk.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-98d6667f8b1e4928a66ae15edd825b408d16219d91a00073921068a22631a343"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SezonlukDizi.cs3",
-    "status": 1,
-    "version": 16,
-    "name": "Ümitmod-bronze53",
-    "internalName": "SezonlukDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Güncel ve eski dizileri en iyi görüntü kalitesiyle bulabileceğiniz yabancı dizi izleme siteniz.",
-    "fileSize": 55421,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=sezonlukdizi.cc&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-0df76251b4b59d12a6047694eff343ed1f7b0bf69e65127c6059788508e4df5f"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SinemaCX.cs3",
-    "status": 1,
-    "version": 30,
-    "name": "Ümitmod-bronze54",
-    "internalName": "SinemaCX",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Güncel ve en iyi yabancı filmleri yüksek görüntü kalitesinde, Türkçe dublaj ve altyazı seçenekleriyle filmleri full izleyin. (SinemaCC)",
-    "fileSize": 27583,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=sinemacc.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-a3a17c98674c574ed301ae9a526af857a64db9117dd5ad9c25ac1fbe8e0545fe"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Sinewix.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-bronze55",
-    "internalName": "Sinewix",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Sinewix | Ücretsiz Film - Dizi - Anime İzleme Uygulaması",
-    "fileSize": 32776,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX",
-    "apiVersion": 1,
-    "fileHash": "sha256-7bbec3e34530b5c324a37d254f01e026919e56c791814d58c3ebf59ba0ab7307"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/TLCtr.cs3",
-    "status": 1,
-    "version": 20,
-    "name": "Ümitmod-bronze56",
-    "internalName": "TLCtr",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "TLC tr",
-    "fileSize": 20035,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=www.tlctv.com.tr&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-5e30142174299135d6c37e8b5d0f1a3fe488a2001ec667003953ff4c9d383ab7"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Trdiziizle.cs3",
-    "status": 1,
-    "version": 5,
-    "name": "Ümitmod-bronze57",
-    "internalName": "Trdiziizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Trdiziizle - Yerli ve yabancı dizileri full HD tek parça izleyin.",
-    "fileSize": 37488,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=trdiziizle.tv&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-5c66e0829f0e7bcfa68f0401e0a48939652f46d7be91b50b9ee1e34dfa4760d9"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/UltraFilm.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-bronze58",
-    "internalName": "UltraFilm",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "UltraFilm film eklentisi. Sonsuz kaydırma, çoklu kaynak, Hotstream ve YouTube fragman desteği içerir.",
-    "fileSize": 39783,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=ufilmizle.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-4d14050fd772565e8b78a7d7f62c028bbb2c1ac27977cea6f9b523a663c5adaf"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Vavoo.cs3",
-    "status": 1,
-    "version": 7,
-    "name": "Ümitmod-bronze59",
-    "internalName": "Vavoo",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Vavoo canlı TV eklentisi. Türkiye ve Arnavutluk kanalları kategorili olarak listelenir.",
-    "fileSize": 51714,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "tvTypes": [
-      "Live"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/doGior/doGiorsHadEnough/master/Vavoo/Vavoo.jpg",
-    "apiVersion": 1,
-    "fileHash": "sha256-0c58d8cc89758beca39222c799ccaa06d32872d86b9568bf60fa92adfa12faaa"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Watch2Movies.cs3",
-    "status": 1,
-    "version": 8,
-    "name": "Ümitmod-bronze60",
-    "internalName": "Watch2Movies",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Movies2Watch is a Free Movies streaming site with zero ads. We let you watch movies online without having to register or paying, with over 10000 movies and TV-Series.",
-    "fileSize": 31147,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=movies2watch.watch&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-9f5f4ff98221245b26b76aed268e25ed36b14b1e532557760bca6d162cf85f20"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/WebDramaTurkey.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-bronze61",
-    "internalName": "WebDramaTurkey",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "WebDramaTurkey - Asya dizileri, Kore, Çin, Japon dizileri, Asya filmleri ve animeleri Türkçe altyazılı izleme sitesi.",
-    "fileSize": 41093,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "AsianDrama",
-      "TvSeries",
-      "Movie",
-      "Anime"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=webdramaturkey2.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-7b5123e25624fa05d198f327693faae5263fd43261cf4bcb7bdab09dd2590b0d"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/WebteIzle.cs3",
-    "status": 1,
-    "version": 25,
-    "name": "Ümitmod-bronze62",
-    "internalName": "WebteIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz.",
-    "fileSize": 44759,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=webteizle.info&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-eb705a0cbcd860e515c3f1dd9d9ac88b52eb8337efb23aa03f448bb119e60e67"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/YabanciDizi.cs3",
-    "status": 1,
-    "version": 7,
-    "name": "Ümitmod-bronze63",
-    "internalName": "YabanciDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Yabancı dizi izle, yabancı diziler ve filmler full HD 1080p kalitesinde Türkçe altyazılı ve dublajlı yabancidizi.news adresinde.",
-    "fileSize": 65024,
-    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries",
-      "Movie"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=yabancidizi.news&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-63af2c83e224679607fe1acd7a96620c577bc9f61b2fdd4008cbe24b59eb77d5"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/phisher-mirror/AllMovieLandProvider.cs3",
     "status": 1,
     "version": 25,
@@ -15754,5 +14421,1338 @@
     "description": "yabancı dizi izle ! dizilla ile en iyi yabancı diziler , yabancı dizi izle önerileri , yabancı dizi izle aksiyon ve fazlası",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/manitux-mirror/Dizilla.cs3",
     "name": "Ümitmod-manitux9"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/AlbaniaLive.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze1",
+    "internalName": "AlbaniaLive",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Bu eklenti İnan Eren için hazırlanmıştır :)",
+    "fileSize": 21406,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "sq",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Flag_of_Albania.svg/512px-Flag_of_Albania.svg.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-00f00ca38a36ff07a3817c5569e03c511c67245649e5e88d52c29c07eb5b5357"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Anizium.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-bronze2",
+    "internalName": "Anizium",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Anizium - Popüler anime serileri ve anime filmleri full HD/4K kalitede izleyin.",
+    "fileSize": 33782,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie",
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=anizium.co&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-d69264c025d500e3c980a5721f64f2ce2237306bf6c6ceb775991196a0c9f437"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BCSports.cs3",
+    "status": 1,
+    "version": 49,
+    "name": "Ümitmod-bronze3",
+    "internalName": "BCSports",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "BC Sports IPTV ve canlı maç yayınları.",
+    "fileSize": 170264,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Live"
+    ],
+    "apiVersion": 1,
+    "fileHash": "sha256-0848cc7077364b3476207739864a1c970346430432091104ba2f819039bbce2f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BelgeselX.cs3",
+    "status": 1,
+    "version": 21,
+    "name": "Ümitmod-bronze4",
+    "internalName": "BelgeselX",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "En yeni belgeseller, türkçe altyazılı yada dublaj olarak 1080p kalitesinde HD belgesel izle.",
+    "fileSize": 38784,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Documentary"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=belgeselx.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-1d28b2423b074eb1a1b79d5e7290b9a3eb3ba481d26741c4bad4f947b4499e72"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/BOAT.cs3",
+    "status": 1,
+    "version": 74,
+    "name": "Ümitmod-bronze5",
+    "internalName": "BOAT",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "B.O.A.T - Film, dizi ve torrent kaynakları; bilinen düşük kalite elenir, doğrulanamayan kalite belirtilir",
+    "fileSize": 746131,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "AsianDrama",
+      "Anime",
+      "Torrent"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/boat_v2.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-b8995ba5a3d0dbfe43cc0144f6c3b792d6e55c5c1181d1bca53d6d6221962bf8"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CineJoy.cs3",
+    "status": 1,
+    "version": 10,
+    "name": "Ümitmod-bronze6",
+    "internalName": "CineJoy",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "4K HDR kaynaklar, Türkçe altyazı desteği ve zengin TMDb içerik detayları ile Film ve Dizi izleme eklentisi.",
+    "fileSize": 96177,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cinejoy.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-c54e435e3f555028b82194b8edb8351fc9f63caa3f9ec9ac552c690d6a4c7068"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CineStream.cs3",
+    "status": 1,
+    "version": 573,
+    "name": "Ümitmod-bronze7",
+    "internalName": "CineStream",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film, Dizi, Asya Dizileri ve Torrentler için hepsi bir arada çözüm",
+    "fileSize": 787763,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "AsianDrama",
+      "Anime",
+      "Torrent"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cinestream.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-56e3395fc8a72d779e91976093f976de50f35f197f833b3a15aeb53e1fb934ce"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CizgiMax.cs3",
+    "status": 1,
+    "version": 20,
+    "name": "Ümitmod-bronze8",
+    "internalName": "CizgiMax",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "ÇizgiMax ile Çizgi Film izlemek artık daha kolay, donmadan full hd ve reklamsız bir sitedir, içerisinde 700 den fazla çizgi film olan, Bu site bu işi profesyonelce yapıyor.",
+    "fileSize": 67453,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Cartoon",
+      "Anime",
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=cizgimax.online&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-f91d5d5b0559d0935be532f5a541f417c248fa2ff8be5bf7aadb7b7bfe024a64"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/CizgiVeDizi.cs3",
+    "status": 1,
+    "version": 7,
+    "name": "Ümitmod-bronze9",
+    "internalName": "CizgiVeDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Çizgi ve Dizi (cizgivedizi.net) - Çizgi dizi, anime, TV dizileri ve animasyon filmleri arşivi.",
+    "fileSize": 45062,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Cartoon",
+      "Anime"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/cizgivedizi.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-ab3cd1c52ca645ed88ab98f30c12aed87668857b4cc180f0b29475c080efda66"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Ddizi.cs3",
+    "status": 1,
+    "version": 24,
+    "name": "Ümitmod-bronze10",
+    "internalName": "Ddizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DDizi.im için Cloudstream eklentisi",
+    "fileSize": 26372,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.ddizi.im/favicon.ico",
+    "apiVersion": 1,
+    "fileHash": "sha256-90e4d244b0e1fb6bb92aad96b45a67d9db621ff2b8a1da242851679e024eee8d"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizi77.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze11",
+    "internalName": "Dizi77",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi77 (dizi77.life) - Yüksek kalitede yabancı dizi ve film izleme platformu.",
+    "fileSize": 40724,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizi77.life&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-f60c039e3a4b80e0e39eb159d05e2815244f9f2aebf99fb7014092a43de430cf"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizibal.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze12",
+    "internalName": "Dizibal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziBal - Yabancı dizi, film ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
+    "fileSize": 39366,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Anime"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.org&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-fafbe14eec48fdb2c3a09f40125b850e33464912a824bedb9ed83d89273cb80b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizibol.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze13",
+    "internalName": "Dizibol",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziBol - Yabancı dizi, film ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
+    "fileSize": 39481,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Anime"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibol.org&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-eb17d13be71c91dd614d8f4ae5b7136c01b3d40db445c61eddd7b1ebeef4f14b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziBox.cs3",
+    "status": 1,
+    "version": 29,
+    "name": "Ümitmod-bronze14",
+    "internalName": "DiziBox",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Yabancı Dizi izle, Tüm yabancı dizilerin yeni ve eski sezonlarını full hd izleyebileceğiniz elit site.",
+    "fileSize": 39820,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizibox.live&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-3751475fbb22b5566a1b2e4f16522970a0c6b49717200823be0ecc4c554ed3f8"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizidad.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze15",
+    "internalName": "Dizidad",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizidad (dizidad.com) - Yabancı dizi, yerli dizi, film ve anime izleme platformu.",
+    "fileSize": 36221,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "Cartoon",
+      "AsianDrama"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dizidad.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-bfc57d2a5630308dfc65cc69ef02eb0033b7ec140205070a50f6541bce487b20"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziizle.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze16",
+    "internalName": "Diziizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Diziizle (diziizle.wiki) - Güncel dizi ve anime arşivi full HD Türkçe altyazılı ve dublajlı.",
+    "fileSize": 39948,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Anime",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=diziizle.wiki&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-a1816311153766a63b3bbcd180d8c81ba1f7a977e409b2f82d4090c28f04d9d5"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziKorea.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze17",
+    "internalName": "DiziKorea",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DiziKorea (dizikorea3.com) - Kore, Çin, Japon ve Asya dizileri ile filmleri.",
+    "fileSize": 36006,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "AsianDrama"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dizikorea.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-2ca926b27a19ae90fe8d02e3fa1103bced9846c2eaae901fd52d49013b83c620"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizilla.cs3",
+    "status": 1,
+    "version": 95,
+    "name": "Ümitmod-bronze18",
+    "internalName": "Dizilla",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizilla tüm yabancı dizileri ücretsiz olarak Türkçe Dublaj ve altyazılı seçenekleri ile 1080P kalite izleyebileceğiniz yeni nesil yabancı dizi izleme siteniz.",
+    "fileSize": 43319,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizilla.club&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-9dc389cc98d254f4079190ccaba7c389807bf10af329cf27556b73c158fec2ce"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziMom.cs3",
+    "status": 1,
+    "version": 64,
+    "name": "Ümitmod-bronze19",
+    "internalName": "DiziMom",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Sadece dizi izle, Dizimom heryerde seninle!",
+    "fileSize": 40539,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.dizimom.diy&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-6837a55226cbcfe9190664a9ede25f5437efbbf88568ae58ab99eac5bbf38e43"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziPal.cs3",
+    "status": 1,
+    "version": 119,
+    "name": "Ümitmod-bronze20",
+    "internalName": "DiziPal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "en yeni dizileri güvenli ve hızlı şekilde sunar.",
+    "fileSize": 52826,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://dizipal1563.com/assets/favicon/favicon-32x32.png?v=3",
+    "apiVersion": 1,
+    "fileHash": "sha256-3d42e97596190d690b454f8d86f4db9fff70156c4c5b9bb7c593dcdcd78613d6"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziPalOriginal.cs3",
+    "status": 1,
+    "version": 105,
+    "name": "Ümitmod-bronze21",
+    "internalName": "DiziPalOriginal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "en yeni dizileri güvenli ve hızlı şekilde sunar.",
+    "fileSize": 45053,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://chessplyimages.cfd/uploads/site/favicon-32x32.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-4ada8ff7ffe9b13126e85f5e48624cc6f507aa945dae5664483ae8579cdd52e7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Dizipod.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-bronze22",
+    "internalName": "Dizipod",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizipod - Orijinal Dilinde Türkçe Altyazılı Yabancı dizi ve filmleri full HD kalitede izleyin.",
+    "fileSize": 35625,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizipod.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-673caa99f916167048ca30d2bd3e2c3dcffda0b5f885f421291f45baa9c9b45b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziroll.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze23",
+    "internalName": "Diziroll",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Diziroll (diziroll.club) - Yabancı diziler, güncel bölümler, Türkçe dublaj ve altyazı seçenekleriyle.",
+    "fileSize": 39497,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/diziroll.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-f29a581a5754f6d99a251245fabfcb11bb2c36a4c5cfcf643f226de67816e83c"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Diziwatch.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze24",
+    "internalName": "Diziwatch",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "diziwatch (diziwatch.now) - Yabancı dizi ve anime izleme platformu.",
+    "fileSize": 35496,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Anime",
+      "Cartoon",
+      "AsianDrama"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/diziwatch.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-2ada0e9ae3fb43fd63b8fc3e3999307cf8744b8bcbb181c955513f7179af01ff"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DiziYou.cs3",
+    "status": 1,
+    "version": 28,
+    "name": "Ümitmod-bronze25",
+    "internalName": "DiziYou",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Diziyou en kaliteli Türkçe dublaj ve altyazılı yabancı dizi izleme sitesidir. Güncel ve efsanevi dizileri 1080p Full HD kalitede izlemek için hemen tıkla!",
+    "fileSize": 23728,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://cdn.diziyou.one/wp-content/uploads/2020/04/diziyou-favicon.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-6f638346d82c0c1b019a479e536ff95d42979ab2724e464729b4fc6d722ac60a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DomatesTV.cs3",
+    "status": 1,
+    "version": 11,
+    "name": "Ümitmod-bronze26",
+    "internalName": "DomatesTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DomatesTV - Netflix, Disney+, HBO, Prime yapımı binlerce film ve dizi.",
+    "fileSize": 90272,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/keyiflerolsun/Cloudstream-BronzeCloud/master/logos/domatestv.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-3e8d38dc37a3a68e3d2f436e42a3eee2c45a67fa6c7d723b5e5ac974428145b1"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/DominoTV.cs3",
+    "status": 1,
+    "version": 8,
+    "name": "Ümitmod-bronze27",
+    "internalName": "DominoTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "DominoTV / Cine10 - Canlı TV, Spor, Film ve Dizi Eklentisi (Dinamik Domain Desteği ile)",
+    "fileSize": 95290,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Live",
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/dominotv.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-fc3a97ef7ece7d9ca1c1f662d54e5fc9aaee9fd557e177a2e2ec25bfed8a47c3"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmciBaba.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze28",
+    "internalName": "FilmciBaba",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Filmci Baba (filmizle.ink) film ve dizi eklentisi. Sonsuz kaydırma, Hotstream ve altyazı desteği içerir.",
+    "fileSize": 39592,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmizle.ink&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-33a59c5a2e09ff2ccd6ef2ebf4727826473098e60bb99e525498650d0f6bd149"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmDozu.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze29",
+    "internalName": "FilmDozu",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FilmDozu film eklentisi. Sonsuz kaydırma, çoklu kaynak, VidMoly ve Ok.Ru desteği içerir.",
+    "fileSize": 38276,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmdozu.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-7add48e4051ce702bb77cbf00e7ae3f93d135224fdf4a10a97a8ccbc4ddfb95f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmEkseni.cs3",
+    "status": 1,
+    "version": 5,
+    "name": "Ümitmod-bronze30",
+    "internalName": "FilmEkseni",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FilmEkseni film ve dizi eklentisi. Sayfalama, çoklu kaynak ve altyazı desteği içerir.",
+    "fileSize": 52110,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmekseni.vip&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-3522898d5d5837724e21defa0b5ce5d5457211572785a662dec3a8e7998d7945"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmGecesi.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze31",
+    "internalName": "FilmGecesi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FilmGecesi (filmgecesi.vip) film eklentisi. Sonsuz kaydırma, Bluray/RapidVid oynatıcı ve altyazı desteği içerir.",
+    "fileSize": 32672,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmgecesi.vip&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-d1ff3e56cd95c2a0097c78f48e3791470da34be7b4e0e8cbf0ca388847f41a7d"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmiFullizle.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze32",
+    "internalName": "FilmiFullizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FilmiFullizle (filmifullizle.news) film eklentisi. Sonsuz kaydırma, dublaj/altyazı, Vidmoly ve OkRu oynatıcı desteği içerir.",
+    "fileSize": 42555,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmifullizle.news&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-94b2f4d02e8b119876afb8aac2524248024b7c7571d2706ed160314c923e88c0"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Filmizle.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze33",
+    "internalName": "Filmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Filmizle (filmizle.now) - Türkçe dublaj ve altyazılı Full HD film ve dizi platformu.",
+    "fileSize": 47825,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/filmizle.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-3c296f0ee028812ec7ffbdbe3eeb77618704600c90ca75f7dc74cadfb04c5ae4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmMakinesi.cs3",
+    "status": 1,
+    "version": 64,
+    "name": "Ümitmod-bronze34",
+    "internalName": "FilmMakinesi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film Makinesi, en yeni ve en güncel filmleri sitemizde full HD kalite farkı ile izleyebilirsiniz. HD film izle denildiğinde akla gelen en kaliteli film izleme sitesi.",
+    "fileSize": 36747,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=filmmakinesi.to&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-fab908c2789d90d38404673e7a01b460f2a9134a43d8aa189338438636260c52"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FilmModu.cs3",
+    "status": 1,
+    "version": 22,
+    "name": "Ümitmod-bronze35",
+    "internalName": "FilmModu",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film modun geldiyse yüksek kalitede en yeni filmleri izle, 1080p izleyebileceğiniz reklamsiz film sitesi.",
+    "fileSize": 22305,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.filmmodu.one/icon/favicon.ico",
+    "apiVersion": 1,
+    "fileHash": "sha256-a3e4d4aea4ba60a7dc055769ab624bb640faec34c53dea4b32463d79c80d39c6"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FourKDizi.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-bronze36",
+    "internalName": "FourKDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "4KDizi (4kdizi.com) - 4K ve Full HD dizi ve film izleme platformu.",
+    "fileSize": 52726,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=4kdizi.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-d7ae44a60332a6b1c366189b2b1cc4fdf509bfa71910ba0237ed597c50877750"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FrameXTV.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-bronze37",
+    "internalName": "FrameXTV",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "FrameXTV (framextv.xyz) - 4K Film, Dizi ve Anime platformu.",
+    "fileSize": 40790,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/framextv.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-4f7b6c3bebee270444dc2432cc06648adf22a618f6c162e09a599554bb44fc7e"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FullHDFilm.cs3",
+    "status": 1,
+    "version": 38,
+    "name": "Ümitmod-bronze38",
+    "internalName": "FullHDFilm",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Fullhdfilm ile en yeni vizyon filmler Full HD ve kesintisiz film sizlerle. Özgün film arşivimizle en üstün kaliteli film izle keyfini sunuyoruz.",
+    "fileSize": 33820,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilm.us&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-54adf4ec73902181725bf76d9e8358dee3a382c31d71e683bf99843f753f231d"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/FullHDFilmizlesene.cs3",
+    "status": 1,
+    "version": 37,
+    "name": "Ümitmod-bronze39",
+    "internalName": "FullHDFilmizlesene",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sinema zevkini evinize kadar getirdik. Türkiye'nin lider Film sitesinde, en yeni filmleri Full HD izleyin.",
+    "fileSize": 51723,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.fullhdfilmizlesene.de&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-c5b80c66f6e3051086e1f6d13d417fc774ccc77c12d82032968de8fa59219f60"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmCehennemi.cs3",
+    "status": 1,
+    "version": 57,
+    "name": "Ümitmod-bronze40",
+    "internalName": "HDFilmCehennemi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Türkiye'nin en hızlı hd film izleme sitesi",
+    "fileSize": 36997,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmcehennemi.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-050765bdebbd37f1dd80aea19a62f4f9f8b405bdc4478116adab7db6069284ea"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmcehennemiLand.cs3",
+    "status": 1,
+    "version": 5,
+    "name": "Ümitmod-bronze41",
+    "internalName": "HDFilmcehennemiLand",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "HDFilmcehennemi Land - En yeni film ve dizileri donma olmadan full HD kalitede izleyin.",
+    "fileSize": 56610,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.hdfilmcehennemi.land&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-d5ae39b1e76852d37ccf84c3912e73240d1d4fba789cec4ee66b0de7c9e9f682"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/HDFilmDelisi.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-bronze42",
+    "internalName": "HDFilmDelisi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "HD Film Delisi - Türkçe Filmler",
+    "fileSize": 83910,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hdfilmdelisi.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-415e6cad4bf694a22fa98d9e47e193af98cb6c3afdb0b58429bb1df962e6e3dd"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/İnatBox%20BC.cs3",
+    "status": 1,
+    "version": 20,
+    "name": "Ümitmod-bronze43",
+    "internalName": "İnatBox BC",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "İnatBox BronzeCloud Edition - Canlı kanallar, spor ve diziler burada.",
+    "fileSize": 68483,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3vCp6N1K4bECoYRQD-cisJF2_6V_Hk01ZhDmoPR2JuM8O5qr4MqrPO1munM9cRlleBBSK6odYhLtDBWv4E3vhPhynlmS5hVVtJZShHoGA5REQ8_3v8SIlccTEqzVQu2UJyNYQdJNrKIfWy66RQeT0D-CcmFCbHPz5023H6p2v5fv4NVloZ5Rqo_yGrIY/s320/iNat-Box-App.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-b661548e667ddb481eb9afdb07493481003d69360ff0804749a656c0831938e7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/JetFilmizle.cs3",
+    "status": 1,
+    "version": 51,
+    "name": "Ümitmod-bronze44",
+    "internalName": "JetFilmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Binlerce Film İzleme Seçeneğiyle En İyi Film İzleme Sitesi",
+    "fileSize": 27049,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://jetfilmizle.de&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-cfea15b0eb4cb07305a89f97d813506201fc9ac6e8448ff55398e88bde30b7e8"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/KultFilmler.cs3",
+    "status": 1,
+    "version": 19,
+    "name": "Ümitmod-bronze45",
+    "internalName": "KultFilmler",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Kült Filmler özenle en iyi filmleri derler ve iyi bir altyazılı film izleme deneyimi sunmayı amaçlar",
+    "fileSize": 32463,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=kultfilmler.net&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-6133817695e792fb5822ef3bdb1afe043d02fcb81d4d29167f230c11302d7d00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/LoveFilmizle.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-bronze46",
+    "internalName": "LoveFilmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "LoveFilmizle (lovefilmizle.net) - Film ve yabancı diziler, Türkçe dublaj ve altyazı seçenekleriyle.",
+    "fileSize": 48869,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/lovefilmizle.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-58f6493ff4ff3989e7b94f5bfcdc08cc872939431b2ebc3d777e82fcc097862d"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Puhu.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-bronze47",
+    "internalName": "Puhu",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "PuhuTV - En popüler yerli ve yabancı diziler, Puhu orijinal yapımları, canlı TV (Star TV, NTV, Kral Pop), yaşam ve çocuk içerikleri.",
+    "fileSize": 43016,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/puhu.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-1031d2c3fb301ac4017913c250bc264fba1751dc90368472685d0fddce89755b"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/rectv-bc.cs3",
+    "status": 1,
+    "version": 9,
+    "name": "Ümitmod-bronze48",
+    "internalName": "rectv-bc",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "RecTV BronzeCloud Edition v160 - Canlı TV, Spor, Dizi ve Film",
+    "fileSize": 56298,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "Live",
+      "TvSeries"
+    ],
+    "iconUrl": "https://rectv.org.tr/wp-content/uploads/2024/11/rectv-modified.webp",
+    "apiVersion": 1,
+    "fileHash": "sha256-3be1efe1abedf0a23bbe07d9f1ccb82c675aeaf1021d45074a2e7a03157ecdf0"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Reeltu.cs3",
+    "status": 1,
+    "version": 11,
+    "name": "Ümitmod-bronze49",
+    "internalName": "Reeltu",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Reeltu - Trend filmler, güncel dizi bölümleri, popüler animeler ve zengin kategoriler.",
+    "fileSize": 99526,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie",
+      "Anime",
+      "Others"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/keyiflerolsun/Cloudstream-BronzeCloud/master/logos/reeltu.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-678fb32c3eb9e70ebee104336b256b4487e4c17cded38d3f8abe68b69f269073"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SelcukFlix.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-bronze50",
+    "internalName": "SelcukFlix",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "SelcukFlix film ve dizi eklentisi. Şifreli katalog API'si, sayfalama, çoklu kaynak ve altyazı desteği içerir.",
+    "fileSize": 35592,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=selcukflix.app&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-c69fedbbc57e97afdf4aa50b5863b5687740d6cef952aebf0752d60782caee68"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SetFilmIzle.cs3",
+    "status": 1,
+    "version": 38,
+    "name": "Ümitmod-bronze51",
+    "internalName": "SetFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Setfilmizle sitemizde, donma yaşamadan Türkçe dublaj ve altyazılı filmleri ile dizileri muhteşem 1080p full HD kalitesinde izleyebilirsiniz.",
+    "fileSize": 49447,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.setfilmizle.ltd&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-a6c1b6b7bef3c321e9f88b078b0b9198a2dd776f7fd3f6c3da574af6e172f843"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SeyirTURK.cs3",
+    "status": 1,
+    "version": 6,
+    "name": "Ümitmod-bronze52",
+    "internalName": "SeyirTURK",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "SeyirTURK - Film, Dizi, Canlı TV ve Arşiv Eklentisi (Dinamik Backend ve Çoklu Kaynak Desteği)",
+    "fileSize": 90821,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/dr-octagon/Cloudstream-BronzeCloud/builds/logos/seyirturk.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-98d6667f8b1e4928a66ae15edd825b408d16219d91a00073921068a22631a343"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SezonlukDizi.cs3",
+    "status": 1,
+    "version": 16,
+    "name": "Ümitmod-bronze53",
+    "internalName": "SezonlukDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Güncel ve eski dizileri en iyi görüntü kalitesiyle bulabileceğiniz yabancı dizi izleme siteniz.",
+    "fileSize": 55421,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=sezonlukdizi.cc&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-0df76251b4b59d12a6047694eff343ed1f7b0bf69e65127c6059788508e4df5f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/SinemaCX.cs3",
+    "status": 1,
+    "version": 30,
+    "name": "Ümitmod-bronze54",
+    "internalName": "SinemaCX",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Güncel ve en iyi yabancı filmleri yüksek görüntü kalitesinde, Türkçe dublaj ve altyazı seçenekleriyle filmleri full izleyin. (SinemaCC)",
+    "fileSize": 27583,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=sinemacc.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-a3a17c98674c574ed301ae9a526af857a64db9117dd5ad9c25ac1fbe8e0545fe"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Sinewix.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-bronze55",
+    "internalName": "Sinewix",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Sinewix | Ücretsiz Film - Dizi - Anime İzleme Uygulaması",
+    "fileSize": 32776,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "iconUrl": "https://play-lh.googleusercontent.com/brwGNmr7IjA_MKk_TTPs0va10hdKE_bD_a1lnKoiMuCayW98EHpRv55edA6aEoJlmwfX",
+    "apiVersion": 1,
+    "fileHash": "sha256-7bbec3e34530b5c324a37d254f01e026919e56c791814d58c3ebf59ba0ab7307"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/TLCtr.cs3",
+    "status": 1,
+    "version": 20,
+    "name": "Ümitmod-bronze56",
+    "internalName": "TLCtr",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "TLC tr",
+    "fileSize": 20035,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=www.tlctv.com.tr&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-5e30142174299135d6c37e8b5d0f1a3fe488a2001ec667003953ff4c9d383ab7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Trdiziizle.cs3",
+    "status": 1,
+    "version": 5,
+    "name": "Ümitmod-bronze57",
+    "internalName": "Trdiziizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Trdiziizle - Yerli ve yabancı dizileri full HD tek parça izleyin.",
+    "fileSize": 37488,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=trdiziizle.tv&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-5c66e0829f0e7bcfa68f0401e0a48939652f46d7be91b50b9ee1e34dfa4760d9"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/UltraFilm.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-bronze58",
+    "internalName": "UltraFilm",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "UltraFilm film eklentisi. Sonsuz kaydırma, çoklu kaynak, Hotstream ve YouTube fragman desteği içerir.",
+    "fileSize": 39783,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=ufilmizle.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-4d14050fd772565e8b78a7d7f62c028bbb2c1ac27977cea6f9b523a663c5adaf"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Vavoo.cs3",
+    "status": 1,
+    "version": 7,
+    "name": "Ümitmod-bronze59",
+    "internalName": "Vavoo",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Vavoo canlı TV eklentisi. Türkiye ve Arnavutluk kanalları kategorili olarak listelenir.",
+    "fileSize": 51714,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "tvTypes": [
+      "Live"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/doGior/doGiorsHadEnough/master/Vavoo/Vavoo.jpg",
+    "apiVersion": 1,
+    "fileHash": "sha256-0c58d8cc89758beca39222c799ccaa06d32872d86b9568bf60fa92adfa12faaa"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/Watch2Movies.cs3",
+    "status": 1,
+    "version": 8,
+    "name": "Ümitmod-bronze60",
+    "internalName": "Watch2Movies",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Movies2Watch is a Free Movies streaming site with zero ads. We let you watch movies online without having to register or paying, with over 10000 movies and TV-Series.",
+    "fileSize": 31147,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=movies2watch.watch&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-9f5f4ff98221245b26b76aed268e25ed36b14b1e532557760bca6d162cf85f20"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/WebDramaTurkey.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-bronze61",
+    "internalName": "WebDramaTurkey",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "WebDramaTurkey - Asya dizileri, Kore, Çin, Japon dizileri, Asya filmleri ve animeleri Türkçe altyazılı izleme sitesi.",
+    "fileSize": 41093,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "AsianDrama",
+      "TvSeries",
+      "Movie",
+      "Anime"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=webdramaturkey2.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-7b5123e25624fa05d198f327693faae5263fd43261cf4bcb7bdab09dd2590b0d"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/WebteIzle.cs3",
+    "status": 1,
+    "version": 25,
+    "name": "Ümitmod-bronze62",
+    "internalName": "WebteIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz.",
+    "fileSize": 44759,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=webteizle.info&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-eb705a0cbcd860e515c3f1dd9d9ac88b52eb8337efb23aa03f448bb119e60e67"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/bronze-mirror/YabanciDizi.cs3",
+    "status": 1,
+    "version": 7,
+    "name": "Ümitmod-bronze63",
+    "internalName": "YabanciDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Yabancı dizi izle, yabancı diziler ve filmler full HD 1080p kalitesinde Türkçe altyazılı ve dublajlı yabancidizi.news adresinde.",
+    "fileSize": 65024,
+    "repositoryUrl": "https://github.com/dr-octagon/Cloudstream-BronzeCloud",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=yabancidizi.news&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-63af2c83e224679607fe1acd7a96620c577bc9f61b2fdd4008cbe24b59eb77d5"
   }
 ]

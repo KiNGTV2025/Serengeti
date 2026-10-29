@@ -8177,278 +8177,6 @@
     "fileHash": "sha256-2f143efef182a8f964bbc3f719c88ca051661948648a8144faf67b5ae1447b42"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziBal.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope1",
-    "internalName": "DiziBal",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "En popüler yabancı dizileri yeni bölümleriyle takip edin. HBO, Netflix, Apple TV+ yapımları Türkçe altyazılı olarak dizibaL'da!",
-    "fileSize": 32983,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries",
-      "Anime"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.org&sz=128",
-    "apiVersion": 1,
-    "fileHash": "sha256-245d130231bacd666c5c5ac904b12f0b9e1ea1e47e6e69d57aa7e46fbc97f7a2"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziLife.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-blackhope2",
-    "internalName": "DiziLife",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Dizi.life Türkçe dizi/film izleme platformu — yabancı diziler, yeni filmler, son bölümler.",
-    "fileSize": 17212,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://dizi73.life&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-70a7307e640f4b21023d84f7f4e9ad64b24aeacdf3c670ab83a6139621e365e2"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziMom.cs3",
-    "status": 1,
-    "version": 4,
-    "name": "Ümitmod-blackhope3",
-    "internalName": "DiziMom",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Sadece dizi izle, Dizimom heryerde seninle!",
-    "fileSize": 26748,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.dizimom.surf&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-1e814d44124810c9c0ec13820a3fc9463aba3e5b7fde231cc2af6653140fbc37"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziYo.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope4",
-    "internalName": "DiziYo",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele.",
-    "fileSize": 28760,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.diziyo.so&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-9dacc67b13830d30c0412b4430b1bf8476cd7ca98e02fe848cc3818c7982f0aa"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DramaDizilerim.cs3",
-    "status": 1,
-    "version": 3,
-    "name": "Ümitmod-blackhope5",
-    "internalName": "DramaDizilerim",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "En popüler NetShort, DramaBox, ReelShort ve FreeReels kısa dizilerini Türkçe dublaj ve altyazı seçenekleriyle Full HD kalitede ücretsiz ve reklamsız izleyin.",
-    "fileSize": 32980,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://dramadizilerim.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-923b17087497bb3cfc1bffe9bb066bf96addd5de87715c7496502026eb038925"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmEkseni.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope6",
-    "internalName": "FilmEkseni",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film Ekseni Vizyonda ki, en güncel ve en yeni filmleri full hd kalitesinde türkçe dublaj ve altyazı seçenekleriyle 1080p olarak izleyebileceğiniz adresiniz.",
-    "fileSize": 39502,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmekseni.vip&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-7c891b320aa438c66ca7ffbdd8176777caaf4d5da488aa4c6ac39fbb4aedbdf7"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmHane.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope7",
-    "internalName": "FilmHane",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Trend olan tüm yabancı yerli filmleri Hd ve 720p 1080p kalitesinde kesintisiz indirmeden izleyebilirsiniz, Online film sitemizde Türkçe dublaj olarak izleyebilirsiniz.",
-    "fileSize": 22379,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmhane.shop&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-795a96520644a3a5f85da35e92904e02e51990cab36c860a4feef2b06a235e6a"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmMakinesi.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-blackhope8",
-    "internalName": "FilmMakinesi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Film Makinesi ile en yeni ve güncel filmleri Full HD kalite farkı ile izleyebilirsiniz. Film izle denildiğinde akla gelen en kaliteli film sitesi.",
-    "fileSize": 35734,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmmakinesi.to&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-8367b606ae3fbeccddb7432747187c19b1f6a20343807e3fdf11967fb558ba0c"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/JetFilmizle.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope9",
-    "internalName": "JetFilmizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "En yeni yerli ve yabancı yapımları Full HD kalitede film izle. Türkçe dublaj ve altyazı seçenekleriyle sunulan ödüllü sinema eserlerini JetFilmizle hızıyla keşfedin.",
-    "fileSize": 41722,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://jetfilmizle.now&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-6396427508fbce27ef8ffeb56ac73436ef9ea4ecf9c8f01e74681ea167ed0d01"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/LoveFilm.cs3",
-    "status": 0,
-    "version": 1,
-    "name": "Ümitmod-blackhope10",
-    "internalName": "LoveFilm",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Full HD Film izle - Türkçe Dublaj Altyazılı Film izleme sitesi olarak sizlere yabancı yerli filmleri yüksek kalitede sunmakdayız. Kaliteli film izle sitesi",
-    "fileSize": 21613,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://lovefilmizle.net&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-ce17a0787c700bf1d8d3ea102fe8723dbf38d0506bf5809f8dfd67d754bf7d2a"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/SezonlukDizi.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope11",
-    "internalName": "SezonlukDizi",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Güncel ve eski dizileri en iyi görüntü kalitesiyle bulabileceğiniz yabancı dizi izleme siteniz.",
-    "fileSize": 31821,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://sezonlukdizi.cc&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-43e3d5cb3af55a6f7075f03b07755be46ebd0ff3dc7be0d9e3843b3558c62056"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/TmdbProvider.cs3",
-    "status": 0,
-    "version": 1,
-    "name": "Ümitmod-blackhope12",
-    "internalName": "TmdbProvider",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele.",
-    "fileSize": 19992,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.diziyo.so/&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-62f11bb5b64965111d06ce65b71a9f42bab019d58e54c120487170b80c3f7bb6"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/Webteizle.cs3",
-    "status": 1,
-    "version": 1,
-    "name": "Ümitmod-blackhope13",
-    "internalName": "Webteizle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz.",
-    "fileSize": 28924,
-    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=https://webteizle3.xyz&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-163fc89b68c30065cdfdf4afc027167fad047c92e7e6b3025a7e1716ed670e78"
-  },
-  {
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/oygy-mirror/DDizi.cs3",
     "status": 1,
     "version": 2,
@@ -15754,5 +15482,277 @@
     "fileSize": 145660,
     "fileHash": "sha256-bfbdab89f458c2443f5a471a31a7c9a87b89bf8c7a13e6780f843273f4153441",
     "apiVersion": 1
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziBal.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope1",
+    "internalName": "DiziBal",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "En popüler yabancı dizileri yeni bölümleriyle takip edin. HBO, Netflix, Apple TV+ yapımları Türkçe altyazılı olarak dizibaL'da!",
+    "fileSize": 32983,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=dizibal.org&sz=128",
+    "apiVersion": 1,
+    "fileHash": "sha256-245d130231bacd666c5c5ac904b12f0b9e1ea1e47e6e69d57aa7e46fbc97f7a2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziLife.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-blackhope2",
+    "internalName": "DiziLife",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Dizi.life Türkçe dizi/film izleme platformu — yabancı diziler, yeni filmler, son bölümler.",
+    "fileSize": 17212,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://dizi73.life&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-70a7307e640f4b21023d84f7f4e9ad64b24aeacdf3c670ab83a6139621e365e2"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziMom.cs3",
+    "status": 1,
+    "version": 4,
+    "name": "Ümitmod-blackhope3",
+    "internalName": "DiziMom",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Binlerce yerli yabancı dizi arşivi, tüm sezonlar, kesintisiz bölümler. Sadece dizi izle, Dizimom heryerde seninle!",
+    "fileSize": 26748,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.dizimom.surf&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-1e814d44124810c9c0ec13820a3fc9463aba3e5b7fde231cc2af6653140fbc37"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DiziYo.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope4",
+    "internalName": "DiziYo",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele.",
+    "fileSize": 28760,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.diziyo.so&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-9dacc67b13830d30c0412b4430b1bf8476cd7ca98e02fe848cc3818c7982f0aa"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/DramaDizilerim.cs3",
+    "status": 1,
+    "version": 3,
+    "name": "Ümitmod-blackhope5",
+    "internalName": "DramaDizilerim",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "En popüler NetShort, DramaBox, ReelShort ve FreeReels kısa dizilerini Türkçe dublaj ve altyazı seçenekleriyle Full HD kalitede ücretsiz ve reklamsız izleyin.",
+    "fileSize": 32980,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://dramadizilerim.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-923b17087497bb3cfc1bffe9bb066bf96addd5de87715c7496502026eb038925"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmEkseni.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope6",
+    "internalName": "FilmEkseni",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film Ekseni Vizyonda ki, en güncel ve en yeni filmleri full hd kalitesinde türkçe dublaj ve altyazı seçenekleriyle 1080p olarak izleyebileceğiniz adresiniz.",
+    "fileSize": 39502,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmekseni.vip&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-7c891b320aa438c66ca7ffbdd8176777caaf4d5da488aa4c6ac39fbb4aedbdf7"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmHane.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope7",
+    "internalName": "FilmHane",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Trend olan tüm yabancı yerli filmleri Hd ve 720p 1080p kalitesinde kesintisiz indirmeden izleyebilirsiniz, Online film sitemizde Türkçe dublaj olarak izleyebilirsiniz.",
+    "fileSize": 22379,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmhane.shop&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-795a96520644a3a5f85da35e92904e02e51990cab36c860a4feef2b06a235e6a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/FilmMakinesi.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-blackhope8",
+    "internalName": "FilmMakinesi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Film Makinesi ile en yeni ve güncel filmleri Full HD kalite farkı ile izleyebilirsiniz. Film izle denildiğinde akla gelen en kaliteli film sitesi.",
+    "fileSize": 35734,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.filmmakinesi.to&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-8367b606ae3fbeccddb7432747187c19b1f6a20343807e3fdf11967fb558ba0c"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/JetFilmizle.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope9",
+    "internalName": "JetFilmizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "En yeni yerli ve yabancı yapımları Full HD kalitede film izle. Türkçe dublaj ve altyazı seçenekleriyle sunulan ödüllü sinema eserlerini JetFilmizle hızıyla keşfedin.",
+    "fileSize": 41722,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://jetfilmizle.now&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-6396427508fbce27ef8ffeb56ac73436ef9ea4ecf9c8f01e74681ea167ed0d01"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/LoveFilm.cs3",
+    "status": 0,
+    "version": 1,
+    "name": "Ümitmod-blackhope10",
+    "internalName": "LoveFilm",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Full HD Film izle - Türkçe Dublaj Altyazılı Film izleme sitesi olarak sizlere yabancı yerli filmleri yüksek kalitede sunmakdayız. Kaliteli film izle sitesi",
+    "fileSize": 21613,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://lovefilmizle.net&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-ce17a0787c700bf1d8d3ea102fe8723dbf38d0506bf5809f8dfd67d754bf7d2a"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/SezonlukDizi.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope11",
+    "internalName": "SezonlukDizi",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Güncel ve eski dizileri en iyi görüntü kalitesiyle bulabileceğiniz yabancı dizi izleme siteniz.",
+    "fileSize": 31821,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://sezonlukdizi.cc&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-43e3d5cb3af55a6f7075f03b07755be46ebd0ff3dc7be0d9e3843b3558c62056"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/TmdbProvider.cs3",
+    "status": 0,
+    "version": 1,
+    "name": "Ümitmod-blackhope12",
+    "internalName": "TmdbProvider",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele.",
+    "fileSize": 19992,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://www.diziyo.so/&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-62f11bb5b64965111d06ce65b71a9f42bab019d58e54c120487170b80c3f7bb6"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/blackhope-mirror/Webteizle.cs3",
+    "status": 1,
+    "version": 1,
+    "name": "Ümitmod-blackhope13",
+    "internalName": "Webteizle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Her türlü filmi ister dublaj ister altyazılı, en kaliteli bir şekilde izleyebileceğiniz arşivi en geniş gerçek film izleme siteniz.",
+    "fileSize": 28924,
+    "repositoryUrl": "https://github.com/blackhope01/cloudstream-plugins",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=https://webteizle3.xyz&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-163fc89b68c30065cdfdf4afc027167fad047c92e7e6b3025a7e1716ed670e78"
   }
 ]

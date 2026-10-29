@@ -12881,5 +12881,896 @@
     "iconUrl": "https://www.google.com/s2/favicons?sz=64&domain=themoviedb.org",
     "apiVersion": 1,
     "fileHash": "sha256-59ed9c4f560eadbb92bbbab56f572eb6265ace16cbdfa922e8a874df92556749"
+  },
+  {
+    "version": 9,
+    "internalName": "Rate",
+    "name": "Ümitmod-allforu1",
+    "pluginClassName": "com.allforu.RatePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Rate.cs3",
+    "description": "All4U Rate - Like, dislike & 1-5 star rate every AllForU plugin (live community scores, premium ratings page)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/allforu-logo.jpg",
+    "fileHash": "sha256-d45bf942fa9ad43a3e205dc4d7f7ca5222dd9c86246ed43ebcb1e0a9dd4ade28",
+    "fileSize": 54059
+  },
+  {
+    "version": 5,
+    "internalName": "NoirX",
+    "name": "Ümitmod-allforu2",
+    "pluginClassName": "com.allforu.NoirXPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/NoirX.cs3",
+    "description": "NoirX - Movies & TV shows in HD (multi-language, multi-quality, subtitles)",
+    "iconUrl": "https://noirx.me/apple-touch-icon.png",
+    "fileHash": "sha256-ec24afeecf817bc5c3ea964480160edbec5c1819fbfc273a624c90a229445a4b",
+    "fileSize": 60173
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/moviebox.png",
+    "fileHash": "sha256-fef316c32c981d354fe5f5dc17155cc895ab4edaea1e90925ca36bf21fd31282",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "fileSize": 79623,
+    "status": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "version": 89,
+    "internalName": "MovieBox",
+    "description": "MovieBox - Movies, Series & Anime in Tamil, English, Hindi, Telugu, Malayalam & more",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/MovieBox.cs3",
+    "name": "Ümitmod-allforu3",
+    "pluginClassName": "com.allforu.StreamBoxPlugin"
+  },
+  {
+    "version": 4,
+    "internalName": "AllOtt",
+    "name": "Ümitmod-allforu4",
+    "pluginClassName": "com.allforu.allott.AllOttPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/AllOtt.cs3",
+    "description": "AllOtt - Netflix, Hotstar, Disney+ & Prime Video in ONE install (Tamil, English, Hindi & more)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/allforu-logo.jpg",
+    "fileHash": "sha256-d61b79858ab845434ad5575aeff0c070bffd727b0baf0b1945c9b2b04b846b0e",
+    "fileSize": 139029
+  },
+  {
+    "version": 45,
+    "internalName": "JioTV",
+    "name": "Ümitmod-allforu5",
+    "pluginClassName": "com.allforu.JioTvPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "hi",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/JioTV.cs3",
+    "description": "JioTV - Live JioTV channels + Live Sports (live events, sports channels & highlights)",
+    "fileHash": "sha256-409430992cbbd975e37725ac804b34d817305f3fba5de36d6c4b459bfffe6b7a",
+    "fileSize": 91076,
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/jiotv.png"
+  },
+  {
+    "version": 28,
+    "internalName": "M3UPlayer",
+    "name": "Ümitmod-allforu6",
+    "pluginClassName": "com.allforu.M3uPlayerPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/M3UPlayer.cs3",
+    "description": "M3U Player - Play your own M3U/M3U8 IPTV playlists (add URLs in plugin settings)",
+    "fileHash": "sha256-cf60896c2b48029a46169f0fb2a00340f423166bab07cd3f20a1f93870db6671",
+    "fileSize": 54663,
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/m3uplayer.png"
+  },
+  {
+    "internalName": "Reanime",
+    "name": "Ümitmod-allforu7",
+    "pluginClassName": "com.allforu.ReanimePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "AnimeMovie",
+      "Anime",
+      "OVA"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Reanime.cs3",
+    "version": 30,
+    "fileHash": "sha256-6d76f65c8e3e2a003aa32b31baf87f90c54cacfdbeccc5dc393c7c693be81993",
+    "fileSize": 51211,
+    "description": "Re:ANIME - Stream anime free online (sub & dub, multi-quality)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/reanime.png"
+  },
+  {
+    "version": 1,
+    "internalName": "An1me",
+    "name": "Ümitmod-allforu8",
+    "pluginClassName": "com.allforu.An1mePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "el",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/An1me.cs3",
+    "description": "An1me - Anime με ελληνικούς υπότιτλους και μεταγλώττιση (Greek subs & dub)",
+    "iconUrl": "https://an1me.to/wp-content/uploads/2024/12/logo_copy.png",
+    "fileHash": "sha256-067a501519aa0e0fcde32eddb25fb6b8242cd8fcb62727d131b44017070c87c2",
+    "fileSize": 50408
+  },
+  {
+    "version": 12,
+    "internalName": "Animeav1",
+    "name": "Ümitmod-allforu9",
+    "pluginClassName": "com.allforu.Animeav1Plugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "es",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Animeav1.cs3",
+    "description": "AnimeAv1 - Anime en espanol latino (multi-servidor, sub)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/animeav1.png",
+    "fileHash": "sha256-ae8b57ede481ec8178ee6c5fbb63946e20200ad5f1390f8067b6059f49531c14",
+    "fileSize": 26837
+  },
+  {
+    "version": 12,
+    "internalName": "Latanime",
+    "name": "Ümitmod-allforu10",
+    "pluginClassName": "com.allforu.LatanimePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "es",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Latanime.cs3",
+    "description": "Latanime - Anime en espanol latino (sub & doblaje)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/latanime.png",
+    "fileHash": "sha256-5544785ef85f725a9426cab2bc9b372ff0f1ac545644066292388ffd4b09211d",
+    "fileSize": 23652
+  },
+  {
+    "version": 12,
+    "internalName": "Netcinez",
+    "name": "Ümitmod-allforu11",
+    "pluginClassName": "com.allforu.NetcinezPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "pt-br",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Netcinez.cs3",
+    "description": "Netcinez - Filmes, Series & Animes dublados (Portugues)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/netcinez.png",
+    "fileHash": "sha256-bdd017e6a495efdb960fe614394aaf3c2016583cd28fef833dba2eb7702f550e",
+    "fileSize": 47650
+  },
+  {
+    "version": 11,
+    "internalName": "Chikianimation",
+    "name": "Ümitmod-allforu12",
+    "pluginClassName": "com.allforu.ChikianimationPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "zh",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "Anime"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Chikianimation.cs3",
+    "description": "Chikianimation - Donghua (Chinese anime) in multiple subtitles",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/chikianimation.png",
+    "fileHash": "sha256-436a55f805338ecd32e6ca333dc78f7f9684d186b195b2f5b0ff0ec083e0f832",
+    "fileSize": 41673
+  },
+  {
+    "version": 11,
+    "internalName": "OHLI24",
+    "name": "Ümitmod-allforu13",
+    "pluginClassName": "com.allforu.Ohli24Plugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/OHLI24.cs3",
+    "description": "OHLI24 - Korean anime streaming (K-sub)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/ohli24.png",
+    "fileHash": "sha256-90f607d70b3f58aa6eb2f6d79ad70f262ffd2913f5d9e92a60428d5b7b49cef8",
+    "fileSize": 27752
+  },
+  {
+    "version": 13,
+    "internalName": "AniVortex",
+    "name": "Ümitmod-allforu14",
+    "pluginClassName": "com.allforu.AniVortexPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "hi",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie",
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/AniVortex.cs3",
+    "description": "AniVortex - Anime, movies & series from many OTT catalogues",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/anivortex.png",
+    "fileHash": "sha256-8121675b9cad4ab3022c283adae7d1d1ba391837a5a9cf2ed5fc48dea7009f8b",
+    "fileSize": 54918
+  },
+  {
+    "version": 13,
+    "internalName": "NetNaija",
+    "name": "Ümitmod-allforu15",
+    "pluginClassName": "com.allforu.NetNaijaPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/NetNaija.cs3",
+    "description": "AllDubz - Movies, series & anime in every region dub (configurable host, sources & sections)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/alldubz.png",
+    "fileHash": "sha256-a583b5eef5c448073ed920b9022b346649cf7b9ca6b2b69f778169d0859ffe82",
+    "fileSize": 86180
+  },
+  {
+    "version": 6,
+    "internalName": "Comix",
+    "name": "Ümitmod-allforu16",
+    "pluginClassName": "com.allforu.ComixPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "Others"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Comix.cs3",
+    "description": "Comix - Read manhwa, manhua & manga online (premium in-app reader)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/comix.png",
+    "fileHash": "sha256-a50fb5ed10ecf5a360063eab9c0db1ad8508f5a060bd7e8d408c2e335564026a",
+    "fileSize": 41521
+  },
+  {
+    "version": 6,
+    "internalName": "SmartTube",
+    "name": "Ümitmod-allforu17",
+    "pluginClassName": "com.allforu.SmartTubePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Others",
+      "Movie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/SmartTube.cs3",
+    "description": "SmartTube - YouTube for CloudStream (trending, channels, playlists, videos)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/smarttube.png",
+    "fileHash": "sha256-f34cb4e10eedfc9006024982974042fb3b30bad605b7865194dda8684a742895",
+    "fileSize": 28576
+  },
+  {
+    "version": 5,
+    "internalName": "SimpMusic",
+    "name": "Ümitmod-allforu18",
+    "pluginClassName": "com.allforu.SimpMusicPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Music"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/SimpMusic.cs3",
+    "description": "SimpMusic - YouTube Music playlists, albums, artists & songs (in-app playback)",
+    "iconUrl": "https://www.simpmusic.org/logo.png",
+    "fileHash": "sha256-9c88a1fc85ed28b58ea2a2d2edad52d5ceec6ef431aaaee027c7dc9ebadaf168",
+    "fileSize": 56740
+  },
+  {
+    "version": 4,
+    "internalName": "EgyBest",
+    "name": "Ümitmod-allforu19",
+    "pluginClassName": "com.allforu.EgyBestPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "ar",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/EgyBest.cs3",
+    "description": "EgyBest - Arabic movies & series (افلام و مسلسلات)",
+    "iconUrl": "https://egybest.co.in/favicon/icon-192x192.png",
+    "fileHash": "sha256-d7ce977e2220940e36245d2992d3c296e7773bd5ff832cd2715f86fc8232157e",
+    "fileSize": 29976
+  },
+  {
+    "version": 4,
+    "internalName": "AnimePhoenix",
+    "name": "Ümitmod-allforu20",
+    "pluginClassName": "com.allforu.AnimePhoenixPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "ar",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/AnimePhoenix.cs3",
+    "description": "Anime Phoenix - Arabic anime streaming (انمي مترجم)",
+    "iconUrl": "https://anime-phoenix.com/wp-content/uploads/2025/06/cropped-Icon-Cover2-1-192x192.jpg",
+    "fileHash": "sha256-e1da53ea16be75acdfa4278e16af82e5ab685b8685f860e46ced4f3cf25378df",
+    "fileSize": 32202
+  },
+  {
+    "version": 5,
+    "internalName": "FS27",
+    "name": "Ümitmod-allforu21",
+    "pluginClassName": "com.allforu.FS27Plugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/FS27.cs3",
+    "description": "FrenchStream - Films et series en streaming (French)",
+    "iconUrl": "https://fs27.lol/apple-touch-icon.png",
+    "fileHash": "sha256-87e58df741ae8e95151af61267a1c103c4a89f458cede38abed8e4980f52b391",
+    "fileSize": 39292
+  },
+  {
+    "version": 3,
+    "internalName": "Movie2K",
+    "name": "Ümitmod-allforu22",
+    "pluginClassName": "com.allforu.Movie2KPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "de",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Movie2K.cs3",
+    "description": "Movie2K - Filme und Serien online (German)",
+    "iconUrl": "https://movie2k.cx/img/logo.png",
+    "fileHash": "sha256-d3f0185673ddf58a961761ea17160df83418afd8624e5dd9b485d7502f0aa8d3",
+    "fileSize": 29603
+  },
+  {
+    "version": 3,
+    "internalName": "Samehadaku",
+    "name": "Ümitmod-allforu23",
+    "pluginClassName": "com.allforu.SamehadakuPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "id",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Samehadaku.cs3",
+    "description": "Samehadaku - Nonton anime sub Indo (Indonesian)",
+    "iconUrl": "https://v2.samehadaku.how/wp-content/uploads/2020/04/cropped-download-1-192x192.jpg",
+    "fileHash": "sha256-a377ea68332d75af557edb1ff4d710106dae5556d2cd63aee10f43066f80c30f",
+    "fileSize": 31060
+  },
+  {
+    "version": 4,
+    "internalName": "StreamUnity",
+    "name": "Ümitmod-allforu24",
+    "pluginClassName": "com.allforu.StreamUnityPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "it",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/StreamUnity.cs3",
+    "description": "StreamUnity - Film e serie TV in streaming (Italian)",
+    "iconUrl": "https://streamingunity.fun/apple-touch-icon.png?v=2",
+    "fileHash": "sha256-d4ffadad2f5acb6806e4c25df8d24f30488b5d1687efbe4f649915ec26bf4933",
+    "fileSize": 33225
+  },
+  {
+    "version": 3,
+    "internalName": "AnimeOdcinki",
+    "name": "Ümitmod-allforu25",
+    "pluginClassName": "com.allforu.AnimeOdcinkiPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "pl",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/AnimeOdcinki.cs3",
+    "description": "AnimeOdcinki - Anime online po polsku (Polish)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/odcinki.png",
+    "fileHash": "sha256-ebe5f3b2a6078e395dd703d11a496974132f9efd15a78ce23b755183daf82629",
+    "fileSize": 26387
+  },
+  {
+    "version": 4,
+    "internalName": "Kinogo",
+    "name": "Ümitmod-allforu26",
+    "pluginClassName": "com.allforu.KinogoPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "ru",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Kinogo.cs3",
+    "description": "Kinogo - Russian movies & series (фильмы и сериалы)",
+    "iconUrl": "https://kinogo.la/templates/Kinogo/images/favicon/apple-touch-icon.png",
+    "fileHash": "sha256-4773b27f664510511fcc8ccc1f8fe5fd4bbf822f8018dae2b36d80159bb01d25",
+    "fileSize": 28368
+  },
+  {
+    "version": 3,
+    "internalName": "YummyAni",
+    "name": "Ümitmod-allforu27",
+    "pluginClassName": "com.allforu.YummyAniPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "ru",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/YummyAni.cs3",
+    "description": "YummyAni - Russian anime online (смотреть аниме)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/yummy.png",
+    "fileHash": "sha256-f82a40834eb8c056e3b506764b7aab08c85ecda664a52d126bee6d1b688f47f3",
+    "fileSize": 32509
+  },
+  {
+    "version": 5,
+    "internalName": "PiratexPlay",
+    "name": "Ümitmod-allforu28",
+    "pluginClassName": "com.allforu.PiratexPlayPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "hi",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie",
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/PiratexPlay.cs3",
+    "description": "PiratexPlay - Multi-language anime streaming (India)",
+    "iconUrl": "https://piratexplay.cc/public/img/favicon/apple-icon-180x180.png",
+    "fileHash": "sha256-ee2ccc924a96bf19b8842fc0292c8a64d0c289e9f495c5549316bb53b1e814dd",
+    "fileSize": 44315
+  },
+  {
+    "version": 3,
+    "internalName": "KissAsian",
+    "name": "Ümitmod-allforu29",
+    "pluginClassName": "com.allforu.KissAsianPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "zh",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "TvSeries",
+      "Movie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/KissAsian.cs3",
+    "description": "KissAsian - Asian dramas & movies with direct HLS",
+    "iconUrl": "https://kissasian.gr/wp-content/uploads/2026/10/cropped-kiss-icon-150x150-1-300x300.png",
+    "fileHash": "sha256-c19f60688a2ec02d16034c88fd6b61e5c5c78ca1c14808bdcbd3fc0fdf394d80",
+    "fileSize": 29164
+  },
+  {
+    "version": 5,
+    "internalName": "LaMovie",
+    "name": "Ümitmod-allforu30",
+    "pluginClassName": "com.allforu.LaMoviePlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "es",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/LaMovie.cs3",
+    "description": "LaMovie - Peliculas, series y anime en HD (Spanish)",
+    "iconUrl": "https://lamovie.org/wp-content/uploads/2025/05/cropped-La.movie_-192x192.png",
+    "fileHash": "sha256-dca3389e68529592f330f351e9d436793fd9bb2c0c3aa5b1e109a59ff402ae23",
+    "fileSize": 42094
+  },
+  {
+    "version": 2,
+    "internalName": "TamilTvToons",
+    "name": "Ümitmod-allforu31",
+    "pluginClassName": "com.allforu.TamilTvToonsPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "ta",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/TamilTvToons.cs3",
+    "description": "TamilTvToons - Tamil & multi-audio dubbed movies, series & cartoons (Tamil, Hindi, Telugu, Malayalam)",
+    "iconUrl": "https://v1.tamiltvtoons.sbs/wp-content/uploads/2025/10/cropped-photo_2025-05-20_17-44-49-192x192.jpg",
+    "fileHash": "sha256-045efabf9b9c3b824fb071990af3a0a9656743a4b3bda0ea8bc4a40a38d229c3",
+    "fileSize": 40699
+  },
+  {
+    "version": 4,
+    "internalName": "PelishaxPro",
+    "name": "Ümitmod-allforu32",
+    "pluginClassName": "com.allforu.PelishaxProPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "es",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries",
+      "Anime",
+      "AnimeMovie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/PelishaxPro.cs3",
+    "description": "PelishaxPro - Peliculas, series y anime en HD (Latino, Castellano y Subtitulado)",
+    "iconUrl": "https://pelishaxpro.com/assets/img/logo.png",
+    "fileHash": "sha256-c4feb293a7b71b1dee643e09ef31510736b468e92c30e9b8cfd06c1a38f2a763",
+    "fileSize": 60591
+  },
+  {
+    "version": 2,
+    "internalName": "Bilibili",
+    "name": "Ümitmod-allforu33",
+    "pluginClassName": "com.allforu.BilibiliPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "zh",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Others",
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Bilibili.cs3",
+    "description": "Bilibili - 哔哩哔哩 videos: recommendations, popular, ranking, categories & search (720P MP4)",
+    "iconUrl": "https://s1.hdslb.com/bfs/static/jinkela/long/images/512.png",
+    "fileHash": "sha256-178f8cd14a9d86fabcbba327e5eaba0073e0ef33664d4cd11d76aca4f6b34ce0",
+    "fileSize": 40927
+  },
+  {
+    "version": 1,
+    "internalName": "HindiDrama",
+    "name": "Ümitmod-allforu34",
+    "pluginClassName": "com.allforu.HindiDramaPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "AsianDrama",
+      "TvSeries",
+      "Movie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/HindiDrama.cs3",
+    "description": "HindiDrama - Hindi-dubbed Korean, Chinese, Japanese & Indian dramas: Top 10, latest episodes, latest added, categories, search & HLS playback",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/hindidrama.png",
+    "fileHash": "sha256-e25460003d7af3e0124b35762956fedb7760a7c8b7f6a6c78a9ef443f9e57ea7",
+    "fileSize": 44082
+  },
+  {
+    "version": 2,
+    "internalName": "NextGenTV",
+    "name": "Ümitmod-allforu35",
+    "pluginClassName": "com.allforu.NextGenTvPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "en",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/NextGenTV.cs3",
+    "description": "NextGenTV - Live TV & IPTV: JioTV+, India Max, ZEE5, Sun NXT, Dish TV, Samsung/LG/Tablo/Vizio, Fancode (catalog picker, landscape rows)",
+    "iconUrl": "https://nextgeniptvin.pages.dev/logo.png",
+    "fileHash": "sha256-951c52d01ee8d2608f7aabff16eb7bfd7afcac89a99bdd8ba16cc741b67e6b78",
+    "fileSize": 47207
+  },
+  {
+    "version": 2,
+    "internalName": "HDMozi",
+    "name": "Ümitmod-allforu36",
+    "pluginClassName": "com.allforu.HDMoziPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "hu",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/HDMozi.cs3",
+    "description": "HDMozi - Magyar filmek és sorozatok online (Hungarian, HD)",
+    "iconUrl": "https://hdmozi.hu/wp-content/uploads/2024/07/3D-smile-2.jpg",
+    "fileHash": "sha256-f9e6f0c61dbceb240f553f30cf9184ad0067af61cb87a43d646f577615d79557",
+    "fileSize": 31895
+  },
+  {
+    "version": 1,
+    "internalName": "Dizipal",
+    "name": "Ümitmod-allforu37",
+    "pluginClassName": "com.allforu.DizipalPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "tr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Dizipal.cs3",
+    "description": "Dizipal - Türkçe altyazılı ve dublajlı yabancı diziler (Turkish subs & dubs)",
+    "iconUrl": "https://dizipal1453.com/wp-content/uploads/2026/04/dpalsymbol.png",
+    "fileHash": "sha256-6275f7fc46b7149817938d6adb5e5a5a173fac21fbc4136e421cbeb8993c301c",
+    "fileSize": 32466
+  },
+  {
+    "version": 1,
+    "internalName": "MoviesNiPipay",
+    "name": "Ümitmod-allforu38",
+    "pluginClassName": "com.allforu.MoviesNiPipayPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "fil",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/MoviesNiPipay.cs3",
+    "description": "Movies Ni Pipay - Filipino movies & series (Tagalog, HD, fast updates)",
+    "iconUrl": "https://moviesnipipay.me/wp-content/uploads/2019/11/Movies-Ni-Pipay_small.png",
+    "fileHash": "sha256-26f0f2545afa4fea3d286527b02104ed908a62d1c604ee88a0cfb46c1832fe03",
+    "fileSize": 29877
+  },
+  {
+    "version": 2,
+    "internalName": "MicroTV",
+    "name": "Ümitmod-allforu39",
+    "pluginClassName": "com.allforu.MicroTvPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "hi",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/MicroTV.cs3",
+    "description": "MicroTV - Short dramas, vertical reels & full episodes (Hindi/Bangla)",
+    "iconUrl": "https://raw.githubusercontent.com/RVRBEAST76/allforu-repo/main/allforu-logo.jpg",
+    "fileHash": "sha256-f79bd06b36d145cac364ef69333f1675695d708e356b9d5ec5ca23b5dc82b87a",
+    "fileSize": 16333
+  },
+  {
+    "version": 2,
+    "internalName": "Bombuj",
+    "name": "Ümitmod-allforu40",
+    "pluginClassName": "com.allforu.BombujPlugin",
+    "status": 1,
+    "apiVersion": 1,
+    "language": "cs",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "repositoryUrl": "https://github.com/RVRBEAST76/allforu-repo",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/allforu-mirror/Bombuj.cs3",
+    "description": "Bombuj - České a slovenské filmy a seriály online",
+    "iconUrl": "https://www.bombuj.si/images/favicon.png",
+    "fileHash": "sha256-7b0bd4a1819b0fefeb723451d782745f82270f45190a579e47978e265b614d78",
+    "fileSize": 56345
   }
 ]

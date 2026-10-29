@@ -15200,5 +15200,21 @@
     "description": "İzlenen içerikleri otomatik izlendi olarak işaretler ve izleme listesini senkronize eder.",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/plt-mirror/trakt-sync.cs3",
     "name": "Ümitmod-plt4"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/megaturk-mirror/TurkMegaSaglayici.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-megaturk1",
+    "internalName": "TurkMegaSaglayici",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "Bu eklenti, uygulama her açıldığında tüm depoları ekler. Eğer tüm depoları eklemek istemiyorsanız, tek bir çalıştırmadan sonra eklentiyi kaldırın. Depo listesi otomatik olarak yenilenmez.",
+    "fileSize": 7954,
+    "repositoryUrl": "https://github.com/Kraptor123/TurkMegaRepo",
+    "language": "tr",
+    "apiVersion": 1,
+    "fileHash": "sha256-281121b418cb3fc4137c57fc3878454ecc3bb4fa8109eec1e09abf70d93cbd1b"
   }
 ]

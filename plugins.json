@@ -60,70 +60,6 @@
     "fileHash": "sha256-198b190db680be500cccb06dff1fb774fbe1d148b65e18c281631df4b9f66d0f"
   },
   {
-    "fileHash": "sha256-712d392c20a8ceb6e883d23940709662e85d04b20bae9673bbba45c948e39d30",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 52651,
-    "status": 3,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "version": 2,
-    "internalName": "FrenchManga",
-    "description": "Animes et films d'animation de French-Manga",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchManga.cs3",
-    "name": "Ümitmod-fr1"
-  },
-  {
-    "fileHash": "sha256-3fdc8268521655f59490e31f145fa976058ae7414c486eb89ed84901c05a25a9",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 78041,
-    "status": 3,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "version": 19,
-    "internalName": "FrenchStreamProvider",
-    "description": "French-Stream provider for CloudStream",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchStreamProvider.cs3",
-    "name": "Ümitmod-fr2"
-  },
-  {
-    "fileHash": "sha256-366044efe735f9be90872c780641f3c556900433082bd30641195218e85a3324",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 81056,
-    "status": 3,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "version": 7,
-    "internalName": "FSTV",
-    "description": "Chaînes TV en direct de French Stream TV, avec événements sportifs et secours BZH-Sport",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FSTV.cs3",
-    "name": "Ümitmod-fr3"
-  },
-  {
-    "fileHash": "sha256-f7444358a32c4dd5c85268bd86efee63854738ba7e145597ce6b959dc53c0712",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 51025,
-    "status": 3,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "version": 7,
-    "internalName": "Movix",
-    "description": "Movix provider for CloudStream",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
-    "name": "Ümitmod-fr4"
-  },
-  {
     "name": "Ümitmod-wioland1",
     "internalName": "MegaWio",
     "pluginClassName": "wioland.WioLandPlugin",
@@ -15754,5 +15690,69 @@
     "iconUrl": "https://www.google.com/s2/favicons?domain=yabancidizi.tv&sz=%size%",
     "apiVersion": 1,
     "fileHash": "sha256-ff37203f3d0646e1f524b9359f3f07af047dbacc9b2a7cdba5381413e6f97494"
+  },
+  {
+    "fileHash": "sha256-712d392c20a8ceb6e883d23940709662e85d04b20bae9673bbba45c948e39d30",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 52651,
+    "status": 3,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "version": 2,
+    "internalName": "FrenchManga",
+    "description": "Animes et films d'animation de French-Manga",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchManga.cs3",
+    "name": "Ümitmod-fr1"
+  },
+  {
+    "fileHash": "sha256-3fdc8268521655f59490e31f145fa976058ae7414c486eb89ed84901c05a25a9",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 78041,
+    "status": 3,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "version": 19,
+    "internalName": "FrenchStreamProvider",
+    "description": "French-Stream provider for CloudStream",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchStreamProvider.cs3",
+    "name": "Ümitmod-fr2"
+  },
+  {
+    "fileHash": "sha256-366044efe735f9be90872c780641f3c556900433082bd30641195218e85a3324",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 81056,
+    "status": 3,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "version": 7,
+    "internalName": "FSTV",
+    "description": "Chaînes TV en direct de French Stream TV, avec événements sportifs et secours BZH-Sport",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FSTV.cs3",
+    "name": "Ümitmod-fr3"
+  },
+  {
+    "fileHash": "sha256-f7444358a32c4dd5c85268bd86efee63854738ba7e145597ce6b959dc53c0712",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 51025,
+    "status": 3,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "version": 7,
+    "internalName": "Movix",
+    "description": "Movix provider for CloudStream",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
+    "name": "Ümitmod-fr4"
   }
 ]

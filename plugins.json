@@ -82,27 +82,6 @@
     "fileHash": "sha256-198b190db680be500cccb06dff1fb774fbe1d148b65e18c281631df4b9f66d0f"
   },
   {
-    "name": "Ümitmod-wioland1",
-    "internalName": "MegaWio",
-    "pluginClassName": "wioland.WioLandPlugin",
-    "version": 3,
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wioland-mirror/MegaWio.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioLand/main/assets/logo-20261004.png?rev=2",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "WioSinema, WioSpor, TurkSpor, WioCinema, WioKids, WioAnime, WioAsya, WioDrama, PltStream ve CloudStream Live Hub depolarını ekler.",
-    "status": 1,
-    "language": "tr",
-    "tvTypes": [
-      "Others"
-    ],
-    "apiVersion": 1,
-    "fileSize": 12581,
-    "fileHash": "sha256-81deaaad458fbd5f681bb1056eb3be018977193a7fd4dfd96b900d2dd4bad846",
-    "repositoryUrl": "https://github.com/Wiojelt/WioLand"
-  },
-  {
     "name": "Ümitmod-wiospor1",
     "internalName": "WioSpor",
     "version": 57,
@@ -15861,5 +15840,26 @@
     "description": "Movix provider for CloudStream",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
     "name": "Ümitmod-fr4"
+  },
+  {
+    "name": "Ümitmod-wioland1",
+    "internalName": "MegaWio",
+    "pluginClassName": "wioland.WioLandPlugin",
+    "version": 3,
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wioland-mirror/MegaWio.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioLand/main/assets/logo-20261004.png?rev=2",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "WioSinema, WioSpor, TurkSpor, WioCinema, WioKids, WioAnime, WioAsya, WioDrama, PltStream ve CloudStream Live Hub depolarını ekler.",
+    "status": 1,
+    "language": "tr",
+    "tvTypes": [
+      "Others"
+    ],
+    "apiVersion": 1,
+    "fileSize": 12581,
+    "fileHash": "sha256-81deaaad458fbd5f681bb1056eb3be018977193a7fd4dfd96b900d2dd4bad846",
+    "repositoryUrl": "https://github.com/Wiojelt/WioLand"
   }
 ]

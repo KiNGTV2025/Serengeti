@@ -1265,27 +1265,6 @@
     "fileHash": "sha256-ff37203f3d0646e1f524b9359f3f07af047dbacc9b2a7cdba5381413e6f97494"
   },
   {
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/feroxx-mirror/HintFilmIzle.cs3",
-    "status": 1,
-    "version": 2,
-    "name": "Ümitmod-feroxx1",
-    "internalName": "HintFilmIzle",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "HintFilmİzle.com için Hint film ve dizi eklentisi",
-    "fileSize": 21885,
-    "repositoryUrl": "https://github.com/liberta09/Kekik-cloudstream",
-    "language": "tr",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://www.google.com/s2/favicons?domain=hintfilmizle.com&sz=%size%",
-    "apiVersion": 1,
-    "fileHash": "sha256-5bcc850b3e06a4323e5746a0c2730741347001f4785d174405ab867842524957"
-  },
-  {
     "apiVersion": 1,
     "repositoryUrl": "https://github.com/self-similarity/MegaRepo",
     "fileSize": 6929,
@@ -17375,5 +17354,26 @@
     "iconUrl": "https://www.google.com/s2/favicons?domain=ybncidizi.com&sz=%size%",
     "apiVersion": 1,
     "fileHash": "sha256-f0a0f31064dfb834fe3d12646eca7a8821c4654481d6566c3752b4962c615c1f"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/feroxx-mirror/HintFilmIzle.cs3",
+    "status": 1,
+    "version": 2,
+    "name": "Ümitmod-feroxx1",
+    "internalName": "HintFilmIzle",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "HintFilmİzle.com için Hint film ve dizi eklentisi",
+    "fileSize": 21885,
+    "repositoryUrl": "https://github.com/liberta09/Kekik-cloudstream",
+    "language": "tr",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://www.google.com/s2/favicons?domain=hintfilmizle.com&sz=%size%",
+    "apiVersion": 1,
+    "fileHash": "sha256-5bcc850b3e06a4323e5746a0c2730741347001f4785d174405ab867842524957"
   }
 ]

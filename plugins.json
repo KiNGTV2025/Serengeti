@@ -1265,89 +1265,6 @@
     "fileHash": "sha256-ff37203f3d0646e1f524b9359f3f07af047dbacc9b2a7cdba5381413e6f97494"
   },
   {
-    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/frenchmanga.png",
-    "fileHash": "sha256-73c4a8b9520fcbab8e27bbefbb7764f80d4d2d9b3849577a3ad879da468832af",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 72725,
-    "status": 1,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Anime",
-      "AnimeMovie"
-    ],
-    "version": 6,
-    "internalName": "FrenchManga",
-    "description": "Animes et films d'animation VF/VOSTFR en HD via French-Manga",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchManga.cs3",
-    "name": "Ümitmod-fr1"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/frenchstream.png",
-    "fileHash": "sha256-b2e8f45035d0ccb705e0cf6177f6b915a06fb75134e47880654978eaa9519604",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 94529,
-    "status": 1,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "version": 22,
-    "internalName": "FrenchStreamProvider",
-    "description": "Films et séries VF/VOSTFR en HD via French-Stream (enrichi TMDB, sans CAM)",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchStreamProvider.cs3",
-    "name": "Ümitmod-fr2"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/fstv.png",
-    "fileHash": "sha256-e0abe426f81126853f27a881e08eec5a733cc54ca3423dd70aa9b1b612e386e4",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 107640,
-    "status": 1,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Live"
-    ],
-    "version": 14,
-    "internalName": "FSTV",
-    "description": "Chaînes TV HD en direct via WITV (182 chaînes) et matchs sport en direct via BZH-Sport",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FSTV.cs3",
-    "name": "Ümitmod-fr3"
-  },
-  {
-    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/movix.png",
-    "fileHash": "sha256-607c602a98971e1bb0770b7b08a00142771b2ea6703f7dbe746473f380bc5d53",
-    "apiVersion": 1,
-    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
-    "fileSize": 91252,
-    "status": 1,
-    "language": "fr",
-    "authors": [
-      "Umitmod"
-    ],
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "version": 10,
-    "internalName": "Movix",
-    "description": "Films et séries VF/VOSTFR via Movix & TMDB (plateformes, FStream, Wiflix)",
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
-    "name": "Ümitmod-fr4"
-  },
-  {
     "name": "Ümitmod-wioland1",
     "internalName": "MegaWio",
     "pluginClassName": "wioland.WioLandPlugin",
@@ -17375,5 +17292,88 @@
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/ramsan-mirror/YTS.cs3",
     "name": "Ümitmod-ramsan65",
     "fileHash": "sha256-2f143efef182a8f964bbc3f719c88ca051661948648a8144faf67b5ae1447b42"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/frenchmanga.png",
+    "fileHash": "sha256-73c4a8b9520fcbab8e27bbefbb7764f80d4d2d9b3849577a3ad879da468832af",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 72725,
+    "status": 1,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Anime",
+      "AnimeMovie"
+    ],
+    "version": 6,
+    "internalName": "FrenchManga",
+    "description": "Animes et films d'animation VF/VOSTFR en HD via French-Manga",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchManga.cs3",
+    "name": "Ümitmod-fr1"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/frenchstream.png",
+    "fileHash": "sha256-b2e8f45035d0ccb705e0cf6177f6b915a06fb75134e47880654978eaa9519604",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 94529,
+    "status": 1,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "version": 22,
+    "internalName": "FrenchStreamProvider",
+    "description": "Films et séries VF/VOSTFR en HD via French-Stream (enrichi TMDB, sans CAM)",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FrenchStreamProvider.cs3",
+    "name": "Ümitmod-fr2"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/fstv.png",
+    "fileHash": "sha256-e0abe426f81126853f27a881e08eec5a733cc54ca3423dd70aa9b1b612e386e4",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 107640,
+    "status": 1,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Live"
+    ],
+    "version": 14,
+    "internalName": "FSTV",
+    "description": "Chaînes TV HD en direct via WITV (182 chaînes) et matchs sport en direct via BZH-Sport",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/FSTV.cs3",
+    "name": "Ümitmod-fr3"
+  },
+  {
+    "iconUrl": "https://raw.githubusercontent.com/Nikola17/cloudstream-frenchstream/main/assets/icons/movix.png",
+    "fileHash": "sha256-607c602a98971e1bb0770b7b08a00142771b2ea6703f7dbe746473f380bc5d53",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Nikola17/cloudstream-frenchstream",
+    "fileSize": 91252,
+    "status": 1,
+    "language": "fr",
+    "authors": [
+      "Umitmod"
+    ],
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "version": 10,
+    "internalName": "Movix",
+    "description": "Films et séries VF/VOSTFR via Movix & TMDB (plateformes, FStream, Wiflix)",
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
+    "name": "Ümitmod-fr4"
   }
 ]

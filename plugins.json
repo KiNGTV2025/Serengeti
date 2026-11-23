@@ -1265,27 +1265,6 @@
     "fileHash": "sha256-ff37203f3d0646e1f524b9359f3f07af047dbacc9b2a7cdba5381413e6f97494"
   },
   {
-    "name": "Ümitmod-wioland1",
-    "internalName": "MegaWio",
-    "pluginClassName": "wioland.WioLandPlugin",
-    "version": 3,
-    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wioland-mirror/MegaWio.cs3",
-    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioLand/main/assets/logo-20261004.png?rev=2",
-    "authors": [
-      "Umitmod"
-    ],
-    "description": "WioSinema, WioSpor, WioCinema, WioKids, WioAnime, WioAsya, ArcanaDrama, PltStream ve CloudStream Live Hub depolarını ekler.",
-    "status": 3,
-    "language": "tr",
-    "tvTypes": [
-      "Others"
-    ],
-    "apiVersion": 1,
-    "fileSize": 12581,
-    "fileHash": "sha256-81deaaad458fbd5f681bb1056eb3be018977193a7fd4dfd96b900d2dd4bad846",
-    "repositoryUrl": "https://github.com/Wiojelt/WioLand"
-  },
-  {
     "name": "Ümitmod-wiospor1",
     "internalName": "WioSpor",
     "version": 59,
@@ -17377,5 +17356,26 @@
     "description": "Films et séries VF/VOSTFR via Movix & TMDB (plateformes, FStream, Wiflix)",
     "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/fr-mirror/Movix.cs3",
     "name": "Ümitmod-fr4"
+  },
+  {
+    "name": "Ümitmod-wioland1",
+    "internalName": "MegaWio",
+    "pluginClassName": "wioland.WioLandPlugin",
+    "version": 3,
+    "url": "https://raw.githubusercontent.com/KiNGTV2025/Serengeti/builds/wioland-mirror/MegaWio.cs3",
+    "iconUrl": "https://raw.githubusercontent.com/Wiojelt/WioLand/main/assets/logo-20261004.png?rev=2",
+    "authors": [
+      "Umitmod"
+    ],
+    "description": "WioSinema, WioSpor, WioCinema, WioKids, WioAnime, WioAsya, ArcanaDrama, PltStream ve CloudStream Live Hub depolarını ekler.",
+    "status": 3,
+    "language": "tr",
+    "tvTypes": [
+      "Others"
+    ],
+    "apiVersion": 1,
+    "fileSize": 12581,
+    "fileHash": "sha256-81deaaad458fbd5f681bb1056eb3be018977193a7fd4dfd96b900d2dd4bad846",
+    "repositoryUrl": "https://github.com/Wiojelt/WioLand"
   }
 ]
